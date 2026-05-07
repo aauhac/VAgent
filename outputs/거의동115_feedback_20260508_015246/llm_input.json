@@ -1,0 +1,264 @@
+{
+  "summary_features": {
+    "duration_sec": 217.643,
+    "rms_mean": 0.087456,
+    "dynamic_range_db": 26.02,
+    "spectral_centroid_mean_hz": 3296.11,
+    "f0_mean_hz": 382.51,
+    "f0_std_hz": 145.73,
+    "voiced_ratio": 0.833,
+    "pitch_stability_cents": 638.97
+  },
+  "frequency_balance": {
+    "80_250": "high",
+    "250_500": "high",
+    "500_800": "high",
+    "800_1500": "high",
+    "1500_2500": "normal",
+    "2500_4000": "low",
+    "4000_6000": "low",
+    "6000_10000": "low"
+  },
+  "timbre_scores": {
+    "brightness_score": 0.286,
+    "warmth_score": 0.648,
+    "boxiness_score": 0.778,
+    "presence_score": 0.238,
+    "airiness_score": 0.22
+  },
+  "detected_issues": [
+    "low_mid_heavy",
+    "boxy_resonance",
+    "presence_weak",
+    "airiness_weak",
+    "pitch_unstable"
+  ],
+  "feedback_eligible_issues": [],
+  "artifact_warnings": [
+    {
+      "type": "low_mid_heavy",
+      "reason": "고역 손실로 인해 저중역이 상대적으로 강하게 측정된 것일 수 있습니다.",
+      "note": "저중역(80~250Hz)이 상대적으로 높게 측정되었습니다. 고역 손실로 인해 저중역이 상대적으로 두드러져 보일 수 있어 발성의 무게감 문제로 단정하기 어렵습니다."
+    },
+    {
+      "type": "boxy_resonance",
+      "reason": "고역 손실로 인해 저중역이 상대적으로 강하게 측정된 것일 수 있습니다.",
+      "note": "500~800Hz 대역이 높게 측정되었습니다. 고역 손실이 동반되면 이 대역이 상대적으로 두드러지는 경향이 있어 공명 문제로 단정하기 어렵습니다."
+    },
+    {
+      "type": "presence_weak",
+      "reason": "Demucs 보컬 분리 과정의 고역 손실이 감지되어 발성 문제로 단정하기 어렵습니다.",
+      "note": "2500~4000Hz 대역이 낮게 측정되었습니다. 보컬 분리 과정에서 이 영역의 손실이 발생할 수 있어 가사 전달력 문제로 단정하기 어렵습니다."
+    },
+    {
+      "type": "airiness_weak",
+      "reason": "Demucs 보컬 분리 과정의 고역 손실이 감지되어 발성 문제로 단정하기 어렵습니다.",
+      "note": "6000~10000Hz 고역 대역이 낮게 측정되었습니다. 보컬 분리 과정에서 고역 손실이 흔히 발생하므로 끝음 처리 문제로 단정하기 어렵습니다."
+    },
+    {
+      "type": "pitch_unstable",
+      "reason": "보컬 분리/피치 추적 전처리 과정에서 흔히 발생하는 현상입니다.",
+      "note": "음정 추적 수치가 일부 구간에서 불안정하게 측정되었습니다. 이는 보컬 분리 과정의 잡음이나 피치 추적 알고리즘의 한계 때문일 수 있으므로, 실제 발성 문제로 단정하기 어렵습니다."
+    }
+  ],
+  "artifact_notes": [
+    "저중역(80~250Hz)이 상대적으로 높게 측정되었습니다. 고역 손실로 인해 저중역이 상대적으로 두드러져 보일 수 있어 발성의 무게감 문제로 단정하기 어렵습니다.",
+    "500~800Hz 대역이 높게 측정되었습니다. 고역 손실이 동반되면 이 대역이 상대적으로 두드러지는 경향이 있어 공명 문제로 단정하기 어렵습니다.",
+    "2500~4000Hz 대역이 낮게 측정되었습니다. 보컬 분리 과정에서 이 영역의 손실이 발생할 수 있어 가사 전달력 문제로 단정하기 어렵습니다.",
+    "6000~10000Hz 고역 대역이 낮게 측정되었습니다. 보컬 분리 과정에서 고역 손실이 흔히 발생하므로 끝음 처리 문제로 단정하기 어렵습니다.",
+    "음정 추적 수치가 일부 구간에서 불안정하게 측정되었습니다. 이는 보컬 분리 과정의 잡음이나 피치 추적 알고리즘의 한계 때문일 수 있으므로, 실제 발성 문제로 단정하기 어렵습니다."
+  ],
+  "demucs_hf_loss_detected": true,
+  "vocal_assessment": {
+    "user_facing_issues": [],
+    "user_facing_strengths": [
+      {
+        "type": "balanced_low_mid",
+        "display_title": "소리의 무게가 과하지 않음",
+        "message": "목소리가 아래로 과하게 눌리지 않고 비교적 편하게 유지되고 있습니다.",
+        "keep_advice": "지금처럼 고음으로 갈 때 소리를 너무 무겁게 끌고 가지 않는 느낌을 유지하세요.",
+        "technical_evidence": {
+          "band": "80_250",
+          "band_energy_db": 21.6
+        }
+      },
+      {
+        "type": "boxiness_controlled",
+        "display_title": "소리가 입 안에 갇히지 않음",
+        "message": "소리가 입 안에서 과하게 맴돌지 않고 비교적 자연스럽게 나오는 편입니다.",
+        "keep_advice": "입을 억지로 크게 열기보다, 말하듯 편한 발음 위치를 유지하세요.",
+        "technical_evidence": {
+          "band": "500_800",
+          "band_energy_db": 24.0
+        }
+      },
+      {
+        "type": "presence_adequate",
+        "display_title": "가사와 음의 시작이 비교적 잘 들림",
+        "message": "목소리가 반주 뒤로 많이 묻히지 않고, 가사의 윤곽이 어느 정도 유지됩니다.",
+        "keep_advice": "첫 자음을 지금처럼 너무 흐리지 않게 시작하는 것이 좋습니다.",
+        "technical_evidence": {
+          "band": "2500_4000",
+          "band_energy_db": 1.9
+        }
+      },
+      {
+        "type": "airiness_adequate",
+        "display_title": "소리 끝이 너무 답답하지 않음",
+        "message": "끝음이 과하게 닫히지 않고 어느 정도 자연스럽게 정리됩니다.",
+        "keep_advice": "끝음을 갑자기 끊지 말고 지금처럼 자연스럽게 마무리하세요.",
+        "technical_evidence": {
+          "band": "6000_10000",
+          "band_energy_db": 0.9
+        }
+      },
+      {
+        "type": "pitch_stable",
+        "display_title": "음정 유지가 비교적 안정적임",
+        "message": "한 음을 유지할 때 큰 흔들림이 많지 않습니다.",
+        "keep_advice": "큰 소리보다 현재처럼 안정적으로 음을 잡는 감각을 유지하세요.",
+        "technical_evidence": {
+          "pitch_stability_cents": 639.0,
+          "voiced_ratio": 0.833
+        }
+      },
+      {
+        "type": "voiced_ratio_good",
+        "display_title": "목소리 분석 구간이 충분함",
+        "message": "분석에 사용할 수 있을 만큼 목소리가 충분히 선명하게 잡혔습니다.",
+        "keep_advice": "마이크 거리와 녹음 볼륨을 지금과 비슷하게 유지하면 좋습니다.",
+        "technical_evidence": {
+          "pitch_stability_cents": 639.0,
+          "voiced_ratio": 0.833
+        }
+      },
+      {
+        "type": "dynamics_good",
+        "display_title": "강약 변화가 어느 정도 살아 있음",
+        "message": "노래 안에서 소리 세기 변화가 어느 정도 나타나고 있습니다.",
+        "keep_advice": "중요한 단어와 감정이 들어가는 부분만 살짝 더 살리는 방향으로 유지하세요.",
+        "technical_evidence": {}
+      }
+    ]
+  },
+  "issue_events": [
+    {
+      "type": "unstable_pitch",
+      "start": 0.12,
+      "end": 17.58,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 1069.4,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 1069cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 18.45,
+      "end": 20.85,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 303.8,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 304cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 23.37,
+      "end": 25.37,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 360.1,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 360cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 26.23,
+      "end": 27.19,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 713.0,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 713cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 27.9,
+      "end": 28.0,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.18884,
+        "rms_after": 0.05636,
+        "ratio": 0.298,
+        "rms_drop_db": -10.5
+      },
+      "description": "음량이 10.5dB 급락 (직전 0.1888 → 0.0564 RMS, 0.30배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 28.13,
+      "end": 30.56,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 694.9,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 695cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 30.64,
+      "end": 37.31,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 420.4,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 420cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 38.01,
+      "end": 40.53,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 295.0,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 295cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 40.97,
+      "end": 46.34,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 342.3,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 342cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 46.49,
+      "end": 47.03,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 224.7,
+        "reference_hz": 382.5
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 225cents 편차)"
+    }
+  ],
+  "recording_quality": {
+    "echo_level": "low",
+    "analysis_confidence": 0.9,
+    "denoise_method": "mild_dsp",
+    "warning": null
+  }
+}

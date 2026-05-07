@@ -1,0 +1,787 @@
+{
+  "recording_id": "테스트_feedback_20260508_012915",
+  "created_at": "2026-05-07T16:29:21.620740+00:00",
+  "audio_meta": {
+    "original_path": "테스트.m4a",
+    "source_filename": "테스트.m4a",
+    "analyzed_path": "outputs\\테스트_feedback_20260508_012915\\demucs\\vocals.wav",
+    "processed_wav_path": "outputs\\테스트_feedback_20260508_012915\\processed.wav",
+    "sample_rate": 44100,
+    "duration_sec": 7.445,
+    "channels": 1,
+    "separation": {
+      "used": true,
+      "model": "htdemucs",
+      "vocals_path": "outputs\\테스트_feedback_20260508_012915\\demucs\\vocals.wav",
+      "no_vocals_path": "outputs\\테스트_feedback_20260508_012915\\demucs\\no_vocals.wav",
+      "skipped": false
+    },
+    "preprocess": {
+      "echo_reduction": true,
+      "method": "mild_dsp",
+      "confidence": 0.9,
+      "low_cut_hz": 70
+    }
+  },
+  "user_info": {
+    "user_id": null,
+    "song_title": null,
+    "artist": null,
+    "section": null
+  },
+  "waveform_features": {
+    "rms_mean": 0.059129,
+    "rms_max": 0.343855,
+    "peak_amplitude": 0.860231,
+    "dynamic_range_db": 25.4,
+    "silent_ratio": 0.5047,
+    "per_100ms_summary": [
+      {
+        "start": 0.0,
+        "end": 0.1,
+        "rms_mean": 1e-05,
+        "peak": 4e-05
+      },
+      {
+        "start": 0.1,
+        "end": 0.2,
+        "rms_mean": 2e-05,
+        "peak": 5e-05
+      },
+      {
+        "start": 0.2,
+        "end": 0.3,
+        "rms_mean": 2e-05,
+        "peak": 5e-05
+      },
+      {
+        "start": 0.3,
+        "end": 0.4,
+        "rms_mean": 2e-05,
+        "peak": 5e-05
+      },
+      {
+        "start": 0.4,
+        "end": 0.5,
+        "rms_mean": 2e-05,
+        "peak": 7e-05
+      },
+      {
+        "start": 0.5,
+        "end": 0.6,
+        "rms_mean": 0.00216,
+        "peak": 0.04585
+      },
+      {
+        "start": 0.6,
+        "end": 0.7,
+        "rms_mean": 0.00018,
+        "peak": 0.00426
+      },
+      {
+        "start": 0.7,
+        "end": 0.8,
+        "rms_mean": 0.0001,
+        "peak": 0.00054
+      },
+      {
+        "start": 0.8,
+        "end": 0.9,
+        "rms_mean": 8e-05,
+        "peak": 0.00042
+      },
+      {
+        "start": 0.9,
+        "end": 1.0,
+        "rms_mean": 5e-05,
+        "peak": 0.0002
+      },
+      {
+        "start": 1.0,
+        "end": 1.1,
+        "rms_mean": 0.00039,
+        "peak": 0.00299
+      },
+      {
+        "start": 1.1,
+        "end": 1.2,
+        "rms_mean": 0.0041,
+        "peak": 0.03148
+      },
+      {
+        "start": 1.2,
+        "end": 1.3,
+        "rms_mean": 0.02119,
+        "peak": 0.06202
+      },
+      {
+        "start": 1.3,
+        "end": 1.4,
+        "rms_mean": 0.03976,
+        "peak": 0.12326
+      },
+      {
+        "start": 1.4,
+        "end": 1.5,
+        "rms_mean": 0.04051,
+        "peak": 0.11142
+      },
+      {
+        "start": 1.5,
+        "end": 1.6,
+        "rms_mean": 0.03168,
+        "peak": 0.08622
+      },
+      {
+        "start": 1.6,
+        "end": 1.7,
+        "rms_mean": 0.03261,
+        "peak": 0.10253
+      },
+      {
+        "start": 1.7,
+        "end": 1.8,
+        "rms_mean": 0.03401,
+        "peak": 0.12282
+      },
+      {
+        "start": 1.8,
+        "end": 1.9,
+        "rms_mean": 0.04206,
+        "peak": 0.12429
+      },
+      {
+        "start": 1.9,
+        "end": 2.0,
+        "rms_mean": 0.03885,
+        "peak": 0.18354
+      },
+      {
+        "start": 2.0,
+        "end": 2.1,
+        "rms_mean": 0.04052,
+        "peak": 0.13743
+      },
+      {
+        "start": 2.1,
+        "end": 2.2,
+        "rms_mean": 0.03137,
+        "peak": 0.11518
+      },
+      {
+        "start": 2.2,
+        "end": 2.3,
+        "rms_mean": 0.05505,
+        "peak": 0.18655
+      },
+      {
+        "start": 2.3,
+        "end": 2.4,
+        "rms_mean": 0.07965,
+        "peak": 0.31574
+      },
+      {
+        "start": 2.4,
+        "end": 2.5,
+        "rms_mean": 0.15714,
+        "peak": 0.5304
+      },
+      {
+        "start": 2.5,
+        "end": 2.6,
+        "rms_mean": 0.09176,
+        "peak": 0.30452
+      },
+      {
+        "start": 2.6,
+        "end": 2.7,
+        "rms_mean": 0.03633,
+        "peak": 0.18376
+      },
+      {
+        "start": 2.7,
+        "end": 2.8,
+        "rms_mean": 0.00371,
+        "peak": 0.01412
+      },
+      {
+        "start": 2.8,
+        "end": 2.9,
+        "rms_mean": 0.00373,
+        "peak": 0.01662
+      },
+      {
+        "start": 2.9,
+        "end": 3.0,
+        "rms_mean": 0.00209,
+        "peak": 0.00836
+      },
+      {
+        "start": 3.0,
+        "end": 3.1,
+        "rms_mean": 0.00137,
+        "peak": 0.00485
+      },
+      {
+        "start": 3.1,
+        "end": 3.2,
+        "rms_mean": 0.00095,
+        "peak": 0.00341
+      },
+      {
+        "start": 3.2,
+        "end": 3.3,
+        "rms_mean": 0.0008,
+        "peak": 0.00287
+      },
+      {
+        "start": 3.3,
+        "end": 3.4,
+        "rms_mean": 0.00058,
+        "peak": 0.0021
+      },
+      {
+        "start": 3.4,
+        "end": 3.5,
+        "rms_mean": 0.00069,
+        "peak": 0.00304
+      },
+      {
+        "start": 3.5,
+        "end": 3.6,
+        "rms_mean": 0.00077,
+        "peak": 0.00309
+      },
+      {
+        "start": 3.6,
+        "end": 3.7,
+        "rms_mean": 0.01749,
+        "peak": 0.14002
+      },
+      {
+        "start": 3.7,
+        "end": 3.8,
+        "rms_mean": 0.11866,
+        "peak": 0.3865
+      },
+      {
+        "start": 3.8,
+        "end": 3.9,
+        "rms_mean": 0.2232,
+        "peak": 0.72029
+      },
+      {
+        "start": 3.9,
+        "end": 4.0,
+        "rms_mean": 0.2249,
+        "peak": 0.64695
+      },
+      {
+        "start": 4.0,
+        "end": 4.1,
+        "rms_mean": 0.23575,
+        "peak": 0.67432
+      },
+      {
+        "start": 4.1,
+        "end": 4.2,
+        "rms_mean": 0.18024,
+        "peak": 0.81224
+      },
+      {
+        "start": 4.2,
+        "end": 4.3,
+        "rms_mean": 0.08476,
+        "peak": 0.28335
+      },
+      {
+        "start": 4.3,
+        "end": 4.4,
+        "rms_mean": 0.0919,
+        "peak": 0.29996
+      },
+      {
+        "start": 4.4,
+        "end": 4.5,
+        "rms_mean": 0.15132,
+        "peak": 0.44166
+      },
+      {
+        "start": 4.5,
+        "end": 4.6,
+        "rms_mean": 0.1468,
+        "peak": 0.43561
+      },
+      {
+        "start": 4.6,
+        "end": 4.7,
+        "rms_mean": 0.19086,
+        "peak": 0.64925
+      },
+      {
+        "start": 4.7,
+        "end": 4.8,
+        "rms_mean": 0.17561,
+        "peak": 0.68007
+      },
+      {
+        "start": 4.8,
+        "end": 4.9,
+        "rms_mean": 0.05322,
+        "peak": 0.20935
+      },
+      {
+        "start": 4.9,
+        "end": 5.0,
+        "rms_mean": 0.00774,
+        "peak": 0.04052
+      },
+      {
+        "start": 5.0,
+        "end": 5.1,
+        "rms_mean": 0.00103,
+        "peak": 0.00349
+      },
+      {
+        "start": 5.1,
+        "end": 5.2,
+        "rms_mean": 0.00087,
+        "peak": 0.00539
+      },
+      {
+        "start": 5.2,
+        "end": 5.3,
+        "rms_mean": 0.0008,
+        "peak": 0.00295
+      },
+      {
+        "start": 5.3,
+        "end": 5.4,
+        "rms_mean": 0.00077,
+        "peak": 0.0035
+      },
+      {
+        "start": 5.4,
+        "end": 5.5,
+        "rms_mean": 0.00121,
+        "peak": 0.00711
+      },
+      {
+        "start": 5.5,
+        "end": 5.6,
+        "rms_mean": 0.00139,
+        "peak": 0.00688
+      },
+      {
+        "start": 5.6,
+        "end": 5.7,
+        "rms_mean": 0.00131,
+        "peak": 0.00494
+      },
+      {
+        "start": 5.7,
+        "end": 5.8,
+        "rms_mean": 0.00139,
+        "peak": 0.00555
+      },
+      {
+        "start": 5.8,
+        "end": 5.9,
+        "rms_mean": 0.00093,
+        "peak": 0.00436
+      },
+      {
+        "start": 5.9,
+        "end": 6.0,
+        "rms_mean": 0.00214,
+        "peak": 0.01496
+      },
+      {
+        "start": 6.0,
+        "end": 6.1,
+        "rms_mean": 0.00811,
+        "peak": 0.03953
+      },
+      {
+        "start": 6.1,
+        "end": 6.2,
+        "rms_mean": 0.00513,
+        "peak": 0.03436
+      },
+      {
+        "start": 6.2,
+        "end": 6.3,
+        "rms_mean": 0.0678,
+        "peak": 0.34
+      },
+      {
+        "start": 6.3,
+        "end": 6.4,
+        "rms_mean": 0.25326,
+        "peak": 0.86023
+      },
+      {
+        "start": 6.4,
+        "end": 6.5,
+        "rms_mean": 0.29338,
+        "peak": 0.85768
+      },
+      {
+        "start": 6.5,
+        "end": 6.6,
+        "rms_mean": 0.28373,
+        "peak": 0.81281
+      },
+      {
+        "start": 6.6,
+        "end": 6.7,
+        "rms_mean": 0.31321,
+        "peak": 0.8016
+      },
+      {
+        "start": 6.7,
+        "end": 6.8,
+        "rms_mean": 0.12868,
+        "peak": 0.43886
+      },
+      {
+        "start": 6.8,
+        "end": 6.9,
+        "rms_mean": 0.10862,
+        "peak": 0.30103
+      },
+      {
+        "start": 6.9,
+        "end": 7.0,
+        "rms_mean": 0.10529,
+        "peak": 0.28552
+      },
+      {
+        "start": 7.0,
+        "end": 7.1,
+        "rms_mean": 0.10776,
+        "peak": 0.28798
+      },
+      {
+        "start": 7.1,
+        "end": 7.2,
+        "rms_mean": 0.07811,
+        "peak": 0.27208
+      },
+      {
+        "start": 7.2,
+        "end": 7.3,
+        "rms_mean": 0.01811,
+        "peak": 0.09253
+      },
+      {
+        "start": 7.3,
+        "end": 7.4,
+        "rms_mean": 0.00363,
+        "peak": 0.01327
+      },
+      {
+        "start": 7.4,
+        "end": 7.445,
+        "rms_mean": 0.00155,
+        "peak": 0.00634
+      }
+    ],
+    "per_second_summary": [
+      {
+        "second": 0,
+        "rms_mean": 0.000687,
+        "peak": 0.045846
+      },
+      {
+        "second": 1,
+        "rms_mean": 0.031923,
+        "peak": 0.183544
+      },
+      {
+        "second": 2,
+        "rms_mean": 0.068166,
+        "peak": 0.530399
+      },
+      {
+        "second": 3,
+        "rms_mean": 0.107141,
+        "peak": 0.720294
+      },
+      {
+        "second": 4,
+        "rms_mean": 0.147751,
+        "peak": 0.812244
+      },
+      {
+        "second": 5,
+        "rms_mean": 0.001248,
+        "peak": 0.014961
+      },
+      {
+        "second": 6,
+        "rms_mean": 0.193119,
+        "peak": 0.860231
+      }
+    ]
+  },
+  "frequency_features": {
+    "spectral_centroid_mean_hz": 5285.78,
+    "spectral_bandwidth_mean_hz": 4712.27,
+    "spectral_rolloff_mean_hz": 10878.93,
+    "dominant_frequency_hz": 646.0,
+    "band_energy_db": {
+      "80_250": 17.82,
+      "250_500": 16.87,
+      "500_800": 23.88,
+      "800_1500": 18.61,
+      "1500_2500": 12.68,
+      "2500_4000": 7.12,
+      "4000_6000": -5.14,
+      "6000_10000": -2.67
+    }
+  },
+  "pitch_features": {
+    "f0_mean_hz": 231.15,
+    "f0_min_hz": 117.22,
+    "f0_max_hz": 325.84,
+    "f0_std_hz": 44.64,
+    "voiced_ratio": 0.5156,
+    "pitch_stability_cents": 342.95
+  },
+  "timbre_features": {
+    "brightness_score": 0.304,
+    "warmth_score": 0.642,
+    "boxiness_score": 0.786,
+    "presence_score": 0.399,
+    "airiness_score": 0.196
+  },
+  "segment_features": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 5.0,
+      "rms_mean": 0.08829,
+      "f0_mean_hz": 213.99,
+      "spectral_centroid_mean_hz": 5539.34,
+      "band_energy_db": {
+        "80_250": 18.99,
+        "500_800": 22.45,
+        "2500_4000": 3.03,
+        "6000_10000": -1.74
+      }
+    },
+    {
+      "start_sec": 5.0,
+      "end_sec": 7.445,
+      "rms_mean": 0.126453,
+      "f0_mean_hz": 277.39,
+      "spectral_centroid_mean_hz": 4762.99,
+      "band_energy_db": {
+        "80_250": 13.48,
+        "500_800": 25.86,
+        "2500_4000": 10.63,
+        "6000_10000": -5.58
+      }
+    }
+  ],
+  "detected_issues": [
+    "low_mid_heavy",
+    "boxy_resonance",
+    "airiness_weak",
+    "pitch_unstable",
+    "low_voiced_ratio"
+  ],
+  "issue_events": [
+    {
+      "type": "unstable_pitch",
+      "start": 1.21,
+      "end": 1.74,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 287.1,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 287cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 1.9,
+      "end": 1.96,
+      "severity": "medium",
+      "detail": {
+        "avg_deviation_cents": 194.4,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 194cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 2.02,
+      "end": 2.11,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 267.8,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 268cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 2.31,
+      "end": 2.39,
+      "severity": "medium",
+      "detail": {
+        "avg_deviation_cents": 154.4,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 154cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 2.59,
+      "end": 3.79,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 377.2,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 377cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 3.89,
+      "end": 4.13,
+      "severity": "medium",
+      "detail": {
+        "avg_deviation_cents": 148.5,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 148cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 4.17,
+      "end": 4.33,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 200.3,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 200cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 4.54,
+      "end": 6.3,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 401.4,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 401cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 6.35,
+      "end": 7.14,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 432.4,
+        "reference_hz": 231.2
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 432cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 2.6,
+      "end": 2.7,
+      "severity": "medium",
+      "detail": {
+        "rms_before": 0.09176,
+        "rms_after": 0.03633,
+        "ratio": 0.396,
+        "rms_drop_db": -8.0
+      },
+      "description": "음량이 8.0dB 급락 (직전 0.0918 → 0.0363 RMS, 0.40배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "volume_drop",
+      "start": 2.7,
+      "end": 2.8,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.03633,
+        "rms_after": 0.00371,
+        "ratio": 0.102,
+        "rms_drop_db": -19.8
+      },
+      "description": "음량이 19.8dB 급락 (직전 0.0363 → 0.0037 RMS, 0.10배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "volume_drop",
+      "start": 4.8,
+      "end": 4.9,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.17561,
+        "rms_after": 0.05322,
+        "ratio": 0.303,
+        "rms_drop_db": -10.4
+      },
+      "description": "음량이 10.4dB 급락 (직전 0.1756 → 0.0532 RMS, 0.30배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "volume_drop",
+      "start": 4.9,
+      "end": 5.0,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.05322,
+        "rms_after": 0.00774,
+        "ratio": 0.145,
+        "rms_drop_db": -16.7
+      },
+      "description": "음량이 16.7dB 급락 (직전 0.0532 → 0.0077 RMS, 0.15배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "volume_drop",
+      "start": 7.2,
+      "end": 7.3,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.07811,
+        "rms_after": 0.01811,
+        "ratio": 0.232,
+        "rms_drop_db": -12.7
+      },
+      "description": "음량이 12.7dB 급락 (직전 0.0781 → 0.0181 RMS, 0.23배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    }
+  ],
+  "quality_report": {
+    "echo_level": "low",
+    "low_mid_change_db": -1.0,
+    "denoise_method": "mild_dsp",
+    "analysis_confidence": 0.9,
+    "candidate_scores": {
+      "raw": {
+        "low_mid_reduction": 0.0,
+        "air_preservation": 1.0,
+        "artifact_penalty": 0.0,
+        "final_score": 0.3
+      },
+      "mild_dsp": {
+        "low_mid_reduction": 0.269,
+        "air_preservation": 1.0,
+        "artifact_penalty": 0.0,
+        "final_score": 0.394
+      },
+      "tail_gate": {
+        "low_mid_reduction": 0.0,
+        "air_preservation": 0.998,
+        "artifact_penalty": 0.0,
+        "final_score": 0.299
+      }
+    },
+    "warning": null
+  }
+}

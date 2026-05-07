@@ -1,0 +1,90 @@
+{
+  "confidence": "high",
+  "overall_summary": "목소리 분석 구간이 충분하고 강약 변화가 어느 정도 살아 있지만, 음정 불안정, 저중음 과다, 고음 부족, 끝음 처리 약점 등 개선이 필요한 부분이 있습니다.",
+  "well_done": [
+    {
+      "title": "목소리 분석 구간이 충분함",
+      "description": "분석에 사용할 수 있을 만큼 목소리가 충분히 선명하게 잡혔습니다.",
+      "advice": "마이크 거리와 녹음 볼륨을 지금과 비슷하게 유지하면 좋습니다."
+    },
+    {
+      "title": "강약 변화가 어느 정도 살아 있음",
+      "description": "노래 안에서 소리 세기 변화가 어느 정도 나타나고 있습니다.",
+      "advice": "중요한 단어와 감정이 들어가는 부분만 살짝 더 살리는 방향으로 유지하세요."
+    }
+  ],
+  "needs_work": [
+    {
+      "title": "음이 위아래로 흔들림",
+      "description": "한 음을 유지할 때 음높이가 고정되지 않고 흔들리는 구간이 있습니다.",
+      "technical_evidence": {
+        "pitch_stability_cents": 648.6,
+        "voiced_ratio": 0.83
+      },
+      "advice": "작은 볼륨에서 목표 음을 먼저 안정적으로 유지하세요."
+    },
+    {
+      "title": "저중음 과다",
+      "description": "목소리가 아래로 치우쳐져 음색이 단조로울 수 있습니다.",
+      "technical_evidence": {
+        "frequency_range": "85Hz~255Hz (low-mid)",
+        "energy_ratio": "42% (low-mid / total)"
+      },
+      "advice": "가슴 목소리와 허리 목소리의 균형을 조절해 보세요."
+    },
+    {
+      "title": "고음 부족",
+      "description": "고음역에서 에너지가 부족해 표현력이 제한될 수 있습니다.",
+      "technical_evidence": {
+        "frequency_range": "4kHz~8kHz (high)",
+        "energy_ratio": "18% (high / total)"
+      },
+      "advice": "입 모양과 턱 관절의 긴장을 조절해 고음역을 확장해 보세요."
+    },
+    {
+      "title": "끝음 처리 약점",
+      "description": "음량 급락과 음정 흔들림이 동시에 발생하는 구간이 있습니다.",
+      "technical_evidence": {
+        "rms_drop_db": -10.4,
+        "avg_deviation_cents": 691.6
+      },
+      "advice": "마지막 음을 끝낼 때 볼륨과 음정을 동시에 관리해 보세요."
+    }
+  ],
+  "segment_analysis": [
+    {
+      "type": "unstable_pitch",
+      "start": 0.12,
+      "end": 17.59,
+      "severity": "high",
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 1081cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 27.9,
+      "end": 28.0,
+      "severity": "high",
+      "description": "음량이 10.4dB 급락 (직전 0.1906 → 0.0573 RMS, 0.30배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    }
+  ],
+  "segment_feedback": [
+    {
+      "start_sec": 0.12,
+      "end_sec": 17.59,
+      "feedback": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 1081cents 편차)"
+    },
+    {
+      "start_sec": 27.9,
+      "end_sec": 28.0,
+      "feedback": "음량이 10.4dB 급락 (직전 0.1906 → 0.0573 RMS, 0.30배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    }
+  ],
+  "recording_id": "거의동115_feedback_20260508_013438",
+  "model_used": "qwen3:14b",
+  "generated_at": "2026-05-07T16:36:29.864790+00:00",
+  "practice_plan": [],
+  "weekly_goal": "",
+  "caution": "",
+  "source_filename": "거의동115.m4a",
+  "user_friendly_report": "[보컬 피드백 상세 리포트]\n- 음원 파일: 거의동115.m4a\n- 신뢰도: 높음\n- 전체 요약: 목소리 분석 구간이 충분하고 강약 변화가 어느 정도 살아 있지만, 음정 불안정, 저중음 과다, 고음 부족, 끝음 처리 약점 등 개선이 필요한 부분이 있습니다.\n\n[잘하고 있는 점]\n1. 목소리 분석 구간이 충분함\n2. 강약 변화가 어느 정도 살아 있음\n\n[우선 개선 포인트]\n1. 음이 위아래로 흔들림\n2. 저중음 과다\n3. 고음 부족\n4. 끝음 처리 약점\n\n[구간별 코멘트]\n1. 0.1s ~ 17.6s: 음정이 기준(±1semitone)을 벗어나 흔들림 (평균 1081cents 편차)\n2. 27.9s ~ 28.0s: 음량이 10.4dB 급락 (직전 0.1906 → 0.0573 RMS, 0.30배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능\n\n[다음 연습 루틴]\n1. 10분 스트레칭\n2. 10분 호흡+롱톤\n3. 10분 문제 구간 재녹음\n\n[주의사항]\n- 목에 통증이 느껴지면 강도를 낮추고, 휴식 후 다시 연습하세요.\n- 높은 음을 억지로 밀지 말고 편한 음역부터 정확도를 올리세요."
+}

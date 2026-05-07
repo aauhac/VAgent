@@ -1,0 +1,245 @@
+{
+  "summary_features": {
+    "duration_sec": 7.445,
+    "rms_mean": 0.059186,
+    "dynamic_range_db": 25.36,
+    "spectral_centroid_mean_hz": 5256.17,
+    "f0_mean_hz": 231.03,
+    "f0_std_hz": 44.61,
+    "voiced_ratio": 0.5483,
+    "pitch_stability_cents": 342.71
+  },
+  "frequency_balance": {
+    "80_250": "high",
+    "250_500": "high",
+    "500_800": "high",
+    "800_1500": "high",
+    "1500_2500": "normal",
+    "2500_4000": "normal",
+    "4000_6000": "low",
+    "6000_10000": "low"
+  },
+  "timbre_scores": {
+    "brightness_score": 0.304,
+    "warmth_score": 0.642,
+    "boxiness_score": 0.786,
+    "presence_score": 0.399,
+    "airiness_score": 0.196
+  },
+  "detected_issues": [
+    "low_mid_heavy",
+    "boxy_resonance",
+    "airiness_weak",
+    "pitch_unstable",
+    "low_voiced_ratio"
+  ],
+  "vocal_assessment": {
+    "user_facing_issues": [
+      {
+        "type": "low_mid_heavy",
+        "display_title": "소리가 아래로 눌려 들림",
+        "user_symptom": "목소리가 가볍게 앞으로 나오기보다 아래쪽에 무겁게 머무는 느낌이 있습니다.",
+        "possible_cause": "고음으로 갈 때도 낮은 음을 낼 때의 무게를 그대로 가져가고 있을 가능성이 있습니다.",
+        "vocal_advice": "소리를 크게 밀기보다, 말하듯 앞쪽으로 가볍게 붙여보세요.",
+        "practice": "립트릴로 같은 구간을 먼저 부른 뒤, '니-네-냐' 발음으로 작게 다시 불러보세요.",
+        "technical_evidence": {
+          "band": "80_250",
+          "band_energy_db": 17.8
+        }
+      },
+      {
+        "type": "boxy_resonance",
+        "display_title": "소리가 입 안에서 맴돎",
+        "user_symptom": "목소리가 밖으로 시원하게 나오기보다 입 안쪽에 머무는 느낌이 있습니다.",
+        "possible_cause": "입을 크게 열려고 하면서 혀나 모음 위치가 뒤로 가고 있을 가능성이 있습니다.",
+        "vocal_advice": "턱을 많이 내리기보다, 평소 말할 때처럼 발음을 앞쪽에 두세요.",
+        "practice": "'네', '니', '냐'로 같은 멜로디를 부르며 소리가 앞으로 나오는지 확인하세요.",
+        "technical_evidence": {
+          "band": "500_800",
+          "band_energy_db": 23.9
+        }
+      },
+      {
+        "type": "airiness_weak",
+        "display_title": "소리 끝의 여유가 부족함",
+        "user_symptom": "소리 끝이 빨리 닫히거나, 여운이 자연스럽게 남지 않는 느낌이 있을 수 있습니다.",
+        "possible_cause": "끝음에서 힘이 빠지거나, 반대로 목을 닫으며 마무리하고 있을 가능성이 있습니다.",
+        "vocal_advice": "끝음을 갑자기 끊지 말고, 작은 소리로 부드럽게 정리해보세요.",
+        "practice": "'하—', '후—'로 짧게 소리를 낸 뒤 끝을 급하게 닫지 않는 연습을 해보세요.",
+        "technical_evidence": {
+          "band": "6000_10000",
+          "band_energy_db": -2.7
+        }
+      },
+      {
+        "type": "pitch_unstable",
+        "display_title": "음이 위아래로 흔들림",
+        "user_symptom": "한 음을 유지할 때 음높이가 고정되지 않고 흔들리는 구간이 있습니다.",
+        "possible_cause": "호흡 압력이나 목 주변 힘 조절이 일정하지 않을 가능성이 있습니다.",
+        "vocal_advice": "큰 소리로 버티기보다, 작은 볼륨에서 목표 음을 먼저 안정적으로 유지하세요.",
+        "practice": "피아노나 튜너 기준음에 맞춰 3초 동안 같은 음을 유지하는 연습을 하세요.",
+        "technical_evidence": {
+          "pitch_stability_cents": 342.7,
+          "voiced_ratio": 0.548
+        }
+      },
+      {
+        "type": "low_voiced_ratio",
+        "display_title": "목소리로 선명하게 잡힌 구간이 적음",
+        "user_symptom": "분석상 실제 목소리로 안정적으로 잡힌 구간이 적습니다.",
+        "possible_cause": "배경 소음, 반주, 숨소리, 너무 작은 녹음 볼륨의 영향일 수 있습니다.",
+        "vocal_advice": "마이크와의 거리를 일정하게 두고, 반주보다 목소리가 조금 더 크게 녹음되도록 해보세요.",
+        "practice": "같은 구간을 반주 없이 한 번 녹음해서 비교해보세요.",
+        "technical_evidence": {
+          "pitch_stability_cents": 342.7,
+          "voiced_ratio": 0.548
+        }
+      }
+    ],
+    "user_facing_strengths": [
+      {
+        "type": "presence_adequate",
+        "display_title": "가사와 음의 시작이 비교적 잘 들림",
+        "message": "목소리가 반주 뒤로 많이 묻히지 않고, 가사의 윤곽이 어느 정도 유지됩니다.",
+        "keep_advice": "첫 자음을 지금처럼 너무 흐리지 않게 시작하는 것이 좋습니다.",
+        "technical_evidence": {
+          "band": "2500_4000",
+          "band_energy_db": 7.1
+        }
+      },
+      {
+        "type": "dynamics_good",
+        "display_title": "강약 변화가 어느 정도 살아 있음",
+        "message": "노래 안에서 소리 세기 변화가 어느 정도 나타나고 있습니다.",
+        "keep_advice": "중요한 단어와 감정이 들어가는 부분만 살짝 더 살리는 방향으로 유지하세요.",
+        "technical_evidence": {}
+      }
+    ]
+  },
+  "issue_events": [
+    {
+      "type": "unstable_pitch",
+      "start": 1.21,
+      "end": 1.74,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 286.2,
+        "reference_hz": 231.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 286cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 2.02,
+      "end": 2.11,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 266.9,
+        "reference_hz": 231.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 267cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 2.59,
+      "end": 3.79,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 372.0,
+        "reference_hz": 231.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 372cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 2.7,
+      "end": 2.8,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.03642,
+        "rms_after": 0.0037,
+        "ratio": 0.102,
+        "rms_drop_db": -19.9
+      },
+      "description": "음량이 19.9dB 급락 (직전 0.0364 → 0.0037 RMS, 0.10배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 4.54,
+      "end": 6.3,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 400.5,
+        "reference_hz": 231.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 400cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 4.8,
+      "end": 4.9,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.17586,
+        "rms_after": 0.05296,
+        "ratio": 0.301,
+        "rms_drop_db": -10.4
+      },
+      "description": "음량이 10.4dB 급락 (직전 0.1759 → 0.0530 RMS, 0.30배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "volume_drop",
+      "start": 4.9,
+      "end": 5.0,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.05296,
+        "rms_after": 0.00766,
+        "ratio": 0.145,
+        "rms_drop_db": -16.8
+      },
+      "description": "음량이 16.8dB 급락 (직전 0.0530 → 0.0077 RMS, 0.14배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 6.35,
+      "end": 7.14,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 433.3,
+        "reference_hz": 231.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 433cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 7.2,
+      "end": 7.3,
+      "severity": "high",
+      "detail": {
+        "rms_before": 0.07819,
+        "rms_after": 0.01814,
+        "ratio": 0.232,
+        "rms_drop_db": -12.7
+      },
+      "description": "음량이 12.7dB 급락 (직전 0.0782 → 0.0181 RMS, 0.23배) — 끝음 처리 또는 고음 진입 시 힘 빠짐 가능"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 1.9,
+      "end": 1.96,
+      "severity": "medium",
+      "detail": {
+        "avg_deviation_cents": 195.3,
+        "reference_hz": 231.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 195cents 편차)"
+    }
+  ],
+  "recording_quality": {
+    "echo_level": "low",
+    "analysis_confidence": 0.9,
+    "denoise_method": "mild_dsp",
+    "warning": null
+  }
+}

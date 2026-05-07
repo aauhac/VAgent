@@ -1,0 +1,151 @@
+{
+  "summary_features": {
+    "duration_sec": 205.248,
+    "rms_mean": 0.061333,
+    "dynamic_range_db": 26.01,
+    "spectral_centroid_mean_hz": 3524.14,
+    "f0_mean_hz": 343.04,
+    "f0_std_hz": 177.84,
+    "voiced_ratio": 0.7066,
+    "pitch_stability_cents": 709.24
+  },
+  "frequency_balance": {
+    "80_250": "high",
+    "250_500": "normal",
+    "500_800": "high",
+    "800_1500": "high",
+    "1500_2500": "normal",
+    "2500_4000": "low",
+    "4000_6000": "low",
+    "6000_10000": "low"
+  },
+  "timbre_scores": {
+    "brightness_score": 0.29,
+    "warmth_score": 0.589,
+    "boxiness_score": 0.781,
+    "presence_score": 0.257,
+    "airiness_score": 0.25
+  },
+  "detected_issues": [
+    "low_mid_heavy",
+    "boxy_resonance",
+    "presence_weak",
+    "airiness_weak",
+    "pitch_unstable"
+  ],
+  "issue_events": [
+    {
+      "type": "unstable_pitch",
+      "start": 0.45,
+      "end": 5.18,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 2634.7,
+        "reference_hz": 343.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 2635cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 2.6,
+      "end": 2.7,
+      "severity": "high",
+      "detail": {
+        "rms_drop_db": -12.8
+      },
+      "description": "음량이 12.8dB 급락 (끝음 처리 또는 고음 진입 시 힘 빠짐 가능)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 5.7,
+      "end": 5.78,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 231.5,
+        "reference_hz": 343.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 232cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 6.88,
+      "end": 7.3,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 203.0,
+        "reference_hz": 343.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 203cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 7.63,
+      "end": 24.95,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 828.3,
+        "reference_hz": 343.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 828cents 편차)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 14.5,
+      "end": 14.6,
+      "severity": "high",
+      "detail": {
+        "rms_drop_db": -10.2
+      },
+      "description": "음량이 10.2dB 급락 (끝음 처리 또는 고음 진입 시 힘 빠짐 가능)"
+    },
+    {
+      "type": "volume_drop",
+      "start": 25.6,
+      "end": 25.7,
+      "severity": "high",
+      "detail": {
+        "rms_drop_db": -10.2
+      },
+      "description": "음량이 10.2dB 급락 (끝음 처리 또는 고음 진입 시 힘 빠짐 가능)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 26.42,
+      "end": 26.76,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 232.6,
+        "reference_hz": 343.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 233cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 27.06,
+      "end": 43.26,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 761.8,
+        "reference_hz": 343.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 762cents 편차)"
+    },
+    {
+      "type": "unstable_pitch",
+      "start": 43.61,
+      "end": 45.63,
+      "severity": "high",
+      "detail": {
+        "avg_deviation_cents": 386.3,
+        "reference_hz": 343.0
+      },
+      "description": "음정이 기준(±1semitone)을 벗어나 흔들림 (평균 386cents 편차)"
+    }
+  ],
+  "recording_quality": {
+    "echo_level": "low",
+    "analysis_confidence": 0.9,
+    "denoise_method": "mild_dsp",
+    "warning": null
+  }
+}
