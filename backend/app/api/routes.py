@@ -91,8 +91,38 @@ def get_analysis(
             "priority_issues",
             "training_plan",
             "vibrato",
+            "focus_segments",
+            "segment_scores",
+            "why_this_score",
+            "overall_assessment",
+            "submetrics",
         ):
             result.pop(banned, None)
+        # Nested premium evidence must not leak via score.areas
+        score = result.get("score")
+        if isinstance(score, dict):
+            areas = score.get("areas")
+            if isinstance(areas, list):
+                score["areas"] = [
+                    {
+                        "area_id": a.get("area_id"),
+                        "display_name": a.get("display_name"),
+                        "score": a.get("score"),
+                        "status": a.get("status"),
+                        "status_label": a.get("status_label"),
+                        "confidence": a.get("confidence"),
+                    }
+                    for a in areas
+                    if isinstance(a, dict)
+                ]
+            for nested_banned in (
+                "segment_scores",
+                "submetrics",
+                "focus_segments",
+                "why_this_score",
+                "temporal",
+            ):
+                score.pop(nested_banned, None)
         # Attach access flags (no detailed content)
         access = _ents().analysis_access(_user_id(x_user_id), analysis_id)
         result["access"] = {

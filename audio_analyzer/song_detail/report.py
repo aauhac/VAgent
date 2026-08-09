@@ -1,18 +1,33 @@
 """
-Deterministic Song Detailed Report — NOT physiology diagnostic.
-Reuses existing analysis.json fields; no re-DSP.
+song_detail/report.py
+---------------------
+Assemble V3 Evidence-aware Song Detailed Report.
+Does NOT change score math — only explanation / segments / UX payload.
 """
 
 from __future__ import annotations
 
 from typing import Any, Optional
 
-from audio_analyzer.feedback.templates import build_template_feedback
-from audio_analyzer.feedback.user_text import AREA_COPY
 from audio_analyzer.models import ANALYSIS_VERSION, public_audio
 
+from .copy import (
+    AREA_DISPLAY,
+    confidence_state,
+    coverage_state,
+    submetric_display_name,
+)
+from .explain_v3 import (
+    build_overall_assessment,
+    build_submetric_views,
+    collect_detail_priorities,
+    collect_detail_strengths,
+    explain_area,
+)
+from .segments import build_focus_segments_from_v3
 
-SONG_DETAIL_REPORT_VERSION = "song-detail-v1.0"
+
+SONG_DETAIL_REPORT_VERSION = "song-detail-v1.1"
 
 _FORBIDDEN_KEYS = (
     "physiology_assessments",
@@ -27,83 +42,6 @@ _FORBIDDEN_KEYS = (
 )
 
 
-def _area_wording(area: dict[str, Any]) -> tuple[str, str]:
-    area_id = area.get("area_id") or ""
-    copy = AREA_COPY.get(area_id, {})
-    status = area.get("status")
-    score = area.get("score")
-    worst = (area.get("temporal") or {}).get("worst")
-    if status == "unknown" or score is None:
-        interpretation = "이번 녹음에서는 전체 점수를 확정하기 어려워요."
-        practice = "조금 더 또렷한 녹음으로 다시 확인해 보세요."
-        return interpretation, practice
-    if score >= 95:
-        interpretation = "이번 녹음에서 매우 안정적으로 측정됐어요."
-    elif score >= 85:
-        interpretation = (
-            "대부분 안정적이지만 일부 구간에서 차이가 있었어요."
-            if worst is not None and worst < 80
-            else (copy.get("strength_feedback") or "비교적 좋은 편으로 측정됐어요.")
-        )
-    elif status in ("excellent", "good"):
-        interpretation = copy.get("strength_feedback") or "비교적 좋은 편으로 측정됐어요."
-    elif status == "needs_work":
-        interpretation = copy.get("what_user_hears") or "개선 여지가 있어요."
-    else:
-        interpretation = copy.get("what_user_hears") or "보통 수준으로 측정됐어요."
-    if status in ("excellent", "good") and score >= 78:
-        practice = copy.get("keep_advice") or copy.get("practice") or ""
-    else:
-        practice = copy.get("practice") or ""
-    return interpretation, practice
-
-
-def _area_detail(area: dict[str, Any]) -> dict[str, Any]:
-    interpretation, practice = _area_wording(area)
-    submetrics = []
-    for s in area.get("submetrics") or []:
-        submetrics.append(
-            {
-                "submetric_id": s.get("submetric_id"),
-                "display_name": s.get("display_name"),
-                "score": s.get("score"),
-                "status": s.get("status"),
-            }
-        )
-    return {
-        "area_id": area.get("area_id"),
-        "display_name": area.get("display_name"),
-        "score": area.get("score"),
-        "status": area.get("status"),
-        "status_label": area.get("status_label")
-        or ("판단 어려움" if area.get("status") == "unknown" else area.get("status")),
-        "confidence": area.get("confidence"),
-        "coverage": area.get("coverage"),
-        "interpretation": interpretation,
-        "practice": practice,
-        "submetrics": submetrics,
-        "temporal_summary": {
-            "worst": (area.get("temporal") or {}).get("worst"),
-            "bad_segment_ratio": (area.get("temporal") or {}).get("bad_segment_ratio"),
-        },
-    }
-
-
-def _timeline_public(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    out = []
-    for ev in events[:12]:
-        out.append(
-            {
-                "start_sec": ev.get("start_sec"),
-                "end_sec": ev.get("end_sec"),
-                "severity": ev.get("severity"),
-                "user_message": ev.get("user_message") or ev.get("message"),
-                "area_id": ev.get("area_id"),
-            }
-        )
-    return out
-
-
 def _vibrato_public(optional: dict[str, Any]) -> dict[str, Any]:
     vib = (optional or {}).get("vibrato") or {}
     if not vib.get("available"):
@@ -111,11 +49,61 @@ def _vibrato_public(optional: dict[str, Any]) -> dict[str, Any]:
             "available": False,
             "note": "이번 녹음에서는 참고용 비브라토 분석을 충분히 얻지 못했어요.",
         }
-    return {
+    # Normalize depth_cents (engine) vs legacy extent_cents
+    depth = vib.get("depth_cents")
+    if depth is None:
+        depth = vib.get("extent_cents")
+    rate = vib.get("rate_hz")
+    out: dict[str, Any] = {
         "available": True,
-        "rate_hz": vib.get("rate_hz"),
-        "extent_cents": vib.get("extent_cents"),
         "note": "참고용 관측이며 실력 점수에 포함되지 않아요.",
+        "depth_cents": depth,
+        "rate_hz": rate,
+    }
+    lines = []
+    if rate is not None:
+        lines.append({"label": "비브라토 속도", "value": f"약 {float(rate):.1f} Hz"})
+    if depth is not None:
+        lines.append({"label": "깊이", "value": f"약 {float(depth):.1f} cents"})
+    else:
+        lines.append({"label": "깊이", "value": "측정 신뢰도가 충분하지 않음"})
+    out["lines"] = lines
+    # Do not expose blank extent placeholders
+    return out
+
+
+def _enrich_area(area: dict[str, Any]) -> dict[str, Any]:
+    explained = explain_area(area)
+    sub_views = build_submetric_views(area)
+    # attach focus segments belonging to this area later in report assembly
+    return {
+        "area_id": area.get("area_id"),
+        "display_name": area.get("display_name")
+        or AREA_DISPLAY.get(area.get("area_id") or "", area.get("area_id")),
+        "score": area.get("score"),
+        "status": area.get("status"),
+        "status_label": area.get("status_label")
+        or ("판단 어려움" if area.get("status") == "unknown" else area.get("status")),
+        "confidence": area.get("confidence"),
+        "coverage": area.get("coverage"),
+        "confidence_state": confidence_state(area.get("confidence")),
+        "coverage_state": coverage_state(area.get("coverage")),
+        "score_ceiling": area.get("score_ceiling"),
+        "ceiling_reasons": area.get("ceiling_reasons") or [],
+        "headline": explained["headline"],
+        "interpretation": explained["interpretation"],
+        "why_this_score": explained.get("why_this_score") or [],
+        "strength_points": explained.get("strength_points") or [],
+        "improvement_points": explained.get("improvement_points") or [],
+        "submetrics": sub_views,
+        "focus_segments": [],
+        "practice": explained.get("practice") or {},
+        "limitations": explained.get("limitations") or [],
+        "temporal_summary": {
+            "worst": (area.get("temporal") or {}).get("worst"),
+            "bad_segment_ratio": (area.get("temporal") or {}).get("bad_segment_ratio"),
+            "median": (area.get("temporal") or {}).get("median"),
+        },
     }
 
 
@@ -124,72 +112,90 @@ def build_song_detailed_report(
     *,
     analysis_id: Optional[str] = None,
 ) -> dict[str, Any]:
-    """
-    Build song detailed report from stored analysis result.
-    Must not include physiology / diagnostic inference.
-    """
     score = analysis.get("score") or {}
     quality = analysis.get("quality") or {}
-    feedback = build_template_feedback(analysis)
 
-    areas = [_area_detail(a) for a in (score.get("areas") or [])]
-    strengths = list(score.get("strengths") or analysis.get("strengths") or [])[:5]
-    priority = list(score.get("priority_issues") or [])[:5]
-    timeline = _timeline_public(list(analysis.get("timeline") or []))
+    raw_areas = list(score.get("areas") or [])
+    areas = [_enrich_area(a) for a in raw_areas]
 
-    training = list(feedback.get("practice_plan") or [])[:5]
+    legacy_timeline = list(analysis.get("timeline") or [])
+    focus_segments = build_focus_segments_from_v3(
+        score, legacy_timeline=legacy_timeline, max_total=5
+    )
+
+    # Attach per-area focus slices
+    by_area: dict[str, list] = {}
+    for ev in focus_segments:
+        by_area.setdefault(ev.get("area_id") or "", []).append(ev)
+    for a in areas:
+        a["focus_segments"] = by_area.get(a["area_id"], [])[:2]
+
+    overall = build_overall_assessment(score)
+    strengths = collect_detail_strengths(areas)
+    priorities = collect_detail_priorities(areas)
+
+    # Training plan from priority practices
+    training: list[str] = []
+    for p in priorities:
+        if p.get("practice"):
+            training.append(str(p["practice"]))
+    for a in areas:
+        for item in (a.get("practice") or {}).get("items") or []:
+            if item not in training:
+                training.append(item)
+    training = training[:5]
+    if not training:
+        training = ["편한 음 하나를 골라 짧게 반복하며, 가장 약한 세부 항목을 의식해 연습해 보세요."]
+
     limitations = [
         "이 리포트는 일반 노래 녹음의 음향 특성 분석입니다.",
-        "표준 Diagnostic Task(아/이/사이렌/스웰) 기반 정밀 발성 진단이 아닙니다.",
+        "표준 Diagnostic Task 기반 정밀 발성 진단이 아닙니다.",
         "성대 구조·질환·근육 상태를 진단하지 않습니다.",
         "점수는 베타 기준이며 개인 간 절대 비교용이 아닙니다.",
     ]
     if quality.get("status") == "warn":
         limitations.append("녹음 품질 경고가 있어 일부 해석은 보수적으로 제한됐어요.")
+    if overall["overall_display_state"] == "PARTIAL":
+        limitations.append(
+            "일부 영역은 판단 보류라서 종합 점수를 부분 분석으로 안내했어요."
+        )
 
-    report = {
+    report: dict[str, Any] = {
         "report_kind": "song_detail",
         "report_version": SONG_DETAIL_REPORT_VERSION,
         "analysis_version": analysis.get("analysis_version", ANALYSIS_VERSION),
+        "score_version": score.get("version"),
         "analysis_id": analysis_id or analysis.get("recording_id"),
         "tier": "song_detail",
         "summary": {
             "title": "이 노래의 상세 분석",
-            "text": feedback.get("overall_summary")
-            or analysis.get("short_summary")
-            or "노래 발성 특성 상세 결과예요.",
-            "overall": score.get("overall"),
-            "label": score.get("label"),
+            "text": overall["text"],
+            "overall": overall.get("display_overall"),
+            "label": overall.get("label"),
             "available": bool(score.get("available")),
+            "overall_display_state": overall["overall_display_state"],
+            "reliable_axis_count": overall["reliable_axis_count"],
+            "total_axis_count": overall["total_axis_count"],
         },
+        "overall_assessment": overall,
         "areas": areas,
-        "strengths": [
+        "focus_segments": focus_segments,
+        # Back-compat alias used by older UI
+        "timeline": [
             {
-                "area_id": s.get("area_id"),
-                "display_name": s.get("display_name"),
-                "score": s.get("score"),
-                "status": s.get("status"),
-                "note": (AREA_COPY.get(s.get("area_id") or {}) or {}).get(
-                    "strength_feedback"
-                ),
+                "start_sec": e["start_sec"],
+                "end_sec": e["end_sec"],
+                "user_message": e.get("user_message"),
+                "area_id": e.get("area_id"),
+                "score": e.get("score"),
+                "headline": e.get("headline"),
+                "time_label": e.get("time_label"),
+                "practice_hint": e.get("practice_hint"),
             }
-            for s in strengths
+            for e in focus_segments
         ],
-        "priority_issues": [
-            {
-                "area_id": p.get("area_id"),
-                "display_name": p.get("display_name"),
-                "score": p.get("score"),
-                "status": p.get("status"),
-                "what_user_hears": (AREA_COPY.get(p.get("area_id") or {}) or {}).get(
-                    "what_user_hears"
-                ),
-                "practice": (AREA_COPY.get(p.get("area_id") or {}) or {}).get("practice"),
-            }
-            for p in priority
-        ],
-        "timeline": timeline,
-        "segment_feedback": feedback.get("segment_feedback") or [],
+        "strengths": strengths,
+        "priority_issues": priorities,
         "vibrato": _vibrato_public(analysis.get("optional_analysis") or {}),
         "training_plan": training,
         "recording_notes": list(analysis.get("analysis_notes") or [])[:8],
@@ -219,8 +225,6 @@ def build_song_detailed_report(
         },
     }
 
-    # Hard strip any physiology keys if somehow present in source
     for k in _FORBIDDEN_KEYS:
         report.pop(k, None)
-
     return report

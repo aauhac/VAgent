@@ -87,7 +87,12 @@ def build_template_feedback(analysis: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "confidence": conf,
-        "overall_summary": f"종합 {overall}점, {label}이에요. 점수는 아직 보정 전 잠정 기준입니다.",
+        "overall_summary": (
+            f"종합 {overall}점, {label}."
+            if str(label or "").endswith(("요", "다", "음"))
+            else f"종합 {overall}점, {label}예요."
+        )
+        + " 점수는 아직 보정 전 잠정 기준입니다.",
         "well_done": well_done,
         "needs_work": needs_work,
         "segment_feedback": segment_feedback,

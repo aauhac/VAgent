@@ -209,7 +209,17 @@ def test_free_api_no_detail_leak(client):
     assert "timeline" not in result
     assert "optional_analysis" not in result
     assert "physiology_assessments" not in result
+    assert "focus_segments" not in result
+    assert "overall_assessment" not in result
     assert result.get("tier") == "free"
+    for a in (result.get("score") or {}).get("areas") or []:
+        assert "submetrics" not in a
+        assert "segment_scores" not in a
+        assert "why_this_score" not in a
+        assert "focus_segments" not in a
+    blob = str(result)
+    assert "segment_scores" not in blob
+    assert "why_this_score" not in blob
 
 
 def test_mock_disabled_in_production(client, monkeypatch):

@@ -63,13 +63,16 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
 
     short_summary = None
     if score.get("available"):
+        from audio_analyzer.song_detail.copy import join_summary
+
         best = strengths[0]["display_name"] if strengths else None
         focus = priority[0]["display_name"] if priority else None
-        parts = [f"종합 {score.get('overall')}점, {score.get('label')}이에요."]
+        # label is already a complete phrase — never append "이에요"
+        parts = [join_summary(score.get("overall"), score.get("label"), partial=False)]
         if best:
             parts.append(f"특히 {best}이(가) 좋아요.")
         if focus:
-            parts.append(f"먼저 보면 좋은 영역은 {focus}이에요.")
+            parts.append(f"먼저 보면 좋은 영역은 {focus}예요.")
         parts.append("베타 분석 점수이며, 상세 발성 진단은 별도 표준화 Task로 진행해요.")
         short_summary = " ".join(parts)
     else:

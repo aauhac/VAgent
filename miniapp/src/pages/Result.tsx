@@ -149,8 +149,11 @@ export default function Result() {
               <div className="area-row" key={a.area_id}>
                 <span>{a.display_name}</span>
                 <strong>
-                  {a.status === 'unknown' || a.score == null ? '—' : Math.round(a.score)}
+                  {a.status === 'unknown' || a.score == null
+                    ? '—'
+                    : `${Math.round(a.score)}점`}
                   <span className="muted" style={{ marginLeft: 8, fontWeight: 500 }}>
+                    ·{' '}
                     {a.status_label || (a.status === 'unknown' ? '판단 어려움' : a.status)}
                   </span>
                 </strong>
