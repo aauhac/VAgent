@@ -13,10 +13,7 @@ export default function Upload() {
     setBusy(true);
     setError(null);
     try {
-      const { analysis_id } = await createAnalysis(file, file.name, {
-        separate,
-        include_feedback: true,
-      });
+      const { analysis_id } = await createAnalysis(file, file.name, { separate });
       sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(file));
       nav(`/analyzing/${analysis_id}`);
     } catch (e: any) {

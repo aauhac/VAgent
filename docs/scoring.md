@@ -37,9 +37,27 @@ Only residual instability inside sustained notes can create `phonation_instabili
 ## Explicitly excluded from skill score
 
 - vibrato (optional analysis only)
-- low_noise / rumble (recording quality)
+- low_noise / rumble (recording quality; `RUMBLE` code does not lower skill confidence)
 - global pitch_stability_cents
 - reference melody / rhythm accuracy
+
+## Metric completeness → confidence
+
+Projection expects 2 metrics (SPR, singer-formant prominence).  
+Resonance expects 3 metrics (weight_gap, mouth_gap, spectral slope).
+
+Missing metrics reduce confidence via `PROJECTION_COMPLETENESS_CONF` /
+`RESONANCE_COMPLETENESS_CONF` rather than quietly pretending full reliability.
+
+## RMS variation (robust)
+
+Within each sustained region, level variation uses **90th / 20th percentile RMS**
+(not max/min). A single near-silent edge frame must not inflate `rms_variation_db`.
+
+## Demucs artifact flags
+
+`demucs_high_band_loss_likely` is evaluated **only** when `source_mode == "separated"`.
+A naturally dark RAW recording is not treated as a Demucs artifact.
 
 ## Calibration
 
@@ -49,3 +67,4 @@ CALIBRATION_STATUS = "uncalibrated"
 ```
 
 Thresholds are provisional heuristics pending a reference dataset.
+Do not retune from a handful of anecdotal samples.

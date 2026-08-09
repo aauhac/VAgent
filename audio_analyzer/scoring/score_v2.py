@@ -11,6 +11,8 @@ Rules:
   - low_noise / rumble belongs to quality, not skill score
   - unknown confidence never becomes strength
   - global pitch variance is NEVER used
+  - metric completeness affects confidence
+  - quality warning codes apply axis-specific penalties
 """
 
 from __future__ import annotations
@@ -97,6 +99,23 @@ def _area(
     }
 
 
+def _apply_quality_code_penalties(
+    area_id: str,
+    confidence: float,
+    codes: list[str],
+) -> tuple[float, list[str]]:
+    notes: list[str] = []
+    conf = float(confidence)
+    for code in codes:
+        table = cfg.QUALITY_CODE_PENALTIES.get(code) or {}
+        scale = table.get(area_id)
+        if scale is None:
+            continue
+        conf *= float(scale)
+        notes.append(code)
+    return conf, notes
+
+
 def compute_score_v2(
     *,
     phonation: dict[str, Any],
@@ -112,17 +131,22 @@ def compute_score_v2(
     If quality.status == fail, caller should skip this and return unavailable.
     """
     artifact_flags = artifact_flags or {}
-    spectral_scale = 1.0
+    codes = list(quality.get("codes") or [])
+
+    demucs_hf = bool(
+        artifact_flags.get("demucs_high_band_loss_likely")
+        or artifact_flags.get("high_band_loss_likely")
+    )
+
+    spectral_base = 1.0
     if source_mode == "separated":
-        spectral_scale *= cfg.SEPARATED_SPECTRAL_CONFIDENCE_SCALE
-    if artifact_flags.get("high_band_loss_likely"):
-        spectral_scale *= 0.55
-    if quality.get("status") == "warn":
-        spectral_scale *= 0.85
+        spectral_base *= cfg.SEPARATED_SPECTRAL_CONFIDENCE_SCALE
+    if demucs_hf and source_mode == "separated":
+        spectral_base *= cfg.DEMUCS_HF_LOSS_CONFIDENCE_SCALE
 
     areas: list[dict[str, Any]] = []
 
-    # ── 1. stability (local sustained residual) ───────────────────────────
+    # ── 1. stability ──────────────────────────────────────────────────────
     residual = phonation.get("median_residual_std_cents")
     sustain_n = int(phonation.get("sustained_count") or 0)
     stab_conf = 0.9
@@ -138,6 +162,9 @@ def compute_score_v2(
         if sustain_n < 2:
             stab_conf *= 0.7
             stab_reason = "지속음 구간이 적어 신뢰도 하향"
+    stab_conf, qnotes = _apply_quality_code_penalties("stability", stab_conf, codes)
+    if qnotes:
+        stab_reason = f"{stab_reason}; quality={','.join(qnotes)}"
     areas.append(
         _area(
             "stability",
@@ -152,40 +179,66 @@ def compute_score_v2(
         )
     )
 
-    # ── 2. projection (SPR + singer formant prominence) ───────────────────
+    # ── 2. projection (weighted components + completeness) ────────────────
     spr = acoustic.get("spr_db")
     prom = acoustic.get("singer_formant_prominence_db")
-    proj_conf = 0.85 * spectral_scale
-    proj_reason = "스펙트럼 전달 특성 기반"
-    if spr is None and prom is None:
-        proj_score = None
-        proj_conf = 0.1
-        proj_reason = "전달력 지표 측정 실패"
-    else:
-        parts = []
-        if spr is not None:
-            parts.append(
+    proj_parts: list[tuple[str, float]] = []
+    if spr is not None:
+        proj_parts.append(
+            (
+                "spr",
                 score_lower_is_better(
                     float(spr), cfg.PROJECTION["good"], cfg.PROJECTION["weak"]
-                )
+                ),
             )
-        if prom is not None:
-            parts.append(
+        )
+    if prom is not None:
+        proj_parts.append(
+            (
+                "singer_formant_prominence",
                 score_higher_is_better(
                     float(prom),
                     cfg.PROJECTION["singer_formant_prominence_weak"],
                     cfg.PROJECTION["singer_formant_prominence_good"],
-                )
+                ),
             )
-        proj_score = float(sum(parts) / len(parts))
-        if proj_conf < cfg.UNKNOWN_CONFIDENCE:
-            proj_reason = "분리/고역 손실 가능성으로 전달력 측정이 불확실함"
+        )
+
+    n_proj = len(proj_parts)
+    completeness = cfg.PROJECTION_COMPLETENESS_CONF.get(n_proj, 0.0)
+    proj_conf = 0.85 * spectral_base * completeness
+    if n_proj == 0:
+        proj_score = None
+        proj_reason = "전달력 지표 측정 실패"
+    else:
+        wsum = 0.0
+        numer = 0.0
+        for name, val in proj_parts:
+            w = float(cfg.PROJECTION_COMPONENT_WEIGHTS.get(name, 0.0))
+            numer += val * w
+            wsum += w
+        proj_score = float(numer / wsum) if wsum > 0 else float(
+            sum(v for _, v in proj_parts) / n_proj
+        )
+        proj_reason = f"스펙트럼 전달 특성 기반 ({n_proj}/2 metrics)"
+        if n_proj < 2:
+            proj_reason = f"전달력 지표 일부만 측정됨 ({n_proj}/2)"
+        if demucs_hf and source_mode == "separated":
+            proj_reason += "; Demucs 고역 손실 가능성"
+    proj_conf, qnotes = _apply_quality_code_penalties("projection", proj_conf, codes)
+    if qnotes:
+        proj_reason = f"{proj_reason}; quality={','.join(qnotes)}"
     areas.append(
         _area(
             "projection",
             proj_score,
             proj_conf,
-            {"spr_db": spr, "singer_formant_prominence_db": prom},
+            {
+                "spr_db": spr,
+                "singer_formant_prominence_db": prom,
+                "metrics_available": n_proj,
+                "metrics_expected": 2,
+            },
             proj_reason,
         )
     )
@@ -194,39 +247,69 @@ def compute_score_v2(
     wg = acoustic.get("weight_gap_db")
     mg = acoustic.get("mouth_gap_db")
     slope = acoustic.get("spectral_slope_db_per_oct")
-    res_conf = 0.8 * spectral_scale
-    res_reason = "공명 대역 균형 기반"
-    parts = []
+    res_parts: list[tuple[str, float]] = []
     if wg is not None:
         wcfg = cfg.RESONANCE["weight_gap"]
-        parts.append(
-            score_target_range(
-                float(wg), wcfg["good_min"], wcfg["good_max"], wcfg["bad_min"], wcfg["bad_max"]
+        res_parts.append(
+            (
+                "weight_gap",
+                score_target_range(
+                    float(wg),
+                    wcfg["good_min"],
+                    wcfg["good_max"],
+                    wcfg["bad_min"],
+                    wcfg["bad_max"],
+                ),
             )
         )
     if mg is not None:
         mcfg = cfg.RESONANCE["mouth_gap"]
-        parts.append(score_lower_is_better(float(mg), mcfg["good"], mcfg["weak"]))
-    if slope is not None:
-        scfg = cfg.RESONANCE["spectral_slope"]
-        parts.append(
-            score_target_range(
-                float(slope),
-                scfg["good_min"],
-                scfg["good_max"],
-                scfg["bad_min"],
-                scfg["bad_max"],
+        res_parts.append(
+            (
+                "mouth_gap",
+                score_lower_is_better(float(mg), mcfg["good"], mcfg["weak"]),
             )
         )
-    if not parts:
+    if slope is not None:
+        scfg = cfg.RESONANCE["spectral_slope"]
+        res_parts.append(
+            (
+                "spectral_slope",
+                score_target_range(
+                    float(slope),
+                    scfg["good_min"],
+                    scfg["good_max"],
+                    scfg["bad_min"],
+                    scfg["bad_max"],
+                ),
+            )
+        )
+
+    n_res = len(res_parts)
+    completeness = cfg.RESONANCE_COMPLETENESS_CONF.get(n_res, 0.0)
+    res_conf = 0.8 * spectral_base * completeness
+    if n_res == 0:
         res_score = None
-        res_conf = 0.1
         res_reason = "공명 지표 측정 실패"
     else:
-        res_score = float(sum(parts) / len(parts))
-        if artifact_flags.get("relative_low_mid_inflation_likely"):
+        wsum = 0.0
+        numer = 0.0
+        for name, val in res_parts:
+            w = float(cfg.RESONANCE_COMPONENT_WEIGHTS.get(name, 0.0))
+            numer += val * w
+            wsum += w
+        res_score = float(numer / wsum) if wsum > 0 else float(
+            sum(v for _, v in res_parts) / n_res
+        )
+        res_reason = f"공명 대역 균형 기반 ({n_res}/3 metrics)"
+        if n_res < 3:
+            res_reason = f"공명 지표 일부만 측정됨 ({n_res}/3)"
+        if demucs_hf and source_mode == "separated":
             res_conf *= 0.65
-            res_reason = "저중역 상대 과장 가능성으로 신뢰도 하향"
+            res_reason += "; Demucs 저중역 상대 과장 가능성"
+    res_conf, qnotes = _apply_quality_code_penalties("resonance", res_conf, codes)
+    if qnotes:
+        res_reason = f"{res_reason}; quality={','.join(qnotes)}"
     areas.append(
         _area(
             "resonance",
@@ -236,12 +319,14 @@ def compute_score_v2(
                 "weight_gap_db": wg,
                 "mouth_gap_db": mg,
                 "spectral_slope_db_per_oct": slope,
+                "metrics_available": n_res,
+                "metrics_expected": 3,
             },
             res_reason,
         )
     )
 
-    # ── 4. dynamic_control (target range, not higher-is-better) ───────────
+    # ── 4. dynamic_control ────────────────────────────────────────────────
     dr = waveform.get("dynamic_range_db")
     dyn_conf = 0.75
     dyn_reason = "강약 폭은 곡/표현에 따라 달라 잠정 범위로 해석"
@@ -258,10 +343,12 @@ def compute_score_v2(
             dcfg["bad_min"],
             dcfg["bad_max"],
         )
-        # Soften extremes: intentional soft singing shouldn't be harshly punished
         if float(dr) < dcfg["good_min"] and float(dr) >= dcfg["bad_min"]:
             dyn_conf *= 0.85
             dyn_reason = "작은 강약 폭은 의도적 표현일 수 있어 단정하지 않음"
+    dyn_conf, qnotes = _apply_quality_code_penalties("dynamic_control", dyn_conf, codes)
+    if qnotes:
+        dyn_reason = f"{dyn_reason}; quality={','.join(qnotes)}"
     areas.append(
         _area(
             "dynamic_control",
@@ -272,12 +359,10 @@ def compute_score_v2(
         )
     )
 
-    # Force unknown when confidence too low — never treat as good
     for a in areas:
         if a["confidence"] < cfg.UNKNOWN_CONFIDENCE:
             a["status"] = "unknown"
 
-    # Overall aggregation
     numer = 0.0
     denom = 0.0
     reliable_areas = 0

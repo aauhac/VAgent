@@ -5,16 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run build:web",
+    "build:web": "tsc -b && vite build",
+    "build:toss": "npm run build:web && ait build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@apps-in-toss/web-framework": "^2.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"
-  },
-  "optionalDependencies": {
-    "@apps-in-toss/web-framework": "*"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

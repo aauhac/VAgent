@@ -5,6 +5,7 @@ Vocal skill score v2 configuration.
 
 SCORE_VERSION / CALIBRATION_STATUS must travel with every score payload.
 Thresholds are provisional heuristics — not scientifically calibrated.
+Do NOT retune thresholds from a few samples in this hardening pass.
 """
 
 SCORE_VERSION = "vocal-score-v2.0"
@@ -53,6 +54,11 @@ PROJECTION = {
     "singer_formant_prominence_weak": 0.0,
 }
 
+PROJECTION_COMPONENT_WEIGHTS = {
+    "spr": 0.6,
+    "singer_formant_prominence": 0.4,
+}
+
 # Resonance: blend of weight_gap + mouth_gap + spectral_slope
 RESONANCE = {
     "weight_gap": {
@@ -71,6 +77,25 @@ RESONANCE = {
         "bad_min": -22.0,
         "bad_max": -4.0,
     },
+}
+
+RESONANCE_COMPONENT_WEIGHTS = {
+    "weight_gap": 0.35,
+    "mouth_gap": 0.30,
+    "spectral_slope": 0.35,
+}
+
+# Completeness → confidence scales (available / expected)
+PROJECTION_COMPLETENESS_CONF = {
+    2: 1.0,
+    1: 0.62,
+    0: 0.0,
+}
+RESONANCE_COMPLETENESS_CONF = {
+    3: 1.0,
+    2: 0.72,
+    1: 0.28,  # strongly down / typically unknown
+    0: 0.0,
 }
 
 # Dynamic control: provisional target range (NOT higher-is-better)
@@ -98,3 +123,45 @@ OVERALL_LABELS = [
 
 # Confidence penalties when source was demucs-separated
 SEPARATED_SPECTRAL_CONFIDENCE_SCALE = 0.7
+DEMUCS_HF_LOSS_CONFIDENCE_SCALE = 0.55
+
+# Per-area multipliers applied when quality warning codes are present.
+# RUMBLE intentionally omitted from skill-score penalties (quality note only).
+QUALITY_CODE_PENALTIES = {
+    "CLIPPING": {
+        "stability": 0.85,
+        "projection": 0.80,
+        "resonance": 0.80,
+        "dynamic_control": 0.45,
+    },
+    "LOW_LEVEL": {
+        "stability": 0.70,
+        "projection": 0.75,
+        "resonance": 0.75,
+        "dynamic_control": 0.85,
+    },
+    "LOW_VOICED_RATIO": {
+        "stability": 0.60,
+        "projection": 0.90,
+        "resonance": 0.90,
+        "dynamic_control": 0.90,
+    },
+    "SHORT_VOICED_DURATION": {
+        "stability": 0.70,
+        "projection": 0.90,
+        "resonance": 0.90,
+        "dynamic_control": 0.90,
+    },
+    "HIGH_SILENCE": {
+        "stability": 0.80,
+        "projection": 0.90,
+        "resonance": 0.90,
+        "dynamic_control": 0.85,
+    },
+    "SHORT_DURATION": {
+        "stability": 0.85,
+        "projection": 0.90,
+        "resonance": 0.90,
+        "dynamic_control": 0.90,
+    },
+}

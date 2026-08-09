@@ -1,10 +1,16 @@
 """
 In-process background job runner (no Redis/Celery required for MVP).
+
+NOTE:
+  Single-process / single-worker is the supported MVP mode.
+  Uvicorn --workers > 1 splits the in-memory job registry across processes;
+  use one worker (or sticky external store) in production until a shared store exists.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import threading
 import traceback
@@ -18,11 +24,18 @@ from audio_analyzer.env_utils import load_dotenv_if_available
 
 load_dotenv_if_available()
 
+_ANALYSIS_ID_RE = re.compile(r"^[a-fA-F0-9]{16,64}$")
+
+
+def validate_analysis_id(analysis_id: str) -> bool:
+    return bool(analysis_id and _ANALYSIS_ID_RE.match(analysis_id))
+
 
 class JobRunner:
     def __init__(self, runtime_dir: Path, max_workers: int = 1) -> None:
         self.runtime_dir = runtime_dir
         self._jobs: dict[str, dict[str, Any]] = {}
+        self._deleted: set[str] = set()
         self._lock = threading.Lock()
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
 
@@ -34,7 +47,16 @@ class JobRunner:
         separate: bool = False,
         include_feedback: bool = False,
     ) -> None:
+        if not validate_analysis_id(analysis_id):
+            raise ValueError("invalid analysis_id")
         with self._lock:
+            if analysis_id in self._jobs and self._jobs[analysis_id].get("status") in (
+                "queued",
+                "analyzing",
+            ):
+                # Duplicate submit while running: keep first job
+                return
+            self._deleted.discard(analysis_id)
             self._jobs[analysis_id] = {
                 "analysis_id": analysis_id,
                 "status": "queued",
@@ -54,21 +76,66 @@ class JobRunner:
         )
 
     def get(self, analysis_id: str) -> Optional[dict[str, Any]]:
+        if not validate_analysis_id(analysis_id):
+            return None
         with self._lock:
+            if analysis_id in self._deleted:
+                return None
             job = self._jobs.get(analysis_id)
-            return dict(job) if job else self._load_from_disk(analysis_id)
+            if job:
+                return dict(job)
+        return self._load_from_disk(analysis_id)
 
     def delete(self, analysis_id: str) -> bool:
+        if not validate_analysis_id(analysis_id):
+            return False
         with self._lock:
+            existed = analysis_id in self._jobs
             self._jobs.pop(analysis_id, None)
+            self._deleted.add(analysis_id)
         path = self.runtime_dir / analysis_id
-        if path.exists():
+        disk_existed = path.exists()
+        if disk_existed:
             shutil.rmtree(path, ignore_errors=True)
-            return True
-        return False
+        return existed or disk_existed
+
+    def resolve_preview_path(self, analysis_id: str) -> Optional[Path]:
+        """Safe path resolution — never take user-supplied filesystem paths."""
+        if not validate_analysis_id(analysis_id):
+            return None
+        with self._lock:
+            if analysis_id in self._deleted:
+                return None
+        base = (self.runtime_dir / analysis_id).resolve()
+        try:
+            base.relative_to(self.runtime_dir.resolve())
+        except ValueError:
+            return None
+        preview = (base / "preview.wav").resolve()
+        try:
+            preview.relative_to(base)
+        except ValueError:
+            return None
+        if preview.is_file():
+            return preview
+        # fallback to analysis wav if preview missing
+        analysis = (base / "analysis.wav").resolve()
+        if analysis.is_file():
+            try:
+                analysis.relative_to(base)
+                return analysis
+            except ValueError:
+                return None
+        return None
+
+    def _is_deleted(self, analysis_id: str) -> bool:
+        with self._lock:
+            return analysis_id in self._deleted
 
     def _update(self, analysis_id: str, **kwargs: Any) -> None:
         with self._lock:
+            if analysis_id in self._deleted:
+                return
             if analysis_id in self._jobs:
                 self._jobs[analysis_id].update(kwargs)
 
@@ -79,6 +146,8 @@ class JobRunner:
         separate: bool,
         include_feedback: bool,
     ) -> None:
+        if self._is_deleted(analysis_id):
+            return
         self._update(
             analysis_id,
             status="analyzing",
@@ -87,6 +156,8 @@ class JobRunner:
         )
 
         def progress(stage: str, pct: int) -> None:
+            if self._is_deleted(analysis_id):
+                return
             self._update(
                 analysis_id,
                 status="analyzing",
@@ -95,6 +166,8 @@ class JobRunner:
             )
 
         try:
+            if self._is_deleted(analysis_id):
+                return
             result = analyze_audio(
                 audio_path=audio_path,
                 output_dir=str(self.runtime_dir),
@@ -105,8 +178,12 @@ class JobRunner:
                 build_preview=True,
                 progress_callback=progress,
             )
+            if self._is_deleted(analysis_id):
+                # Job deleted mid-run: drop artifacts and do not restore memory
+                shutil.rmtree(self.runtime_dir / analysis_id, ignore_errors=True)
+                return
+
             pub = public_result(result)
-            # persist status snapshot
             status_path = self.runtime_dir / analysis_id / "job_status.json"
             payload = {
                 "analysis_id": analysis_id,
@@ -124,6 +201,8 @@ class JobRunner:
             )
             self._update(**payload)
         except Exception as exc:  # noqa: BLE001
+            if self._is_deleted(analysis_id):
+                return
             err = f"{exc}\n{traceback.format_exc()}"
             self._update(
                 analysis_id,
@@ -150,20 +229,48 @@ class JobRunner:
             )
 
     def _load_from_disk(self, analysis_id: str) -> Optional[dict[str, Any]]:
+        if self._is_deleted(analysis_id):
+            return None
         path = self.runtime_dir / analysis_id / "job_status.json"
-        if not path.exists():
-            pub = self.runtime_dir / analysis_id / "public_result.json"
-            if pub.exists():
-                data = json.loads(pub.read_text(encoding="utf-8"))
+        if path.exists():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                if not isinstance(data, dict):
+                    return {
+                        "analysis_id": analysis_id,
+                        "status": "failed",
+                        "error": "corrupted job_status.json",
+                        "progress": 100,
+                    }
+                data.setdefault("analysis_id", analysis_id)
+                return data
+            except (json.JSONDecodeError, OSError):
                 return {
                     "analysis_id": analysis_id,
-                    "status": "completed",
-                    "stage": "done",
+                    "status": "failed",
+                    "error": "corrupted job_status.json",
                     "progress": 100,
-                    "error": None,
-                    "result": data,
-                    "analysis_status": data.get("analysis_status"),
-                    "feedback_status": data.get("feedback_status"),
                 }
-            return None
-        return json.loads(path.read_text(encoding="utf-8"))
+
+        pub_path = self.runtime_dir / analysis_id / "public_result.json"
+        if pub_path.exists():
+            try:
+                data = json.loads(pub_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                return {
+                    "analysis_id": analysis_id,
+                    "status": "failed",
+                    "error": "corrupted public_result.json",
+                    "progress": 100,
+                }
+            return {
+                "analysis_id": analysis_id,
+                "status": "completed",
+                "stage": "done",
+                "progress": 100,
+                "error": None,
+                "result": data,
+                "analysis_status": data.get("analysis_status"),
+                "feedback_status": data.get("feedback_status"),
+            }
+        return None

@@ -277,20 +277,33 @@ def analyze_mp3(*args: Any, **kwargs: Any) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def _artifact_flags(frequency_features: dict, source_mode: str) -> dict[str, Any]:
+    """
+    Demucs high-band loss heuristic.
+
+    RAW recordings must NOT treat a naturally dark spectrum as Demucs artifact.
+    Only apply when source_mode == "separated".
+    """
+    if source_mode != "separated":
+        return {
+            "demucs_high_band_loss_likely": False,
+            "high_band_loss_likely": False,  # compat alias
+            "relative_low_mid_inflation_likely": False,
+            "source_mode": source_mode,
+        }
+
     band = frequency_features.get("band_energy_db") or {}
     low_mid = band.get("80_250")
     presence = band.get("2500_4000")
     air = band.get("6000_10000")
-    high_band_loss = False
+    demucs_hf = False
     if low_mid is not None and air is not None and (low_mid - air) > 14.0:
-        high_band_loss = True
+        demucs_hf = True
     if presence is not None and air is not None and (presence - air) > 10.0:
-        high_band_loss = True
-    if source_mode == "separated" and high_band_loss:
-        high_band_loss = True
+        demucs_hf = True
     return {
-        "high_band_loss_likely": high_band_loss,
-        "relative_low_mid_inflation_likely": high_band_loss,
+        "demucs_high_band_loss_likely": demucs_hf,
+        "high_band_loss_likely": demucs_hf,  # compat alias
+        "relative_low_mid_inflation_likely": demucs_hf,
         "source_mode": source_mode,
     }
 
@@ -339,10 +352,13 @@ def _build_analysis_notes(
     notes: list[str] = []
     if quality.get("status") == "warn":
         notes.append(quality.get("user_message") or "녹음 조건이 완벽하지 않아 참고용으로 봐 주세요.")
+    codes = quality.get("codes") or []
+    if "RUMBLE" in codes:
+        notes.append("저역 잡음은 녹음 환경 영향일 수 있어 실력 점수에는 직접 반영하지 않았어요.")
     if source_mode == "separated":
         notes.append("보컬 분리를 사용했어요. 스펙트럼 측정 신뢰도가 낮아질 수 있어요.")
-    if artifact_flags.get("high_band_loss_likely"):
-        notes.append("고역 손실 가능성이 있어 일부 전달력/공명 측정은 unknown으로 처리될 수 있어요.")
+    if artifact_flags.get("demucs_high_band_loss_likely") and source_mode == "separated":
+        notes.append("Demucs 고역 손실 가능성이 있어 일부 전달력/공명 측정은 unknown으로 처리될 수 있어요.")
     for area in score.get("areas") or []:
         if area.get("status") == "unknown":
             notes.append(

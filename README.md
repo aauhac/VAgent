@@ -84,16 +84,23 @@ npm install
 npm run dev
 ```
 
-- `appName`: **vocalfb**
-- 공식 SDK: `@apps-in-toss/web-framework` (`granite.config.ts` 참고)
-- 브라우저 로컬 개발은 Vite proxy로 `http://127.0.0.1:8000` API를 사용합니다.
-
-Apps in Toss 연동 시 공식 문서대로:
+Build:
 
 ```powershell
-npm install @apps-in-toss/web-framework
-npx ait init
+npm run build:web    # Vite/TS web bundle
+npm run build:toss   # build:web + ait build (.ait for Apps in Toss)
 ```
+
+- `appName`: **vocalfb**
+- SDK: `@apps-in-toss/web-framework` **^2.6.0** (stable 2.x; do not use `*`)
+- `granite.config.ts` uses official `defineConfig`
+- 브라우저 로컬 개발은 Vite proxy로 `http://127.0.0.1:8000` API를 사용합니다
+
+### FastAPI notes
+
+- MVP is **single-process / single-worker** (`ThreadPoolExecutor(max_workers=1)`).
+- `uvicorn --workers > 1` splits the in-memory job registry — avoid until a shared store exists.
+- CORS: set `CORS_ORIGINS` (default localhost:5173). No `allow_origins=*`.
 
 ---
 

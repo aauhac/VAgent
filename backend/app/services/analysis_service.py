@@ -12,9 +12,9 @@ from typing import Any, Optional
 
 from fastapi import UploadFile
 
-from ..jobs.runner import JobRunner
+from ..jobs.runner import JobRunner, validate_analysis_id
 
-SUPPORTED_EXT = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".webm"}
+SUPPORTED_EXT = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".webm", ".mp4", ".m4v"}
 
 
 class AnalysisService:
@@ -66,7 +66,14 @@ class AnalysisService:
         return analysis_id
 
     def get_job(self, analysis_id: str) -> Optional[dict[str, Any]]:
+        if not validate_analysis_id(analysis_id):
+            return None
         return self.runner.get(analysis_id)
 
     def delete_job(self, analysis_id: str) -> bool:
+        if not validate_analysis_id(analysis_id):
+            return False
         return self.runner.delete(analysis_id)
+
+    def preview_path(self, analysis_id: str) -> Optional[Path]:
+        return self.runner.resolve_preview_path(analysis_id)

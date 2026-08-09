@@ -40,6 +40,8 @@ test_demucs_out/
 node_modules/
 miniapp/dist/
 miniapp/node_modules/
+miniapp/*.ait
+*.ait
 
 # IDE / OS
 .idea/

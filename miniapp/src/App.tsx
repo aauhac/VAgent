@@ -6,6 +6,10 @@ import QualityResult from './pages/QualityResult';
 import Analyzing from './pages/Analyzing';
 import Result from './pages/Result';
 import History from './pages/History';
+import PremiumUnlock from './pages/PremiumUnlock';
+import SafetyCheck from './pages/SafetyCheck';
+import DiagnosticTask from './pages/DiagnosticTask';
+import PremiumReport from './pages/PremiumReport';
 
 export default function App() {
   return (
@@ -18,6 +22,10 @@ export default function App() {
         <Route path="/analyzing/:id" element={<Analyzing />} />
         <Route path="/result/:id" element={<Result />} />
         <Route path="/history" element={<History />} />
+        <Route path="/premium" element={<PremiumUnlock />} />
+        <Route path="/diagnostic/:sessionId/safety" element={<SafetyCheck />} />
+        <Route path="/diagnostic/:sessionId/task/:taskId" element={<DiagnosticTask />} />
+        <Route path="/diagnostic/:sessionId/report" element={<PremiumReport />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

@@ -1,21 +1,40 @@
 import { Link } from 'react-router-dom';
+import { loadUnlockedSessions } from '../api/client';
 
 export default function Home() {
+  const sessions = loadUnlockedSessions();
   return (
     <main>
-      <p className="muted" style={{ marginBottom: 8 }}>Vocal Skill Test</p>
+      <p className="muted" style={{ marginBottom: 8 }}>Physiology-informed Vocal Assessment</p>
       <h1 className="brand">노래 실력<br />진단받기</h1>
       <p className="lead">
-        녹음하거나 파일을 올리면 발성 안정성, 전달력, 공명, 강약을 분석해 드려요.
-        원곡 음정·박자 채점이 아니라, 목소리 발성 특성을 보는 서비스예요.
+        무료로 노래 발성 특성을 빠르게 보고, 유료로 표준 Diagnostic Task 기반
+        정밀 발성 진단과 몸 사용 코칭을 받을 수 있어요.
       </p>
       <div className="cta-row">
         <Link className="btn" to="/record">노래 녹음하기</Link>
         <Link className="btn secondary" to="/upload">파일 업로드</Link>
+        <Link className="btn secondary" to="/premium">상세 발성 진단</Link>
         <Link className="btn secondary" to="/history">이전 결과</Link>
       </div>
+      {sessions.length > 0 && (
+        <div className="panel" style={{ marginTop: 20 }}>
+          <h3 style={{ marginTop: 0 }}>영구 해제된 진단</h3>
+          {sessions.slice(0, 5).map((sid) => (
+            <Link
+              key={sid}
+              to={`/diagnostic/${sid}/report`}
+              className="area-row"
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              <span>세션 {sid.slice(0, 8)}…</span>
+              <strong>리포트</strong>
+            </Link>
+          ))}
+        </div>
+      )}
       <p className="muted" style={{ marginTop: 28 }}>
-        의료 진단이 아니며, 점수는 아직 보정 전(uncalibrated) 참고값입니다.
+        성대 구조·질환을 진단하는 검사가 아닙니다. 음향 기반 발성 패턴 분석·훈련 참고 서비스입니다.
       </p>
     </main>
   );

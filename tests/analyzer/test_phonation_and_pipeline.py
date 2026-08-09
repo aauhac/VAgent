@@ -108,10 +108,10 @@ def test_case2_melody_movement_not_instability(tmp_runtime: Path):
 
 def test_case3_vibrato_rate(tmp_runtime: Path):
     sr = SR
-    duration = 2.0
+    duration = 2.5
     t = np.arange(int(sr * duration)) / sr
-    # 220Hz carrier with 5.5Hz vibrato, ~60 cent depth
-    depth = 60.0 / 1200.0
+    # 220Hz carrier with 5.5Hz vibrato, ~80 cent depth
+    depth = 80.0 / 1200.0
     phase = 2 * np.pi * 220 * t + (depth * 220 / 5.5) * np.sin(2 * np.pi * 5.5 * t)
     y = (0.3 * np.sin(phase)).astype(np.float32)
     wav = _write_wav(tmp_runtime / "vibrato.wav", y)
@@ -123,9 +123,8 @@ def test_case3_vibrato_rate(tmp_runtime: Path):
         build_preview=False,
     )
     vib = result["optional_analysis"]["vibrato"]
-    # May be available depending on pYIN; if available, rate near 5.5
-    if vib.get("available"):
-        assert 4.0 <= float(vib["rate_hz"]) <= 7.0
+    assert vib.get("available") is True
+    assert 4.0 <= float(vib["rate_hz"]) <= 7.0
     # Vibrato must not be an overall score area
     area_ids = [a["area_id"] for a in result["score"]["areas"]]
     assert "vibrato" not in area_ids
