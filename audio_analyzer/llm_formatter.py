@@ -27,6 +27,7 @@ def format_for_llm(analysis_result: dict) -> dict:
     pitch = analysis_result.get("pitch_features", {})
     timbre = analysis_result.get("timbre_features", {})
     issues = analysis_result.get("detected_issues", [])
+    vocal_score = analysis_result.get("vocal_score", {})
 
     summary_features = {
         "duration_sec": audio_meta.get("duration_sec"),
@@ -80,6 +81,7 @@ def format_for_llm(analysis_result: dict) -> dict:
         "artifact_notes":          artifact_notes,
         "demucs_hf_loss_detected": demucs_hf_loss,
         "vocal_assessment":        vocal_assessment,
+        "vocal_score":             vocal_score,
         "issue_events":            top_events,
         "recording_quality":       recording_quality,
     }

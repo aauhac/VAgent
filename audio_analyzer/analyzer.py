@@ -38,6 +38,7 @@ from .llm_formatter import format_for_llm
 from .vocal_separator import separate_vocals
 from .vocal_enhancer import preprocess_for_separation, enhance_vocal_stem
 from .env_utils import resolve_ffmpeg_executable
+from .vocal_score import compute_vocal_score
 
 
 def analyze_mp3(
@@ -160,6 +161,16 @@ def analyze_mp3(
     detected_issues = detect_issues(frequency_features, pitch_features, timbre_features)
     issue_events = detect_issue_events(pitch_features, segment_features, waveform_features)
 
+    # ── 6-b. 영역별 보컬 점수 계산 ───────────────────────────────────────────
+    vocal_score = compute_vocal_score(
+        y=y,
+        sr=sr,
+        frequency_features=frequency_features,
+        pitch_features=pitch_features,
+        waveform_features=waveform_features,
+        quality_report=quality_report,
+    )
+
     # ── 7. 결과 조합 ──────────────────────────────────────────────────────────
     result = {
         "recording_id": recording_id,
@@ -191,6 +202,7 @@ def analyze_mp3(
         "detected_issues": detected_issues,
         "issue_events": issue_events,
         "quality_report": quality_report,
+        "vocal_score": vocal_score,
     }
 
     # ── 8. 시각화 ─────────────────────────────────────────────────────────────
