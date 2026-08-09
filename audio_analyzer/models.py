@@ -15,7 +15,7 @@ ANALYSIS_VERSION = "2.0"
 def empty_score_unavailable(reason: str = "quality_gate_failed") -> dict[str, Any]:
     return {
         "available": False,
-        "version": "vocal-score-v2.0",
+        "version": "vocal-score-v3.0",
         "calibration_status": "uncalibrated",
         "overall": None,
         "label": None,
@@ -55,6 +55,7 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
             "display_name": a.get("display_name"),
             "score": a.get("score"),
             "status": a.get("status"),
+            "status_label": a.get("status_label"),
             "confidence": a.get("confidence"),
         }
         for a in areas
@@ -113,11 +114,30 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
         },
         "short_summary": short_summary,
         "premium_available": True,
+        "products_available": {
+            "song_detail": True,
+            "diagnostic": True,
+        },
+        # Back-compat field — prefer products_available / ProductCatalog
         "premium_cta": {
-            "title": "상세 발성 진단 영구 해제",
+            "title": "정밀 발성 진단",
             "body": (
-                "표준화된 짧은 Diagnostic Task로 발성 메커니즘 경향을 추정하고 "
-                "실제 몸 사용 코칭을 제공해요. 한 번 완료한 상세 리포트는 계속 확인할 수 있어요."
+                "추가 Diagnostic Task로 발성 패턴을 더 정밀하게 분석할 수 있어요. "
+                "노래 상세 리포트는 별도 상품입니다."
+            ),
+        },
+        "song_detail_cta": {
+            "title": "이 노래를 더 자세히 알고 싶나요?",
+            "body": (
+                "4개 영역 상세, 잘한 부분, 개선 우선순위, 구간 다시 듣기, "
+                "맞춤 연습을 추가 녹음 없이 확인할 수 있어요."
+            ),
+        },
+        "diagnostic_cta": {
+            "title": "내 발성 자체를 더 정밀하게 알고 싶나요?",
+            "body": (
+                "아/이 지속음·사이렌·강약 변화 Task로 발성 패턴·음역 전환·"
+                "강도 협응·몸 사용 가이드를 분석해요. 상세 리포트 포함."
             ),
         },
         "disclaimer": (

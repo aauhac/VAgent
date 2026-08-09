@@ -1,5 +1,8 @@
 """
-Entitlement providers — permanent unlock per diagnostic session.
+Entitlement providers — permanent unlock per resource.
+
+resource_type: ANALYSIS | DIAGNOSTIC_SESSION
+entitlement_type: SONG_DETAIL | DIAGNOSTIC
 """
 
 from __future__ import annotations
@@ -7,20 +10,105 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
+
+
+RESOURCE_ANALYSIS = "ANALYSIS"
+RESOURCE_DIAGNOSTIC_SESSION = "DIAGNOSTIC_SESSION"
+
+ENTITLEMENT_SONG_DETAIL = "SONG_DETAIL"
+ENTITLEMENT_DIAGNOSTIC = "DIAGNOSTIC"
 
 
 class EntitlementProvider(ABC):
     @abstractmethod
-    def has_session_unlock(self, user_id: str, session_id: str) -> bool: ...
+    def has_unlock(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        entitlement_type: str,
+    ) -> bool: ...
 
     @abstractmethod
-    def grant_session_unlock(self, user_id: str, session_id: str, entitlement_id: str) -> None: ...
+    def grant_unlock(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        entitlement_type: str,
+        entitlement_id: str,
+        *,
+        product_id: Optional[str] = None,
+        meta: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]: ...
+
+    # Back-compat wrappers used by diagnostic service
+    def has_session_unlock(self, user_id: str, session_id: str) -> bool:
+        return self.has_unlock(
+            user_id, RESOURCE_DIAGNOSTIC_SESSION, session_id, ENTITLEMENT_DIAGNOSTIC
+        )
+
+    def grant_session_unlock(self, user_id: str, session_id: str, entitlement_id: str) -> None:
+        self.grant_unlock(
+            user_id,
+            RESOURCE_DIAGNOSTIC_SESSION,
+            session_id,
+            ENTITLEMENT_DIAGNOSTIC,
+            entitlement_id,
+            product_id="diagnostic_full",
+        )
+
+    def has_song_detail(self, user_id: str, analysis_id: str) -> bool:
+        return self.has_unlock(
+            user_id, RESOURCE_ANALYSIS, analysis_id, ENTITLEMENT_SONG_DETAIL
+        )
+
+    def grant_song_detail(
+        self,
+        user_id: str,
+        analysis_id: str,
+        entitlement_id: str,
+        *,
+        product_id: str = "song_detail",
+    ) -> dict[str, Any]:
+        return self.grant_unlock(
+            user_id,
+            RESOURCE_ANALYSIS,
+            analysis_id,
+            ENTITLEMENT_SONG_DETAIL,
+            entitlement_id,
+            product_id=product_id,
+        )
+
+    def analysis_access(self, user_id: str, analysis_id: str) -> dict[str, Any]:
+        data = self._user_blob(user_id) if hasattr(self, "_user_blob") else {}
+        analyses = (data.get("analyses") or {}).get(analysis_id) or {}
+        sessions = data.get("sessions") or {}
+        linked = analyses.get("diagnostic_session_id")
+        diagnostic_unlocked = False
+        if linked and linked in sessions:
+            diagnostic_unlocked = True
+        # also scan sessions for source link stored in meta
+        if not diagnostic_unlocked:
+            for sid, rec in sessions.items():
+                meta = rec.get("meta") or {}
+                if meta.get("source_analysis_id") == analysis_id:
+                    diagnostic_unlocked = True
+                    linked = sid
+                    break
+        return {
+            "analysis_id": analysis_id,
+            "song_detail_unlocked": self.has_song_detail(user_id, analysis_id),
+            "diagnostic_unlocked": diagnostic_unlocked,
+            "diagnostic_session_id": linked,
+        }
 
 
 class MockEntitlementProvider(EntitlementProvider):
-    """Dev/test only. Disabled when VAGENT_ENV=production."""
+    """Dev/test only. Disabled when VAGENT_ENV=production for mock grant endpoints."""
 
     def __init__(self, store_path: Path) -> None:
         self.store_path = store_path
@@ -37,32 +125,137 @@ class MockEntitlementProvider(EntitlementProvider):
     def _save(self, data: dict) -> None:
         self.store_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    def has_session_unlock(self, user_id: str, session_id: str) -> bool:
-        data = self._load()
-        return bool((data.get(user_id) or {}).get(session_id))
+    def _user_blob(self, user_id: str) -> dict[str, Any]:
+        raw = self._load().get(user_id)
+        if not raw:
+            return {"sessions": {}, "analyses": {}}
+        if "sessions" in raw or "analyses" in raw:
+            return {
+                "sessions": dict(raw.get("sessions") or {}),
+                "analyses": dict(raw.get("analyses") or {}),
+            }
+        # Legacy flat map: session_id → record
+        return {"sessions": dict(raw), "analyses": {}}
 
-    def grant_session_unlock(self, user_id: str, session_id: str, entitlement_id: str) -> None:
+    def _write_user(self, user_id: str, blob: dict[str, Any]) -> None:
         data = self._load()
-        data.setdefault(user_id, {})[session_id] = {
-            "entitlement_id": entitlement_id,
-            "permanent": True,
-        }
+        data[user_id] = blob
         self._save(data)
+
+    def has_unlock(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        entitlement_type: str,
+    ) -> bool:
+        blob = self._user_blob(user_id)
+        if resource_type == RESOURCE_DIAGNOSTIC_SESSION:
+            rec = (blob.get("sessions") or {}).get(resource_id)
+            return bool(rec)
+        if resource_type == RESOURCE_ANALYSIS:
+            rec = (blob.get("analyses") or {}).get(resource_id) or {}
+            if entitlement_type == ENTITLEMENT_SONG_DETAIL:
+                return bool(rec.get(ENTITLEMENT_SONG_DETAIL) or rec.get("song_detail_unlocked"))
+        return False
+
+    def grant_unlock(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        entitlement_type: str,
+        entitlement_id: str,
+        *,
+        product_id: Optional[str] = None,
+        meta: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        blob = self._user_blob(user_id)
+        now = datetime.now(timezone.utc).isoformat()
+        record = {
+            "entitlement_id": entitlement_id,
+            "entitlement_type": entitlement_type,
+            "resource_type": resource_type,
+            "resource_id": resource_id,
+            "permanent": True,
+            "unlocked_at": now,
+            "product_id": product_id,
+            "meta": meta or {},
+        }
+        if resource_type == RESOURCE_DIAGNOSTIC_SESSION:
+            # idempotent
+            existing = (blob.get("sessions") or {}).get(resource_id)
+            if existing:
+                return existing
+            blob.setdefault("sessions", {})[resource_id] = record
+            src = (meta or {}).get("source_analysis_id")
+            if src:
+                a = blob.setdefault("analyses", {}).setdefault(src, {})
+                a["diagnostic_session_id"] = resource_id
+        elif resource_type == RESOURCE_ANALYSIS and entitlement_type == ENTITLEMENT_SONG_DETAIL:
+            a = blob.setdefault("analyses", {}).setdefault(resource_id, {})
+            if a.get(ENTITLEMENT_SONG_DETAIL):
+                return a[ENTITLEMENT_SONG_DETAIL]
+            a[ENTITLEMENT_SONG_DETAIL] = record
+            a["song_detail_unlocked"] = True
+        self._write_user(user_id, blob)
+        return record
+
+    def link_diagnostic_session(
+        self, user_id: str, analysis_id: str, session_id: str
+    ) -> None:
+        blob = self._user_blob(user_id)
+        a = blob.setdefault("analyses", {}).setdefault(analysis_id, {})
+        a["diagnostic_session_id"] = session_id
+        self._write_user(user_id, blob)
 
 
 class TossIAPEntitlementProvider(EntitlementProvider):
     """Production stub — wire Apps in Toss IAP verification here."""
 
     def __init__(self, store_path: Path) -> None:
-        # Persist verified unlocks server-side (permanent per session)
         self._fallback = MockEntitlementProvider(store_path)
 
-    def has_session_unlock(self, user_id: str, session_id: str) -> bool:
-        return self._fallback.has_session_unlock(user_id, session_id)
+    def has_unlock(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        entitlement_type: str,
+    ) -> bool:
+        return self._fallback.has_unlock(
+            user_id, resource_type, resource_id, entitlement_type
+        )
 
-    def grant_session_unlock(self, user_id: str, session_id: str, entitlement_id: str) -> None:
+    def grant_unlock(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str,
+        entitlement_type: str,
+        entitlement_id: str,
+        *,
+        product_id: Optional[str] = None,
+        meta: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
         # TODO: verify IAP receipt via Apps in Toss server API before grant
-        self._fallback.grant_session_unlock(user_id, session_id, entitlement_id)
+        return self._fallback.grant_unlock(
+            user_id,
+            resource_type,
+            resource_id,
+            entitlement_type,
+            entitlement_id,
+            product_id=product_id,
+            meta=meta,
+        )
+
+    def _user_blob(self, user_id: str) -> dict[str, Any]:
+        return self._fallback._user_blob(user_id)
+
+    def link_diagnostic_session(
+        self, user_id: str, analysis_id: str, session_id: str
+    ) -> None:
+        self._fallback.link_diagnostic_session(user_id, analysis_id, session_id)
 
 
 def get_entitlement_provider(runtime_dir: Path) -> EntitlementProvider:

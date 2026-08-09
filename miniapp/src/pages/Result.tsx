@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { getAnalysis, getPreviewUrl, removeHistory } from '../api/client';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import {
+  getAnalysis,
+  getPreviewUrl,
+  getProducts,
+  mockUnlockSongDetail,
+  patchHistory,
+  removeHistory,
+  saveSongDetailUnlock,
+} from '../api/client';
 
 const AREA_COPY: Record<string, { good: string; need: string; practice: string }> = {
   stability: {
@@ -27,29 +35,55 @@ const AREA_COPY: Record<string, { good: string; need: string; practice: string }
 
 export default function Result() {
   const { id } = useParams();
+  const nav = useNavigate();
   const [data, setData] = useState<any>(null);
+  const [products, setProducts] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
   const [showTech, setShowTech] = useState(false);
+  const [busyDetail, setBusyDetail] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const blobUrl = useMemo(() => sessionStorage.getItem('vocalfb_last_blob'), []);
   const previewUrl = id ? getPreviewUrl(id) : '';
 
   useEffect(() => {
     if (!id) return;
-    getAnalysis(id)
-      .then((job) => {
+    Promise.all([getAnalysis(id), getProducts(id)])
+      .then(([job, catalog]) => {
         if (!job.result) {
           setExpired(true);
           return;
         }
         setData(job.result);
+        setProducts(catalog);
+        const access = job.result.access || {};
+        if (access.song_detail_unlocked) {
+          patchHistory(id, { songDetailUnlocked: true });
+        }
+        if (access.diagnostic_session_id) {
+          patchHistory(id, { sessionId: access.diagnostic_session_id });
+        }
       })
       .catch(() => {
         setExpired(true);
         setError('분석 기록이 만료됐어요.');
       });
   }, [id]);
+
+  async function buySongDetail() {
+    if (!id) return;
+    setBusyDetail(true);
+    setError(null);
+    try {
+      await mockUnlockSongDetail(id);
+      saveSongDetailUnlock(id);
+      // Critical: go to detail report — never Safety / Diagnostic tasks
+      nav(`/result/${id}/detail`);
+    } catch (e: any) {
+      setError(e?.message || '상세 리포트 해제 실패');
+      setBusyDetail(false);
+    }
+  }
 
   if (expired) {
     return (
@@ -79,7 +113,14 @@ export default function Result() {
   const score = data.score || {};
   const best = score.best_area;
   const focus = score.focus_area;
-  const cta = data.premium_cta || {};
+  const access = data.access || {};
+  const prodMap = products?.products || {};
+  const songPrice = prodMap.song_detail?.display_amount || '—';
+  const diagOfferId = products?.offers?.diagnostic || 'diagnostic_full';
+  const diagPrice = prodMap[diagOfferId]?.display_amount || prodMap.diagnostic_full?.display_amount || '—';
+  const songUnlocked = !!access.song_detail_unlocked;
+  const diagUnlocked = !!access.diagnostic_unlocked;
+  const diagSession = access.diagnostic_session_id;
 
   return (
     <main>
@@ -108,8 +149,10 @@ export default function Result() {
               <div className="area-row" key={a.area_id}>
                 <span>{a.display_name}</span>
                 <strong>
-                  {a.status === 'unknown' ? '—' : Math.round(a.score)}
-                  <span className="muted" style={{ marginLeft: 8, fontWeight: 500 }}>{a.status}</span>
+                  {a.status === 'unknown' || a.score == null ? '—' : Math.round(a.score)}
+                  <span className="muted" style={{ marginLeft: 8, fontWeight: 500 }}>
+                    {a.status_label || (a.status === 'unknown' ? '판단 어려움' : a.status)}
+                  </span>
                 </strong>
               </div>
             ))}
@@ -152,18 +195,48 @@ export default function Result() {
           </div>
 
           <div className="panel" style={{ borderColor: 'var(--accent, #2a6)' }}>
-            <h3 style={{ marginTop: 0 }}>{cta.title || '상세 발성 진단 영구 해제'}</h3>
-            <p className="muted">{cta.body}</p>
-            <p className="muted" style={{ fontSize: '0.85rem' }}>
-              노래 점수와 별도로, 표준 Diagnostic Task로 발성 메커니즘 경향을 추정해요.
+            <h3 style={{ marginTop: 0 }}>이 노래를 더 자세히 알고 싶나요?</h3>
+            <ul className="muted" style={{ paddingLeft: 18 }}>
+              <li>4개 영역 상세 분석</li>
+              <li>잘한 부분 / 개선할 부분</li>
+              <li>문제가 나타난 구간 · 다시 듣기</li>
+              <li>맞춤 연습법 · 비브라토 참고</li>
+            </ul>
+            {songUnlocked ? (
+              <Link className="btn" to={`/result/${id}/detail`}>상세 리포트 보기</Link>
+            ) : (
+              <button className="btn" disabled={busyDetail} onClick={buySongDetail}>
+                {busyDetail ? '준비 중…' : `상세 리포트 영구 해제 · ${songPrice}`}
+              </button>
+            )}
+            <p className="muted" style={{ fontSize: '0.85rem', marginTop: 10 }}>
+              추가 녹음 없이 바로 확인할 수 있어요.
             </p>
-            <Link className="btn" to={`/premium?analysis=${id}`}>
-              정밀 발성 진단 시작
-            </Link>
+          </div>
+
+          <div className="panel">
+            <h3 style={{ marginTop: 0 }}>내 발성 자체를 더 정밀하게 알고 싶나요?</h3>
+            <p className="muted">약 1~2분 추가 검사: 아— / 이— / 사이렌 / 강약 변화</p>
+            <ul className="muted" style={{ paddingLeft: 18 }}>
+              <li>발성 패턴 · 음역 전환</li>
+              <li>강도 변화 협응 · 발성 안정성</li>
+              <li>몸 사용 가이드</li>
+            </ul>
+            {diagUnlocked && diagSession ? (
+              <Link className="btn" to={`/diagnostic/${diagSession}/report`}>정밀 진단 보기</Link>
+            ) : (
+              <Link className="btn" to={`/premium?analysis=${id}&product=${diagOfferId}`}>
+                정밀 발성 진단 · {diagPrice}
+              </Link>
+            )}
+            <p className="muted" style={{ fontSize: '0.85rem', marginTop: 10 }}>
+              {songUnlocked ? '상세 리포트 보유 시 업그레이드 가격이 적용돼요.' : '상세 리포트 포함'}
+            </p>
           </div>
         </>
       )}
 
+      {error && <p className="fail">{error}</p>}
       <p className="muted" style={{ marginTop: 16 }}>{data.disclaimer}</p>
 
       <button className="btn secondary" style={{ width: '100%' }} onClick={() => setShowTech((v) => !v)}>
@@ -175,8 +248,8 @@ export default function Result() {
             {
               tier: data.tier,
               analysis_mode: data.analysis_mode,
+              access: data.access,
               score_version: score.version,
-              calibration_status: score.calibration_status,
               quality: data.quality,
             },
             null,

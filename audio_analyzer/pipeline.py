@@ -38,7 +38,7 @@ from .preprocessing import (
     save_wav,
 )
 from .quality import evaluate_quality
-from .scoring import compute_score_v2
+from .scoring import compute_score_v3
 
 
 ProgressCallback = Optional[Callable[[str, int], None]]
@@ -136,13 +136,15 @@ def analyze_audio(
             quality.get("user_message") or "",
         ]
     else:
-        score = compute_score_v2(
+        score = compute_score_v3(
             phonation=phonation,
             acoustic=acoustic,
             waveform=waveform_features,
             quality=quality,
             source_mode=source_mode,
             artifact_flags=artifact_flags,
+            y=y,
+            sr=sr,
         )
         timeline = list(phonation.get("instability_events") or [])
         issues = _build_issues(score, timeline, phonation)

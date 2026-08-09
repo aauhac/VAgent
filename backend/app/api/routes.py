@@ -1,19 +1,22 @@
 """
-API routes for analysis jobs + diagnostic sessions.
+API routes for analysis jobs + diagnostic sessions + song detail entitlements.
 """
 
 from __future__ import annotations
 
 import os
+import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, File, Form, Header, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Body, File, Form, Header, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
 
-from audio_analyzer.diagnostic import SAFETY_QUESTIONS, TASKS
+from audio_analyzer.song_detail import build_song_detailed_report
 
 from ..diagnostic import DiagnosticSessionService, validate_session_id
+from ..entitlements import allow_dev_bypass, get_entitlement_provider
 from ..jobs.runner import validate_analysis_id
+from ..products import product_catalog
 from ..schemas.analysis import AnalysisCreateResponse, AnalysisStatusResponse
 from ..services.analysis_service import AnalysisService
 
@@ -24,6 +27,22 @@ diag = DiagnosticSessionService(Path(os.environ.get("RUNTIME_DIR", "runtime")))
 
 def _user_id(x_user_id: str | None) -> str:
     return (x_user_id or "anon").strip() or "anon"
+
+
+def _ents():
+    # Prefer service/diag runtime so tests that monkeypatch services still work
+    return get_entitlement_provider(service.runtime_dir)
+
+
+@router.get("/products")
+def get_products(
+    analysis_id: str | None = Query(default=None),
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    song_owned = False
+    if analysis_id and validate_analysis_id(analysis_id):
+        song_owned = _ents().has_song_detail(_user_id(x_user_id), analysis_id)
+    return product_catalog(song_detail_owned=song_owned)
 
 
 @router.post("/analyses", response_model=AnalysisCreateResponse)
@@ -44,7 +63,10 @@ async def create_analysis(
 
 
 @router.get("/analyses/{analysis_id}", response_model=AnalysisStatusResponse)
-def get_analysis(analysis_id: str) -> AnalysisStatusResponse:
+def get_analysis(
+    analysis_id: str,
+    x_user_id: str | None = Header(default=None),
+) -> AnalysisStatusResponse:
     if not validate_analysis_id(analysis_id):
         raise HTTPException(status_code=404, detail="analysis not found")
     job = service.get_job(analysis_id)
@@ -64,10 +86,97 @@ def get_analysis(analysis_id: str) -> AnalysisStatusResponse:
             "metrics_detail",
             "phonation",
             "evidence",
+            "areas_detail",
+            "strengths",
+            "priority_issues",
+            "training_plan",
+            "vibrato",
         ):
             result.pop(banned, None)
+        # Attach access flags (no detailed content)
+        access = _ents().analysis_access(_user_id(x_user_id), analysis_id)
+        result["access"] = {
+            "song_detail_unlocked": access["song_detail_unlocked"],
+            "diagnostic_unlocked": access["diagnostic_unlocked"],
+            "diagnostic_session_id": access.get("diagnostic_session_id"),
+        }
+        result["product_offers"] = product_catalog(
+            song_detail_owned=access["song_detail_unlocked"]
+        ).get("offers")
         job["result"] = result
     return AnalysisStatusResponse(**job)
+
+
+@router.get("/analyses/{analysis_id}/access")
+def get_analysis_access(
+    analysis_id: str,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    if not validate_analysis_id(analysis_id):
+        raise HTTPException(status_code=404, detail="analysis not found")
+    if service.get_job(analysis_id) is None:
+        raise HTTPException(status_code=404, detail="analysis not found")
+    access = _ents().analysis_access(_user_id(x_user_id), analysis_id)
+    catalog = product_catalog(song_detail_owned=access["song_detail_unlocked"])
+    return {
+        **access,
+        "offers": catalog["offers"],
+        "products": catalog["products"],
+    }
+
+
+@router.get("/analyses/{analysis_id}/detailed-report")
+def get_detailed_report(
+    analysis_id: str,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    if not validate_analysis_id(analysis_id):
+        raise HTTPException(status_code=404, detail="analysis not found")
+    uid = _user_id(x_user_id)
+    if not _ents().has_song_detail(uid, analysis_id):
+        raise HTTPException(status_code=402, detail="SONG_DETAIL_LOCKED")
+    full = service.load_full_analysis(analysis_id)
+    if full is None:
+        raise HTTPException(status_code=404, detail="analysis not ready")
+    report = build_song_detailed_report(full, analysis_id=analysis_id)
+    for banned in (
+        "physiology_assessments",
+        "reliable_findings",
+        "uncertain_findings",
+        "scientific_debug",
+        "coaching_recommendations",
+    ):
+        report.pop(banned, None)
+    return report
+
+
+@router.post("/analyses/{analysis_id}/mock-unlock-detail")
+def mock_unlock_song_detail(
+    analysis_id: str,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    if not allow_dev_bypass():
+        raise HTTPException(status_code=403, detail="mock unlock disabled in production")
+    if not validate_analysis_id(analysis_id):
+        raise HTTPException(status_code=404, detail="analysis not found")
+    if service.get_job(analysis_id) is None and service.load_full_analysis(analysis_id) is None:
+        raise HTTPException(status_code=404, detail="analysis not found")
+    uid = _user_id(x_user_id)
+    ents = _ents()
+    if not ents.has_song_detail(uid, analysis_id):
+        ents.grant_song_detail(
+            uid,
+            analysis_id,
+            f"mock_detail_{uuid.uuid4().hex[:12]}",
+            product_id="song_detail",
+        )
+    return {
+        "unlocked": True,
+        "analysis_id": analysis_id,
+        "entitlement_type": "SONG_DETAIL",
+        "permanent": True,
+        "redirect": f"/result/{analysis_id}/detail",
+    }
 
 
 @router.get("/analyses/{analysis_id}/preview")
@@ -125,11 +234,18 @@ def create_diagnostic_session(
 def mock_pay_session(
     session_id: str,
     x_user_id: str | None = Header(default=None),
+    payload: dict | None = Body(default=None),
 ) -> dict:
     if not validate_session_id(session_id):
         raise HTTPException(status_code=404, detail="session not found")
+    body = payload or {}
+    product_id = body.get("product_id") if isinstance(body, dict) else None
     try:
-        return diag.mock_pay(session_id, user_id=_user_id(x_user_id))
+        return diag.mock_pay(
+            session_id,
+            user_id=_user_id(x_user_id),
+            product_id=product_id,
+        )
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
     except KeyError:

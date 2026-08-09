@@ -77,3 +77,22 @@ class AnalysisService:
 
     def preview_path(self, analysis_id: str) -> Optional[Path]:
         return self.runner.resolve_preview_path(analysis_id)
+
+    def load_full_analysis(self, analysis_id: str) -> Optional[dict[str, Any]]:
+        """Load full analysis.json (server-side). Not for free public API."""
+        if not validate_analysis_id(analysis_id):
+            return None
+        path = self.runtime_dir / analysis_id / "analysis.json"
+        if not path.exists():
+            return None
+        try:
+            import json
+
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    def entitlements(self):
+        from ..entitlements import get_entitlement_provider
+
+        return get_entitlement_provider(self.runtime_dir)

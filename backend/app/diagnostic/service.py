@@ -109,16 +109,57 @@ class DiagnosticSessionService:
         self._save(session)
         return self.public_session(session)
 
-    def mock_pay(self, session_id: str, user_id: str = "anon") -> dict[str, Any]:
+    def mock_pay(
+        self,
+        session_id: str,
+        user_id: str = "anon",
+        *,
+        product_id: Optional[str] = None,
+    ) -> dict[str, Any]:
         if not allow_dev_bypass():
             raise PermissionError("mock pay disabled in production")
         session = self._load(session_id)
         if not session:
             raise KeyError("session not found")
+        from ..products import (
+            PRODUCT_DIAGNOSTIC_FULL,
+            PRODUCT_DIAGNOSTIC_UPGRADE,
+            resolve_diagnostic_product,
+        )
+
+        src = session.get("source_analysis_id")
+        song_owned = bool(
+            src and self.entitlements.has_song_detail(user_id, src)
+        )
+        resolved = product_id or resolve_diagnostic_product(song_owned)
+        if resolved not in (PRODUCT_DIAGNOSTIC_FULL, PRODUCT_DIAGNOSTIC_UPGRADE):
+            resolved = PRODUCT_DIAGNOSTIC_FULL
+
         entitlement_id = f"mock_{uuid.uuid4().hex[:12]}"
-        self.entitlements.grant_session_unlock(user_id, session_id, entitlement_id)
+        self.entitlements.grant_unlock(
+            user_id,
+            "DIAGNOSTIC_SESSION",
+            session_id,
+            "DIAGNOSTIC",
+            entitlement_id,
+            product_id=resolved,
+            meta={"source_analysis_id": src} if src else None,
+        )
+        # Diagnostic Full/Upgrade always includes Song Detail for source analysis
+        if src:
+            if not self.entitlements.has_song_detail(user_id, src):
+                self.entitlements.grant_song_detail(
+                    user_id,
+                    src,
+                    f"bundle_{entitlement_id}",
+                    product_id=resolved,
+                )
+            if hasattr(self.entitlements, "link_diagnostic_session"):
+                self.entitlements.link_diagnostic_session(user_id, src, session_id)
+
         session["user_id"] = user_id
         session["entitlement_id"] = entitlement_id
+        session["product_id"] = resolved
         session["status"] = "PAID"
         self._save(session)
         return self.public_session(session)

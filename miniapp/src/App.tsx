@@ -5,6 +5,7 @@ import Upload from './pages/Upload';
 import QualityResult from './pages/QualityResult';
 import Analyzing from './pages/Analyzing';
 import Result from './pages/Result';
+import SongDetailReport from './pages/SongDetailReport';
 import History from './pages/History';
 import PremiumUnlock from './pages/PremiumUnlock';
 import SafetyCheck from './pages/SafetyCheck';
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/quality" element={<QualityResult />} />
         <Route path="/analyzing/:id" element={<Analyzing />} />
         <Route path="/result/:id" element={<Result />} />
+        <Route path="/result/:id/detail" element={<SongDetailReport />} />
         <Route path="/history" element={<History />} />
         <Route path="/premium" element={<PremiumUnlock />} />
         <Route path="/diagnostic/:sessionId/safety" element={<SafetyCheck />} />

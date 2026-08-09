@@ -8,13 +8,12 @@ export default function Home() {
       <p className="muted" style={{ marginBottom: 8 }}>Physiology-informed Vocal Assessment</p>
       <h1 className="brand">노래 실력<br />진단받기</h1>
       <p className="lead">
-        무료로 노래 발성 특성을 빠르게 보고, 유료로 표준 Diagnostic Task 기반
-        정밀 발성 진단과 몸 사용 코칭을 받을 수 있어요.
+        무료로 노래 발성 특성을 빠르게 보고, 상세 리포트와 정밀 발성 진단을
+        선택해서 이용할 수 있어요.
       </p>
       <div className="cta-row">
         <Link className="btn" to="/record">노래 녹음하기</Link>
         <Link className="btn secondary" to="/upload">파일 업로드</Link>
-        <Link className="btn secondary" to="/premium">상세 발성 진단</Link>
         <Link className="btn secondary" to="/history">이전 결과</Link>
       </div>
       {sessions.length > 0 && (

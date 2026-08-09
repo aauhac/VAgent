@@ -31,13 +31,48 @@ export async function createAnalysis(
 }
 
 export async function getAnalysis(id: string): Promise<AnalysisJob> {
-  const res = await fetch(`${API_BASE}/v1/analyses/${id}`);
+  const res = await fetch(`${API_BASE}/v1/analyses/${id}`, { headers: headers() });
   if (!res.ok) throw new Error('not found');
   return res.json();
 }
 
 export function getPreviewUrl(id: string): string {
   return `${API_BASE}/v1/analyses/${id}/preview`;
+}
+
+export async function getProducts(analysisId?: string) {
+  const q = analysisId ? `?analysis_id=${encodeURIComponent(analysisId)}` : '';
+  const res = await fetch(`${API_BASE}/v1/products${q}`, { headers: headers() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getAnalysisAccess(analysisId: string) {
+  const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/access`, {
+    headers: headers(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function mockUnlockSongDetail(analysisId: string) {
+  const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/mock-unlock-detail`, {
+    method: 'POST',
+    headers: headers(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getSongDetailedReport(analysisId: string) {
+  const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/detailed-report`, {
+    headers: headers(),
+  });
+  if (res.status === 402) {
+    return { error: 'SONG_DETAIL_LOCKED' };
+  }
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
 export async function createDiagnosticSession(sourceAnalysisId?: string) {
@@ -50,10 +85,11 @@ export async function createDiagnosticSession(sourceAnalysisId?: string) {
   return res.json();
 }
 
-export async function mockPaySession(sessionId: string) {
+export async function mockPaySession(sessionId: string, productId?: string) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/mock-pay`, {
     method: 'POST',
-    headers: headers(),
+    headers: headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(productId ? { product_id: productId } : {}),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -107,7 +143,14 @@ export async function getDiagnosticProtocol() {
   return res.json();
 }
 
-export function saveHistory(entry: { id: string; overall?: number | null; label?: string; at: string; sessionId?: string }) {
+export function saveHistory(entry: {
+  id: string;
+  overall?: number | null;
+  label?: string;
+  at: string;
+  sessionId?: string;
+  songDetailUnlocked?: boolean;
+}) {
   const key = 'vocalfb_history';
   const prev = JSON.parse(localStorage.getItem(key) || '[]');
   const next = [entry, ...prev.filter((x: any) => x.id !== entry.id)].slice(0, 20);
@@ -116,6 +159,15 @@ export function saveHistory(entry: { id: string; overall?: number | null; label?
 
 export function loadHistory() {
   return JSON.parse(localStorage.getItem('vocalfb_history') || '[]');
+}
+
+export function patchHistory(id: string, patch: Record<string, unknown>) {
+  const key = 'vocalfb_history';
+  const prev = JSON.parse(localStorage.getItem(key) || '[]');
+  localStorage.setItem(
+    key,
+    JSON.stringify(prev.map((x: any) => (x.id === id ? { ...x, ...patch } : x))),
+  );
 }
 
 export function removeHistory(id: string) {
@@ -134,4 +186,17 @@ export function saveUnlockedSession(sessionId: string) {
 
 export function loadUnlockedSessions(): string[] {
   return JSON.parse(localStorage.getItem('vocalfb_sessions') || '[]');
+}
+
+export function saveSongDetailUnlock(analysisId: string) {
+  const key = 'vocalfb_song_details';
+  const prev = JSON.parse(localStorage.getItem(key) || '[]');
+  if (!prev.includes(analysisId)) {
+    localStorage.setItem(key, JSON.stringify([analysisId, ...prev].slice(0, 40)));
+  }
+  patchHistory(analysisId, { songDetailUnlocked: true });
+}
+
+export function loadSongDetailUnlocks(): string[] {
+  return JSON.parse(localStorage.getItem('vocalfb_song_details') || '[]');
 }
