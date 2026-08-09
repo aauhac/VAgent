@@ -12,9 +12,11 @@ librosa.pyin 을 사용해 프레임 단위 F0를 추출하고
     - f0_max_hz              : 유효 voiced 구간 최댓값
     - f0_std_hz              : 유효 voiced 구간 표준편차
     - voiced_ratio           : 전체 프레임 중 유성음 비율 (pYIN 기준)
-    - pitch_stability_cents  : 유효 voiced 구간 F0의 cent 단위 표준편차
-                               (값이 클수록 음이 불안정)
-                               무음·스파이크·옥타브 점프 제거 후 계산
+    - pitch_stability_cents  : LEGACY/DEBUG ONLY.
+                               전체 유성 F0의 global cent 표준편차.
+                               멜로디 이동과 발성 불안정을 혼동하므로
+                               v2 score / issue / strength 판단에 사용 금지.
+                               국소 안정성은 features.phonation 을 사용한다.
     - frame_f0               : 프레임별 (time_sec, f0_hz) 목록
                                unvoiced/필터링 프레임은 f0_hz = null
 """

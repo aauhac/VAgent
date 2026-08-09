@@ -1,0 +1,4 @@
+# Optional heavy deps for Demucs separation path
+demucs>=4.0.0
+torch>=2.0.0
+torchaudio>=2.0.0
