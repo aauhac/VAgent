@@ -10,6 +10,7 @@ from audio_analyzer.scoring.segments_v3 import build_windows
 from audio_analyzer.vocal_function import config as cfg
 from audio_analyzer.vocal_function.alignment import attach_time_fields
 from audio_analyzer.vocal_function.episodes.builder import (
+    build_generic_episodes_from_segments,
     build_high_note_episodes,
     build_register_episodes,
     find_best_self_reference,
@@ -19,6 +20,7 @@ from audio_analyzer.vocal_function.evidence.families import (
     effort_like,
     effort_secondary_signs,
     firmer_like,
+    leakage_like,
 )
 from audio_analyzer.vocal_function.evidence_gate import normalize_artifact_flags
 from audio_analyzer.vocal_function.observations.segment import observe_segment
@@ -230,11 +232,13 @@ def compute_vocal_function_profile(
     time_origin_sec: float = 0.0,
     functional_quality: str = "FULL",
     separation_note: Optional[str] = None,
+    input_mode: str = "AUTO",
 ) -> dict[str, Any]:
     acoustic = acoustic or {}
     quality = quality or {}
     artifact_flags = normalize_artifact_flags(artifact_flags)
     optional_analysis = optional_analysis or {}
+    input_mode = (input_mode or "AUTO").upper()
 
     if quality.get("status") == "fail":
         return {
@@ -242,6 +246,7 @@ def compute_vocal_function_profile(
             "engine_version": cfg.FUNCTION_ENGINE_VERSION,
             "reason": "quality_gate_failed",
             "functional_quality": "UNAVAILABLE",
+            "input_mode": input_mode,
         }
 
     if functional_quality == "UNAVAILABLE":
@@ -260,6 +265,7 @@ def compute_vocal_function_profile(
                 "반주와 보컬을 충분히 분리하지 못해 일부 기능적 발성 분석은 제공하지 않았어요."
             ],
             "analysis_time_origin_sec": float(time_origin_sec or 0),
+            "input_mode": input_mode,
         }
 
     duration = len(y) / float(sr)
@@ -292,8 +298,8 @@ def compute_vocal_function_profile(
     respiratory = rules.fuse_respiratory(segments)
     economy = rules.fuse_economy(segments, effort)
 
-    # LIMITED: cap vocal-specific dims when no_vocals missing
-    if functional_quality == "LIMITED":
+    # LIMITED (mixed path missing contrast): cap dims — NOT for FULL_VOCAL_ONLY
+    if functional_quality == "LIMITED" and input_mode != "VOCAL_ONLY":
         for d in (contact, leakage, effort, register, resonance):
             d["confidence_label"] = "low"
             d["status"] = "UNKNOWN"
@@ -317,14 +323,80 @@ def compute_vocal_function_profile(
     origin = float(time_origin_sec or 0.0)
     high_note_episodes = [
         attach_time_fields(e, time_origin_sec=origin)
-        for e in build_high_note_episodes(raw_high)
+        for e in build_high_note_episodes(raw_high, all_segments=segments)
     ]
     reg_events = (register.get("profile") or {}).get("events") or []
     register_episodes = [
         attach_time_fields(e, time_origin_sec=origin)
-        for e in build_register_episodes(reg_events)
+        for e in build_register_episodes(reg_events, all_segments=segments)
     ]
-    episodes = high_note_episodes + register_episodes
+
+    leakage_episodes = [
+        attach_time_fields(e, time_origin_sec=origin)
+        for e in build_generic_episodes_from_segments(
+            segments,
+            episode_type="AIR_LEAKAGE",
+            predicate=leakage_like,
+            all_segments=segments,
+        )
+    ]
+    roughness_episodes = [
+        attach_time_fields(e, time_origin_sec=origin)
+        for e in build_generic_episodes_from_segments(
+            segments,
+            episode_type="ROUGHNESS",
+            predicate=lambda s: (
+                ((s.get("observations") or {}).get("f0_frame_period_perturbation_proxy_percent") or 0)
+                >= 2.5
+                or ((s.get("observations") or {}).get("periodicity_primary_db") or 99) <= 6.0
+            ),
+            all_segments=segments,
+        )
+    ]
+    onset_episodes = [
+        attach_time_fields(e, time_origin_sec=origin)
+        for e in build_generic_episodes_from_segments(
+            segments,
+            episode_type="ABRUPT_ONSET",
+            predicate=lambda s: ((s.get("observations") or {}).get("onset_slope_db_per_sec") or 0)
+            >= 80,
+            all_segments=segments,
+            gap_sec=0.4,
+        )
+    ]
+    effort_episodes = [
+        attach_time_fields(e, time_origin_sec=origin)
+        for e in build_generic_episodes_from_segments(
+            segments,
+            episode_type="GENERAL_EFFORT",
+            predicate=lambda s: effort_like(s, baseline) or effort_secondary_signs(s, baseline),
+            all_segments=segments,
+        )
+    ]
+    phrase_end_episodes = [
+        attach_time_fields(e, time_origin_sec=origin)
+        for e in build_generic_episodes_from_segments(
+            segments,
+            episode_type="PHRASE_END_DROP",
+            predicate=lambda s: (
+                ((s.get("observations") or {}).get("rms") is not None)
+                and baseline.get("rms")
+                and float(s["observations"]["rms"]) < float(baseline["rms"]) * 0.45
+                and ((s.get("observations") or {}).get("periodicity_primary_db") or 99) <= 8
+            ),
+            all_segments=segments,
+        )
+    ]
+
+    episodes = (
+        high_note_episodes
+        + register_episodes
+        + leakage_episodes
+        + roughness_episodes
+        + onset_episodes
+        + effort_episodes
+        + phrase_end_episodes
+    )
     best_self = find_best_self_reference(high_note_episodes)
     if best_self:
         best_self = attach_time_fields(best_self, time_origin_sec=origin)
@@ -343,12 +415,19 @@ def compute_vocal_function_profile(
         user_goal=user_goal or technique_goal or "GENERAL_EASE_AND_CONTROL",
         style_context=style_goal or "unspecified",
     )
-    # Ensure target has original times
     te = coaching_decision.get("target_episode")
     if te and te.get("original_start_sec") is None:
-        coaching_decision["target_episode"] = attach_time_fields(
-            te, time_origin_sec=origin
-        )
+        coaching_decision["target_episode"] = attach_time_fields(te, time_origin_sec=origin)
+    # Recompute best-self vs primary target when available
+    if coaching_decision.get("target_episode"):
+        tgt_id = coaching_decision["target_episode"].get("episode_id")
+        tgt = next((e for e in episodes if e.get("episode_id") == tgt_id), None)
+        if tgt:
+            bs2 = find_best_self_reference(episodes, target=tgt)
+            if bs2:
+                coaching_decision["best_self_reference"] = attach_time_fields(
+                    bs2, time_origin_sec=origin
+                )
 
     headlines = [coaching_decision.get("headline")] if coaching_decision.get("headline") else []
     for d in dimensions.values():
@@ -371,30 +450,25 @@ def compute_vocal_function_profile(
 
     quality_badge = {
         "FULL": "충분",
+        "FULL_MIXED": "충분",
+        "FULL_VOCAL_ONLY": "충분",
         "LIMITED": "일부 기능 분석만 가능",
         "UNAVAILABLE": "기능 분석 제한",
     }.get(functional_quality, "참고")
 
     scientific_debug = {
         "engine_version": cfg.FUNCTION_ENGINE_VERSION,
-        "metric_registry_version": cfg.METRIC_REGISTRY_VERSION,
-        "rule_version": cfg.RULE_VERSION,
-        "literature_version": cfg.LITERATURE_VERSION,
-        "measurement_mode": cfg.MEASUREMENT_MODE,
         "n_segments": len(segments),
         "n_valid": len(valid),
         "baseline": baseline,
-        "style_goal": style_goal,
-        "technique_goal": technique_goal,
         "user_goal": user_goal,
-        "metric_grades": cfg.METRIC_GRADES,
-        "segment_sample": segments[:3],
         "contact_effort_plane": contact_effort_plane,
         "raw_high_note_windows": raw_high,
         "rejected_register_events": rejected_reg,
         "has_no_vocals_contrast": y_no_vocals is not None,
         "time_origin_sec": origin,
         "functional_quality": functional_quality,
+        "input_mode": input_mode,
     }
 
     return {
@@ -403,6 +477,7 @@ def compute_vocal_function_profile(
         "report_version": cfg.REPORT_VERSION,
         "functional_quality": functional_quality,
         "quality_badge": quality_badge,
+        "input_mode": input_mode,
         "separation_note": separation_note,
         "calibration_status": "uncalibrated_directional",
         "measurement_mode": cfg.MEASUREMENT_MODE,
@@ -423,6 +498,7 @@ def compute_vocal_function_profile(
                 "n_merged_windows": e.get("n_merged_windows"),
                 "feature_matrix": e.get("feature_matrix"),
                 "phase_method": e.get("phase_method"),
+                "phase_confidence": e.get("phase_confidence"),
                 "cause_hint": e.get("cause_hint"),
             }
             for e in (focus.get("primary") or []) + (focus.get("secondary") or [])

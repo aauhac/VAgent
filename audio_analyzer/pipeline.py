@@ -55,6 +55,7 @@ def analyze_audio(
     section: Optional[str] = None,
     separate: bool = False,
     analysis_mode: str = "QUICK",
+    input_mode: str = "AUTO",
     demucs_model: str = "htdemucs",
     generate_visuals: bool = False,
     show: bool = False,
@@ -66,10 +67,13 @@ def analyze_audio(
     """
     Main v2 entry point. Returns full internal analysis result.
 
-    analysis_mode:
-      QUICK — free path; raw allowed; separate follows caller flag
-      FUNCTIONAL — Song Detail / Functional Coach; forces separation
-      DIAGNOSTIC — caller controls separation
+    analysis_mode: QUICK | FUNCTIONAL | DIAGNOSTIC  (analysis depth)
+    input_mode: AUTO | MIXED | VOCAL_ONLY  (input provenance; independent)
+
+    Separation policy:
+      FUNCTIONAL + VOCAL_ONLY → Demucs optional/off (raw as vocal)
+      FUNCTIONAL + AUTO/MIXED → Demucs required
+      QUICK → separate follows caller flag
     """
 
     def _progress(stage: str, pct: int) -> None:
@@ -77,8 +81,21 @@ def analyze_audio(
             progress_callback(stage, pct)
 
     mode = (analysis_mode or "QUICK").upper()
+    in_mode = (input_mode or "AUTO").upper()
+    if in_mode not in ("AUTO", "MIXED", "VOCAL_ONLY"):
+        in_mode = "AUTO"
+
+    separation_required = False
     if mode == "FUNCTIONAL":
-        separate = True
+        if in_mode == "VOCAL_ONLY":
+            separate = False
+            separation_required = False
+        else:
+            # AUTO / MIXED → separation on
+            separate = True
+            separation_required = True
+    elif mode == "DIAGNOSTIC":
+        separation_required = bool(separate)
 
     if recording_id is None:
         recording_id = _build_default_recording_id(audio_path)
@@ -220,9 +237,11 @@ def analyze_audio(
 
     functional_quality, sep_note = _functional_quality_policy(
         analysis_mode=mode,
+        input_mode=in_mode,
         source_mode=source_mode,
         separation_status=separation_status,
         has_no_vocals=y_no_vocals is not None,
+        separation_required=separation_required,
     )
     if sep_note:
         analysis_notes.append(sep_note)
@@ -262,6 +281,7 @@ def analyze_audio(
             time_origin_sec=float(time_context["analysis_time_origin_sec"]),
             functional_quality=functional_quality,
             separation_note=sep_note,
+            input_mode=in_mode,
         )
 
     optional_analysis = {
@@ -286,6 +306,10 @@ def analyze_audio(
         "analysis_status": "completed",
         "feedback_status": "skipped",
         "analysis_mode": mode,
+        "input_mode": in_mode,
+        "input_mode_user_declared": in_mode == "VOCAL_ONLY",
+        "separation_required": separation_required,
+        "separation_used": source_mode == "separated",
         "analysis_time_origin_sec": time_context["analysis_time_origin_sec"],
         "analysis_clip_start_sec": time_context["analysis_clip_start_sec"],
         "analysis_clip_end_sec": time_context["analysis_clip_end_sec"],
@@ -390,30 +414,46 @@ def analyze_audio(
 def _functional_quality_policy(
     *,
     analysis_mode: str,
+    input_mode: str = "AUTO",
     source_mode: str,
     separation_status: str,
     has_no_vocals: bool,
+    separation_required: bool = False,
 ) -> tuple[str, Optional[str]]:
     """
-    FULL: separated + no_vocals contrast available
-    LIMITED: separated but no_vocals missing, or QUICK raw
-    UNAVAILABLE: FUNCTIONAL mode but separation failed
+    Internal quality levels (UI maps to 충분 / 일부 / 제한):
+      FULL_MIXED — separated + no_vocals
+      FULL_VOCAL_ONLY — VOCAL_ONLY with usable vocal evidence (no_vocals N/A)
+      LIMITED — partial evidence
+      UNAVAILABLE — cannot trust for functional coaching
     """
     note_fail = (
         "반주와 보컬을 충분히 분리하지 못해 "
         "일부 기능적 발성 분석은 제공하지 않았어요."
     )
-    if analysis_mode == "FUNCTIONAL":
+    in_mode = (input_mode or "AUTO").upper()
+
+    if analysis_mode == "FUNCTIONAL" and in_mode == "VOCAL_ONLY":
+        # Missing no_vocals is expected — do NOT auto-downgrade to LIMITED
+        if separation_status == "failed" and source_mode == "raw":
+            # still OK: we intentionally skip Demucs
+            return "FULL_VOCAL_ONLY", None
+        return "FULL_VOCAL_ONLY", None
+
+    if analysis_mode == "FUNCTIONAL" and separation_required:
         if source_mode != "separated" or separation_status == "failed":
             return "UNAVAILABLE", note_fail
         if not has_no_vocals:
             return "LIMITED", note_fail
-        return "FULL", None
-    # QUICK / DIAGNOSTIC
+        return "FULL_MIXED", None
+
+    # QUICK / DIAGNOSTIC / AUTO without strict requirement
     if source_mode == "separated" and has_no_vocals:
-        return "FULL", None
+        return "FULL_MIXED", None
     if source_mode == "separated":
         return "LIMITED", note_fail
+    if analysis_mode == "QUICK":
+        return "LIMITED", None
     return "LIMITED", None
 
 

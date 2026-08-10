@@ -132,6 +132,7 @@ export default function Record() {
     try {
       const { analysis_id } = await createAnalysis(blob, `recording.${ext}`, {
         analysis_mode: 'FUNCTIONAL',
+        input_mode: 'AUTO',
       });
       sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(blob));
       nav(`/analyzing/${analysis_id}`);

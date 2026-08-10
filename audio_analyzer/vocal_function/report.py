@@ -196,10 +196,13 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
         "preserve": decision.get("preserve") or [],
         "modify": decision.get("modify") or [],
         "why": decision.get("why") or [],
+        "why_structured": decision.get("why_structured") or {},
         "target_episode": decision.get("target_episode"),
         "best_self_reference": {
             "start_sec": (best or {}).get("start_sec"),
             "end_sec": (best or {}).get("end_sec"),
+            "original_start_sec": (best or {}).get("original_start_sec"),
+            "original_end_sec": (best or {}).get("original_end_sec"),
             "coaching_hint": (best or {}).get("coaching_hint"),
         }
         if best
@@ -208,6 +211,10 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
         "success_criteria": decision.get("success_criteria") or [],
         "user_goal": decision.get("user_goal"),
         "note": decision.get("note"),
+        "measurement_candidates": decision.get("measurement_candidates") or [],
+        "needs_confirmation": decision.get("needs_confirmation") or [],
+        "no_primary_message": decision.get("no_primary_message"),
+        "prefer_additional_measurement": decision.get("prefer_additional_measurement"),
     }
 
     excl_names = [x.get("display_name") for x in excl if x.get("display_name")]

@@ -23,25 +23,40 @@ from audio_analyzer.vocal_function.evidence.families import firmer_like
 def test_functional_mode_forces_separation_policy():
     q = _functional_quality_policy(
         analysis_mode="FUNCTIONAL",
+        input_mode="AUTO",
         source_mode="raw",
         separation_status="failed",
         has_no_vocals=False,
+        separation_required=True,
     )
     assert q[0] == "UNAVAILABLE"
     full = _functional_quality_policy(
         analysis_mode="FUNCTIONAL",
+        input_mode="MIXED",
         source_mode="separated",
         separation_status="success",
         has_no_vocals=True,
+        separation_required=True,
     )
-    assert full[0] == "FULL"
+    assert full[0] == "FULL_MIXED"
     quick = _functional_quality_policy(
         analysis_mode="QUICK",
+        input_mode="AUTO",
         source_mode="raw",
         separation_status="skipped",
         has_no_vocals=False,
+        separation_required=False,
     )
     assert quick[0] == "LIMITED"
+    vocal_only = _functional_quality_policy(
+        analysis_mode="FUNCTIONAL",
+        input_mode="VOCAL_ONLY",
+        source_mode="raw",
+        separation_status="skipped",
+        has_no_vocals=False,
+        separation_required=False,
+    )
+    assert vocal_only[0] == "FULL_VOCAL_ONLY"
 
 
 def test_long_clip_vocals_no_vocals_aligned():
@@ -228,7 +243,12 @@ def test_global_effort_no_high_note_no_excess_effort_high_note():
     }
     hyps = rank_hypotheses(profile, [])
     assert not any(h["id"] == "EXCESS_EFFORT_HIGH_NOTE" for h in hyps)
-    assert any(h["id"] == "GENERAL_EXCESS_EFFORT" for h in hyps)
+    # without GENERAL_EFFORT episodes → measurement candidate, not coachable primary
+    decision = build_coaching_decision(profile=profile, episodes=[], focus={})
+    assert decision["primary_bottleneck"] is None
+    assert any(
+        (m.get("issue") == "effort") for m in (decision.get("measurement_candidates") or [])
+    ) or decision.get("prefer_additional_measurement")
 
 
 def test_high_note_effort_same_episode_creates_excess_effort_high_note():

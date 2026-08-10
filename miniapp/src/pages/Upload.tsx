@@ -13,9 +13,11 @@ export default function Upload() {
     setBusy(true);
     setError(null);
     try {
+      // analysis_mode and input_mode are independent:
+      // pure vocal still gets FUNCTIONAL coaching (without Demucs)
       const { analysis_id } = await createAnalysis(file, file.name, {
-        analysis_mode: pureVocal ? 'QUICK' : 'FUNCTIONAL',
-        pure_vocal: pureVocal,
+        analysis_mode: 'FUNCTIONAL',
+        input_mode: pureVocal ? 'VOCAL_ONLY' : 'AUTO',
         separate: !pureVocal,
       });
       sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(file));
@@ -30,7 +32,9 @@ export default function Upload() {
     <main>
       <Link className="muted" to="/">← 홈</Link>
       <h1 className="brand" style={{ fontSize: '1.8rem', marginTop: 16 }}>파일 업로드</h1>
-      <p className="lead">m4a / mp3 / wav 등 노래 음성 파일을 올려 주세요. 기본으로 보컬 분리를 시도해요.</p>
+      <p className="lead">
+        m4a / mp3 / wav 등 노래 음성 파일을 올려 주세요. 기본으로 기능적 발성 분석을 위해 보컬 분리를 시도해요.
+      </p>
       <div className="panel">
         <label className="muted" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input

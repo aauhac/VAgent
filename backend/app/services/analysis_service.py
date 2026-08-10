@@ -31,6 +31,7 @@ class AnalysisService:
         separate: bool = False,
         include_feedback: bool = False,
         analysis_mode: str = "QUICK",
+        input_mode: str = "AUTO",
     ) -> str:
         filename = file.filename or "upload.bin"
         ext = Path(filename).suffix.lower()
@@ -40,8 +41,9 @@ class AnalysisService:
             )
 
         mode = (analysis_mode or "QUICK").upper()
+        in_mode = (input_mode or "AUTO").upper()
         if mode == "FUNCTIONAL":
-            separate = True
+            separate = in_mode != "VOCAL_ONLY"
 
         analysis_id = uuid.uuid4().hex
         job_dir = self.runtime_dir / analysis_id
@@ -68,6 +70,7 @@ class AnalysisService:
             separate=separate,
             include_feedback=include_feedback,
             analysis_mode=mode,
+            input_mode=in_mode,
         )
         return analysis_id
 

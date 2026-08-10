@@ -51,24 +51,28 @@ async def create_analysis(
     separate: bool = Form(False),
     include_feedback: bool = Form(False),
     analysis_mode: str = Form("QUICK"),
+    input_mode: str = Form("AUTO"),
 ) -> AnalysisCreateResponse:
     """
-    analysis_mode:
-      QUICK — free raw-allowed path (separate follows form flag) [API default]
-      FUNCTIONAL — Song Detail / Functional Coach; backend forces separate=True
-      DIAGNOSTIC — caller-controlled
-
-    Miniapp Record/Upload send analysis_mode=FUNCTIONAL explicitly.
+    analysis_mode: QUICK | FUNCTIONAL | DIAGNOSTIC  (depth)
+    input_mode: AUTO | MIXED | VOCAL_ONLY  (independent of depth)
     """
     mode = (analysis_mode or "QUICK").upper()
     if mode not in ("QUICK", "FUNCTIONAL", "DIAGNOSTIC"):
         mode = "QUICK"
+    in_mode = (input_mode or "AUTO").upper()
+    if in_mode not in ("AUTO", "MIXED", "VOCAL_ONLY"):
+        in_mode = "AUTO"
+    # Backend policy: FUNCTIONAL + AUTO/MIXED forces separate; VOCAL_ONLY skips
+    if mode == "FUNCTIONAL":
+        separate = in_mode != "VOCAL_ONLY"
     try:
         analysis_id = await service.enqueue_upload(
             file=file,
             separate=separate,
-            include_feedback=False,  # free path: no premium LLM dump
+            include_feedback=False,
             analysis_mode=mode,
+            input_mode=in_mode,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

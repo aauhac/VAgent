@@ -104,13 +104,22 @@ export default function SongDetailReport() {
   const primary = decision.primary_bottleneck;
   const preserve = decision.preserve || [];
   const modify = decision.modify || [];
+  const whyStruct = decision.why_structured || {};
   const why = decision.why || [];
+  const measureCands = decision.measurement_candidates || decision.needs_confirmation || extraMeasure || [];
+  const bestSelf = decision.best_self_reference;
+
+  function playEpisode(ev: any) {
+    const raw = Number(ev?.original_start_sec ?? ev?.start_sec);
+    if (Number.isNaN(raw)) return;
+    seekTo(audioRef.current, Math.max(0, raw - 0.7));
+  }
 
   return (
     <main>
       <Link className="muted" to={`/result/${id}`}>← 무료 결과</Link>
       <h1 className="brand" style={{ fontSize: '1.6rem', marginTop: 12 }}>
-        {summary.title || '오늘의 핵심'}
+        {summary.title || '오늘의 코칭'}
       </h1>
       <p className="lead">{summary.text || decision.headline}</p>
       {(vf.quality_badge || report.quality_badge) && (
@@ -124,8 +133,11 @@ export default function SongDetailReport() {
 
       <div className="panel">
         <h3 style={{ marginTop: 0 }}>가장 먼저 바꿔볼 부분</h3>
-        {!primary && modify.length === 0 && (
-          <p className="muted">이번 녹음에서 우선 수정 후보는 제한적이에요.</p>
+        {!primary && (
+          <p className="muted">
+            {decision.no_primary_message
+              || '이번 녹음에서는 우선적으로 교정해야 할 뚜렷한 기능적 병목은 찾지 못했어요.'}
+          </p>
         )}
         {(modify.length ? modify : primary ? [{ label: primary.user_title, why: primary.why }] : []).map(
           (m: any, i: number) => (
@@ -141,35 +153,7 @@ export default function SongDetailReport() {
       </div>
 
       <div className="panel">
-        <h3 style={{ marginTop: 0 }}>지금 유지할 부분</h3>
-        {preserve.length === 0 && <p className="muted">표시할 유지 항목이 없어요.</p>}
-        {preserve.map((p: any) => (
-          <div key={p.id} style={{ marginBottom: 8 }}>
-            <div className="area-row">
-              <span>✓ {p.label}</span>
-              <strong>PRESERVE</strong>
-            </div>
-            {p.why && <p className="muted" style={{ margin: '2px 0', fontSize: '0.9rem' }}>{p.why}</p>}
-          </div>
-        ))}
-      </div>
-
-      {why.length > 0 && (
-        <div className="panel">
-          <h3 style={{ marginTop: 0 }}>왜 그렇게 판단했나요?</h3>
-          {why.map((w: string, i: number) => (
-            <p key={i} className="muted" style={{ margin: '6px 0' }}>{w}</p>
-          ))}
-          {primary?.alternative_explanations?.length ? (
-            <p className="muted" style={{ fontSize: '0.85rem' }}>
-              다른 설명 후보: {(primary.alternative_explanations || []).join(', ')}
-            </p>
-          ) : null}
-        </div>
-      )}
-
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>다시 들어볼 구간</h3>
+        <h3 style={{ marginTop: 0 }}>문제 구간 듣기</h3>
         <audio ref={audioRef} src={blobUrl || previewUrl} controls style={{ width: '100%' }} />
         {focus.length === 0 && <p className="muted">표시할 구간이 없어요.</p>}
         {focus.map((ev: any, i: number) => (
@@ -186,12 +170,7 @@ export default function SongDetailReport() {
                 type="button"
                 className="btn secondary"
                 style={{ fontSize: '0.8rem', padding: '6px 10px' }}
-                onClick={() =>
-                  seekTo(
-                    audioRef.current,
-                    ev.original_start_sec ?? ev.start_sec,
-                  )
-                }
+                onClick={() => playEpisode(ev)}
               >
                 듣기
               </button>
@@ -202,6 +181,77 @@ export default function SongDetailReport() {
           </div>
         ))}
       </div>
+
+      <div className="panel">
+        <h3 style={{ marginTop: 0 }}>지금 유지할 부분</h3>
+        {preserve.length === 0 && <p className="muted">표시할 유지 항목이 없어요.</p>}
+        {preserve.map((p: any) => (
+          <div key={p.id} style={{ marginBottom: 8 }}>
+            <div className="area-row">
+              <span>✓ {p.label}</span>
+              <strong>PRESERVE</strong>
+            </div>
+            {p.why && <p className="muted" style={{ margin: '2px 0', fontSize: '0.9rem' }}>{p.why}</p>}
+          </div>
+        ))}
+      </div>
+
+      {bestSelf && (
+        <div className="panel">
+          <h3 style={{ marginTop: 0 }}>비교해서 들어볼 잘 된 구간</h3>
+          <p className="muted">{bestSelf.coaching_hint}</p>
+          <button
+            type="button"
+            className="btn secondary"
+            style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+            onClick={() => playEpisode(bestSelf)}
+          >
+            듣기
+          </button>
+        </div>
+      )}
+
+      {(whyStruct.supporting?.length || why.length > 0) && (
+        <div className="panel">
+          <h3 style={{ marginTop: 0 }}>왜 그렇게 판단했나요?</h3>
+          {whyStruct.supporting?.length ? (
+            <>
+              <p style={{ marginBottom: 4 }}><strong>문제 근거</strong></p>
+              <ul className="muted">
+                {whyStruct.supporting.map((w: string, i: number) => (
+                  <li key={`s-${i}`}>{w}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            why.map((w: string, i: number) => (
+              <p key={i} className="muted" style={{ margin: '6px 0' }}>{w}</p>
+            ))
+          )}
+          {whyStruct.preserved?.length > 0 && (
+            <>
+              <p style={{ marginBottom: 4 }}><strong>유지된 부분</strong></p>
+              <ul className="muted">
+                {whyStruct.preserved.map((w: string, i: number) => (
+                  <li key={`p-${i}`}>{w}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {(whyStruct.contradicting?.length || primary?.alternative_explanations?.length) ? (
+            <>
+              <p style={{ marginBottom: 4 }}><strong>다른 가능성</strong></p>
+              <ul className="muted">
+                {(whyStruct.contradicting || primary?.alternative_explanations || []).map(
+                  (w: string, i: number) => (
+                    <li key={`c-${i}`}>{w}</li>
+                  ),
+                )}
+              </ul>
+            </>
+          ) : null}
+        </div>
+      )}
 
       <div className="panel">
         <h3 style={{ marginTop: 0 }}>오늘의 연습</h3>
@@ -221,6 +271,24 @@ export default function SongDetailReport() {
           </>
         )}
       </div>
+
+      {measureCands.length > 0 && (
+        <div className="panel">
+          <h3 style={{ marginTop: 0 }}>추가로 확인하면 좋은 부분</h3>
+          {measureCands.map((m: any, i: number) => (
+            <div key={i} style={{ marginBottom: 8 }}>
+              <p className="muted" style={{ margin: 0 }}>
+                {m.issue || m.title || '추가 측정'} — {m.reason || m.user_message || ''}
+              </p>
+              {m.recommended_task && (
+                <p className="muted" style={{ fontSize: '0.85rem', margin: '2px 0' }}>
+                  추천 과제: {m.recommended_task}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="panel">
         <h3 style={{ marginTop: 0 }}>성대 작동 프로필</h3>

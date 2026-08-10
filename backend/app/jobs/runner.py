@@ -47,18 +47,19 @@ class JobRunner:
         separate: bool = False,
         include_feedback: bool = False,
         analysis_mode: str = "QUICK",
+        input_mode: str = "AUTO",
     ) -> None:
         if not validate_analysis_id(analysis_id):
             raise ValueError("invalid analysis_id")
         mode = (analysis_mode or "QUICK").upper()
+        in_mode = (input_mode or "AUTO").upper()
         if mode == "FUNCTIONAL":
-            separate = True
+            separate = in_mode != "VOCAL_ONLY"
         with self._lock:
             if analysis_id in self._jobs and self._jobs[analysis_id].get("status") in (
                 "queued",
                 "analyzing",
             ):
-                # Duplicate submit while running: keep first job
                 return
             self._deleted.discard(analysis_id)
             self._jobs[analysis_id] = {
@@ -71,6 +72,7 @@ class JobRunner:
                 "analysis_status": None,
                 "feedback_status": None,
                 "analysis_mode": mode,
+                "input_mode": in_mode,
             }
         self._executor.submit(
             self._run,
@@ -79,6 +81,7 @@ class JobRunner:
             separate,
             include_feedback,
             mode,
+            in_mode,
         )
 
     def get(self, analysis_id: str) -> Optional[dict[str, Any]]:
@@ -152,6 +155,7 @@ class JobRunner:
         separate: bool,
         include_feedback: bool,
         analysis_mode: str = "QUICK",
+        input_mode: str = "AUTO",
     ) -> None:
         if self._is_deleted(analysis_id):
             return
@@ -181,6 +185,7 @@ class JobRunner:
                 recording_id=analysis_id,
                 separate=separate,
                 analysis_mode=analysis_mode,
+                input_mode=input_mode,
                 include_feedback=include_feedback,
                 generate_visuals=False,
                 build_preview=True,

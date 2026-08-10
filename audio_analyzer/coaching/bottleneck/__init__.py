@@ -1,4 +1,4 @@
-"""Functional Bottleneck Engine — observations → what to change first."""
+"""Functional Bottleneck Engine v2.2 — localized coaching decisions."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from typing import Any, Optional
 from . import config as bcfg
 from .hypotheses import rank_hypotheses
 from .preserve import build_preserve_modify
-from .ranker import select_primary
+from .ranker import collect_measurement_candidates, select_primary
 
 
 def build_coaching_decision(
@@ -18,54 +18,79 @@ def build_coaching_decision(
     user_goal: str = "GENERAL_EASE_AND_CONTROL",
     style_context: str = "unspecified",
 ) -> dict[str, Any]:
-    """
-    LEVEL-5 coaching decision.
-
-    Does NOT alter raw observations. Goal/style only affect impact ranking.
-    Target episode comes from primary.supporting_episode_ids — never focus.primary[0] alone.
-    """
     hypotheses = rank_hypotheses(profile, episodes, user_goal=user_goal)
-    primary, secondary = select_primary(hypotheses, user_goal=user_goal)
-    target = _resolve_target_episode(primary, episodes, focus)
-    preserve, modify = build_preserve_modify(profile, episodes, primary, target_episode=target)
+    measurement_candidates = collect_measurement_candidates(hypotheses)
+    # strip internal markers from public hyp list
+    public_hyps = [h for h in hypotheses if h.get("id") != "_MEASUREMENT_ONLY"]
+    for h in public_hyps:
+        h.pop("_all_measurement_candidates", None)
+        h.pop("_measurement_sidecar", None)
 
-    # Low primary confidence → measurement suggestion instead of corrective exercise
+    primary, secondary = select_primary(public_hyps, user_goal=user_goal)
+    target = _resolve_target_episode(primary, episodes, focus)
+
+    # Hard rule: no target → no primary
+    if primary and not target:
+        measurement_candidates.append(
+            {
+                "issue": primary.get("id"),
+                "reason": "병목 후보는 있으나 재생 가능한 target episode가 없어요.",
+                "recommended_task": "additional_measurement",
+                "eligibility": "NEEDS_MEASUREMENT",
+            }
+        )
+        primary = None
+
+    # Target vocal validity
+    if primary and target:
+        valid = (target.get("feature_matrix") or {}).get("validity") or target.get("validity") or {}
+        if valid.get("vocal_specific") is False:
+            measurement_candidates.append(
+                {
+                    "issue": primary.get("id"),
+                    "reason": "target 구간의 vocal validity가 부족해요.",
+                    "recommended_task": "re_record_with_headphones",
+                    "eligibility": "NEEDS_MEASUREMENT",
+                }
+            )
+            primary = None
+            target = None
+
+    preserve, modify = build_preserve_modify(profile, episodes, primary, target_episode=target)
+    # Attach timestamps on modify items
+    if target:
+        for m in modify:
+            m.setdefault("episode_id", target.get("episode_id"))
+            m.setdefault("original_start_sec", target.get("original_start_sec"))
+            m.setdefault("original_end_sec", target.get("original_end_sec"))
+            m.setdefault("local_start_sec", target.get("local_start_sec", target.get("start_sec")))
+            m.setdefault("local_end_sec", target.get("local_end_sec", target.get("end_sec")))
+
     primary_conf = (primary or {}).get("confidence_label") or "low"
     if primary and primary_conf == "low":
+        # should not happen after select_primary, but belt-and-suspenders
         exercises = []
-        success = [
-            "같은 구간을 이어폰으로 다시 녹음해 주세요",
-            "반주 없는 순수 보컬 또는 분리 성공 후 재분석",
-        ]
+        success = []
         additional = True
-    else:
+        primary = None
+    elif primary:
         exercises = _exercises_for(primary, secondary)
         success = _success_criteria(primary)
         additional = False
+    else:
+        exercises = []
+        success = []
+        additional = True
 
-    # Downgrade coaching confidence if target episode weak
     coaching_conf = (primary or {}).get("coaching_confidence") or "low"
-    if target and target.get("validity") and not (target.get("validity") or {}).get(
-        "vocal_specific", True
-    ):
-        coaching_conf = "low"
-    if target and (target.get("feature_matrix") or {}).get("validity"):
-        if not ((target.get("feature_matrix") or {}).get("validity") or {}).get(
-            "vocal_specific", True
-        ):
-            coaching_conf = "low"
-
+    why_struct = _structured_why(primary, target, preserve)
     why = []
-    if primary:
-        why.append(primary.get("why") or primary.get("summary") or "")
-    if preserve and modify:
-        why.append(
-            "접촉·주기성 등 유지할 패턴과 바꿀 effort/진입 패턴을 분리해서 봤어요."
-        )
+    if why_struct.get("supporting"):
+        why.extend(why_struct["supporting"])
+    if why_struct.get("preserved"):
+        why.append("유지: " + "; ".join(why_struct["preserved"]))
 
-    # Bottleneck-first focus ranking
     ranked_focus = _rank_focus(primary, secondary, target, focus, episodes)
-
     headline = _headline(primary, preserve, modify)
 
     return {
@@ -75,19 +100,60 @@ def build_coaching_decision(
         "headline": headline,
         "primary_bottleneck": primary,
         "secondary_bottlenecks": secondary[:2],
-        "hypotheses": hypotheses,
+        "hypotheses": public_hyps,
         "preserve": preserve,
         "modify": modify,
         "why": [w for w in why if w],
+        "why_structured": why_struct,
         "target_episode": _public_target(target, primary),
         "best_self_reference": focus.get("best_self_reference"),
         "focus_ranked": ranked_focus,
         "exercise_plan": exercises,
         "success_criteria": success,
-        "prefer_additional_measurement": additional,
+        "prefer_additional_measurement": additional or not primary,
+        "measurement_candidates": measurement_candidates,
+        "needs_confirmation": [m for m in measurement_candidates],
         "inference_confidence": (primary or {}).get("confidence_label") or "low",
-        "coaching_confidence": coaching_conf,
-        "note": "goal/style은 priority만 바꾸며 raw measurement를 변경하지 않습니다.",
+        "coaching_confidence": coaching_conf if primary else "low",
+        "note": "goal/style은 priority만 바꾸며 raw measurement·confidence를 변경하지 않습니다.",
+        "no_primary_message": (
+            None
+            if primary
+            else "이번 녹음에서는 우선적으로 교정해야 할 뚜렷한 기능적 병목은 찾지 못했어요."
+        ),
+    }
+
+
+def _structured_why(primary, target, preserve) -> dict[str, Any]:
+    supporting: list[str] = []
+    preserved: list[str] = []
+    contradicting: list[str] = []
+    if primary:
+        supporting.append(primary.get("why") or primary.get("summary") or "")
+        if target:
+            fm = target.get("feature_matrix") or {}
+            eff = fm.get("effort") or {}
+            if eff.get("intensity_delta_db") is not None:
+                supporting.append(f"이전 대비 intensity {eff['intensity_delta_db']:+.1f} dB")
+            rec = fm.get("recovery") or {}
+            if rec.get("returned_to_baseline") is False:
+                supporting.append("이후 구간에서 상태 복귀가 느렸어요")
+            elif rec.get("returned_to_baseline") is True:
+                preserved.append("이후 구간에서 비교적 빨리 회복")
+            reg = fm.get("regularity") or {}
+            if (reg.get("periodicity") or 0) >= 8 and not reg.get("roughness"):
+                preserved.append("주기성 유지")
+            if not reg.get("roughness"):
+                preserved.append("거친 음질 증가 없음")
+        for a in primary.get("alternative_explanations") or []:
+            contradicting.append(str(a))
+    for p in preserve or []:
+        if p.get("label"):
+            preserved.append(p["label"])
+    return {
+        "supporting": [s for s in supporting if s],
+        "preserved": list(dict.fromkeys(preserved)),
+        "contradicting": contradicting,
     }
 
 
@@ -104,27 +170,22 @@ def _resolve_target_episode(
             return by_id[eid]
 
     bid = primary.get("id")
-    if bid == "REGISTER_TRANSITION_DISRUPTION":
-        reg = [e for e in episodes if e.get("type") == "REGISTER_TRANSITION"]
-        if reg:
-            return reg[0]
-    if bid == "RESONANCE_HIGH_NOTE_COLLAPSE":
-        res = [
-            e
-            for e in episodes
-            if e.get("type") == "HIGH_NOTE"
-            and e.get("cause_hint") in ("RESONANCE", "MIXED")
-        ]
-        if res:
-            return res[0]
-        high = [e for e in episodes if e.get("type") == "HIGH_NOTE" and e.get("concern")]
-        if high:
-            return high[0]
-    if bid in ("EXCESS_EFFORT_HIGH_NOTE", "EXCESS_FIRMNESS_WITH_STRAIN"):
-        high = [e for e in episodes if e.get("type") == "HIGH_NOTE" and e.get("concern")]
-        if high:
-            return high[0]
-    # Do NOT fall back to focus.primary[0] when types mismatch
+    type_map = {
+        "REGISTER_TRANSITION_DISRUPTION": "REGISTER_TRANSITION",
+        "AIR_LEAKAGE": "AIR_LEAKAGE",
+        "APERIODIC_ROUGHNESS": "ROUGHNESS",
+        "ABRUPT_ONSET": "ABRUPT_ONSET",
+        "PHRASE_END_SUPPORT_LOSS": "PHRASE_END_DROP",
+        "GENERAL_EXCESS_EFFORT": "GENERAL_EFFORT",
+        "EXCESS_EFFORT_HIGH_NOTE": "HIGH_NOTE",
+        "RESONANCE_HIGH_NOTE_COLLAPSE": "HIGH_NOTE",
+        "EXCESS_FIRMNESS_WITH_STRAIN": "HIGH_NOTE",
+    }
+    want = type_map.get(bid)
+    if want:
+        for e in episodes:
+            if e.get("type") == want:
+                return e
     return None
 
 
@@ -142,6 +203,7 @@ def _public_target(target: Optional[dict[str, Any]], primary) -> Optional[dict[s
         "episode_id": target.get("episode_id"),
         "type": target.get("type"),
         "phase_method": target.get("phase_method"),
+        "phase_confidence": target.get("phase_confidence"),
         "cause_hint": target.get("cause_hint"),
         "label": "가장 먼저 바꿔볼 구간" if primary else "참고 구간",
     }

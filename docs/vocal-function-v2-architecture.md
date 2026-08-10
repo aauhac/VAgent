@@ -1,4 +1,4 @@
-# Vocal Function Engine v2.1 — Architecture
+# Vocal Function Engine v2.2 — Architecture
 
 Five layers (never mixed):
 
@@ -8,35 +8,28 @@ Five layers (never mixed):
 4. TECHNIQUE / CONTROL CHARACTERIZATION  
 5. COACHING DECISION  
 
-## Separation policy (product)
+## analysis_mode vs input_mode (independent)
 
-| Path | Mode | Separation |
-|------|------|------------|
-| FREE Quick Analysis | `QUICK` | raw allowed |
-| Song Detail / Functional Vocal Coach | `FUNCTIONAL` | **required** (backend forces `separate=True`) |
-| Diagnostic | `DIAGNOSTIC` | caller / existing policy |
+| analysis_mode | meaning |
+|---------------|---------|
+| QUICK | free lightweight analysis |
+| FUNCTIONAL | Song Detail / Functional Vocal Coach |
+| DIAGNOSTIC | diagnostic protocol path |
 
-Functional Coach quality levels:
+| input_mode | meaning |
+|------------|---------|
+| AUTO / MIXED | try Demucs; vocals + no_vocals contrast |
+| VOCAL_ONLY | skip Demucs; raw treated as vocal (still FUNCTIONAL) |
 
-- **FULL** — separated + `no_vocals` contrast available  
-- **LIMITED** — separation partial / no-vocals missing / QUICK raw  
-- **UNAVAILABLE** — FUNCTIONAL requested but separation failed (do not trust raw mix for coaching)
+Functional quality:
 
-Long-song clips apply the **same** original-time window to vocals and no_vocals (`slice_aligned_stems`).  
-Events expose `local_*` (analysis clip) and `original_*` (file / preview seek).
+- **FULL_MIXED** — separated + no_vocals  
+- **FULL_VOCAL_ONLY** — VOCAL_ONLY with usable vocal evidence (missing no_vocals is OK)  
+- **LIMITED** / **UNAVAILABLE** — restricted coaching  
 
-Packages:
+Episode contexts use **true PRE / DURING / POST** segments outside the episode span.  
+Primary bottlenecks require medium+ confidence, supporting_episode_ids, and a playable target.
 
-- `audio_analyzer/vocal_function/` — fusion, report, evidence graph, alignment  
-- `audio_analyzer/glottal_source/` — IAIF proxy + estimated_naq / estimated_oq_proxy / estimated_mfdr_norm_proxy  
-- `audio_analyzer/vocal_tract/` — formants + descriptive timbre  
-- `audio_analyzer/coaching/` — bottleneck + exercise registry  
+Versions: `vocal-function-v2.2` / `vocal-coach-report-v2.2`  
 
-Versions:
-
-- FUNCTION_ENGINE_VERSION = `vocal-function-v2.1`  
-- REPORT_VERSION = `vocal-coach-report-v2.1`  
-
-Measurement mode: `AUDIO_ONLY` (future: `AUDIO_PLUS_EGG`).
-
-Performance v3 and Vocal Quality v1 remain available as supplements / prior layer.
+This is engineering validity / localization — **not** human-coach validated accuracy.

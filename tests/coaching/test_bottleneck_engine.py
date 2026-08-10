@@ -140,11 +140,18 @@ def test_firm_plus_effort_spike_candidate():
     }
     eps = [
         {
+            "episode_id": "HIGH_NOTE_10.0_14.0",
             "type": "HIGH_NOTE",
             "concern": True,
             "start_sec": 10,
             "end_sec": 14,
-            "feature_matrix": {"effort": {"strain_like": 0.8}, "regularity": {"periodicity": 6}},
+            "feature_matrix": {
+                "effort": {"strain_like": 0.8, "effort_shift": 0.8},
+                "source": {"contact_firmness": 0.8},
+                "regularity": {"periodicity": 6},
+                "shifts": {"effort_shift": 0.8, "source_shift": 0.5},
+                "validity": {"vocal_specific": True},
+            },
         }
     ]
     decision = build_coaching_decision(
@@ -158,6 +165,7 @@ def test_firm_plus_effort_spike_candidate():
         "EXCESS_EFFORT_HIGH_NOTE",
         "EXCESS_FIRMNESS_WITH_STRAIN",
     )
+    assert decision["target_episode"] is not None
     assert decision["exercise_plan"]
     assert decision["modify"]
 
@@ -213,7 +221,7 @@ def test_goal_changes_priority_only():
         },
         "contact_effort_plane": {},
     }
-    eps = [{"type": "HIGH_NOTE", "concern": True, "start_sec": 1, "end_sec": 3, "feature_matrix": {"effort": {"strain_like": 0.7}, "regularity": {}}}]
+    eps = [{"episode_id": "HIGH_NOTE_1.0_3.0", "type": "HIGH_NOTE", "concern": True, "start_sec": 1, "end_sec": 3, "feature_matrix": {"effort": {"strain_like": 0.7, "effort_shift": 0.7}, "regularity": {}, "shifts": {"effort_shift": 0.7}, "validity": {"vocal_specific": True}}}]
     a = rank_hypotheses(profile, eps, user_goal="HIGH_NOTE")
     b = rank_hypotheses(profile, eps, user_goal="VIBRATO")
     # raw supporting evidence labels same set for effort hyp

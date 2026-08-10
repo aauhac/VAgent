@@ -1,11 +1,11 @@
-"""Vocal Function Engine v2 configuration."""
+"""Vocal Function Engine v2.2 configuration."""
 
 from __future__ import annotations
 
-FUNCTION_ENGINE_VERSION = "vocal-function-v2.1"
-REPORT_VERSION = "vocal-coach-report-v2.1"
+FUNCTION_ENGINE_VERSION = "vocal-function-v2.2"
+REPORT_VERSION = "vocal-coach-report-v2.2"
 METRIC_REGISTRY_VERSION = "vf-metrics-2026-08"
-RULE_VERSION = "vf-rules-2026-08"
+RULE_VERSION = "vf-rules-2026-08-v22"
 LITERATURE_VERSION = "vf-lit-2026-08"
 
 MEASUREMENT_MODE = "AUDIO_ONLY"  # future: AUDIO_PLUS_EGG
@@ -17,11 +17,29 @@ PREVALENCE_REPEATED = 0.35
 MIN_VOCAL_DOMINANCE = 0.55
 MAIN_DISPLAY_MIN_CONFIDENCE = "medium"  # low hidden from main cards
 
-# Relative (not clinical) direction hints for contact — used only as soft cues
-NAQ_LIGHTER_HINT = 0.15  # higher NAQ → lighter-like (directional; uncalibrated)
+# Episode context windows (outside episode span)
+PRE_CONTEXT_MAX_SEC = 4.0
+PRE_CONTEXT_N = 3
+POST_CONTEXT_MAX_SEC = 4.0
+POST_CONTEXT_N = 3
+
+# Best-self minimum meaningful effort improvement
+BEST_SELF_MIN_EFFORT_DELTA = 0.15
+
+# Relative (not clinical) direction hints for contact — soft cues only
+NAQ_LIGHTER_HINT = 0.15
 NAQ_FIRMER_HINT = 0.08
 H1H2_LIGHTER_DB = 6.0
 H1H2_FIRMER_DB = 1.0
+
+# Soft directional shift thresholds (uncalibrated)
+NAQ_SHIFT_HINT = 0.03
+H1H2_SHIFT_DB = 2.0
+MFDR_NORM_SHIFT_RATIO = 0.25
+ENERGY_24K_SHIFT = 0.04
+CENTROID_SHIFT_HZ = 150.0
+INTENSITY_OVERSHOOT_DB = 3.0
+F0_JUMP_CENTS_REGISTER = 350.0
 
 BANNED_CLAIM_SUBSTRINGS = (
     "TA가",
@@ -64,6 +82,6 @@ METRIC_GRADES = {
     "estimated_clq_proxy": "C",
     "estimated_mfdr_proxy": "C",
     "formants": "B",
-    "subglottal_pressure": "D",  # unavailable audio-only
+    "subglottal_pressure": "D",
     "diaphragm_activation": "D",
 }
