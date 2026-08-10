@@ -113,6 +113,14 @@ export default function SongDetailReport() {
         {summary.title || '오늘의 핵심'}
       </h1>
       <p className="lead">{summary.text || decision.headline}</p>
+      {(vf.quality_badge || report.quality_badge) && (
+        <p className="muted" style={{ fontSize: '0.9rem' }}>
+          분석 신뢰 범위: {vf.quality_badge || report.quality_badge}
+        </p>
+      )}
+      {vf.separation_note && (
+        <p className="muted" style={{ fontSize: '0.85rem' }}>{vf.separation_note}</p>
+      )}
 
       <div className="panel">
         <h3 style={{ marginTop: 0 }}>가장 먼저 바꿔볼 부분</h3>
@@ -169,14 +177,21 @@ export default function SongDetailReport() {
             <div className="area-row">
               <span>
                 {ev.time_label
-                  || `${Number(ev.start_sec).toFixed(1)}s – ${Number(ev.end_sec).toFixed(1)}s`}
+                  || (ev.original_start_sec != null
+                    ? `${Number(ev.original_start_sec).toFixed(1)}s – ${Number(ev.original_end_sec ?? ev.original_start_sec).toFixed(1)}s`
+                    : `${Number(ev.start_sec).toFixed(1)}s – ${Number(ev.end_sec).toFixed(1)}s`)}
                 {ev.headline ? ` · ${ev.headline}` : ''}
               </span>
               <button
                 type="button"
                 className="btn secondary"
                 style={{ fontSize: '0.8rem', padding: '6px 10px' }}
-                onClick={() => seekTo(audioRef.current, ev.start_sec)}
+                onClick={() =>
+                  seekTo(
+                    audioRef.current,
+                    ev.original_start_sec ?? ev.start_sec,
+                  )
+                }
               >
                 듣기
               </button>

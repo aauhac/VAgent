@@ -2,6 +2,7 @@
 
 BOTTLENECK_IDS = (
     "EXCESS_EFFORT_HIGH_NOTE",
+    "GENERAL_EXCESS_EFFORT",
     "EXCESS_FIRMNESS_WITH_STRAIN",
     "AIR_LEAKAGE",
     "APERIODIC_ROUGHNESS",
@@ -17,6 +18,7 @@ BOTTLENECK_IDS = (
 
 USER_TITLES = {
     "EXCESS_EFFORT_HIGH_NOTE": "고음 진입 시 힘 과다",
+    "GENERAL_EXCESS_EFFORT": "전반적 힘 과다",
     "EXCESS_FIRMNESS_WITH_STRAIN": "단단함 + effort 동반",
     "AIR_LEAKAGE": "기류 누출·기식성",
     "APERIODIC_ROUGHNESS": "거친·불규칙 음질",
@@ -30,6 +32,7 @@ USER_TITLES = {
 
 CAUSE_FAMILY = {
     "EXCESS_EFFORT_HIGH_NOTE": "EFFORT_LIMITATION",
+    "GENERAL_EXCESS_EFFORT": "EFFORT_LIMITATION",
     "EXCESS_FIRMNESS_WITH_STRAIN": "SOURCE_LIMITATION",
     "AIR_LEAKAGE": "SOURCE_LIMITATION",
     "APERIODIC_ROUGHNESS": "STABILITY_LIMITATION",
@@ -43,6 +46,7 @@ CAUSE_FAMILY = {
 
 BOTTLENECK_EXERCISES = {
     "EXCESS_EFFORT_HIGH_NOTE": ["sovt_straw", "balanced_onset_hum", "siren_ng"],
+    "GENERAL_EXCESS_EFFORT": ["sovt_straw", "balanced_onset_hum"],
     "EXCESS_FIRMNESS_WITH_STRAIN": ["sovt_straw", "balanced_onset_hum"],
     "AIR_LEAKAGE": ["balanced_onset_hum"],
     "REGISTER_TRANSITION_DISRUPTION": ["siren_ng"],

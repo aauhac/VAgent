@@ -128,6 +128,11 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             {
                 "start_sec": target.get("start_sec"),
                 "end_sec": target.get("end_sec"),
+                "local_start_sec": target.get("local_start_sec", target.get("start_sec")),
+                "local_end_sec": target.get("local_end_sec", target.get("end_sec")),
+                "original_start_sec": target.get("original_start_sec"),
+                "original_end_sec": target.get("original_end_sec"),
+                "time_origin_sec": target.get("time_origin_sec"),
                 "headline": "가장 먼저 바꿔볼 구간",
                 "user_message": (decision.get("modify") or [{}])[0].get("why")
                 if decision.get("modify")
@@ -142,6 +147,11 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             {
                 "start_sec": best.get("start_sec"),
                 "end_sec": best.get("end_sec"),
+                "local_start_sec": best.get("local_start_sec", best.get("start_sec")),
+                "local_end_sec": best.get("local_end_sec", best.get("end_sec")),
+                "original_start_sec": best.get("original_start_sec"),
+                "original_end_sec": best.get("original_end_sec"),
+                "time_origin_sec": best.get("time_origin_sec"),
                 "headline": "비교해서 들어볼 좋은 구간",
                 "user_message": best.get("coaching_hint")
                 or "비슷한 높이에서 더 적은 effort로 유지된 구간이에요.",
@@ -163,6 +173,11 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             {
                 "start_sec": ev.get("start_sec"),
                 "end_sec": ev.get("end_sec"),
+                "local_start_sec": ev.get("local_start_sec", ev.get("start_sec")),
+                "local_end_sec": ev.get("local_end_sec", ev.get("end_sec")),
+                "original_start_sec": ev.get("original_start_sec"),
+                "original_end_sec": ev.get("original_end_sec"),
+                "time_origin_sec": ev.get("time_origin_sec"),
                 "headline": "고음 episode",
                 "user_message": ev.get("conclusion"),
                 "state": "high_note",
@@ -208,6 +223,8 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
         "available": True,
         "engine_version": profile.get("engine_version"),
         "report_version": profile.get("report_version"),
+        "functional_quality": profile.get("functional_quality") or "FULL",
+        "quality_badge": profile.get("quality_badge") or "충분",
         "headline": profile.get("headline") or ([public_decision["headline"]] if public_decision.get("headline") else []),
         "dimensions": pub_dims,
         "excluded": excl,
@@ -228,6 +245,7 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
         or "이 분석은 음향 기반 기능 추정이며 해부학적/의학적 진단이 아닙니다.",
         "valid_segment_count": profile.get("valid_segment_count"),
         "contact_effort_plane": profile.get("contact_effort_plane"),
+        "analysis_time_origin_sec": profile.get("analysis_time_origin_sec"),
     }
     assert_no_banned_claims(affirmative_blob(out))
     return out
@@ -244,6 +262,7 @@ def _public_bottleneck(b: Any) -> Any:
         "confidence_label": b.get("confidence_label"),
         "why": b.get("why") or b.get("summary"),
         "supporting_evidence": b.get("supporting_evidence"),
+        "supporting_episode_ids": b.get("supporting_episode_ids") or [],
         "contradicting_evidence": b.get("contradicting_evidence"),
         "alternative_explanations": b.get("alternative_explanations"),
     }

@@ -258,6 +258,8 @@ def build_song_detailed_report(
         "coaching_decision": decision,
         "vocal_function_profile": vocal_function,
         "vocal_quality_profile": vocal_quality,
+        "quality_badge": vocal_function.get("quality_badge"),
+        "functional_quality": vocal_function.get("functional_quality"),
         "high_note_events": vocal_function.get("high_note_events") or [],
         "coaching": vocal_function.get("coaching") or {},
         "additional_measurements": (vocal_function.get("coaching") or {}).get(

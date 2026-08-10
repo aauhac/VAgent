@@ -30,6 +30,7 @@ class AnalysisService:
         file: UploadFile,
         separate: bool = False,
         include_feedback: bool = False,
+        analysis_mode: str = "QUICK",
     ) -> str:
         filename = file.filename or "upload.bin"
         ext = Path(filename).suffix.lower()
@@ -37,6 +38,10 @@ class AnalysisService:
             raise ValueError(
                 f"unsupported file type '{ext}'. allowed: {sorted(SUPPORTED_EXT)}"
             )
+
+        mode = (analysis_mode or "QUICK").upper()
+        if mode == "FUNCTIONAL":
+            separate = True
 
         analysis_id = uuid.uuid4().hex
         job_dir = self.runtime_dir / analysis_id
@@ -62,6 +67,7 @@ class AnalysisService:
             audio_path=str(dest),
             separate=separate,
             include_feedback=include_feedback,
+            analysis_mode=mode,
         )
         return analysis_id
 

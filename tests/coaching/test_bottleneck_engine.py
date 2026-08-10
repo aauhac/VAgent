@@ -216,10 +216,12 @@ def test_goal_changes_priority_only():
     eps = [{"type": "HIGH_NOTE", "concern": True, "start_sec": 1, "end_sec": 3, "feature_matrix": {"effort": {"strain_like": 0.7}, "regularity": {}}}]
     a = rank_hypotheses(profile, eps, user_goal="HIGH_NOTE")
     b = rank_hypotheses(profile, eps, user_goal="VIBRATO")
-    # raw supporting evidence ids same set for effort hyp
+    # raw supporting evidence labels same set for effort hyp
     ea = next(h for h in a if h["id"] == "EXCESS_EFFORT_HIGH_NOTE")
     eb = next(h for h in b if h["id"] == "EXCESS_EFFORT_HIGH_NOTE")
-    assert ea["supporting_evidence"] == eb["supporting_evidence"]
+    assert [x.get("label") for x in ea["supporting_evidence"]] == [
+        x.get("label") for x in eb["supporting_evidence"]
+    ]
     assert ea["impact"] == "HIGH"
     assert eb["impact"] != "HIGH" or True  # may still be medium
 

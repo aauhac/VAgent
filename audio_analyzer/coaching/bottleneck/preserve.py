@@ -9,6 +9,7 @@ def build_preserve_modify(
     profile: dict[str, Any],
     episodes: list[dict[str, Any]],
     primary: Optional[dict[str, Any]],
+    target_episode: Optional[dict[str, Any]] = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     dims = profile.get("dimensions") or {}
     plane = profile.get("contact_effort_plane") or {}
@@ -20,32 +21,74 @@ def build_preserve_modify(
     regularity = dims.get("phonation_regularity") or {}
     vibrato = dims.get("vibrato_control") or {}
 
-    # Preserve firm contact when effort low
-    if plane.get("firm_high_strain_low") or (
-        contact.get("continuum_0_to_1") is not None
-        and contact.get("continuum_0_to_1") > 0.55
-        and effort.get("status") == "LOW"
-    ):
-        preserve.append(
-            {
-                "id": "contact_firmness",
-                "label": "안정적인 성대 접촉 관련 패턴",
-                "action": "PRESERVE",
-                "why": "단단함이 effort 과다와 함께 나타나지 않았어요.",
-            }
-        )
+    fm = (target_episode or {}).get("feature_matrix") or {}
+    target_effort = ((fm.get("effort") or {}).get("strain_like") or 0)
+    target_firm = ((fm.get("source") or {}).get("contact_firmness") or 0)
+    target_period = ((fm.get("regularity") or {}).get("periodicity"))
+    target_rough = bool((fm.get("regularity") or {}).get("roughness"))
 
-    if regularity.get("status") == "STABLE":
-        preserve.append(
-            {
-                "id": "periodicity",
-                "label": "안정적인 주기성",
-                "action": "PRESERVE",
-                "why": "진동 규칙성이 비교적 유지됐어요.",
-            }
-        )
+    # Target-episode evidence preferred over global "firm song" heuristics
+    if target_episode:
+        if target_firm >= 0.5 and target_effort < 0.4 and not target_rough:
+            preserve.append(
+                {
+                    "id": "contact_firmness",
+                    "label": "이 구간의 안정적인 성대 접촉 관련 패턴",
+                    "action": "PRESERVE",
+                    "why": "대상 episode에서 단단함이 effort 과다와 함께 나타나지 않았어요.",
+                    "episode_id": target_episode.get("episode_id"),
+                }
+            )
+        if target_period is not None and target_period >= 8 and not target_rough:
+            preserve.append(
+                {
+                    "id": "periodicity",
+                    "label": "이 구간의 안정적인 주기성",
+                    "action": "PRESERVE",
+                    "why": "대상 episode에서 진동 규칙성이 비교적 유지됐어요.",
+                    "episode_id": target_episode.get("episode_id"),
+                }
+            )
+        if target_effort >= 0.4:
+            modify.append(
+                {
+                    "id": "high_note_entry_effort",
+                    "label": "이 구간에서 급격히 증가하는 힘",
+                    "action": "MODIFY",
+                    "why": (
+                        "접촉을 약하게 만들기보다 이 구간에서 "
+                        "불필요하게 증가하는 effort를 먼저 줄여보세요."
+                    ),
+                    "episode_id": target_episode.get("episode_id"),
+                }
+            )
+    else:
+        # Global fallback only when no target
+        if plane.get("firm_high_strain_low") or (
+            contact.get("continuum_0_to_1") is not None
+            and contact.get("continuum_0_to_1") > 0.55
+            and effort.get("status") == "LOW"
+        ):
+            preserve.append(
+                {
+                    "id": "contact_firmness",
+                    "label": "안정적인 성대 접촉 관련 패턴",
+                    "action": "PRESERVE",
+                    "why": "단단함이 effort 과다와 함께 나타나지 않았어요.",
+                }
+            )
 
-    if vibrato.get("status") == "OBSERVED":
+        if regularity.get("status") == "STABLE":
+            preserve.append(
+                {
+                    "id": "periodicity",
+                    "label": "안정적인 주기성",
+                    "action": "PRESERVE",
+                    "why": "진동 규칙성이 비교적 유지됐어요.",
+                }
+            )
+
+    if vibrato.get("status") == "OBSERVED" and not any(p["id"] == "vibrato" for p in preserve):
         preserve.append(
             {
                 "id": "vibrato",
@@ -56,28 +99,29 @@ def build_preserve_modify(
         )
 
     if primary and primary.get("id") == "EXCESS_EFFORT_HIGH_NOTE":
+        if not any(m["id"] == "high_note_entry_effort" for m in modify):
+            modify.append(
+                {
+                    "id": "high_note_entry_effort",
+                    "label": "고음 진입 때 급격히 증가하는 힘",
+                    "action": "MODIFY",
+                    "why": (
+                        "접촉을 약하게 만들기보다 고음 진입 시 "
+                        "불필요하게 증가하는 effort를 먼저 줄여보세요."
+                    ),
+                    "episode_id": (target_episode or {}).get("episode_id"),
+                }
+            )
+
+    if primary and primary.get("id") == "GENERAL_EXCESS_EFFORT":
         modify.append(
             {
-                "id": "high_note_entry_effort",
-                "label": "고음 진입 때 급격히 증가하는 힘",
+                "id": "general_effort",
+                "label": "여러 구간에서 반복되는 힘 과다",
                 "action": "MODIFY",
-                "why": (
-                    "접촉을 약하게 만들기보다 고음 진입 시 "
-                    "불필요하게 증가하는 effort를 먼저 줄여보세요."
-                ),
+                "why": "고음만이 아니라 전반적인 effort를 낮추는 방향으로 짧게 연습해보세요.",
             }
         )
-        # coherent: if modifying effort, keep contact if firm-without-strain
-        if plane.get("firm_high_strain_low") or plane.get("firm_high_strain_high"):
-            if not any(p["id"] == "contact_firmness" for p in preserve):
-                preserve.append(
-                    {
-                        "id": "contact_firmness",
-                        "label": "성대 접촉 관련 패턴",
-                        "action": "PRESERVE",
-                        "why": "고음에서도 접촉 관련 패턴 자체는 유지되는 편이에요.",
-                    }
-                )
 
     if primary and primary.get("id") == "REGISTER_TRANSITION_DISRUPTION":
         modify.append(
@@ -86,6 +130,7 @@ def build_preserve_modify(
                 "label": "음역 전환 시 source·주기성 흔들림",
                 "action": "MODIFY",
                 "why": "전환 구간을 작은 범위의 사이렌으로 부드럽게 연결해보세요.",
+                "episode_id": (target_episode or {}).get("episode_id"),
             }
         )
 
@@ -109,6 +154,7 @@ def build_preserve_modify(
                 "label": "고음·중역 공명 전략",
                 "action": "MODIFY",
                 "why": "모음·공명 위치를 살짝 바꿔 중역 존재감을 탐색해보세요.",
+                "episode_id": (target_episode or {}).get("episode_id"),
             }
         )
 
@@ -122,7 +168,10 @@ def build_preserve_modify(
             }
         )
 
-    # Mutual coherence: don't modify contact weaker if preserve contact
+    # Do NOT globally preserve contact when target episode contact is unstable
+    if target_episode and target_firm < 0.35 and target_rough:
+        preserve = [p for p in preserve if p["id"] != "contact_firmness"]
+
     if any(p["id"] == "contact_firmness" for p in preserve):
         modify = [m for m in modify if m["id"] != "weaken_contact"]
 

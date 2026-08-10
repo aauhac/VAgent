@@ -39,6 +39,8 @@ def _cycle_params(
         estimated_qoq = open_frac
         # MFDR proxy: max flow declination rate (negative derivative magnitude)
         estimated_mfdr = d_peak
+        # Normalized MFDR: amplitude-relative (usable as directional proxy)
+        estimated_mfdr_norm = float(d_peak / ac)
         # ClQ proxy (NOT EGG CQ): 1 - open_frac
         estimated_clq_proxy = float(np.clip(1.0 - open_frac, 0.0, 1.0))
         out.append(
@@ -48,6 +50,7 @@ def _cycle_params(
                 "estimated_oq_proxy": estimated_qoq,
                 "estimated_clq_proxy": estimated_clq_proxy,
                 "estimated_mfdr_proxy": estimated_mfdr,
+                "estimated_mfdr_norm_proxy": estimated_mfdr_norm,
                 "glottal_pulse_amplitude_proxy": ac,
                 "t0_sec": t0,
             }
@@ -115,6 +118,7 @@ def compute_source_params(
         "estimated_oq_proxy": med("estimated_oq_proxy"),
         "estimated_clq_proxy": med("estimated_clq_proxy"),
         "estimated_mfdr_proxy": med("estimated_mfdr_proxy"),
+        "estimated_mfdr_norm_proxy": med("estimated_mfdr_norm_proxy"),
         "estimated_hrf_proxy": hrf,
         "estimated_source_h1_h2_db": h1_h2_db,
         "glottal_pulse_amplitude_proxy": med("glottal_pulse_amplitude_proxy"),

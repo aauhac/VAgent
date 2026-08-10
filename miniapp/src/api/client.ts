@@ -19,11 +19,21 @@ function headers(extra?: HeadersInit): HeadersInit {
 export async function createAnalysis(
   file: Blob,
   filename: string,
-  opts?: { separate?: boolean; include_feedback?: boolean },
+  opts?: {
+    separate?: boolean;
+    include_feedback?: boolean;
+    analysis_mode?: 'QUICK' | 'FUNCTIONAL' | 'DIAGNOSTIC';
+    pure_vocal?: boolean;
+  },
 ): Promise<{ analysis_id: string }> {
   const form = new FormData();
   form.append('file', file, filename);
-  form.append('separate', String(!!opts?.separate));
+  const mode = opts?.analysis_mode
+    || (opts?.pure_vocal ? 'QUICK' : 'FUNCTIONAL');
+  // Backend forces separate=true for FUNCTIONAL; pure_vocal QUICK may skip separation
+  const separate = mode === 'FUNCTIONAL' ? true : !!opts?.separate && !opts?.pure_vocal;
+  form.append('separate', String(separate));
+  form.append('analysis_mode', mode);
   form.append('include_feedback', 'false');
   const res = await fetch(`${API_BASE}/v1/analyses`, { method: 'POST', body: form });
   if (!res.ok) throw new Error(await res.text());

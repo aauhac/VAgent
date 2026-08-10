@@ -1,4 +1,4 @@
-"""Vocal Function Engine v2 — Functional Vocal Physiology & Technique."""
+"""Vocal Function Engine v2.1 — Functional Vocal Physiology & Technique."""
 
 from __future__ import annotations
 
@@ -8,11 +8,17 @@ import numpy as np
 
 from audio_analyzer.scoring.segments_v3 import build_windows
 from audio_analyzer.vocal_function import config as cfg
+from audio_analyzer.vocal_function.alignment import attach_time_fields
 from audio_analyzer.vocal_function.episodes.builder import (
     build_high_note_episodes,
     build_register_episodes,
     find_best_self_reference,
     pick_focus_episodes,
+)
+from audio_analyzer.vocal_function.evidence.families import (
+    effort_like,
+    effort_secondary_signs,
+    firmer_like,
 )
 from audio_analyzer.vocal_function.evidence_gate import normalize_artifact_flags
 from audio_analyzer.vocal_function.observations.segment import observe_segment
@@ -34,9 +40,70 @@ def _baseline_from_segments(segments: list[dict[str, Any]]) -> dict[str, Any]:
         for s in valid
         if (s.get("observations") or {}).get("rms") is not None
     ]
+    mfdrs = []
+    for s in valid:
+        src = ((s.get("level2_proxies") or {}).get("glottal_source") or {})
+        if src.get("valid") and src.get("estimated_mfdr_norm_proxy") is not None:
+            mfdrs.append(float(src["estimated_mfdr_norm_proxy"]))
     return {
         "f0_hz": float(np.median(f0s)) if f0s else None,
         "rms": float(np.median(rmss)) if rmss else None,
+        "mfdr_norm": float(np.median(mfdrs)) if mfdrs else None,
+    }
+
+
+def compute_contact_effort_plane(
+    segments: list[dict[str, Any]],
+    baseline: dict[str, Any],
+    episodes: Optional[list[dict[str, Any]]] = None,
+) -> dict[str, Any]:
+    """Same-segment co-occurrence — never global firm_n>0 && effort_n>0."""
+    firm_segments: list[dict[str, Any]] = []
+    effort_segments: list[dict[str, Any]] = []
+    for s in segments:
+        if not s.get("valid"):
+            continue
+        if firmer_like(s, baseline):
+            firm_segments.append(s)
+        # Plane effort axis uses secondary signs (independent of firm)
+        if effort_secondary_signs(s, baseline) or effort_like(s, baseline):
+            effort_segments.append(s)
+
+    firm_keys = {(float(s["start_sec"]), float(s["end_sec"])) for s in firm_segments}
+    effort_keys = {(float(s["start_sec"]), float(s["end_sec"])) for s in effort_segments}
+    overlap_keys = firm_keys & effort_keys
+    firm_n = len(firm_keys)
+    effort_n = len(effort_keys)
+    overlap_n = len(overlap_keys)
+    denom_union = max(1, len(firm_keys | effort_keys))
+    denom_firm = max(1, firm_n)
+    denom_effort = max(1, effort_n)
+
+    ep_overlap_n = 0
+    if episodes:
+        for e in episodes:
+            fm = e.get("feature_matrix") or {}
+            firm = ((fm.get("source") or {}).get("contact_firmness") or 0) >= 0.4
+            effort = ((fm.get("effort") or {}).get("strain_like") or 0) >= 0.4
+            if firm and effort:
+                ep_overlap_n += 1
+
+    firm_high_strain_high = overlap_n > 0 or ep_overlap_n > 0
+    firm_high_strain_low = firm_n > 0 and overlap_n == 0 and ep_overlap_n == 0
+
+    return {
+        "firm_segments": firm_n,
+        "effort_segments": effort_n,
+        "firm_effort_overlap_segments": overlap_n,
+        "firm_effort_overlap_ratio": round(overlap_n / denom_union, 3),
+        "firm_without_effort_ratio": round((firm_n - overlap_n) / denom_firm, 3),
+        "effort_without_firm_ratio": round((effort_n - overlap_n) / denom_effort, 3),
+        "episode_firm_effort_overlap": ep_overlap_n,
+        "firm_high_strain_low": firm_high_strain_low,
+        "firm_high_strain_high": firm_high_strain_high,
+        "firm_low_strain_low": firm_n == 0 and effort_n == 0,
+        "distinguishes_firm_vs_strain": True,
+        "co_occurrence_method": "same_segment_or_episode",
     }
 
 
@@ -80,12 +147,8 @@ def analyze_high_note_events(
 
         before = valid[i - 1] if i > 0 else None
         after = valid[i + 1] if i + 1 < len(valid) else None
-        from audio_analyzer.vocal_function.evidence.families import (
-            effort_like,
-            firmer_like,
-        )
 
-        firm = firmer_like(s)
+        firm = firmer_like(s, baseline)
         effort = effort_like(s, baseline)
         period = (s.get("observations") or {}).get("periodicity_primary_db")
         rough = (
@@ -122,6 +185,7 @@ def analyze_high_note_events(
             {
                 "start_sec": s["start_sec"],
                 "end_sec": s["end_sec"],
+                "f0_hz": f0,
                 "f0_percentile": 80,
                 "contact_profile_during": "firmer_like" if firm else "lighter_or_mid",
                 "effort_during": "elevated" if effort else "not_elevated",
@@ -133,12 +197,14 @@ def analyze_high_note_events(
                 "limitation": "실제 후두 근육 긴장을 직접 측정한 것은 아닙니다.",
                 "validity": ve,
                 "rejected": False,
+                "observations": s.get("observations"),
+                "level2_proxies": s.get("level2_proxies"),
                 "before": {
-                    "firm": firmer_like(before) if before else None,
+                    "firm": firmer_like(before, baseline) if before else None,
                     "effort": effort_like(before, baseline) if before else None,
                 },
                 "after": {
-                    "firm": firmer_like(after) if after else None,
+                    "firm": firmer_like(after, baseline) if after else None,
                     "effort": effort_like(after, baseline) if after else None,
                 },
             }
@@ -161,6 +227,9 @@ def compute_vocal_function_profile(
     personal_baseline: Optional[dict[str, Any]] = None,
     y_no_vocals: Optional[np.ndarray] = None,
     user_goal: str = "GENERAL_EASE_AND_CONTROL",
+    time_origin_sec: float = 0.0,
+    functional_quality: str = "FULL",
+    separation_note: Optional[str] = None,
 ) -> dict[str, Any]:
     acoustic = acoustic or {}
     quality = quality or {}
@@ -172,6 +241,25 @@ def compute_vocal_function_profile(
             "available": False,
             "engine_version": cfg.FUNCTION_ENGINE_VERSION,
             "reason": "quality_gate_failed",
+            "functional_quality": "UNAVAILABLE",
+        }
+
+    if functional_quality == "UNAVAILABLE":
+        return {
+            "available": False,
+            "engine_version": cfg.FUNCTION_ENGINE_VERSION,
+            "report_version": cfg.REPORT_VERSION,
+            "functional_quality": "UNAVAILABLE",
+            "reason": "separation_required_failed",
+            "user_message": separation_note
+            or (
+                "반주와 보컬을 충분히 분리하지 못해 "
+                "일부 기능적 발성 분석은 제공하지 않았어요."
+            ),
+            "headline": [
+                "반주와 보컬을 충분히 분리하지 못해 일부 기능적 발성 분석은 제공하지 않았어요."
+            ],
+            "analysis_time_origin_sec": float(time_origin_sec or 0),
         }
 
     duration = len(y) / float(sr)
@@ -204,6 +292,14 @@ def compute_vocal_function_profile(
     respiratory = rules.fuse_respiratory(segments)
     economy = rules.fuse_economy(segments, effort)
 
+    # LIMITED: cap vocal-specific dims when no_vocals missing
+    if functional_quality == "LIMITED":
+        for d in (contact, leakage, effort, register, resonance):
+            d["confidence_label"] = "low"
+            d["status"] = "UNKNOWN"
+            d["hidden"] = True
+            d["summary"] = "분리 제약이 있어 이번엔 판단하지 않았어요."
+
     dimensions = {
         "glottal_contact_profile": contact,
         "air_leakage_breathiness": leakage,
@@ -218,22 +314,23 @@ def compute_vocal_function_profile(
     }
 
     raw_high = analyze_high_note_events(segments, baseline)
-    high_note_episodes = build_high_note_episodes(raw_high)
+    origin = float(time_origin_sec or 0.0)
+    high_note_episodes = [
+        attach_time_fields(e, time_origin_sec=origin)
+        for e in build_high_note_episodes(raw_high)
+    ]
     reg_events = (register.get("profile") or {}).get("events") or []
-    register_episodes = build_register_episodes(reg_events)
+    register_episodes = [
+        attach_time_fields(e, time_origin_sec=origin)
+        for e in build_register_episodes(reg_events)
+    ]
     episodes = high_note_episodes + register_episodes
     best_self = find_best_self_reference(high_note_episodes)
+    if best_self:
+        best_self = attach_time_fields(best_self, time_origin_sec=origin)
     focus = pick_focus_episodes(high_note_episodes, best_self=best_self)
 
-    firm_n = (contact.get("profile") or {}).get("firmer_segments") or 0
-    effort_n = (effort.get("profile") or {}).get("effort_hit_segments") or 0
-    contact_effort_plane = {
-        "firm_high_strain_low": firm_n > 0 and effort_n == 0,
-        "firm_high_strain_high": firm_n > 0 and effort_n > 0,
-        "firm_low_strain_low": firm_n == 0 and effort_n == 0,
-        "firm_low_leakage": (leakage.get("status") in ("MODERATE", "HIGH")),
-        "distinguishes_firm_vs_strain": True,
-    }
+    contact_effort_plane = compute_contact_effort_plane(segments, baseline, episodes)
 
     profile_partial = {
         "dimensions": dimensions,
@@ -246,6 +343,12 @@ def compute_vocal_function_profile(
         user_goal=user_goal or technique_goal or "GENERAL_EASE_AND_CONTROL",
         style_context=style_goal or "unspecified",
     )
+    # Ensure target has original times
+    te = coaching_decision.get("target_episode")
+    if te and te.get("original_start_sec") is None:
+        coaching_decision["target_episode"] = attach_time_fields(
+            te, time_origin_sec=origin
+        )
 
     headlines = [coaching_decision.get("headline")] if coaching_decision.get("headline") else []
     for d in dimensions.values():
@@ -261,8 +364,16 @@ def compute_vocal_function_profile(
     ]
     if len(statuses) >= 3 and len(set(statuses)) == 1:
         warnings.append("FUNCTION_PROFILE_COLLAPSE_WARNING")
+    if functional_quality == "LIMITED":
+        warnings.append("FUNCTIONAL_QUALITY_LIMITED")
 
     rejected_reg = (register.get("profile") or {}).get("rejected_events") or []
+
+    quality_badge = {
+        "FULL": "충분",
+        "LIMITED": "일부 기능 분석만 가능",
+        "UNAVAILABLE": "기능 분석 제한",
+    }.get(functional_quality, "참고")
 
     scientific_debug = {
         "engine_version": cfg.FUNCTION_ENGINE_VERSION,
@@ -282,12 +393,17 @@ def compute_vocal_function_profile(
         "raw_high_note_windows": raw_high,
         "rejected_register_events": rejected_reg,
         "has_no_vocals_contrast": y_no_vocals is not None,
+        "time_origin_sec": origin,
+        "functional_quality": functional_quality,
     }
 
     return {
         "available": True,
         "engine_version": cfg.FUNCTION_ENGINE_VERSION,
         "report_version": cfg.REPORT_VERSION,
+        "functional_quality": functional_quality,
+        "quality_badge": quality_badge,
+        "separation_note": separation_note,
         "calibration_status": "uncalibrated_directional",
         "measurement_mode": cfg.MEASUREMENT_MODE,
         "headline": [h for h in headlines[:5] if h],
@@ -296,11 +412,18 @@ def compute_vocal_function_profile(
             {
                 "start_sec": e["start_sec"],
                 "end_sec": e["end_sec"],
+                "local_start_sec": e.get("local_start_sec", e["start_sec"]),
+                "local_end_sec": e.get("local_end_sec", e["end_sec"]),
+                "original_start_sec": e.get("original_start_sec"),
+                "original_end_sec": e.get("original_end_sec"),
+                "time_origin_sec": e.get("time_origin_sec", origin),
                 "episode_id": e.get("episode_id"),
                 "concern": e.get("concern"),
                 "conclusion": e.get("conclusion"),
                 "n_merged_windows": e.get("n_merged_windows"),
                 "feature_matrix": e.get("feature_matrix"),
+                "phase_method": e.get("phase_method"),
+                "cause_hint": e.get("cause_hint"),
             }
             for e in (focus.get("primary") or []) + (focus.get("secondary") or [])
         ],
@@ -314,6 +437,7 @@ def compute_vocal_function_profile(
         "user_goal": user_goal,
         "valid_segment_count": len(valid),
         "total_segment_count": len(segments),
+        "analysis_time_origin_sec": origin,
         "warnings": warnings,
         "layers": {
             "0": "VOCAL_EVIDENCE_GATE",

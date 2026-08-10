@@ -46,9 +46,13 @@ class JobRunner:
         audio_path: str,
         separate: bool = False,
         include_feedback: bool = False,
+        analysis_mode: str = "QUICK",
     ) -> None:
         if not validate_analysis_id(analysis_id):
             raise ValueError("invalid analysis_id")
+        mode = (analysis_mode or "QUICK").upper()
+        if mode == "FUNCTIONAL":
+            separate = True
         with self._lock:
             if analysis_id in self._jobs and self._jobs[analysis_id].get("status") in (
                 "queued",
@@ -66,6 +70,7 @@ class JobRunner:
                 "result": None,
                 "analysis_status": None,
                 "feedback_status": None,
+                "analysis_mode": mode,
             }
         self._executor.submit(
             self._run,
@@ -73,6 +78,7 @@ class JobRunner:
             audio_path,
             separate,
             include_feedback,
+            mode,
         )
 
     def get(self, analysis_id: str) -> Optional[dict[str, Any]]:
@@ -145,6 +151,7 @@ class JobRunner:
         audio_path: str,
         separate: bool,
         include_feedback: bool,
+        analysis_mode: str = "QUICK",
     ) -> None:
         if self._is_deleted(analysis_id):
             return
@@ -173,6 +180,7 @@ class JobRunner:
                 output_dir=str(self.runtime_dir),
                 recording_id=analysis_id,
                 separate=separate,
+                analysis_mode=analysis_mode,
                 include_feedback=include_feedback,
                 generate_visuals=False,
                 build_preview=True,

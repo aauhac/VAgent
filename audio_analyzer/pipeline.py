@@ -54,6 +54,7 @@ def analyze_audio(
     artist: Optional[str] = None,
     section: Optional[str] = None,
     separate: bool = False,
+    analysis_mode: str = "QUICK",
     demucs_model: str = "htdemucs",
     generate_visuals: bool = False,
     show: bool = False,
@@ -64,11 +65,20 @@ def analyze_audio(
 ) -> dict[str, Any]:
     """
     Main v2 entry point. Returns full internal analysis result.
+
+    analysis_mode:
+      QUICK — free path; raw allowed; separate follows caller flag
+      FUNCTIONAL — Song Detail / Functional Coach; forces separation
+      DIAGNOSTIC — caller controls separation
     """
 
     def _progress(stage: str, pct: int) -> None:
         if progress_callback:
             progress_callback(stage, pct)
+
+    mode = (analysis_mode or "QUICK").upper()
+    if mode == "FUNCTIONAL":
+        separate = True
 
     if recording_id is None:
         recording_id = _build_default_recording_id(audio_path)
@@ -78,7 +88,6 @@ def analyze_audio(
 
     _progress("load", 5)
 
-    # Optional demucs (default false)
     sep = maybe_separate_vocals(
         audio_path,
         rec_dir,
@@ -87,35 +96,55 @@ def analyze_audio(
     )
     source_path = sep["vocals_path"]
     source_mode = sep["source_mode"]
+    separation_failed = bool(sep.get("failed"))
+    separation_status = sep.get("separation_status") or (
+        "success" if source_mode == "separated" else ("failed" if separation_failed else "skipped")
+    )
 
     _progress("preprocess", 15)
     y_full, sr, wav_used = load_analysis_audio(source_path, rec_dir, sample_rate=sample_rate)
     analysis_wav = save_wav(rec_dir / "analysis.wav", y_full, sr)
     duration_full = float(len(y_full) / max(sr, 1))
 
+    # Load full no_vocals BEFORE clipping so we can align windows
+    y_no_vocals_full = _load_no_vocals(sep, sr) if source_mode == "separated" else None
+
     preview_path = None
     preview_report: dict[str, Any] = {"skipped": True}
     if build_preview:
+        # Preview uses full analysis signal so original_* timestamps seek correctly
         y_preview, preview_report = build_preview_signal(y_full, sr)
         preview_path = str(save_wav(rec_dir / "preview.wav", y_preview, sr))
         preview_report["skipped"] = False
+        preview_report["time_base"] = "original_file"
 
     _progress("features", 35)
-    # Pitch on full signal first — drives long-song vocal-active clip selection
     pitch_full = extract_pitch_features(y_full, sr)
     from .scoring.duration_policy_v3 import select_score_clip, slice_audio
+    from .vocal_function.alignment import build_time_context, slice_aligned_stems
 
     duration_policy = select_score_clip(duration_full, pitch_full)
+    time_context = build_time_context(
+        duration_policy=duration_policy,
+        original_duration_sec=duration_full,
+    )
+    clip_start = float(duration_policy.get("start_sec") or 0.0)
+    clip_end = float(duration_policy.get("end_sec") or duration_full)
+
     if duration_policy.get("truncated"):
-        y = slice_audio(
-            y_full,
-            sr,
-            float(duration_policy["start_sec"]),
-            float(duration_policy["end_sec"]),
+        aligned = slice_aligned_stems(
+            y_vocals_full=y_full,
+            y_no_vocals_full=y_no_vocals_full,
+            sr=sr,
+            start_sec=clip_start,
+            end_sec=clip_end,
         )
+        y = aligned["vocals_clip"]
+        y_no_vocals = aligned["no_vocals_clip"]
         pitch_features = extract_pitch_features(y, sr)
     else:
         y = y_full
+        y_no_vocals = y_no_vocals_full
         pitch_features = pitch_full
 
     waveform_features = extract_waveform_features(y, sr)
@@ -126,7 +155,6 @@ def analyze_audio(
     _progress("phonation", 55)
     phonation = extract_phonation_features(y, sr, pitch_features)
 
-    # voiced duration from pitch (on scoring clip)
     voiced_ratio = float(pitch_features.get("voiced_ratio") or 0.0)
     duration_sec = float(len(y) / max(sr, 1))
     voiced_duration_sec = voiced_ratio * duration_sec
@@ -156,6 +184,7 @@ def analyze_audio(
     fingerprints["duration_policy"] = duration_policy
     fingerprints["full_duration_sec"] = round(duration_full, 3)
     fingerprints["score_duration_sec"] = round(duration_sec, 3)
+    fingerprints["time_context"] = time_context
 
     _progress("scoring", 75)
     if quality["status"] == "fail":
@@ -186,9 +215,17 @@ def analyze_audio(
         if duration_policy.get("truncated") and duration_policy.get("note"):
             analysis_notes.insert(0, str(duration_policy["note"]))
 
-    # Vocal Quality / Phonation State Profile (v1; kept as quality layer)
     from .vocal_quality import compute_vocal_quality_profile
     from .vocal_function import compute_vocal_function_profile
+
+    functional_quality, sep_note = _functional_quality_policy(
+        analysis_mode=mode,
+        source_mode=source_mode,
+        separation_status=separation_status,
+        has_no_vocals=y_no_vocals is not None,
+    )
+    if sep_note:
+        analysis_notes.append(sep_note)
 
     if quality["status"] == "fail":
         vocal_quality_profile: dict[str, Any] = {
@@ -198,6 +235,7 @@ def analyze_audio(
         vocal_function_profile: dict[str, Any] = {
             "available": False,
             "reason": "quality_gate_failed",
+            "functional_quality": "UNAVAILABLE",
         }
     else:
         vocal_quality_profile = compute_vocal_quality_profile(
@@ -220,14 +258,16 @@ def analyze_audio(
             },
             source_mode=source_mode,
             artifact_flags=artifact_flags,
-            y_no_vocals=_load_no_vocals(sep, sr),
+            y_no_vocals=y_no_vocals,
+            time_origin_sec=float(time_context["analysis_time_origin_sec"]),
+            functional_quality=functional_quality,
+            separation_note=sep_note,
         )
 
     optional_analysis = {
         "vibrato": phonation.get("vibrato") or {"available": False},
     }
 
-    # Visuals opt-in only
     if generate_visuals or show:
         _progress("visuals", 88)
         try:
@@ -245,6 +285,12 @@ def analyze_audio(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "analysis_status": "completed",
         "feedback_status": "skipped",
+        "analysis_mode": mode,
+        "analysis_time_origin_sec": time_context["analysis_time_origin_sec"],
+        "analysis_clip_start_sec": time_context["analysis_clip_start_sec"],
+        "analysis_clip_end_sec": time_context["analysis_clip_end_sec"],
+        "original_duration_sec": time_context["original_duration_sec"],
+        "time_context": time_context,
         "audio": {
             "duration_sec": round(duration_full, 3),
             "score_duration_sec": round(duration_sec, 3),
@@ -255,7 +301,9 @@ def analyze_audio(
             "analysis_wav_path": str(analysis_wav),
             "preview_path": preview_path,
             "separation": sep,
+            "separation_status": separation_status,
             "duration_policy": duration_policy,
+            "time_context": time_context,
             "content_sha256": (fingerprints.get("source") or {}).get("sha256"),
             "analysis_waveform_sha256": (fingerprints.get("waveform") or {}).get(
                 "full_sha256"
@@ -285,7 +333,6 @@ def analyze_audio(
                 "median_residual_std_cents": phonation.get("median_residual_std_cents"),
                 "median_rms_variation_db": phonation.get("median_rms_variation_db"),
                 "sustained_count": phonation.get("sustained_count", 0),
-                # legacy/debug only — NOT used for scoring/issues
                 "legacy_pitch_stability_cents": pitch_features.get(
                     "pitch_stability_cents"
                 ),
@@ -305,7 +352,6 @@ def analyze_audio(
         "artifact_flags": artifact_flags,
     }
 
-    # Optional LLM — failure must not fail DSP analysis
     if include_feedback:
         _progress("feedback", 92)
         try:
@@ -339,6 +385,36 @@ def analyze_audio(
 
     _progress("done", 100)
     return result
+
+
+def _functional_quality_policy(
+    *,
+    analysis_mode: str,
+    source_mode: str,
+    separation_status: str,
+    has_no_vocals: bool,
+) -> tuple[str, Optional[str]]:
+    """
+    FULL: separated + no_vocals contrast available
+    LIMITED: separated but no_vocals missing, or QUICK raw
+    UNAVAILABLE: FUNCTIONAL mode but separation failed
+    """
+    note_fail = (
+        "반주와 보컬을 충분히 분리하지 못해 "
+        "일부 기능적 발성 분석은 제공하지 않았어요."
+    )
+    if analysis_mode == "FUNCTIONAL":
+        if source_mode != "separated" or separation_status == "failed":
+            return "UNAVAILABLE", note_fail
+        if not has_no_vocals:
+            return "LIMITED", note_fail
+        return "FULL", None
+    # QUICK / DIAGNOSTIC
+    if source_mode == "separated" and has_no_vocals:
+        return "FULL", None
+    if source_mode == "separated":
+        return "LIMITED", note_fail
+    return "LIMITED", None
 
 
 def analyze_mp3(*args: Any, **kwargs: Any) -> dict[str, Any]:

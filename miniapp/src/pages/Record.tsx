@@ -130,7 +130,9 @@ export default function Record() {
     setRecording(false);
     const blob = new Blob(chunksRef.current, { type: mimeType });
     try {
-      const { analysis_id } = await createAnalysis(blob, `recording.${ext}`);
+      const { analysis_id } = await createAnalysis(blob, `recording.${ext}`, {
+        analysis_mode: 'FUNCTIONAL',
+      });
       sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(blob));
       nav(`/analyzing/${analysis_id}`);
     } catch (e: any) {
@@ -146,6 +148,9 @@ export default function Record() {
       <p className="lead">
         최소 {MIN_SEC}초 이상 불러주세요. 20~40초 정도 부르면 더 안정적으로 분석할 수 있어요.
         (최대 {MAX_SEC}초)
+      </p>
+      <p className="muted" style={{ fontSize: '0.9rem' }}>
+        가능하면 이어폰으로 반주를 들으면 더 정확한 발성 분석이 가능해요.
       </p>
       <div className="panel">
         <div style={{ fontSize: '2rem', fontWeight: 800 }}>
