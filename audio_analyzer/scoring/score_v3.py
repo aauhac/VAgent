@@ -747,15 +747,20 @@ def compute_score_v3(
     artifact_flags: Optional[dict[str, Any]] = None,
     y: Any = None,
     sr: Optional[int] = None,
+    pitch: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     artifact_flags = artifact_flags or {}
     spectral_segs: list[dict[str, Any]] = []
     if y is not None and sr:
         try:
-            spectral_segs = compute_spectral_segments(np.asarray(y, dtype=np.float32), int(sr))
+            spectral_segs = compute_spectral_segments(
+                np.asarray(y, dtype=np.float32),
+                int(sr),
+                pitch=pitch,
+            )
         except Exception:
             spectral_segs = []
-    dyn_segs = compute_dynamic_segments(waveform, y=y, sr=sr)
+    dyn_segs = compute_dynamic_segments(waveform, y=y, sr=sr, pitch=pitch)
 
     stability = _score_stability(phonation, quality)
     projection = _score_projection(

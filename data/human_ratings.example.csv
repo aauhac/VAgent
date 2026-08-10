@@ -1,0 +1,6 @@
+sample_id,rater_id,overall_skill,stability,projection,resonance,dynamic_control,notes
+# EXAMPLE human ratings (1–5). Copy to data/human_ratings.csv (gitignored).
+# Do NOT rate pitch accuracy or rhythm accuracy.
+#exp_01,rater_a,5,5,4,4,5,
+#exp_01,rater_b,4,5,4,4,4,
+#beg_01,rater_a,2,2,2,3,2,

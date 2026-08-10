@@ -241,6 +241,12 @@ WEAKEST_AXIS_BLEND = 0.25  # pull overall toward weakest reliable axis
 SEGMENT_WINDOW_SEC = 3.0
 SEGMENT_HOP_SEC = 1.5
 SEGMENT_MIN_RMS_RATIO = 0.08  # vs global peak
+# Prefer voiced/F0-active windows over RMS-only (reduces instrumental sections)
+SEGMENT_MIN_VOICED_RATIO = 0.25
+# Long-song scoring clip (deterministic vocal-active selection; not cherry-picking)
+RECOMMENDED_MAX_SCORE_SEC = 60.0
+RECOMMENDED_MIN_SCORE_SEC = 15.0
+LONG_SONG_SCORE_CLIP_SEC = 45.0
 
 # Quality penalties (same spirit as v2)
 QUALITY_CODE_PENALTIES = {

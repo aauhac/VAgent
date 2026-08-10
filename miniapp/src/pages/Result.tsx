@@ -135,26 +135,27 @@ export default function Result() {
       ) : (
         <>
           <div className="score-hero">
-            <div className="num">{Math.round(score.overall)}</div>
-            <div className="label">{score.label || '좋은 편이에요'}</div>
-            {score.calibration_status === 'uncalibrated' && (
-              <p className="muted" style={{ fontSize: '0.85rem', marginTop: 6 }}>베타 분석 점수</p>
-            )}
+            <div className="label" style={{ fontSize: '1.25rem' }}>오늘의 발성 요약</div>
+            <p className="muted" style={{ marginTop: 8 }}>
+              {(data.vocal_quality_teaser || []).length
+                ? (data.vocal_quality_teaser || []).join(' ')
+                : '자세한 발성 상태는 노래 상세 리포트에서 확인할 수 있어요.'}
+            </p>
           </div>
 
           <p className="lead">{data.short_summary}</p>
 
           <div className="panel">
-            {(score.areas || []).map((a: any) => (
+            {(score.areas || [])
+              .filter((a: any) => a.status !== 'unknown' && a.score != null)
+              .map((a: any) => (
               <div className="area-row" key={a.area_id}>
                 <span>{a.display_name}</span>
                 <strong>
-                  {a.status === 'unknown' || a.score == null
-                    ? '—'
-                    : `${Math.round(a.score)}점`}
+                  {`${Math.round(a.score)}점`}
                   <span className="muted" style={{ marginLeft: 8, fontWeight: 500 }}>
                     ·{' '}
-                    {a.status_label || (a.status === 'unknown' ? '판단 어려움' : a.status)}
+                    {a.status_label || a.status}
                   </span>
                 </strong>
               </div>

@@ -89,27 +89,44 @@ def analyze_audio(
     source_mode = sep["source_mode"]
 
     _progress("preprocess", 15)
-    y, sr, wav_used = load_analysis_audio(source_path, rec_dir, sample_rate=sample_rate)
-    analysis_wav = save_wav(rec_dir / "analysis.wav", y, sr)
+    y_full, sr, wav_used = load_analysis_audio(source_path, rec_dir, sample_rate=sample_rate)
+    analysis_wav = save_wav(rec_dir / "analysis.wav", y_full, sr)
+    duration_full = float(len(y_full) / max(sr, 1))
 
     preview_path = None
     preview_report: dict[str, Any] = {"skipped": True}
     if build_preview:
-        y_preview, preview_report = build_preview_signal(y, sr)
+        y_preview, preview_report = build_preview_signal(y_full, sr)
         preview_path = str(save_wav(rec_dir / "preview.wav", y_preview, sr))
         preview_report["skipped"] = False
 
     _progress("features", 35)
+    # Pitch on full signal first — drives long-song vocal-active clip selection
+    pitch_full = extract_pitch_features(y_full, sr)
+    from .scoring.duration_policy_v3 import select_score_clip, slice_audio
+
+    duration_policy = select_score_clip(duration_full, pitch_full)
+    if duration_policy.get("truncated"):
+        y = slice_audio(
+            y_full,
+            sr,
+            float(duration_policy["start_sec"]),
+            float(duration_policy["end_sec"]),
+        )
+        pitch_features = extract_pitch_features(y, sr)
+    else:
+        y = y_full
+        pitch_features = pitch_full
+
     waveform_features = extract_waveform_features(y, sr)
     frequency_features = extract_frequency_features(y, sr)
-    pitch_features = extract_pitch_features(y, sr)
     timbre_features = extract_timbre_features(frequency_features)
     acoustic = compute_core_acoustic_metrics(y, sr)
 
     _progress("phonation", 55)
     phonation = extract_phonation_features(y, sr, pitch_features)
 
-    # voiced duration from pitch
+    # voiced duration from pitch (on scoring clip)
     voiced_ratio = float(pitch_features.get("voiced_ratio") or 0.0)
     duration_sec = float(len(y) / max(sr, 1))
     voiced_duration_sec = voiced_ratio * duration_sec
@@ -124,6 +141,21 @@ def analyze_audio(
     )
 
     artifact_flags = _artifact_flags(frequency_features, source_mode)
+
+    from .audit.fingerprints import analysis_signal_fingerprint
+
+    fingerprints = analysis_signal_fingerprint(
+        source_path=audio_path,
+        analysis_wav=analysis_wav,
+        y=y,
+        sr=sr,
+        source_mode=source_mode,
+        vocals_path=sep.get("vocals_path") if source_mode == "separated" else None,
+        original_filename=Path(audio_path).name,
+    )
+    fingerprints["duration_policy"] = duration_policy
+    fingerprints["full_duration_sec"] = round(duration_full, 3)
+    fingerprints["score_duration_sec"] = round(duration_sec, 3)
 
     _progress("scoring", 75)
     if quality["status"] == "fail":
@@ -145,11 +177,51 @@ def analyze_audio(
             artifact_flags=artifact_flags,
             y=y,
             sr=sr,
+            pitch=pitch_features,
         )
         timeline = list(phonation.get("instability_events") or [])
         issues = _build_issues(score, timeline, phonation)
         strengths = list(score.get("strengths") or [])
         analysis_notes = _build_analysis_notes(quality, score, source_mode, artifact_flags)
+        if duration_policy.get("truncated") and duration_policy.get("note"):
+            analysis_notes.insert(0, str(duration_policy["note"]))
+
+    # Vocal Quality / Phonation State Profile (v1; kept as quality layer)
+    from .vocal_quality import compute_vocal_quality_profile
+    from .vocal_function import compute_vocal_function_profile
+
+    if quality["status"] == "fail":
+        vocal_quality_profile: dict[str, Any] = {
+            "available": False,
+            "reason": "quality_gate_failed",
+        }
+        vocal_function_profile: dict[str, Any] = {
+            "available": False,
+            "reason": "quality_gate_failed",
+        }
+    else:
+        vocal_quality_profile = compute_vocal_quality_profile(
+            y=y,
+            sr=sr,
+            pitch=pitch_features,
+            acoustic=acoustic,
+            quality=quality,
+            source_mode=source_mode,
+            artifact_flags=artifact_flags,
+        )
+        vocal_function_profile = compute_vocal_function_profile(
+            y=y,
+            sr=sr,
+            pitch=pitch_features,
+            acoustic=acoustic,
+            quality=quality,
+            optional_analysis={
+                "vibrato": phonation.get("vibrato") or {"available": False},
+            },
+            source_mode=source_mode,
+            artifact_flags=artifact_flags,
+            y_no_vocals=_load_no_vocals(sep, sr),
+        )
 
     optional_analysis = {
         "vibrato": phonation.get("vibrato") or {"available": False},
@@ -174,14 +246,22 @@ def analyze_audio(
         "analysis_status": "completed",
         "feedback_status": "skipped",
         "audio": {
-            "duration_sec": round(duration_sec, 3),
+            "duration_sec": round(duration_full, 3),
+            "score_duration_sec": round(duration_sec, 3),
             "sample_rate": sr,
             "source_mode": source_mode,
             "original_path": str(audio_path),
+            "original_filename": Path(audio_path).name,
             "analysis_wav_path": str(analysis_wav),
             "preview_path": preview_path,
             "separation": sep,
+            "duration_policy": duration_policy,
+            "content_sha256": (fingerprints.get("source") or {}).get("sha256"),
+            "analysis_waveform_sha256": (fingerprints.get("waveform") or {}).get(
+                "full_sha256"
+            ),
         },
+        "fingerprints": fingerprints,
         "user_info": {
             "user_id": user_id,
             "song_title": song_title,
@@ -189,6 +269,8 @@ def analyze_audio(
             "section": section,
         },
         "quality": quality,
+        "vocal_quality_profile": vocal_quality_profile,
+        "vocal_function_profile": vocal_function_profile,
         "features": {
             "waveform": _public_waveform(waveform_features),
             "spectral": {
@@ -308,6 +390,29 @@ def _artifact_flags(frequency_features: dict, source_mode: str) -> dict[str, Any
         "relative_low_mid_inflation_likely": demucs_hf,
         "source_mode": source_mode,
     }
+
+
+def _load_no_vocals(sep: dict[str, Any], target_sr: int) -> Optional[np.ndarray]:
+    """Load accompaniment stem for vocal-vs-no_vocals contrast (optional)."""
+    path = (sep or {}).get("no_vocals_path")
+    if not path:
+        return None
+    try:
+        import soundfile as sf
+        import librosa
+
+        y_nv, sr_nv = sf.read(path, always_2d=False)
+        if getattr(y_nv, "ndim", 1) > 1:
+            y_nv = np.mean(y_nv, axis=1)
+        if int(sr_nv) != int(target_sr):
+            y_nv = librosa.resample(
+                np.asarray(y_nv, dtype=float),
+                orig_sr=int(sr_nv),
+                target_sr=int(target_sr),
+            )
+        return np.asarray(y_nv, dtype=np.float32)
+    except Exception:
+        return None
 
 
 def _build_issues(

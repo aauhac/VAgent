@@ -25,9 +25,11 @@ from .explain_v3 import (
     explain_area,
 )
 from .segments import build_focus_segments_from_v3
+from audio_analyzer.vocal_quality.report import build_vocal_quality_public
+from audio_analyzer.vocal_function.report import build_vocal_function_public
 
 
-SONG_DETAIL_REPORT_VERSION = "song-detail-v1.1"
+SONG_DETAIL_REPORT_VERSION = "vocal-coach-report-v2.0"
 
 _FORBIDDEN_KEYS = (
     "physiology_assessments",
@@ -116,12 +118,32 @@ def build_song_detailed_report(
     quality = analysis.get("quality") or {}
 
     raw_areas = list(score.get("areas") or [])
-    areas = [_enrich_area(a) for a in raw_areas]
+    enriched_all = [_enrich_area(a) for a in raw_areas]
+    # Main body: hide UNKNOWN axes (Z.1). Keep excluded note for footer.
+    areas = [
+        a
+        for a in enriched_all
+        if a.get("status") != "unknown" and a.get("score") is not None
+    ]
+    excluded_unknown = [
+        {
+            "area_id": a.get("area_id"),
+            "display_name": a.get("display_name"),
+            "reason": (a.get("interpretation") or "신뢰도 부족"),
+        }
+        for a in enriched_all
+        if a.get("status") == "unknown" or a.get("score") is None
+    ]
+    # Debug-only: full area payload including unknown submetrics
+    areas_debug = enriched_all
 
     legacy_timeline = list(analysis.get("timeline") or [])
     focus_segments = build_focus_segments_from_v3(
         score, legacy_timeline=legacy_timeline, max_total=5
     )
+    # Focus segments only for reliable axes
+    reliable_ids = {a.get("area_id") for a in areas}
+    focus_segments = [e for e in focus_segments if e.get("area_id") in reliable_ids]
 
     # Attach per-area focus slices
     by_area: dict[str, list] = {}
@@ -134,70 +156,145 @@ def build_song_detailed_report(
     strengths = collect_detail_strengths(areas)
     priorities = collect_detail_priorities(areas)
 
-    # Training plan from priority practices
-    training: list[str] = []
-    for p in priorities:
-        if p.get("practice"):
-            training.append(str(p["practice"]))
-    for a in areas:
-        for item in (a.get("practice") or {}).get("items") or []:
+    # MAIN: Vocal Function Profile v2
+    vf_raw = analysis.get("vocal_function_profile") or {}
+    vocal_function = build_vocal_function_public(vf_raw)
+
+    # Quality layer (v1) kept as secondary observations
+    vq_raw = analysis.get("vocal_quality_profile") or {}
+    vocal_quality = build_vocal_quality_public(vq_raw)
+
+    # Merge focus: function segments first, then quality, then performance
+    vf_focus = list(vocal_function.get("focus_segments") or [])
+    vq_focus = list(vocal_quality.get("focus_segments") or [])
+    perf_focus = focus_segments
+    merged_focus = []
+    seen_spans = set()
+    for ev in vf_focus + vq_focus + perf_focus:
+        key = (round(float(ev.get("start_sec") or 0), 1), round(float(ev.get("end_sec") or 0), 1))
+        if key in seen_spans:
+            continue
+        seen_spans.add(key)
+        merged_focus.append(ev)
+        if len(merged_focus) >= 8:
+            break
+
+    # Performance supplement: only stability + dynamic_control
+    performance_areas = [
+        a
+        for a in areas
+        if a.get("area_id") in ("stability", "dynamic_control")
+    ]
+
+    headline_bits = list(
+        (vocal_function.get("coaching_decision") or {}).get("headline")
+        and [(vocal_function.get("coaching_decision") or {}).get("headline")]
+        or vocal_function.get("headline")
+        or vocal_quality.get("headline")
+        or []
+    )
+    summary_text = (
+        "오늘의 기능적 발성 코칭 요약이에요."
+        if headline_bits
+        else overall["text"]
+    )
+    if headline_bits:
+        summary_text = summary_text + " " + " · ".join(str(h) for h in headline_bits[:2] if h)
+
+    # Training from coaching decision first
+    training: list[str] = list(vocal_function.get("training_plan") or [])
+    for d in vocal_quality.get("dimensions") or []:
+        for item in d.get("practice") or []:
             if item not in training:
                 training.append(item)
+    for p in priorities:
+        if p.get("practice") and p["practice"] not in training:
+            training.append(str(p["practice"]))
     training = training[:5]
     if not training:
-        training = ["편한 음 하나를 골라 짧게 반복하며, 가장 약한 세부 항목을 의식해 연습해 보세요."]
+        training = [
+            "가벼운 SOVT로 편한 음을 짧게 유지해보세요.",
+            "문제 구간을 낮은 음량으로 부드럽게 시작해 반복해보세요.",
+        ]
+
+    decision = vocal_function.get("coaching_decision") or {}
+    unknown_footer = vocal_function.get("unknown_footer")
 
     limitations = [
-        "이 리포트는 일반 노래 녹음의 음향 특성 분석입니다.",
-        "표준 Diagnostic Task 기반 정밀 발성 진단이 아닙니다.",
-        "성대 구조·질환·근육 상태를 진단하지 않습니다.",
-        "점수는 베타 기준이며 개인 간 절대 비교용이 아닙니다.",
+        "이 분석은 음향 기반 기능 추정이며 해부학적/의학적 진단이 아닙니다.",
+        "단단한 접촉 ≠ 잘못된 발성; effort/strain은 별도 축입니다.",
+        "가창 참고 점수는 보조 정보입니다.",
     ]
     if quality.get("status") == "warn":
         limitations.append("녹음 품질 경고가 있어 일부 해석은 보수적으로 제한됐어요.")
-    if overall["overall_display_state"] == "PARTIAL":
-        limitations.append(
-            "일부 영역은 판단 보류라서 종합 점수를 부분 분석으로 안내했어요."
-        )
+    if unknown_footer:
+        limitations.append(unknown_footer)
+    if excluded_unknown:
+        names = ", ".join(x.get("display_name") or x.get("area_id") for x in excluded_unknown)
+        limitations.append(f"보조 가창 분석 중 {names}은(는) 제외했어요.")
 
     report: dict[str, Any] = {
         "report_kind": "song_detail",
         "report_version": SONG_DETAIL_REPORT_VERSION,
         "analysis_version": analysis.get("analysis_version", ANALYSIS_VERSION),
         "score_version": score.get("version"),
+        "function_engine_version": vocal_function.get("engine_version"),
         "analysis_id": analysis_id or analysis.get("recording_id"),
         "tier": "song_detail",
         "summary": {
-            "title": "이 노래의 상세 분석",
-            "text": overall["text"],
-            "overall": overall.get("display_overall"),
-            "label": overall.get("label"),
-            "available": bool(score.get("available")),
-            "overall_display_state": overall["overall_display_state"],
+            "title": "오늘의 핵심",
+            "text": summary_text,
+            "overall": None,
+            "label": None,
+            "available": bool(
+                vocal_function.get("available")
+                or vocal_quality.get("available")
+                or score.get("available")
+            ),
+            "overall_display_state": "SECONDARY",
             "reliable_axis_count": overall["reliable_axis_count"],
             "total_axis_count": overall["total_axis_count"],
         },
+        "coaching_decision": decision,
+        "vocal_function_profile": vocal_function,
+        "vocal_quality_profile": vocal_quality,
+        "high_note_events": vocal_function.get("high_note_events") or [],
+        "coaching": vocal_function.get("coaching") or {},
+        "additional_measurements": (vocal_function.get("coaching") or {}).get(
+            "additional_measurement_suggestions"
+        )
+        or [],
+        "performance_supplement": {
+            "title": "보조 가창 분석",
+            "note": "가창 참고 정보이며 메인 기능 코칭이 아닙니다.",
+            "areas": performance_areas,
+            "overall_reference": overall.get("internal_overall") or overall.get("display_overall"),
+            "overall_display_state": overall["overall_display_state"],
+        },
         "overall_assessment": overall,
-        "areas": areas,
-        "focus_segments": focus_segments,
-        # Back-compat alias used by older UI
+        "areas": performance_areas,
+        "excluded_unknown_areas": excluded_unknown,
+        "areas_debug": areas_debug,
+        "focus_segments": merged_focus,
         "timeline": [
             {
                 "start_sec": e["start_sec"],
                 "end_sec": e["end_sec"],
-                "user_message": e.get("user_message"),
+                "user_message": e.get("user_message") or e.get("headline"),
                 "area_id": e.get("area_id"),
                 "score": e.get("score"),
                 "headline": e.get("headline"),
                 "time_label": e.get("time_label"),
                 "practice_hint": e.get("practice_hint"),
+                "role": e.get("role"),
             }
-            for e in focus_segments
+            for e in merged_focus
         ],
         "strengths": strengths,
         "priority_issues": priorities,
         "vibrato": _vibrato_public(analysis.get("optional_analysis") or {}),
         "training_plan": training,
+        "unknown_footer": unknown_footer,
         "recording_notes": list(analysis.get("analysis_notes") or [])[:8],
         "audio": public_audio(analysis.get("audio") or {}),
         "quality": {
@@ -207,21 +304,19 @@ def build_song_detailed_report(
         },
         "limitations": limitations,
         "disclaimer": (
-            "이 결과는 녹음된 음성의 음향적 특성을 바탕으로 "
-            "발성 패턴을 분석한 연습 참고 정보입니다. "
-            "성대의 실제 구조나 질환을 진단하는 검사가 아닙니다."
+            "이 분석은 음향 기반 기능 추정이며 해부학적/의학적 진단이 아닙니다."
         ),
         "preview_available": bool(
             analysis.get("preview_path")
             or (analysis.get("audio") or {}).get("preview_path")
         ),
         "upgrade": {
-            "title": "더 정밀하게 알고 싶나요?",
+            "title": "이 발성 경향을 더 신뢰도 있게 확인해 볼까요?",
             "body": (
-                "약 1~2분 Diagnostic Task로 발성 패턴·음역 전환·강도 협응·"
-                "몸 사용 가이드를 추가로 분석할 수 있어요."
+                "짧은 표준 과제(아/이 지속음·사이렌·강약)로 "
+                "노래에서 관찰된 발성 경향을 다시 검증할 수 있어요."
             ),
-            "cta": "정밀 발성 진단으로 업그레이드",
+            "cta": "정밀 발성 진단으로 확인",
         },
     }
 

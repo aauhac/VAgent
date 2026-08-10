@@ -22,6 +22,11 @@ import librosa
 import numpy as np
 import soundfile as sf
 
+from audio_analyzer.audit.fingerprints import (
+    cached_artifact_matches_source,
+    sha256_file,
+    write_source_sidecar,
+)
 from audio_analyzer.env_utils import resolve_ffmpeg_executable
 
 
@@ -38,8 +43,12 @@ def ensure_wav(
         return source_path
 
     converted = work_dir / "input_converted.wav"
-    if converted.exists():
+    source_sha = sha256_file(source_path)
+    # Existence-only cache is unsafe if another source reused the same work_dir
+    if converted.exists() and cached_artifact_matches_source(converted, source_sha):
         return converted
+    if converted.exists():
+        converted.unlink(missing_ok=True)
 
     ffmpeg_exe = resolve_ffmpeg_executable()
     cmd = [
@@ -58,6 +67,7 @@ def ensure_wav(
     result = subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace")
     if result.returncode != 0:
         raise RuntimeError(f"ffmpeg conversion failed:\n{result.stderr}")
+    write_source_sidecar(converted, source_sha)
     return converted
 
 

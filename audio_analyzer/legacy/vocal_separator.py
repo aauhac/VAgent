@@ -19,6 +19,11 @@ from typing import Optional
 import numpy as np
 import soundfile as sf
 
+from audio_analyzer.audit.fingerprints import (
+    cached_artifact_matches_source,
+    sha256_file,
+    write_source_sidecar,
+)
 from audio_analyzer.env_utils import resolve_ffmpeg_executable
 
 
@@ -40,6 +45,7 @@ def separate_vocals(
     output_dir     : 분리 결과 저장 폴더
     model          : Demucs 모델명 (기본값: htdemucs)
     skip_if_exists : True 이면 vocals.wav 가 있을 때 재실행 생략
+                     (단 source SHA256 sidecar가 일치할 때만)
 
     Returns
     -------
@@ -55,14 +61,20 @@ def separate_vocals(
 
     vocals_path = out_dir / "vocals.wav"
     no_vocals_path = out_dir / "no_vocals.wav"
+    source_sha = sha256_file(audio_path)
 
-    # 캐시 확인
-    if skip_if_exists and vocals_path.exists():
+    # 캐시 확인 — source hash mismatch면 재생성
+    if (
+        skip_if_exists
+        and vocals_path.exists()
+        and cached_artifact_matches_source(vocals_path, source_sha)
+    ):
         print(f"[separator] 캐시 사용: {vocals_path}")
         return {
             "vocals_path": str(vocals_path),
             "no_vocals_path": str(no_vocals_path) if no_vocals_path.exists() else None,
             "skipped": True,
+            "source_sha256": source_sha,
         }
 
     print(f"[separator] 보컬 분리 시작 (모델: {model}) ...")
@@ -84,7 +96,10 @@ def separate_vocals(
     if Path(audio_path).suffix.lower() not in {".wav", ".flac", ".ogg", ".aiff"}:
         import subprocess
         converted_input = out_dir / "input_converted.wav"
-        if not converted_input.exists():
+        if not (
+            converted_input.exists()
+            and cached_artifact_matches_source(converted_input, source_sha)
+        ):
             ffmpeg_exe = resolve_ffmpeg_executable()
             conv_result = subprocess.run(
                 [ffmpeg_exe, "-y", "-i", audio_path_str,
@@ -95,6 +110,7 @@ def separate_vocals(
                 raise RuntimeError(
                     f"[separator] ffmpeg 변환 실패:\n{conv_result.stderr}"
                 )
+            write_source_sidecar(converted_input, source_sha)
         audio_path_str = str(converted_input)
 
     y_mono, _ = librosa.load(audio_path_str, sr=target_sr, mono=False)
@@ -133,11 +149,14 @@ def separate_vocals(
     _save_wav(vocals_tensor, target_sr, vocals_path)
     _save_wav(no_vocals_tensor, target_sr, no_vocals_path)
 
+    write_source_sidecar(vocals_path, source_sha)
+    write_source_sidecar(no_vocals_path, source_sha)
     print(f"[separator] 완료 → {vocals_path}")
     return {
         "vocals_path": str(vocals_path),
         "no_vocals_path": str(no_vocals_path),
         "skipped": False,
+        "source_sha256": source_sha,
     }
 
 

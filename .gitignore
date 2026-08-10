@@ -27,6 +27,15 @@ temp/
 local_samples/
 test_demucs_out/
 
+# Labeled discrimination benchmark (PII / local paths — never commit)
+data/discrimination_manifest.csv
+data/human_ratings.csv
+data/vocal_quality_ratings.csv
+data/discrimination_benchmark/
+!data/discrimination_manifest.example.csv
+!data/human_ratings.example.csv
+!data/vocal_quality_ratings.example.csv
+
 # Audio samples (keep locally, do not track)
 *.wav
 *.mp3

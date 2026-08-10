@@ -1,0 +1,11 @@
+sample_id,file_path,subject_id,group,skill_rank,song_id,source_type,recording_device,has_backing_track,commercial_mastered,same_song_group,notes
+# EXAMPLE ONLY — copy to data/discrimination_manifest.csv (gitignored) and fill real paths.
+# group: expert | intermediate | beginner | unknown
+# skill_rank: expert=2 intermediate=1 beginner=0 (evaluation ordinal, not a training target)
+# source_type: dry_vocal | phone_recording | karaoke_mix | commercial_mix | studio_vocal
+# expert != commercial_mastered (track mastering separately)
+#
+#exp_01,C:/local_samples/expert/s01_songA.wav,sub_e01,expert,2,song_a,studio_vocal,condenser,false,false,song_a_match,vocal major
+#exp_02,C:/local_samples/expert/s01_songB.wav,sub_e01,expert,2,song_b,studio_vocal,condenser,false,false,,
+#int_01,C:/local_samples/intermediate/s02_songA.wav,sub_i01,intermediate,1,song_a,karaoke_mix,phone,true,false,song_a_match,cover
+#beg_01,C:/local_samples/beginner/s03_songA.wav,sub_b01,beginner,0,song_a,phone_recording,phone,false,false,song_a_match,

@@ -345,22 +345,24 @@ def build_overall_assessment(score: dict[str, Any]) -> dict[str, Any]:
     state = meta["overall_display_state"]
     overall = score.get("overall")
     label = score.get("label")
+    # Public overall only when >=3 reliable axes (FULL). PARTIAL/UNAVAILABLE hide the number.
     if state == "UNAVAILABLE":
-        text = "충분한 영역이 확보되지 않아 종합 점수를 확정하지 않았어요."
+        text = "충분한 영역이 확보되지 않아 종합 점수를 확정하지 않았어요. 확인된 항목만 아래에 표시해요."
         display_overall = None
     elif state == "PARTIAL":
-        text = join_summary(overall, label, partial=True)
-        text += (
-            f" {meta['total_axis_count']}개 영역 중 {meta['reliable_axis_count']}개 영역에서 "
-            f"충분한 신뢰도로 점수를 계산했어요."
+        text = (
+            f"이번 녹음에서 확인된 항목만 표시해요. "
+            f"{meta['total_axis_count']}개 영역 중 {meta['reliable_axis_count']}개 영역만 "
+            f"신뢰도 있게 계산되어 종합 점수는 숨겼어요."
         )
-        display_overall = overall
+        display_overall = None
     else:
         text = join_summary(overall, label, partial=False)
         display_overall = overall
     return {
         **meta,
         "display_overall": display_overall,
+        "internal_overall": overall,
         "label": label,
         "text": text,
         "provisional": True,
@@ -370,6 +372,9 @@ def build_overall_assessment(score: dict[str, Any]) -> dict[str, Any]:
 def collect_detail_strengths(areas: list[dict[str, Any]]) -> list[dict[str, Any]]:
     items = []
     for area in areas:
+        # UNKNOWN parent axis must never create user-facing strengths
+        if area.get("status") == "unknown" or area.get("score") is None:
+            continue
         for s in area.get("submetrics") or []:
             sid = str(s.get("submetric_id") or "")
             if _is_meta_submetric(sid):

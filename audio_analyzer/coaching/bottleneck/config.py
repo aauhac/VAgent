@@ -1,0 +1,87 @@
+"""Bottleneck IDs, exercise maps, goals — not medical diagnoses."""
+
+BOTTLENECK_IDS = (
+    "EXCESS_EFFORT_HIGH_NOTE",
+    "EXCESS_FIRMNESS_WITH_STRAIN",
+    "AIR_LEAKAGE",
+    "APERIODIC_ROUGHNESS",
+    "REGISTER_TRANSITION_DISRUPTION",
+    "ABRUPT_ONSET",
+    "UNSTABLE_RELEASE",
+    "RESONANCE_MID_PRESENCE_LOSS",
+    "RESONANCE_HIGH_NOTE_COLLAPSE",
+    "PHRASE_END_SUPPORT_LOSS",
+    "INTENSITY_OVERSHOOT",
+    "VIBRATO_IRREGULARITY",
+)
+
+USER_TITLES = {
+    "EXCESS_EFFORT_HIGH_NOTE": "고음 진입 시 힘 과다",
+    "EXCESS_FIRMNESS_WITH_STRAIN": "단단함 + effort 동반",
+    "AIR_LEAKAGE": "기류 누출·기식성",
+    "APERIODIC_ROUGHNESS": "거친·불규칙 음질",
+    "REGISTER_TRANSITION_DISRUPTION": "음역 전환 흔들림",
+    "ABRUPT_ONSET": "급격한 소리 시작",
+    "RESONANCE_MID_PRESENCE_LOSS": "중역 공명 감소",
+    "RESONANCE_HIGH_NOTE_COLLAPSE": "고음 공명 붕괴",
+    "PHRASE_END_SUPPORT_LOSS": "구절 끝 지지 약화",
+    "VIBRATO_IRREGULARITY": "비브라토 불규칙",
+}
+
+CAUSE_FAMILY = {
+    "EXCESS_EFFORT_HIGH_NOTE": "EFFORT_LIMITATION",
+    "EXCESS_FIRMNESS_WITH_STRAIN": "SOURCE_LIMITATION",
+    "AIR_LEAKAGE": "SOURCE_LIMITATION",
+    "APERIODIC_ROUGHNESS": "STABILITY_LIMITATION",
+    "REGISTER_TRANSITION_DISRUPTION": "REGISTER_LIMITATION",
+    "ABRUPT_ONSET": "EFFORT_LIMITATION",
+    "RESONANCE_MID_PRESENCE_LOSS": "RESONANCE_LIMITATION",
+    "RESONANCE_HIGH_NOTE_COLLAPSE": "RESONANCE_LIMITATION",
+    "PHRASE_END_SUPPORT_LOSS": "BREATH_COORDINATION_LIMITATION",
+    "VIBRATO_IRREGULARITY": "STABILITY_LIMITATION",
+}
+
+BOTTLENECK_EXERCISES = {
+    "EXCESS_EFFORT_HIGH_NOTE": ["sovt_straw", "balanced_onset_hum", "siren_ng"],
+    "EXCESS_FIRMNESS_WITH_STRAIN": ["sovt_straw", "balanced_onset_hum"],
+    "AIR_LEAKAGE": ["balanced_onset_hum"],
+    "REGISTER_TRANSITION_DISRUPTION": ["siren_ng"],
+    "ABRUPT_ONSET": ["balanced_onset_hum"],
+    "RESONANCE_MID_PRESENCE_LOSS": ["messa_di_voce_short"],
+    "RESONANCE_HIGH_NOTE_COLLAPSE": ["siren_ng", "messa_di_voce_short"],
+    "PHRASE_END_SUPPORT_LOSS": ["messa_di_voce_short"],
+    "APERIODIC_ROUGHNESS": ["sovt_straw"],
+    "VIBRATO_IRREGULARITY": ["balanced_onset_hum"],
+}
+
+SUCCESS_CRITERIA = {
+    "EXCESS_EFFORT_HIGH_NOTE": [
+        "같은 F0 범위",
+        "음량이 과도하게 죽지 않음",
+        "effort proxy 감소",
+        "주기성 유지",
+        "거친 음질 증가 없음",
+    ],
+    "REGISTER_TRANSITION_DISRUPTION": [
+        "전환 구간 주기성 유지",
+        "dropout 감소",
+        "source jump 완화",
+    ],
+    "AIR_LEAKAGE": [
+        "주기성 향상",
+        "기식성 관련 proxy 감소",
+        "과도한 압착 없이",
+    ],
+}
+
+GOAL_IMPACT_BOOST = {
+    "HIGH_NOTE": ["EXCESS_EFFORT_HIGH_NOTE", "RESONANCE_HIGH_NOTE_COLLAPSE", "REGISTER_TRANSITION_DISRUPTION"],
+    "MIX": ["REGISTER_TRANSITION_DISRUPTION"],
+    "BELT": ["EXCESS_EFFORT_HIGH_NOTE", "EXCESS_FIRMNESS_WITH_STRAIN"],
+    "RESONANCE": ["RESONANCE_MID_PRESENCE_LOSS", "RESONANCE_HIGH_NOTE_COLLAPSE"],
+    "VIBRATO": ["VIBRATO_IRREGULARITY"],
+    "LIGHT_PHONATION": ["EXCESS_FIRMNESS_WITH_STRAIN", "EXCESS_EFFORT_HIGH_NOTE"],
+    "FIRM_PHONATION": ["AIR_LEAKAGE"],
+    "GENERAL_EASE_AND_CONTROL": ["EXCESS_EFFORT_HIGH_NOTE", "ABRUPT_ONSET", "REGISTER_TRANSITION_DISRUPTION"],
+    "GENERAL_EASE": ["EXCESS_EFFORT_HIGH_NOTE", "ABRUPT_ONSET"],
+}

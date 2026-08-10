@@ -61,19 +61,37 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
         for a in areas
     ]
 
-    short_summary = None
-    if score.get("available"):
-        from audio_analyzer.song_detail.copy import join_summary
+    reliable_axes = [
+        a
+        for a in areas
+        if a.get("score") is not None and a.get("status") != "unknown"
+    ]
+    n_reliable = len(reliable_axes)
+    show_overall = bool(score.get("available")) and n_reliable >= 3
+    public_overall = score.get("overall") if show_overall else None
+    public_label = score.get("label") if show_overall else None
 
-        best = strengths[0]["display_name"] if strengths else None
-        focus = priority[0]["display_name"] if priority else None
-        # label is already a complete phrase — never append "이에요"
-        parts = [join_summary(score.get("overall"), score.get("label"), partial=False)]
-        if best:
-            parts.append(f"특히 {best}이(가) 좋아요.")
-        if focus:
-            parts.append(f"먼저 보면 좋은 영역은 {focus}예요.")
-        parts.append("베타 분석 점수이며, 상세 발성 진단은 별도 표준화 Task로 진행해요.")
+    from audio_analyzer.vocal_quality.report import free_vocal_quality_teaser
+    from audio_analyzer.vocal_function.report import free_function_teaser
+
+    vf_teaser = free_function_teaser(result.get("vocal_function_profile") or {})
+    vq_teaser = free_vocal_quality_teaser(result.get("vocal_quality_profile") or {})
+    teaser = vf_teaser or vq_teaser
+
+    short_summary = None
+    if score.get("available") or teaser:
+        parts = ["오늘의 발성 요약."]
+        parts.extend(teaser)
+        if n_reliable:
+            stab = next((a for a in reliable_axes if a.get("area_id") == "stability"), None)
+            dyn = next(
+                (a for a in reliable_axes if a.get("area_id") == "dynamic_control"), None
+            )
+            if stab and stab.get("score") is not None:
+                parts.append(f"발성 안정성 참고 {round(float(stab['score']))}.")
+            if dyn and dyn.get("score") is not None:
+                parts.append(f"강약 컨트롤 참고 {round(float(dyn['score']))}.")
+        parts.append("자세한 발성 상태 프로필은 노래 상세 리포트에서 확인할 수 있어요.")
         short_summary = " ".join(parts)
     else:
         short_summary = quality.get("user_message") or "정확한 분석이 어려운 녹음이에요."
@@ -108,14 +126,22 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
             "available": score.get("available", False),
             "version": score.get("version"),
             "calibration_status": score.get("calibration_status"),
-            "overall": score.get("overall"),
-            "label": score.get("label"),
+            "overall": public_overall,
+            "label": public_label,
+            "overall_display_state": (
+                "FULL"
+                if show_overall
+                else ("PARTIAL" if n_reliable == 2 else "UNAVAILABLE")
+            ),
+            "reliable_axis_count": n_reliable,
             "areas": area_summary,
             "best_area": strengths[0] if strengths else None,
             "focus_area": priority[0] if priority else None,
             "reason": score.get("reason"),
         },
         "short_summary": short_summary,
+        "vocal_quality_teaser": teaser,
+        "vocal_function_teaser": vf_teaser,
         "premium_available": True,
         "products_available": {
             "song_detail": True,

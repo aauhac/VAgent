@@ -2,6 +2,7 @@
 scoring/segments_v3.py
 ----------------------
 Time-window segment metrics for projection / resonance / dynamic axes.
+Prefers voiced/F0-active windows over RMS-only instrumental sections.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import numpy as np
 from audio_analyzer.legacy.acoustic_metrics import compute_core_acoustic_metrics
 
 from . import config_v3 as cfg
+from .duration_policy_v3 import build_voiced_mask
 
 
 def build_windows(duration_sec: float, *, max_windows: int = 24) -> list[tuple[float, float]]:
@@ -36,7 +38,7 @@ def build_windows(duration_sec: float, *, max_windows: int = 24) -> list[tuple[f
     return out
 
 
-def _segment_active(y: np.ndarray, sr: int, start: float, end: float, peak_rms: float) -> bool:
+def _segment_active_rms(y: np.ndarray, sr: int, start: float, end: float, peak_rms: float) -> bool:
     a = int(start * sr)
     b = int(end * sr)
     chunk = y[a:b]
@@ -46,16 +48,33 @@ def _segment_active(y: np.ndarray, sr: int, start: float, end: float, peak_rms: 
     return rms >= peak_rms * cfg.SEGMENT_MIN_RMS_RATIO
 
 
+def _segment_voiced_ratio(
+    start: float,
+    end: float,
+    voiced_mask: Optional[np.ndarray],
+    hop_sec: float,
+) -> Optional[float]:
+    if voiced_mask is None or hop_sec <= 0:
+        return None
+    a = int(start / hop_sec)
+    b = max(a + 1, int(np.ceil(end / hop_sec)))
+    a = max(0, min(a, len(voiced_mask)))
+    b = max(0, min(b, len(voiced_mask)))
+    if b <= a:
+        return 0.0
+    return float(np.mean(voiced_mask[a:b]))
+
+
 def compute_spectral_segments(
     y: np.ndarray,
     sr: int,
+    *,
+    pitch: Optional[dict[str, Any]] = None,
 ) -> list[dict[str, Any]]:
     duration = len(y) / float(sr)
     windows = build_windows(duration)
     if not windows:
         return []
-    peak_rms = float(np.sqrt(np.mean(y**2))) + 1e-9
-    # Use a slightly higher local peak for activity
     frame_rms = np.sqrt(
         np.maximum(
             np.convolve(y**2, np.ones(sr // 10) / max(sr // 10, 1), mode="same"),
@@ -63,11 +82,17 @@ def compute_spectral_segments(
         )
     )
     peak_rms = float(np.max(frame_rms)) + 1e-9
+    voiced_mask, hop_sec = build_voiced_mask(pitch, duration_sec=duration)
 
     segs: list[dict[str, Any]] = []
     for start, end in windows:
-        if not _segment_active(y, sr, start, end, peak_rms):
+        if not _segment_active_rms(y, sr, start, end, peak_rms):
             continue
+        vratio = _segment_voiced_ratio(start, end, voiced_mask, hop_sec)
+        # If pitch available, require minimum voiced density (instrumental reject)
+        if vratio is not None and voiced_mask.any():
+            if vratio < cfg.SEGMENT_MIN_VOICED_RATIO:
+                continue
         a = int(start * sr)
         b = max(a + 1, int(end * sr))
         chunk = y[a:b]
@@ -84,6 +109,8 @@ def compute_spectral_segments(
                 "weight_gap_db": m.get("weight_gap_db"),
                 "mouth_gap_db": m.get("mouth_gap_db"),
                 "spectral_slope_db_per_oct": m.get("spectral_slope_db_per_oct"),
+                "vocal_present": True if (vratio is None or vratio >= cfg.SEGMENT_MIN_VOICED_RATIO) else False,
+                "voiced_ratio": None if vratio is None else round(vratio, 4),
             }
         )
     return segs
@@ -94,20 +121,24 @@ def compute_dynamic_segments(
     *,
     y: Optional[np.ndarray] = None,
     sr: Optional[int] = None,
+    pitch: Optional[dict[str, Any]] = None,
 ) -> list[dict[str, Any]]:
     """Build dynamic segment stats from per-second summary or audio."""
     per_sec = list(waveform.get("per_second_summary") or [])
     if not per_sec and y is not None and sr:
         duration = len(y) / float(sr)
         windows = build_windows(duration)
+        voiced_mask, hop_sec = build_voiced_mask(pitch, duration_sec=duration)
         segs = []
         for start, end in windows:
+            vratio = _segment_voiced_ratio(start, end, voiced_mask, hop_sec)
+            if vratio is not None and voiced_mask.any() and vratio < cfg.SEGMENT_MIN_VOICED_RATIO:
+                continue
             a = int(start * sr)
             b = max(a + 1, int(end * sr))
             chunk = y[a:b]
             if len(chunk) < sr // 5:
                 continue
-            # frame rms
             hop = 512
             frames = []
             for i in range(0, len(chunk) - hop, hop):
@@ -120,7 +151,10 @@ def compute_dynamic_segments(
             voiced = arr[arr >= thr]
             if len(voiced) < 2:
                 continue
-            dr = float(20 * np.log10(np.max(voiced) + 1e-10) - 20 * np.log10(np.min(voiced) + 1e-10))
+            dr = float(
+                20 * np.log10(np.max(voiced) + 1e-10)
+                - 20 * np.log10(np.min(voiced) + 1e-10)
+            )
             diffs = np.abs(np.diff(20 * np.log10(arr + 1e-10)))
             abrupt = float(np.mean(diffs >= cfg.ABRUPT_JUMP_DB))
             segs.append(
@@ -130,6 +164,10 @@ def compute_dynamic_segments(
                     "dynamic_range_db": round(dr, 2),
                     "abrupt_ratio": round(abrupt, 3),
                     "rms_std": round(float(np.std(arr)), 6),
+                    "voiced_ratio": None if vratio is None else round(vratio, 4),
+                    "vocal_present": True
+                    if (vratio is None or vratio >= cfg.SEGMENT_MIN_VOICED_RATIO)
+                    else False,
                 }
             )
         return segs
@@ -148,7 +186,10 @@ def compute_dynamic_segments(
         voiced = rms[rms >= thr]
         if len(voiced) < 1:
             continue
-        dr = float(20 * np.log10(np.max(voiced) + 1e-10) - 20 * np.log10(np.min(voiced) + 1e-10))
+        dr = float(
+            20 * np.log10(np.max(voiced) + 1e-10)
+            - 20 * np.log10(np.min(voiced) + 1e-10)
+        )
         db = 20 * np.log10(rms + 1e-10)
         diffs = np.abs(np.diff(db)) if len(db) > 1 else np.asarray([0.0])
         abrupt = float(np.mean(diffs >= cfg.ABRUPT_JUMP_DB)) if len(diffs) else 0.0

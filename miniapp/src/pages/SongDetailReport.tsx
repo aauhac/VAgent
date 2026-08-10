@@ -16,16 +16,14 @@ function seekTo(audio: HTMLAudioElement | null, sec?: number | null) {
 function ScoreLine({
   score,
   label,
-  unknown,
 }: {
   score?: number | null;
   label?: string;
-  unknown?: boolean;
 }) {
-  if (unknown || score == null) {
+  if (score == null) {
     return (
       <strong>
-        — · <span className="muted" style={{ fontWeight: 500 }}>{label || '판단 어려움'}</span>
+        — · <span className="muted" style={{ fontWeight: 500 }}>{label || '—'}</span>
       </strong>
     );
   }
@@ -36,6 +34,20 @@ function ScoreLine({
         · {label}
       </span>
     </strong>
+  );
+}
+
+/** 0 = light (left), 1 = firm (right) */
+export function ContactContinuum({ value }: { value: number }) {
+  const c = Math.max(0, Math.min(1, Number(value)));
+  const left = Math.max(0, Math.round(c * 6));
+  const right = Math.max(0, Math.round((1 - c) * 6));
+  return (
+    <p className="muted" style={{ margin: '4px 0', fontSize: '0.9rem' }}>
+      가벼움 {'─'.repeat(left)}●{'─'.repeat(right)} 단단함
+      <br />
+      (좋고 나쁨이 아닌 경향 표시)
+    </p>
   );
 }
 
@@ -82,118 +94,83 @@ export default function SongDetailReport() {
   if (!report) return <main><p className="muted">상세 리포트 불러오는 중…</p></main>;
 
   const summary = report.summary || {};
-  const overall = report.overall_assessment || {};
+  const decision = report.coaching_decision || report.vocal_function_profile?.coaching_decision || {};
+  const vf = report.vocal_function_profile || {};
+  const dims = vf.dimensions || [];
   const focus = report.focus_segments || report.timeline || [];
-  const partial = summary.overall_display_state === 'PARTIAL'
-    || overall.overall_display_state === 'PARTIAL';
-  const unavailable = summary.overall_display_state === 'UNAVAILABLE'
-    || overall.overall_display_state === 'UNAVAILABLE';
+  const supplement = report.performance_supplement || {};
+  const suppAreas = supplement.areas || report.areas || [];
+  const extraMeasure = report.additional_measurements || [];
+  const primary = decision.primary_bottleneck;
+  const preserve = decision.preserve || [];
+  const modify = decision.modify || [];
+  const why = decision.why || [];
 
   return (
     <main>
       <Link className="muted" to={`/result/${id}`}>← 무료 결과</Link>
       <h1 className="brand" style={{ fontSize: '1.6rem', marginTop: 12 }}>
-        {summary.title || '이 노래의 상세 분석'}
+        {summary.title || '오늘의 핵심'}
       </h1>
-      <p className="lead">{summary.text || overall.text}</p>
-      {partial && (
-        <p className="muted">
-          {overall.total_axis_count || 4}개 영역 중 {overall.reliable_axis_count || summary.reliable_axis_count || 0}개만
-          신뢰도 있게 계산된 부분 분석이에요.
-        </p>
-      )}
-      {unavailable && (
-        <p className="muted">종합 점수는 이번 녹음에서 확정하지 않았어요.</p>
-      )}
+      <p className="lead">{summary.text || decision.headline}</p>
 
       <div className="panel">
-        <h3 style={{ marginTop: 0 }}>4축 상세</h3>
-        {(report.areas || []).map((a: any) => {
-          const unknown = a.status === 'unknown' || a.score == null;
-          return (
-            <div key={a.area_id} style={{ marginBottom: 20 }}>
+        <h3 style={{ marginTop: 0 }}>가장 먼저 바꿔볼 부분</h3>
+        {!primary && modify.length === 0 && (
+          <p className="muted">이번 녹음에서 우선 수정 후보는 제한적이에요.</p>
+        )}
+        {(modify.length ? modify : primary ? [{ label: primary.user_title, why: primary.why }] : []).map(
+          (m: any, i: number) => (
+            <div key={i} style={{ marginBottom: 12 }}>
               <div className="area-row">
-                <span>{a.display_name}</span>
-                <ScoreLine
-                  score={a.score}
-                  label={a.status_label || (unknown ? '판단 어려움' : a.status)}
-                  unknown={unknown}
-                />
+                <span>{m.label || primary?.user_title}</span>
+                <strong>MODIFY</strong>
               </div>
-              {a.headline && <p style={{ margin: '6px 0 4px' }}>{a.headline}</p>}
-              <p className="muted" style={{ margin: '4px 0' }}>{a.interpretation}</p>
-              {(a.why_this_score || []).length > 0 && (
-                <ul className="muted" style={{ margin: '6px 0', paddingLeft: 18 }}>
-                  {(a.why_this_score || []).slice(0, 4).map((w: string, i: number) => (
-                    <li key={i}>{w}</li>
-                  ))}
-                </ul>
-              )}
-              {(a.submetrics || []).length > 0 && (
-                <div style={{ marginTop: 8 }}>
-                  <p className="muted" style={{ fontSize: '0.85rem', marginBottom: 4 }}>
-                    {unknown ? '참고 가능한 세부 항목' : '세부 항목'}
-                  </p>
-                  {(a.submetrics || []).map((s: any) => (
-                    <div className="area-row" key={s.submetric_id} style={{ fontSize: '0.9rem' }}>
-                      <span className="muted">{s.display_name}</span>
-                      <span>
-                        {s.score == null ? '—' : Math.round(s.score)}
-                        {s.display_note ? (
-                          <span className="muted"> · {s.display_note}</span>
-                        ) : s.confidence_label && s.confidence_label !== '신뢰 높음' ? (
-                          <span className="muted"> · {s.confidence_label}</span>
-                        ) : null}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {(a.practice?.summary) && (
-                <p style={{ marginTop: 8 }}><strong>연습</strong> {a.practice.summary}</p>
-              )}
+              <p className="muted" style={{ margin: '4px 0' }}>{m.why || primary?.why}</p>
             </div>
-          );
-        })}
+          ),
+        )}
       </div>
 
       <div className="panel">
-        <h3 style={{ marginTop: 0 }}>잘하고 있는 점</h3>
-        {(report.strengths || []).length === 0 && <p className="muted">강조할 강점이 없어요.</p>}
-        {(report.strengths || []).map((s: any, i: number) => (
-          <div key={`${s.submetric_id || s.area_id}-${i}`} style={{ marginBottom: 10 }}>
-            <strong>{s.display_name}</strong>
-            {s.score != null && <span className="muted"> · {Math.round(s.score)}</span>}
-            <p className="muted">{s.note}</p>
+        <h3 style={{ marginTop: 0 }}>지금 유지할 부분</h3>
+        {preserve.length === 0 && <p className="muted">표시할 유지 항목이 없어요.</p>}
+        {preserve.map((p: any) => (
+          <div key={p.id} style={{ marginBottom: 8 }}>
+            <div className="area-row">
+              <span>✓ {p.label}</span>
+              <strong>PRESERVE</strong>
+            </div>
+            {p.why && <p className="muted" style={{ margin: '2px 0', fontSize: '0.9rem' }}>{p.why}</p>}
           </div>
         ))}
       </div>
 
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>개선 우선순위</h3>
-        {(report.priority_issues || []).length === 0 && <p className="muted">우선 개선 항목이 없어요.</p>}
-        {(report.priority_issues || []).map((p: any, i: number) => (
-          <div key={`${p.area_id}-${i}`} style={{ marginBottom: 10 }}>
-            <strong>{p.display_name}</strong>
-            <p className="muted">{p.what_user_hears}</p>
-            {p.practice && <p>{p.practice}</p>}
-          </div>
-        ))}
-      </div>
+      {why.length > 0 && (
+        <div className="panel">
+          <h3 style={{ marginTop: 0 }}>왜 그렇게 판단했나요?</h3>
+          {why.map((w: string, i: number) => (
+            <p key={i} className="muted" style={{ margin: '6px 0' }}>{w}</p>
+          ))}
+          {primary?.alternative_explanations?.length ? (
+            <p className="muted" style={{ fontSize: '0.85rem' }}>
+              다른 설명 후보: {(primary.alternative_explanations || []).join(', ')}
+            </p>
+          ) : null}
+        </div>
+      )}
 
       <div className="panel">
         <h3 style={{ marginTop: 0 }}>다시 들어볼 구간</h3>
         <audio ref={audioRef} src={blobUrl || previewUrl} controls style={{ width: '100%' }} />
-        {focus.length === 0 && (
-          <p className="muted">표시할 구간이 없어요.</p>
-        )}
+        {focus.length === 0 && <p className="muted">표시할 구간이 없어요.</p>}
         {focus.map((ev: any, i: number) => (
           <div key={i} style={{ marginTop: 12 }}>
             <div className="area-row">
               <span>
                 {ev.time_label
                   || `${Number(ev.start_sec).toFixed(1)}s – ${Number(ev.end_sec).toFixed(1)}s`}
-                {ev.score != null ? ` · ${Math.round(ev.score)}` : ''}
+                {ev.headline ? ` · ${ev.headline}` : ''}
               </span>
               <button
                 type="button"
@@ -205,29 +182,10 @@ export default function SongDetailReport() {
               </button>
             </div>
             <p className="muted" style={{ margin: '4px 0' }}>
-              {ev.headline || ev.user_message}
+              {ev.user_message || ev.what_user_may_hear}
             </p>
-            {ev.why && ev.why !== ev.user_message && (
-              <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>{ev.why}</p>
-            )}
           </div>
         ))}
-      </div>
-
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>비브라토 참고</h3>
-        {report.vibrato?.available ? (
-          <>
-            {(report.vibrato.lines || []).map((line: any, i: number) => (
-              <p key={i} className="muted" style={{ margin: '4px 0' }}>
-                {line.label}: {line.value}
-              </p>
-            ))}
-            <p className="muted">{report.vibrato.note}</p>
-          </>
-        ) : (
-          <p className="muted">{report.vibrato?.note || '참고 분석 없음'}</p>
-        )}
       </div>
 
       <div className="panel">
@@ -237,7 +195,77 @@ export default function SongDetailReport() {
             <li key={i}>{x}</li>
           ))}
         </ul>
+        {(decision.success_criteria || []).length > 0 && (
+          <>
+            <p className="muted" style={{ marginTop: 8 }}>성공 기준</p>
+            <ul className="muted">
+              {(decision.success_criteria || []).map((x: string, i: number) => (
+                <li key={i}>{x}</li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
+
+      <div className="panel">
+        <h3 style={{ marginTop: 0 }}>성대 작동 프로필</h3>
+        {dims.length === 0 && (
+          <p className="muted">신뢰도 있게 표시할 프로필 항목이 제한적이에요.</p>
+        )}
+        {dims.map((d: any) => (
+          <div key={d.dimension_id} style={{ marginBottom: 18 }}>
+            <div className="area-row">
+              <span>{d.display_name}</span>
+              <strong>{d.continuum_label || d.status_label || d.prevalence_label}</strong>
+            </div>
+            {d.dimension_id === 'glottal_contact_profile' && d.continuum_0_to_1 != null && (
+              <ContactContinuum value={d.continuum_0_to_1} />
+            )}
+            {d.profile && d.dimension_id === 'resonance_formant_strategy' ? (
+              <ul className="muted" style={{ margin: '6px 0', paddingLeft: 18 }}>
+                <li>밝기: {d.profile.brightness}</li>
+                <li>중역 존재감: {d.profile.mid_presence}</li>
+              </ul>
+            ) : (
+              <p className="muted" style={{ margin: '4px 0' }}>{d.summary}</p>
+            )}
+            {d.what_it_may_mean && (
+              <p className="muted" style={{ margin: '4px 0', fontSize: '0.9rem' }}>
+                {d.what_it_may_mean}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="panel">
+        <h3 style={{ marginTop: 0 }}>{supplement.title || '보조 가창 분석'}</h3>
+        <p className="muted">{supplement.note || '가창 참고 정보입니다.'}</p>
+        {suppAreas.map((a: any) => (
+          <div key={a.area_id} style={{ marginBottom: 12 }}>
+            <div className="area-row">
+              <span>{a.display_name}</span>
+              <ScoreLine score={a.score} label={a.status_label || a.status} />
+            </div>
+            {a.headline && <p className="muted" style={{ margin: '4px 0' }}>{a.headline}</p>}
+          </div>
+        ))}
+      </div>
+
+      {extraMeasure.length > 0 && (
+        <div className="panel">
+          <h3 style={{ marginTop: 0 }}>추가 정밀 측정</h3>
+          <ul className="muted">
+            {extraMeasure.map((m: any, i: number) => (
+              <li key={i}>{m.reason}: {(m.tasks || []).join(', ')}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {report.unknown_footer && (
+        <p className="muted" style={{ fontSize: '0.85rem' }}>{report.unknown_footer}</p>
+      )}
 
       <div className="panel">
         <h3 style={{ marginTop: 0 }}>한계</h3>
@@ -246,18 +274,18 @@ export default function SongDetailReport() {
             <li key={i}>{x}</li>
           ))}
         </ul>
-        <p className="muted">{report.disclaimer}</p>
+        <p className="muted" style={{ fontSize: '0.85rem' }}>{report.disclaimer}</p>
       </div>
 
-      <div className="panel" style={{ borderColor: 'var(--accent, #2a6)' }}>
-        <h3 style={{ marginTop: 0 }}>{report.upgrade?.title || '더 정밀하게 알고 싶나요?'}</h3>
+      <div className="panel">
+        <h3 style={{ marginTop: 0 }}>{report.upgrade?.title || '정밀 진단'}</h3>
         <p className="muted">{report.upgrade?.body}</p>
         <button
-          className="btn"
           type="button"
-          onClick={() => nav(`/premium?analysis=${id}&product=${diagProduct}`)}
+          className="btn"
+          onClick={() => nav(`/premium?analysisId=${id}&product=${diagProduct}`)}
         >
-          {report.upgrade?.cta || '정밀 발성 진단'} · {diagPrice}
+          {report.upgrade?.cta || '정밀 발성 진단'} ({diagPrice})
         </button>
       </div>
     </main>

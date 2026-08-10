@@ -1,0 +1,3 @@
+sample_id,file_path,subject_id,breathiness,pressed_like,roughness,resonance_balance,onset_abruptness,transition_disruption,rater_id,confidence,notes
+# EXAMPLE — copy to data/vocal_quality_ratings.csv (gitignored). Scores 0–4.
+#s01,C:/local_samples/a.wav,sub1,1,2,0,2,1,1,rater_a,high,

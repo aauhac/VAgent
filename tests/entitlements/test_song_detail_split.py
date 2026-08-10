@@ -93,8 +93,13 @@ def test_mock_song_detail_unlock_and_report(client):
     assert "reliable_findings" not in body
     assert "scientific_debug" not in body
     blob = json.dumps(body, ensure_ascii=False)
-    assert "glottal" not in blob.lower()
+    # Raw GIF / cepstral metrics must stay out of Song Detail public JSON
     assert "cepstral_prominence" not in blob
+    assert "estimated_naq" not in blob
+    assert "scientific_debug" not in blob
+    # Physiology premium payloads still banned
+    assert "phonation_contact_pattern" not in blob
+    assert "physiology_assessments" not in blob
 
 
 def test_song_detail_does_not_grant_diagnostic(client):

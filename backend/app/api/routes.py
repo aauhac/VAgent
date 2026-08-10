@@ -96,6 +96,9 @@ def get_analysis(
             "why_this_score",
             "overall_assessment",
             "submetrics",
+            "vocal_quality_profile",
+            "vocal_function_profile",
+            "scientific_debug",
         ):
             result.pop(banned, None)
         # Nested premium evidence must not leak via score.areas

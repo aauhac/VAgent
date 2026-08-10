@@ -104,7 +104,7 @@ def test_case2_dynamic_worst_not_flat_copy():
     assert "구간" in blob or "무너" in blob or "흔들" in blob
 
 
-def test_case3_unknown_shows_partial_submetrics():
+def test_case3_unknown_hidden_but_listed_in_excluded():
     analysis = {
         "score": {
             "available": True,
@@ -136,10 +136,10 @@ def test_case3_unknown_shows_partial_submetrics():
         "optional_analysis": {"vibrato": {"available": False}},
     }
     report = build_song_detailed_report(analysis, analysis_id="x")
-    proj = next(a for a in report["areas"] if a["area_id"] == "projection")
-    assert proj["status"] == "unknown"
-    assert any(s.get("score") is not None for s in proj["submetrics"])
-    assert "신뢰" in proj["interpretation"] or "충분" in proj["interpretation"]
+    assert all(a["area_id"] != "projection" for a in report["areas"])
+    assert any(x["area_id"] == "projection" for x in report["excluded_unknown_areas"])
+    dbg = next(a for a in report["areas_debug"] if a["area_id"] == "projection")
+    assert any(s.get("score") is not None for s in dbg["submetrics"])
 
 
 def test_case4_positive_oriented_names():
@@ -202,7 +202,8 @@ def test_case7_partial_overall_state():
     }
     oa = build_overall_assessment(score)
     assert oa["overall_display_state"] == "PARTIAL"
-    assert "부분 분석" in oa["text"]
+    assert oa["display_overall"] is None
+    assert "종합 점수" in oa["text"] or "확인된 항목" in oa["text"]
 
 
 def test_case8_full_overall_possible():
@@ -265,6 +266,7 @@ def test_case10_summary_no_double_iyo():
         }
     )
     assert "있어요이에요" not in report["summary"]["text"]
+    assert report["summary"]["overall"] is None
 
 
 def test_case11_unknown_has_concrete_reason():
@@ -296,18 +298,19 @@ def test_case12_low_conf_100_not_perfect_copy():
                         "unknown",
                         confidence=0.2,
                         subs=[_sub("spectral_projection", 100, conf=0.15)],
-                    )
+                    ),
+                    _area("stability", 70, "good", subs=[_sub("sustain_pitch_stability", 90)]),
                 ],
             },
             "quality": {"status": "pass"},
             "optional_analysis": {"vibrato": {"available": False}},
         }
     )
-    proj = report["areas"][0]
-    sm = next(s for s in proj["submetrics"] if s["submetric_id"] == "spectral_projection")
-    # score hidden or marked low confidence — not presented as perfect certainty
+    assert all(a["area_id"] != "projection" for a in report["areas"])
+    dbg = next(a for a in report["areas_debug"] if a["area_id"] == "projection")
+    sm = next(s for s in dbg["submetrics"] if s["submetric_id"] == "spectral_projection")
     assert sm["score"] is None or sm.get("display_note")
-    assert "완벽" not in (proj.get("interpretation") or "")
+    assert all(s.get("area_id") != "projection" for s in report["strengths"])
 
 
 def test_case13_14_no_physiology_in_song_detail():
@@ -348,4 +351,4 @@ def test_report_version_bump():
             "optional_analysis": {},
         }
     )
-    assert report["report_version"].startswith("song-detail-v1.1")
+    assert report["report_version"].startswith("vocal-coach-report-v2")
