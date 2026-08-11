@@ -349,6 +349,8 @@ def explain_task_selection(plan: dict[str, Any]) -> dict[str, Any]:
             "unresolved_labels": labels,
             "selected_task_count": n,
             "estimated_duration_text": f"약 {est_min}분" if n else "추가 녹음 없음",
+            "required": n > 0,
+            "required_tasks": n > 0,
         },
     }
 

@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
-PLANNER_VERSION = "adaptive-dx-planner-v1.1"
-PROTOCOL_VERSION = "diagnostic-protocol-v1.1"
-REPORT_VERSION = "diagnostic-report-v1.1"
+PLANNER_VERSION = "adaptive-dx-planner-v1.2"
+PROTOCOL_VERSION = "diagnostic-protocol-v1.2"
+REPORT_VERSION = "diagnostic-report-v1.2"
 
 # Product-facing dimension keys (planner) → song engine dimension ids
 DIMENSION_ALIASES = {

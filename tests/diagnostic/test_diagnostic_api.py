@@ -46,7 +46,7 @@ def test_protocol_endpoint(client):
     r = c.get("/v1/diagnostic/protocol")
     assert r.status_code == 200
     body = r.json()
-    assert body["protocol_version"] == "diagnostic-protocol-v1.1"
+    assert body["protocol_version"] == "diagnostic-protocol-v1.2"
     assert body.get("adaptive") is True
     assert len(body["tasks"]) == 4
 

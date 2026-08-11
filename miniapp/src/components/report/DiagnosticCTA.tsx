@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
+import PremiumProductCard from '../ui/PremiumProductCard';
 
 type Offer = {
   unresolved_count?: number;
   unresolved_labels?: string[];
   selected_task_count?: number;
   estimated_duration_text?: string;
+  required?: boolean;
+  required_tasks?: boolean;
 };
 
 type Props = {
@@ -26,40 +29,70 @@ export default function DiagnosticCTA({
 }: Props) {
   const labels = diagnosticOffer?.unresolved_labels || [];
   const nTasks = diagnosticOffer?.selected_task_count;
-  const lead =
+  const required = diagnosticOffer?.required !== false && (nTasks == null || nTasks > 0);
+
+  if (!required && typeof nTasks === 'number' && nTasks === 0) {
+    return (
+      <section className="section" style={{ borderBottom: 0 }}>
+        <PremiumProductCard
+          badge="완료 가능"
+          title="정밀 발성 진단"
+          description="이번 음원에서는 주요 발성 특성이 이미 충분히 확인됐어요. 추가 측정이 필요한 항목은 없어요."
+          bullets={['추가 과제 없음']}
+          ctaLabel={unlocked && sessionId ? '정밀 발성 진단 보기' : '홈으로'}
+          to={unlocked && sessionId ? `/diagnostic/${sessionId}/report` : '/'}
+        />
+      </section>
+    );
+  }
+
+  const bullets = [
     labels.length > 0
-      ? `노래만으로 확인하기 어려운 부분이 있어요. ${labels.slice(0, 2).join('과 ')}은(는) 이번 노래만으로 구분하기 어려웠어요.`
-      : '노래에서 본 발성 패턴을 표준 과제에서 더 정밀하게 확인할 수 있어요.';
-  const follow =
-    typeof nTasks === 'number' && nTasks === 0
-      ? '이번 음원에서는 주요 발성 특성이 이미 충분히 확인됐어요.'
-      : typeof nTasks === 'number'
-        ? `짧은 표준 발성 ${nTasks}가지를 추가하면 이 부분을 더 정밀하게 확인할 수 있어요.`
-        : '짧은 표준 발성으로 불확실한 항목만 추가로 확인할 수 있어요.';
+      ? `확인 항목 · ${labels.slice(0, 2).join(' · ')}`
+      : '노래만으로 구분하기 어려운 항목을 추가 확인',
+    typeof nTasks === 'number'
+      ? `짧은 과제 ${nTasks}개`
+      : '필요한 짧은 과제만 진행',
+    diagnosticOffer?.estimated_duration_text
+      ? `예상 시간 · ${diagnosticOffer.estimated_duration_text}`
+      : '대략 1분 내외',
+  ];
 
   return (
     <section className="section" style={{ borderBottom: 0 }}>
-      <h3 className="section-title">정밀 발성 진단</h3>
-      <p className="body-text muted">{lead}</p>
-      <p className="body-text muted">{follow}</p>
-      {diagnosticOffer?.estimated_duration_text && (
-        <p className="muted">예상 시간 · {diagnosticOffer.estimated_duration_text}</p>
+      <h3 className="section-title">한 단계 더 정확하게</h3>
+      <p className="body-text muted" style={{ marginBottom: 14 }}>
+        노래 한 곡만으로는 모든 발성 특성을 확정할 수 없어요.
+        필요한 항목만 짧게 추가 녹음해 더 정확하게 확인해요.
+      </p>
+      {unlocked && sessionId ? (
+        <PremiumProductCard
+          badge="UNLOCKED"
+          featured
+          title="정밀 발성 진단"
+          description="이미 해제한 정밀 진단 결과를 볼 수 있어요."
+          bullets={bullets}
+          ctaLabel="정밀 발성 진단 보기"
+          to={`/diagnostic/${sessionId}/report`}
+        />
+      ) : (
+        <PremiumProductCard
+          badge="가장 정확한 분석"
+          featured
+          title="정밀 발성 진단"
+          description="추가 녹음으로 불확실한 항목을 더 정확하게 확인합니다."
+          priceLabel={priceLabel}
+          bullets={bullets}
+          ctaLabel={`정밀 발성 진단 · ${priceLabel}`}
+          to={`/premium?analysis=${analysisId || ''}&product=${productId}`}
+          footer="상세 리포트만으로도 충분할 수 있어요. 확신이 필요할 때 이어가세요."
+        />
       )}
-      <div style={{ marginTop: 16 }}>
-        {unlocked && sessionId ? (
-          <Link className="btn" to={`/diagnostic/${sessionId}/report`}>
-            정밀 발성 진단 보기
-          </Link>
-        ) : (
-          <Link
-            className="btn"
-            to={`/premium?analysis=${analysisId || ''}&product=${productId}`}
-            style={{ width: '100%' }}
-          >
-            정밀 발성 진단 · {priceLabel}
-          </Link>
-        )}
-      </div>
+      {!unlocked && (
+        <p className="muted" style={{ marginTop: 12, fontSize: '0.82rem' }}>
+          <Link to={`/result/${analysisId}`}>무료 결과로 돌아가기</Link>
+        </p>
+      )}
     </section>
   );
 }

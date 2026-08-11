@@ -116,9 +116,10 @@ export default function SongDetailReport() {
 
   return (
     <main style={{ paddingBottom: playerLabel ? 28 : 12 }}>
-      <Link className="muted" to={`/result/${id}`}>‹ 내 보컬 리포트</Link>
-      <h1 className="brand" style={{ fontSize: '1.35rem', marginTop: 12, marginBottom: 0 }}>
-        내 보컬 리포트
+      <Link className="muted" to={`/result/${id}`}>‹ 무료 결과</Link>
+      <p className="page-kicker" style={{ marginTop: 14 }}>상세 리포트</p>
+      <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 0, marginBottom: 0 }}>
+        더 자세히 살펴보기
       </h1>
 
       <VocalTypeHero profile={vocalType} />

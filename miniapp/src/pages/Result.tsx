@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   getAnalysis,
@@ -9,6 +9,8 @@ import {
   saveSongDetailUnlock,
 } from '../api/client';
 import VocalTypeHero from '../components/report/VocalTypeHero';
+import VocalProfile from '../components/report/VocalProfile';
+import PremiumProductCard from '../components/ui/PremiumProductCard';
 import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '../lib/reportPresentation';
 
 export default function Result() {
@@ -62,6 +64,16 @@ export default function Result() {
     }
   }
 
+  const freeDims = useMemo(() => {
+    if (!data) return null;
+    return (
+      data.vocal_function_teaser_dimensions
+      || data.vocal_function_profile?.dimensions
+      || data.dimensions
+      || null
+    );
+  }, [data]);
+
   if (expired) {
     return (
       <main>
@@ -105,8 +117,12 @@ export default function Result() {
   const score = data.score || {};
   const access = data.access || {};
   const prodMap = products?.products || {};
-  const songPrice = prodMap.song_detail?.display_amount || '—';
+  const songPrice = prodMap.song_detail?.display_amount || '₩1,000';
+  const diagOfferKey = products?.offers?.diagnostic || 'diagnostic_full';
+  const diagPrice = prodMap[diagOfferKey]?.display_amount || '₩2,000';
   const songUnlocked = !!access.song_detail_unlocked;
+  const diagUnlocked = !!access.diagnostic_unlocked;
+  const sessionId = access.diagnostic_session_id || null;
 
   const vocalType =
     data.vocal_type_teaser
@@ -139,9 +155,13 @@ export default function Result() {
   return (
     <main>
       <Link className="muted" to="/">‹ 홈</Link>
-      <h1 className="brand" style={{ fontSize: '1.35rem', marginTop: 12, marginBottom: 0 }}>
-        내 보컬 리포트
+      <p className="page-kicker" style={{ marginTop: 14 }}>무료 보컬 리포트</p>
+      <h1 className="brand" style={{ fontSize: '1.4rem', marginBottom: 4 }}>
+        핵심만 먼저 확인해요
       </h1>
+      <p className="lead" style={{ marginBottom: 8 }}>
+        더 자세한 프로필과 정밀 확인은 아래에서 이어갈 수 있어요.
+      </p>
 
       {!score.available ? (
         <section className="section">
@@ -176,24 +196,70 @@ export default function Result() {
             </section>
           )}
 
-          <section className="section">
-            <p className="muted body-text" style={{ marginBottom: 12 }}>
-              발성 프로필 · 특징 구간 · 음역별 구성은 상세 리포트에서 확인할 수 있어요.
-            </p>
-            {songUnlocked ? (
-              <Link className="btn" to={`/result/${id}/detail`} style={{ width: '100%' }}>
-                상세 발성 리포트 보기
-              </Link>
-            ) : (
-              <button
-                className="btn"
-                disabled={busyDetail}
-                onClick={buySongDetail}
-                style={{ width: '100%' }}
-              >
-                {busyDetail ? '준비 중…' : `상세 발성 리포트 보기 · ${songPrice}`}
-              </button>
-            )}
+          {freeDims ? (
+            <VocalProfile
+              dimensions={freeDims}
+              criteriaMatrix={data.criteria_matrix || []}
+              title="발성 프로필"
+              showConfidence={false}
+            />
+          ) : null}
+
+          <section className="section" style={{ borderBottom: 0 }}>
+            <h3 className="section-title">더 자세히 볼까요?</h3>
+            <div className="upsell-stack">
+              {songUnlocked ? (
+                <PremiumProductCard
+                  badge="UNLOCKED"
+                  title="상세 리포트"
+                  description="발성 프로필 · 관찰 특징 · 들어볼 구간을 더 자세히 확인해요."
+                  bullets={['상세 발성 프로필', '관찰된 특징', '비교해서 들어볼 구간']}
+                  ctaLabel="상세 리포트 보기"
+                  to={`/result/${id}/detail`}
+                />
+              ) : (
+                <PremiumProductCard
+                  badge="PREMIUM"
+                  title="상세 리포트"
+                  description="발성 타입 외에 더 자세한 발성 프로필과 관찰 특징을 확인합니다."
+                  priceLabel={songPrice}
+                  bullets={['상세 발성 프로필', '관찰된 특징', '비교해서 들어볼 구간']}
+                  ctaLabel={`상세 리포트 보기 · ${songPrice}`}
+                  onClick={buySongDetail}
+                  busy={busyDetail}
+                />
+              )}
+
+              {diagUnlocked && sessionId ? (
+                <PremiumProductCard
+                  badge="UNLOCKED"
+                  featured
+                  title="정밀 발성 진단"
+                  description="추가 녹음으로 확인한 정밀 진단 결과를 볼 수 있어요."
+                  bullets={['불확실 항목 정밀 확인', '짧은 표준 과제']}
+                  ctaLabel="정밀 진단 보기"
+                  to={`/diagnostic/${sessionId}/report`}
+                />
+              ) : (
+                <PremiumProductCard
+                  badge="가장 정확한 분석"
+                  featured
+                  title="정밀 발성 진단"
+                  description="추가 녹음으로 불확실한 항목을 더 정확하게 확인합니다."
+                  priceLabel={diagPrice}
+                  bullets={[
+                    '노래만으로 알기 어려운 항목만 추가 확인',
+                    '필요한 짧은 과제만 진행',
+                    diagOfferKey === 'diagnostic_upgrade'
+                      ? '상세 리포트 보유 시 업그레이드'
+                      : '상세 리포트 포함',
+                  ]}
+                  ctaLabel={`정밀 진단 시작 · ${diagPrice}`}
+                  to={`/premium?analysis=${id || ''}&product=${diagOfferKey}`}
+                  footer="더 비싼 상품이 아니라, 더 정확한 검사를 위한 단계예요."
+                />
+              )}
+            </div>
           </section>
         </>
       )}

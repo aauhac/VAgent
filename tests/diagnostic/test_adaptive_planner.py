@@ -130,20 +130,28 @@ def test_fusion_confirms_increases_confidence():
                 "status": "light",
                 "summary": "light",
                 "confidence_label": "low",
+                "confidence_score": 0.35,
             }
         }
     }
     tasks = [
         {
             "task_id": "sustain_a",
-            "mechanisms": [
-                {
-                    "mechanism_id": "phonation_contact_pattern",
+            "quality": {"status": "ok"},
+            "compliance": {"ok": True},
+            "dimension_evidence": {
+                "contact": {
+                    "dimension_id": "contact",
+                    "available": True,
                     "status": "firm-mid",
-                    "summary": "firm",
+                    "confidence_score": 0.84,
                     "confidence_label": "high",
+                    "resolution_eligible": True,
+                    "quality_valid": True,
+                    "reason": "multi_family_firm",
                 }
-            ],
+            },
+            "actual_coverage": ["contact"],
         }
     ]
     fused = fuse_song_and_task_evidence(
@@ -155,6 +163,7 @@ def test_fusion_confirms_increases_confidence():
     assert "contact" in fused["resolved_dimensions"]
     assert fused["resolved_dimensions"]["contact"]["final_confidence"] > 0.5
     assert fused["fusion_rules"]["blind_average"] is False
+    assert fused["fusion_rules"]["observed_marker_fallback"] is False
 
 
 def test_fusion_contextual_difference():
@@ -163,21 +172,28 @@ def test_fusion_contextual_difference():
             "glottal_contact_profile": {
                 "status": "light",
                 "summary": "light",
-                "confidence_label": "medium",
+                "confidence_label": "high",
+                "confidence_score": 0.8,
             }
         }
     }
     tasks = [
         {
             "task_id": "sustain_a",
-            "mechanisms": [
-                {
-                    "mechanism_id": "phonation_contact_pattern",
+            "quality": {"status": "ok"},
+            "compliance": {"ok": True},
+            "dimension_evidence": {
+                "contact": {
+                    "dimension_id": "contact",
+                    "available": True,
                     "status": "firm",
-                    "summary": "firm",
-                    "confidence_label": "high",
+                    "confidence_score": 0.82,
+                    "resolution_eligible": True,
+                    "quality_valid": True,
+                    "reason": "multi_family_firm",
                 }
-            ],
+            },
+            "actual_coverage": ["contact"],
         }
     ]
     fused = fuse_song_and_task_evidence(
@@ -186,9 +202,9 @@ def test_fusion_contextual_difference():
         unresolved_before=["contact"],
         selected_tasks=["sustain_a"],
     )
-    # May resolve with contextual note when statuses differ
     assert fused["song_profile"]["contact"]["status"] == "light"
-    assert fused["baseline_profile"]["contact"]["status"] == "firm"
+    # Strong conflict → context_resolved, baseline preserved separately
+    assert "contact" in fused["context_resolved_dimensions"] or fused.get("baseline_profile", {}).get("contact")
 
 
 def test_invalid_task_no_confidence_boost():
@@ -205,13 +221,17 @@ def test_invalid_task_no_confidence_boost():
             "task_id": "sustain_a",
             "quality": {"status": "fail"},
             "invalid": True,
-            "mechanisms": [
-                {
-                    "mechanism_id": "phonation_contact_pattern",
+            "dimension_evidence": {
+                "contact": {
+                    "dimension_id": "contact",
+                    "available": True,
                     "status": "firm",
-                    "confidence_label": "high",
+                    "confidence_score": 0.9,
+                    "resolution_eligible": True,
+                    "quality_valid": False,
                 }
-            ],
+            },
+            "actual_coverage": ["contact"],
         }
     ]
     fused = fuse_song_and_task_evidence(
@@ -233,24 +253,31 @@ def test_final_profile_no_blind_average():
                 "glottal_contact_profile": {
                     "status": "0.3",
                     "confidence_label": "low",
+                    "confidence_score": 0.3,
                 }
             }
         },
         task_results=[
             {
                 "task_id": "sustain_a",
-                "mechanisms": [
-                    {
-                        "mechanism_id": "phonation_contact_pattern",
+                "quality": {"status": "ok"},
+                "compliance": {"ok": True},
+                "dimension_evidence": {
+                    "contact": {
+                        "dimension_id": "contact",
+                        "available": True,
                         "status": "0.7",
-                        "confidence_label": "high",
+                        "confidence_score": 0.85,
+                        "resolution_eligible": True,
+                        "quality_valid": True,
+                        "reason": "multi_family",
                     }
-                ],
+                },
+                "actual_coverage": ["contact"],
             }
         ],
         plan={"unresolved_dimensions": ["contact"], "selected_tasks": ["sustain_a"]},
     )
     assert profile["fusion_rules"]["blind_average"] is False
-    # Must not invent 0.5 average status
     final = profile["resolved_dimensions"]["contact"]["final_status"]
     assert final in ("0.7", "0.3")

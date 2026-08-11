@@ -29,7 +29,7 @@ from audio_analyzer.vocal_quality.report import build_vocal_quality_public
 from audio_analyzer.vocal_function.report import build_vocal_function_public
 
 
-SONG_DETAIL_REPORT_VERSION = "vocal-coach-report-v2.9"
+SONG_DETAIL_REPORT_VERSION = "vocal-coach-report-v2.10"
 
 _FORBIDDEN_KEYS = (
     "physiology_assessments",

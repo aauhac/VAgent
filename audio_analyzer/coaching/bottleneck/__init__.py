@@ -32,7 +32,7 @@ def build_coaching_decision(
         h.pop("_all_measurement_candidates", None)
         h.pop("_measurement_sidecar", None)
 
-    primary, secondary = select_primary(
+    primary, secondary, rejection_trace = select_primary(
         public_hyps, user_goal=user_goal, criteria_matrix=criteria_matrix
     )
     target = _resolve_target_episode(primary, episodes, focus)
@@ -47,18 +47,50 @@ def build_coaching_decision(
                 "eligibility": "NEEDS_MEASUREMENT",
             }
         )
+        rejection_trace.append(
+            {
+                "id": primary.get("id"),
+                "reason": "no_playable_target_episode",
+                "confidence_label": primary.get("confidence_label"),
+            }
+        )
         primary = None
 
-    # Target vocal validity
+    # Target vocal eligibility (v2.10) — not legacy binary vocal_specific
     if primary and target:
-        valid = (target.get("feature_matrix") or {}).get("validity") or target.get("validity") or {}
-        if valid.get("vocal_specific") is False:
+        from audio_analyzer.vocal_function.vocal_attribution import (
+            evaluate_target_vocal_eligibility,
+        )
+
+        gate = evaluate_target_vocal_eligibility(primary, target)
+        if gate.get("status") != "ELIGIBLE":
+            reason = gate.get("reason") or "target_vocal_attribution_uncertain"
+            user_reason = (
+                "이 구간은 반주와 분리된 보컬 근거가 충분하지 않아 주요 판단에서 제외했어요."
+                if reason == "target_non_vocal_contamination"
+                else "이번 음원만으로 해당 구간을 확실하게 구분하기 어려웠어요."
+            )
             measurement_candidates.append(
                 {
                     "issue": primary.get("id"),
-                    "reason": "target 구간의 vocal validity가 부족해요.",
-                    "recommended_task": "re_record_with_headphones",
+                    "reason": user_reason,
+                    "recommended_task": "re_record_with_headphones"
+                    if reason == "target_non_vocal_contamination"
+                    else "additional_measurement",
                     "eligibility": "NEEDS_MEASUREMENT",
+                }
+            )
+            rejection_trace.append(
+                {
+                    "id": primary.get("id"),
+                    "reason": reason,
+                    "confidence_label": primary.get("confidence_label"),
+                    "claim_family": gate.get("claim_family"),
+                    "target_vocal_eligibility": gate.get("status"),
+                    "episode_vocal_attribution": (gate.get("episode_vocal_attribution") or {}).get(
+                        "state"
+                    ),
+                    "claim_suitability": gate.get("claim_suitability"),
                 }
             )
             primary = None
@@ -91,6 +123,13 @@ def build_coaching_decision(
                         "eligibility": "NEEDS_MEASUREMENT",
                     }
                 )
+                rejection_trace.append(
+                    {
+                        "id": primary.get("id"),
+                        "reason": "register_core_span_missing_at_target",
+                        "confidence_label": primary.get("confidence_label"),
+                    }
+                )
                 primary = None
                 target = None
 
@@ -112,6 +151,13 @@ def build_coaching_decision(
         exercises = []
         success = []
         additional = True
+        rejection_trace.append(
+            {
+                "id": primary.get("id"),
+                "reason": "primary_confidence_low_postcheck",
+                "confidence_label": primary_conf,
+            }
+        )
         primary = None
     elif primary:
         exercises = _exercises_for(primary, secondary)
@@ -166,6 +212,7 @@ def build_coaching_decision(
         "prefer_additional_measurement": additional or not primary,
         "measurement_candidates": measurement_candidates,
         "needs_confirmation": [m for m in measurement_candidates],
+        "primary_rejection_trace": rejection_trace,
         "inference_confidence": (primary or {}).get("confidence_label") or "low",
         "coaching_confidence": coaching_conf if primary else "low",
         "note": "goal/style은 priority만 바꾸며 raw measurement·confidence를 변경하지 않습니다.",

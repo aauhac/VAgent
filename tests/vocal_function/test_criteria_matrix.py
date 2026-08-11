@@ -195,7 +195,7 @@ def test_primary_blocked_when_criteria_insufficient():
             "impact": "HIGH",
         }
     ]
-    primary, _ = select_primary(hyps, criteria_matrix=matrix)
+    primary, _, _ = select_primary(hyps, criteria_matrix=matrix)
     assert primary is None  # not eligible merely as sole candidate
 
 

@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createAnalysis } from '../api/client';
+import AccompanimentToggle, {
+  analysisOptsFromAccompaniment,
+} from '../components/ui/AccompanimentToggle';
+import AudioReadyPanel from '../components/ui/AudioReadyPanel';
 
 const MIN_SEC = 15;
 const MAX_SEC = 60;
@@ -10,6 +14,8 @@ const MIME_CANDIDATES = [
   'audio/webm',
   'audio/mp4',
 ];
+
+type Phase = 'idle' | 'recording' | 'ready';
 
 function pickMime(): { mime?: string; ext: string } {
   for (const mime of MIME_CANDIDATES) {
@@ -23,11 +29,17 @@ function pickMime(): { mime?: string; ext: string } {
 
 export default function Record() {
   const nav = useNavigate();
-  const [recording, setRecording] = useState(false);
+  const [phase, setPhase] = useState<Phase>('idle');
   const [seconds, setSeconds] = useState(0);
   const [levels, setLevels] = useState<number[]>(Array(24).fill(4));
+  const [previewLevels, setPreviewLevels] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [hasAccompaniment, setHasAccompaniment] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewDuration, setPreviewDuration] = useState<number | null>(null);
+  const [blobMeta, setBlobMeta] = useState<{ blob: Blob; ext: string } | null>(null);
+
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
@@ -36,10 +48,14 @@ export default function Record() {
   const rafRef = useRef<number | null>(null);
   const secondsRef = useRef(0);
   const stoppingRef = useRef(false);
+  const levelSnapRef = useRef<number[]>([]);
 
-  useEffect(() => () => stopAll(), []);
+  useEffect(() => () => {
+    stopCapture();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, []);
 
-  function stopAll() {
+  function stopCapture() {
     if (timerRef.current) window.clearInterval(timerRef.current);
     timerRef.current = null;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -51,13 +67,19 @@ export default function Record() {
     }
     audioCtxRef.current = null;
     analyserRef.current = null;
+    mediaRef.current = null;
   }
 
   async function start() {
     setError(null);
     stoppingRef.current = false;
-    if (recording) return;
-    stopAll();
+    if (phase === 'recording') return;
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    setBlobMeta(null);
+    stopCapture();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const ctx = new AudioContext();
@@ -78,7 +100,7 @@ export default function Record() {
       };
       rec.start(200);
       mediaRef.current = rec;
-      setRecording(true);
+      setPhase('recording');
       setSeconds(0);
       secondsRef.current = 0;
       timerRef.current = window.setInterval(() => {
@@ -86,7 +108,7 @@ export default function Record() {
         setSeconds(secondsRef.current);
         if (secondsRef.current >= MAX_SEC && !stoppingRef.current) {
           stoppingRef.current = true;
-          void stopAndUpload(true);
+          void finishRecording(true);
         }
       }, 1000);
 
@@ -99,23 +121,25 @@ export default function Record() {
           return Math.max(4, Math.round((v / 255) * 56));
         });
         setLevels(next);
+        levelSnapRef.current = next;
         rafRef.current = requestAnimationFrame(tick);
       };
       tick();
     } catch (e: any) {
       setError(e?.message || '마이크 권한이 필요해요.');
-      stopAll();
+      stopCapture();
+      setPhase('idle');
     }
   }
 
-  async function stopAndUpload(auto = false) {
+  async function finishRecording(auto = false) {
     const rec = mediaRef.current;
     if (!rec) return;
     if (!auto && secondsRef.current < MIN_SEC) {
       setError(`최소 ${MIN_SEC}초 이상 불러 주세요.`);
       return;
     }
-    setUploading(true);
+    const recordedSec = secondsRef.current;
     await new Promise<void>((resolve) => {
       rec.onstop = () => resolve();
       try {
@@ -126,16 +150,32 @@ export default function Record() {
     });
     const mimeType = rec.mimeType || pickMime().mime || 'audio/webm';
     const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
-    stopAll();
-    setRecording(false);
+    const snap = [...levelSnapRef.current];
+    stopCapture();
     const blob = new Blob(chunksRef.current, { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    setPreviewUrl(url);
+    setPreviewDuration(recordedSec);
+    setPreviewLevels(snap.length ? snap : levels);
+    setBlobMeta({ blob, ext });
+    setPhase('ready');
+    setError(null);
+  }
+
+  async function analyze() {
+    if (!blobMeta) return;
+    setUploading(true);
+    setError(null);
     try {
-      const { analysis_id } = await createAnalysis(blob, `recording.${ext}`, {
-        analysis_mode: 'FUNCTIONAL',
-        input_mode: 'AUTO',
-      });
-      sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(blob));
-      sessionStorage.setItem('vocalfb_last_filename', `recording.${ext}`);
+      const opts = analysisOptsFromAccompaniment(hasAccompaniment);
+      const { analysis_id } = await createAnalysis(
+        blobMeta.blob,
+        `recording.${blobMeta.ext}`,
+        opts,
+      );
+      sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(blobMeta.blob));
+      sessionStorage.setItem('vocalfb_last_filename', `recording.${blobMeta.ext}`);
+      sessionStorage.setItem('vocalfb_last_has_accompaniment', hasAccompaniment ? '1' : '0');
       nav(`/analyzing/${analysis_id}`);
     } catch (e: any) {
       setError(e?.message || '업로드 실패');
@@ -143,35 +183,82 @@ export default function Record() {
     }
   }
 
+  function resetToIdle() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setBlobMeta(null);
+    setPreviewDuration(null);
+    setSeconds(0);
+    setPhase('idle');
+    setError(null);
+  }
+
   return (
     <main>
       <Link className="muted" to="/">← 홈</Link>
-      <h1 className="brand" style={{ fontSize: '1.8rem', marginTop: 16 }}>노래를 불러주세요</h1>
+      <p className="page-kicker" style={{ marginTop: 16 }}>녹음</p>
+      <h1 className="brand" style={{ fontSize: '1.7rem' }}>노래를 불러주세요</h1>
       <p className="lead">
-        최소 {MIN_SEC}초 이상 불러주세요. 20~40초 정도 부르면 더 안정적으로 분석할 수 있어요.
-        (최대 {MAX_SEC}초)
+        분석 전에 녹음을 한 번 들어볼 수 있어요. 권장 길이는 15~60초예요.
       </p>
-      <p className="muted" style={{ fontSize: '0.9rem' }}>
-        가능하면 이어폰으로 반주를 들으면 더 정확한 발성 분석이 가능해요.
-      </p>
+
       <div className="panel">
-        <div style={{ fontSize: '2rem', fontWeight: 800 }}>
-          {String(Math.floor(seconds / 60)).padStart(2, '0')}:
-          {String(seconds % 60).padStart(2, '0')}
-        </div>
-        <div className="level-bars" aria-hidden>
-          {levels.map((h, i) => (
-            <i key={i} style={{ height: h }} />
-          ))}
-        </div>
-        {!recording ? (
-          <button className="btn" onClick={start} disabled={uploading}>녹음 시작</button>
-        ) : (
-          <button className="btn" onClick={() => stopAndUpload(false)} disabled={uploading}>
-            {uploading ? '업로드 중…' : '녹음 종료 & 분석'}
-          </button>
+        <AccompanimentToggle
+          checked={hasAccompaniment}
+          onChange={setHasAccompaniment}
+          noun="녹음"
+          disabled={phase === 'recording' || uploading}
+        />
+
+        {phase === 'idle' && (
+          <>
+            <ul className="record-idle-tips">
+              <li>한 구절 정도가 가장 좋아요</li>
+              <li>조용한 환경에서 녹음해 주세요</li>
+              <li>반주를 틀어 부를 때는 이어폰을 권장해요</li>
+            </ul>
+            <button className="btn" style={{ width: '100%' }} onClick={start}>
+              녹음 시작
+            </button>
+          </>
         )}
-        {error && <p className="fail" style={{ marginTop: 12 }}>{error}</p>}
+
+        {phase === 'recording' && (
+          <>
+            <div className="record-timer">
+              {String(Math.floor(seconds / 60)).padStart(2, '0')}:
+              {String(seconds % 60).padStart(2, '0')}
+            </div>
+            <p className="record-status">녹음 중</p>
+            <div className="level-bars" aria-hidden>
+              {levels.map((h, i) => (
+                <i key={i} style={{ height: h }} />
+              ))}
+            </div>
+            <button className="btn secondary" style={{ width: '100%' }} onClick={() => finishRecording(false)}>
+              녹음 종료
+            </button>
+            <p className="muted" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.82rem' }}>
+              최소 {MIN_SEC}초 · 최대 {MAX_SEC}초
+            </p>
+          </>
+        )}
+
+        {phase === 'ready' && previewUrl && (
+          <AudioReadyPanel
+            src={previewUrl}
+            title="녹음 완료"
+            subtitle="들어본 뒤 분석하거나 다시 녹음할 수 있어요"
+            levels={previewLevels}
+            durationSec={previewDuration}
+            onClear={resetToIdle}
+            clearLabel="다시 녹음"
+            onAnalyze={analyze}
+            analyzing={uploading}
+          />
+        )}
+
+        {error && <p className="fail" style={{ marginTop: 12, marginBottom: 0 }}>{error}</p>}
       </div>
     </main>
   );

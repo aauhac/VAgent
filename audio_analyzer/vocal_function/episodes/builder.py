@@ -67,18 +67,45 @@ def select_pre_context(
     episode_start: float,
     max_sec: float = cfg.PRE_CONTEXT_MAX_SEC,
     n: int = cfg.PRE_CONTEXT_N,
+    claim_family: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Segments BEFORE episode start (outside episode), nearest first."""
+    from audio_analyzer.vocal_function.vocal_attribution import attribution_allows_context
+
     lo = episode_start - max_sec
+    claim = claim_family or "effort"
+
+    def _ok(s: dict[str, Any]) -> bool:
+        if claim in ("effort", "breathiness", "contact", "roughness", "onset", "respiratory"):
+            return attribution_allows_context(s, claim_family=claim) or dim_valid_effortish(s, claim)
+        return _vocal_valid(s)
+
     cands = [
         s
         for s in all_segments
-        if _vocal_valid(s)
+        if _ok(s)
         and float(s.get("end_sec") or 0) <= episode_start + 1e-6
         and float(s.get("start_sec") or 0) >= lo
     ]
     cands.sort(key=lambda s: float(s.get("end_sec") or 0), reverse=True)
     return list(reversed(cands[:n]))
+
+
+def dim_valid_effortish(seg: dict[str, Any], claim: str) -> bool:
+    from audio_analyzer.vocal_function.validity import dim_valid
+    from audio_analyzer.vocal_evidence.phonation_quality import vocal_presence_ok
+
+    mapping = {
+        "effort": "effort",
+        "breathiness": "breathiness",
+        "contact": "glottal_contact",
+        "roughness": "roughness",
+        "onset": "onset",
+    }
+    dim = mapping.get(claim)
+    if dim and dim_valid(seg, dim):
+        return True
+    return vocal_presence_ok(seg)
 
 
 def select_post_context(
@@ -87,13 +114,23 @@ def select_post_context(
     episode_end: float,
     max_sec: float = cfg.POST_CONTEXT_MAX_SEC,
     n: int = cfg.POST_CONTEXT_N,
+    claim_family: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """Segments AFTER episode end (outside episode), nearest first."""
+    from audio_analyzer.vocal_function.vocal_attribution import attribution_allows_context
+
     hi = episode_end + max_sec
+    claim = claim_family or "effort"
+
+    def _ok(s: dict[str, Any]) -> bool:
+        if claim in ("effort", "breathiness", "contact", "roughness", "onset", "respiratory"):
+            return attribution_allows_context(s, claim_family=claim) or dim_valid_effortish(s, claim)
+        return _vocal_valid(s)
+
     cands = [
         s
         for s in all_segments
-        if _vocal_valid(s)
+        if _ok(s)
         and float(s.get("start_sec") or 0) >= episode_end - 1e-6
         and float(s.get("end_sec") or 0) <= hi
     ]
@@ -489,6 +526,15 @@ def build_feature_matrix(
         cents = abs(d.get("f0_delta_cents") or 0)
         transition_strength = round(min(1.0, cents / 800.0), 3)
 
+    from audio_analyzer.vocal_function.vocal_attribution import (
+        EPISODE_CLAIM_FAMILY,
+        STATE_CONFIRMED,
+        aggregate_episode_vocal_attribution,
+    )
+
+    claim = EPISODE_CLAIM_FAMILY.get(episode_type, "effort")
+    ep_attr = aggregate_episode_vocal_attribution(members, claim_family=claim)
+
     return {
         "source": {
             "contact_firmness": during.get("contact_firmness"),
@@ -516,7 +562,6 @@ def build_feature_matrix(
             "onset_hardening": during.get("onset_slope"),
             "persistence": float(np.mean([(during.get("strain_like") or 0)] * 2)),
             "effort_shift": shifts["effort_shift"],
-            # legacy alias removed as boolean mean — keep numeric overshoot only
             "intensity_overshoot": intensity_overshoot_proxy,
         },
         "regularity": {
@@ -553,11 +598,12 @@ def build_feature_matrix(
         "onset": {"abruptness": during.get("onset_slope")},
         "recovery": recovery,
         "validity": {
-            "vocal_specific": all(
-                (m.get("validity") or {}).get("vocal_specific", True) for m in members
-            )
-            if members
-            else True,
+            # Legacy: True only when episode attribution is CONFIRMED (not AND of members)
+            "vocal_specific": ep_attr.get("state") == STATE_CONFIRMED,
+            "vocal_attribution_state": ep_attr.get("state"),
+            "vocal_attribution_confidence": ep_attr.get("confidence_score"),
+            "episode_vocal_attribution": ep_attr,
+            "claim_suitability": ep_attr.get("claim_suitability"),
             "n_windows": len(members),
             "pre_n": len(pre_segs),
             "post_n": len(post_segs),
@@ -568,11 +614,9 @@ def build_feature_matrix(
             "resonance_shift": shifts["resonance_shift"],
             "register_shift": shifts["register_shift"],
         },
-        # Public context schema (outside episode)
         "pre_context": pre,
         "during_context": during,
         "post_context": post,
-        # deprecated aliases kept for one release (point to real pre/post)
         "before_context": pre,
         "after_context": post,
     }
@@ -627,8 +671,20 @@ def finalize_episode(
     end = float(ep.get("end_sec") or start)
     all_segments = all_segments or []
 
-    pre_segs = select_pre_context(all_segments, episode_start=start) if all_segments else []
-    post_segs = select_post_context(all_segments, episode_end=end) if all_segments else []
+    ep_type = ep.get("type") or "HIGH_NOTE"
+    from audio_analyzer.vocal_function.vocal_attribution import EPISODE_CLAIM_FAMILY
+
+    claim = EPISODE_CLAIM_FAMILY.get(ep_type, "effort")
+    pre_segs = (
+        select_pre_context(all_segments, episode_start=start, claim_family=claim)
+        if all_segments
+        else []
+    )
+    post_segs = (
+        select_post_context(all_segments, episode_end=end, claim_family=claim)
+        if all_segments
+        else []
+    )
 
     acoustic = _acoustic_phases(members, start, end)
     if acoustic:
@@ -640,12 +696,34 @@ def finalize_episode(
         phase_method = "PROVISIONAL"
         phase_confidence = "low"
 
-    ep_type = ep.get("type") or "HIGH_NOTE"
     feature_matrix = build_feature_matrix(members, pre_segs, post_segs, episode_type=ep_type)
     e24_d = (feature_matrix.get("resonance") or {}).get("energy_2_4k_delta")
     shifts = feature_matrix.get("shifts") or {}
     cause_hint = classify_cause_hint(shifts, e24_delta=e24_d)
     core = _core_evidence_span_from_members(members, ep)
+    # Re-aggregate attribution with core span members when available
+    if core.get("start_sec") is not None and members:
+        cs, ce = float(core["start_sec"]), float(core.get("end_sec") or core["start_sec"])
+        core_members = [
+            m
+            for m in members
+            if float(m.get("end_sec") or 0) > cs and float(m.get("start_sec") or 0) < ce
+        ]
+        if core_members:
+            from audio_analyzer.vocal_function.vocal_attribution import (
+                STATE_CONFIRMED,
+                aggregate_episode_vocal_attribution,
+            )
+
+            ep_attr = aggregate_episode_vocal_attribution(
+                members, claim_family=claim, core_members=core_members
+            )
+            validity = feature_matrix.setdefault("validity", {})
+            validity["episode_vocal_attribution"] = ep_attr
+            validity["vocal_attribution_state"] = ep_attr.get("state")
+            validity["vocal_attribution_confidence"] = ep_attr.get("confidence_score")
+            validity["vocal_specific"] = ep_attr.get("state") == STATE_CONFIRMED
+            validity["claim_suitability"] = ep_attr.get("claim_suitability")
     core_events = [
         {
             "start_sec": float(m.get("start_sec") or 0),
@@ -753,7 +831,10 @@ def build_generic_episodes_from_segments(
                     "observations": s.get("observations"),
                     "level2_proxies": s.get("level2_proxies"),
                     "periodicity": (s.get("observations") or {}).get("periodicity_primary_db"),
+                    "vocal_evidence": s.get("vocal_evidence"),
                     "validity": s.get("vocal_evidence"),
+                    "voiced_ratio": s.get("voiced_ratio"),
+                    "rms": s.get("rms"),
                     "leakage_like": episode_type == "AIR_LEAKAGE",
                     "roughness": episode_type == "ROUGHNESS",
                     "effort_during": "elevated" if episode_type == "GENERAL_EFFORT" else None,

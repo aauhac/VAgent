@@ -7,11 +7,11 @@ Physiology inference v1.3 — product visibility + eligibility policy.
 INFERENCE_VERSION = "physiology-inference-v1.3"
 METRIC_VERSION = "physio-metrics-v1.1"
 LITERATURE_REGISTRY_VERSION = "physiology-evidence-2026-08"
-PROTOCOL_VERSION = "diagnostic-protocol-v1.1"
+PROTOCOL_VERSION = "diagnostic-protocol-v1.2"
 # Backward-compatible alias
 PROTOCOL_VERSION_LEGACY = "vocal-dx-v1.0"
 COACHING_VERSION = "physio-coach-v1.3"
-REPORT_VERSION = "diagnostic-report-v1.1"
+REPORT_VERSION = "diagnostic-report-v1.2"
 CALIBRATION_STATUS = "uncalibrated"
 
 AUDIO_ONLY_GLOBAL_CONFIDENCE_CAP = 0.72

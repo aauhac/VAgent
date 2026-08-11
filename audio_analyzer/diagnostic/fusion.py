@@ -1,8 +1,9 @@
-"""Song + standardized-task evidence fusion (no blind averaging).
+"""Song + standardized-task evidence fusion (protocol v1.2).
 
-Song = actual singing context.
-Task = controlled baseline/context.
-Both are retained; conflicts become contextual differences.
+TASK RECORDED ≠ DIMENSION RESOLVED.
+Only dimension_evidence.resolution_eligible can resolve uncertainty.
+No generic 'observed' presence markers. No fixed medium fallback.
+No silent overwrite of strong song evidence.
 """
 
 from __future__ import annotations
@@ -17,31 +18,28 @@ from audio_analyzer.diagnostic.task_registry import (
     TASK_REGISTRY,
 )
 
-# physiology mechanism_id → planner dimension
-_MECH_TO_DIM = {
-    "phonation_contact_pattern": "contact",
-    "phonatory_efficiency": "effort",
-    "intensity_phonation_coordination": "effort",
-    "onset_coordination": "onset",
-    "release_coordination": "onset",
-    "register_transition_coordination": "register",
-    "vocal_tract_resonance_balance": "resonance",
-    "phonation_stability": "stability",
-}
-
-_TASK_DIM_HINT = {
-    "sustain_a": ["contact", "breathiness", "stability"],
-    "sustain_i": ["contact", "breathiness", "resonance"],
-    "siren": ["register"],
-    "dynamic_swell": ["effort", "dynamic_response"],
+_ENGINE_MAP = {
+    "contact": "glottal_contact_profile",
+    "breathiness": "air_leakage_breathiness",
+    "effort": "vocal_effort_strain",
+    "register": "register_configuration",
+    "stability": "phonation_regularity",
+    "resonance": "resonance_formant_strategy",
+    "onset": "onset_offset_coordination",
+    "dynamic_response": "respiratory_phonatory_coordination",
 }
 
 
-def _conf_num(label: Any) -> float:
-    if isinstance(label, (int, float)):
-        return float(label)
-    m = {"high": 0.85, "medium": 0.6, "low": 0.35, "unknown": 0.2}
-    return m.get(str(label or "low").lower(), 0.35)
+def _song_conf_score(dim: dict[str, Any]) -> Optional[float]:
+    if dim.get("confidence_score") is not None:
+        try:
+            return float(dim["confidence_score"])
+        except (TypeError, ValueError):
+            pass
+    # Presentation-only label mapping — marked as such, not invented evidence
+    label = (dim.get("confidence_label") or "").lower()
+    m = {"high": 0.85, "medium": 0.6, "low": 0.35}
+    return m.get(label)
 
 
 def _song_dim_snapshot(dims: dict[str, Any], engine_id: str, planner_key: str) -> dict[str, Any]:
@@ -52,7 +50,8 @@ def _song_dim_snapshot(dims: dict[str, Any], engine_id: str, planner_key: str) -
         "status": d.get("status"),
         "summary": d.get("summary") or d.get("user_summary"),
         "confidence": d.get("confidence_label"),
-        "confidence_score": _conf_num(d.get("confidence_label")),
+        "confidence_score": _song_conf_score(d),
+        "confidence_source": "song_dimension",
         "source": "song",
     }
 
@@ -63,97 +62,136 @@ def _task_quality_ok(task_result: dict[str, Any]) -> bool:
     q = task_result.get("quality") or {}
     if q.get("status") == "fail":
         return False
-    # physiology observers usually embed metrics; absence of core metrics = weak
     if task_result.get("error"):
+        return False
+    compliance = task_result.get("compliance") or {}
+    if compliance and compliance.get("ok") is False:
         return False
     return True
 
 
-def _extract_task_estimates(task_results: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Map task results → per-dimension baseline estimates (qualitative)."""
+def _extract_dimension_evidence(task_results: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Collect best resolution_eligible evidence per dimension. No covers fallback."""
     out: dict[str, dict[str, Any]] = {}
     for tr in task_results:
         tid = tr.get("task_id")
-        if not tid or not _task_quality_ok(tr):
+        if not tid:
             continue
-        mechs = tr.get("mechanisms") or tr.get("mechanism_estimates") or []
-        if isinstance(mechs, dict):
-            mechs = list(mechs.values())
-        hinted = _TASK_DIM_HINT.get(tid) or list(
-            (TASK_REGISTRY.get(tid) or {}).get("covers") or []
-        )
-        # From mechanisms
-        for m in mechs:
-            if not isinstance(m, dict):
+        quality_ok = _task_quality_ok(tr)
+        dim_ev = tr.get("dimension_evidence") or {}
+        if not isinstance(dim_ev, dict):
+            continue
+        for dim, ev in dim_ev.items():
+            if not isinstance(ev, dict):
                 continue
-            mid = m.get("mechanism_id") or m.get("id")
-            dim = _MECH_TO_DIM.get(str(mid or ""))
-            if not dim:
+            # Invalid quality → never resolution eligible
+            if not quality_ok:
+                ev = {
+                    **ev,
+                    "resolution_eligible": False,
+                    "quality_valid": False,
+                    "reason": ev.get("reason") or "task_quality_or_compliance_fail",
+                }
+            if not ev.get("available") and not ev.get("resolution_eligible"):
+                # Keep first unavailable note if nothing better
+                if dim not in out:
+                    out[dim] = {
+                        **ev,
+                        "dimension": dim,
+                        "label": DIMENSION_USER_LABELS.get(dim, dim),
+                        "source": "task",
+                        "task_id": tid,
+                        "valid": False,
+                    }
                 continue
-            conf = m.get("confidence_label") or m.get("confidence")
-            status = m.get("status") or m.get("summary")
+            score = ev.get("confidence_score")
             prev = out.get(dim)
-            score = _conf_num(conf)
-            if prev and prev.get("confidence_score", 0) >= score:
-                continue
-            out[dim] = {
-                "dimension": dim,
-                "label": DIMENSION_USER_LABELS.get(dim, dim),
-                "status": status,
-                "summary": m.get("summary") or status,
-                "confidence": conf,
-                "confidence_score": score,
-                "source": "task",
-                "task_id": tid,
-                "valid": True,
-            }
-        # Ensure covered dims get a presence marker even without mechanism detail
-        for dim in hinted:
-            if dim not in out:
-                # Use overall task confidence if present
-                conf = tr.get("confidence_label") or "medium"
+            prev_score = (prev or {}).get("confidence_score")
+            take = False
+            if ev.get("resolution_eligible"):
+                if not prev or not prev.get("resolution_eligible"):
+                    take = True
+                elif score is not None and (prev_score is None or float(score) > float(prev_score)):
+                    take = True
+            elif dim not in out:
+                take = True
+            if take:
                 out[dim] = {
+                    **ev,
                     "dimension": dim,
                     "label": DIMENSION_USER_LABELS.get(dim, dim),
-                    "status": tr.get("status") or "observed",
-                    "summary": f"{tid} 과제에서 관찰",
-                    "confidence": conf,
-                    "confidence_score": _conf_num(conf),
+                    "status": ev.get("status"),
+                    "summary": ev.get("reason") or ev.get("status"),
+                    "confidence": ev.get("confidence_label"),
+                    "confidence_score": score,
                     "source": "task",
                     "task_id": tid,
-                    "valid": True,
+                    "valid": bool(ev.get("resolution_eligible")),
+                    "resolution_eligible": bool(ev.get("resolution_eligible")),
+                    "confidence_source": ev.get("confidence_source"),
                 }
     return out
+
+
+def _statuses_conflict(song_status: Any, task_status: Any) -> bool:
+    s = str(song_status or "").lower()
+    t = str(task_status or "").lower()
+    if not s or not t:
+        return False
+    if s in ("unknown",) or t in ("unknown", "insufficient", "observed"):
+        return False
+    # Normalize rough families
+    lightish = ("light", "light_leaning", "breathy", "low", "connected")
+    firmish = ("firm", "firm_leaning", "elevated", "high", "disrupted", "unstable")
+    s_light = any(x in s for x in lightish)
+    t_light = any(x in t for x in lightish)
+    s_firm = any(x in s for x in firmish)
+    t_firm = any(x in t for x in firmish)
+    if (s_light and t_firm) or (s_firm and t_light):
+        return True
+    return s != t and s_light == t_light and s_firm == t_firm and False
 
 
 def compare_contexts(
     song_snap: dict[str, Any],
     task_snap: dict[str, Any],
 ) -> Optional[dict[str, Any]]:
-    """Return contextual difference when song/task disagree; never drop either."""
     if not song_snap or not task_snap:
         return None
-    s_status = str(song_snap.get("status") or "").lower()
-    t_status = str(task_snap.get("status") or "").lower()
-    s_sum = str(song_snap.get("summary") or "")
-    t_sum = str(task_snap.get("summary") or "")
-    # Soft conflict: both present with different status tokens
-    if s_status and t_status and s_status != t_status and s_status not in ("unknown",) and t_status not in (
-        "unknown",
-        "observed",
-    ):
-        return {
-            "dimension": song_snap.get("dimension"),
-            "baseline": t_status,
-            "song": s_status,
-            "interpretation": (
-                "표준 과제와 실제 노래에서 발성 패턴이 다르게 나타났어요."
-            ),
-            "song_summary": s_sum,
-            "baseline_summary": t_sum,
-        }
-    # Numeric confidence gap with same family — not a conflict
-    return None
+    if not task_snap.get("resolution_eligible") and not task_snap.get("valid"):
+        return None
+    s_status = song_snap.get("status")
+    t_status = task_snap.get("status")
+    if not _statuses_conflict(s_status, t_status) and str(s_status).lower() == str(t_status).lower():
+        return None
+    if not _statuses_conflict(s_status, t_status):
+        # still allow explicit different tokens
+        if str(s_status or "").lower() == str(t_status or "").lower():
+            return None
+        if not s_status or not t_status:
+            return None
+    song_c = song_snap.get("confidence_score")
+    task_c = task_snap.get("confidence_score")
+    strong = (
+        song_c is not None
+        and task_c is not None
+        and float(song_c) >= 0.6
+        and float(task_c) >= 0.6
+    )
+    return {
+        "dimension": song_snap.get("dimension"),
+        "baseline": t_status,
+        "song": s_status,
+        "strong": strong,
+        "resolution_state": "CONTEXT_DEPENDENT" if strong else "WEAK_CONTRADICTION",
+        "interpretation": (
+            "표준 과제와 실제 노래에서 발성 패턴이 다르게 나타났어요."
+            if strong
+            else "노래와 표준 과제 결과가 다소 다르게 보였어요."
+        ),
+        "song_summary": song_snap.get("summary"),
+        "baseline_summary": task_snap.get("summary") or task_snap.get("reason"),
+    }
 
 
 def fuse_song_and_task_evidence(
@@ -163,30 +201,29 @@ def fuse_song_and_task_evidence(
     unresolved_before: Optional[list[str]] = None,
     selected_tasks: Optional[list[str]] = None,
 ) -> dict[str, Any]:
-    """Fuse without blind averaging. Invalid tasks do not boost confidence."""
     song_profile = song_profile or {}
     task_results = task_results or []
     unresolved_before = list(unresolved_before or [])
     selected_tasks = list(selected_tasks or [])
 
     dims = song_profile.get("dimensions") or {}
-    engine_map = {
-        "contact": "glottal_contact_profile",
-        "breathiness": "air_leakage_breathiness",
-        "effort": "vocal_effort_strain",
-        "register": "register_configuration",
-        "stability": "phonation_regularity",
-        "resonance": "resonance_formant_strategy",
-        "onset": "onset_offset_coordination",
-        "dynamic_response": "respiratory_phonatory_coordination",
-    }
-
     song_snaps = {
-        k: _song_dim_snapshot(dims, eid, k) for k, eid in engine_map.items() if dims.get(eid)
+        k: _song_dim_snapshot(dims, eid, k) for k, eid in _ENGINE_MAP.items() if dims.get(eid)
     }
-    task_snaps = _extract_task_estimates(task_results)
+    task_snaps = _extract_dimension_evidence(task_results)
 
-    # Invalid / missing task coverage for selected dims
+    expected_coverage: dict[str, list[str]] = {}
+    actual_coverage: dict[str, list[str]] = {}
+    for tr in task_results:
+        tid = tr.get("task_id")
+        if not tid:
+            continue
+        expected_coverage[tid] = list(
+            tr.get("expected_coverage")
+            or ((TASK_REGISTRY.get(tid) or {}).get("covers") or [])
+        )
+        actual_coverage[tid] = list(tr.get("actual_coverage") or [])
+
     invalid_tasks = [
         tr.get("task_id")
         for tr in task_results
@@ -194,64 +231,82 @@ def fuse_song_and_task_evidence(
     ]
 
     resolved: dict[str, Any] = {}
+    context_resolved: dict[str, Any] = {}
     remaining: list[str] = []
     contextual: list[dict[str, Any]] = []
     confidence_delta: list[dict[str, Any]] = []
 
-    target_dims = set(unresolved_before) | set(task_snaps.keys()) | set(song_snaps.keys())
-    for dim in sorted(target_dims, key=lambda d: list(engine_map.keys()).index(d) if d in engine_map else 99):
+    target_dims = set(unresolved_before) | set(task_snaps.keys()) | set(
+        d for d in unresolved_before
+    )
+    for dim in sorted(target_dims, key=lambda d: list(_ENGINE_MAP.keys()).index(d) if d in _ENGINE_MAP else 99):
         s = song_snaps.get(dim)
         t = task_snaps.get(dim)
-        conflict = compare_contexts(s or {}, t or {}) if (s and t) else None
+        song_c = (s or {}).get("confidence_score")
+        task_c = (t or {}).get("confidence_score") if t else None
+        eligible = bool(t and t.get("resolution_eligible"))
+
+        conflict = compare_contexts(s or {}, t or {}) if (s and eligible) else None
         if conflict:
             contextual.append(conflict)
 
-        song_c = (s or {}).get("confidence_score") or 0.0
-        task_c = (t or {}).get("confidence_score") or 0.0
-        task_valid = bool(t and t.get("valid"))
-
-        if task_valid and dim in unresolved_before:
-            # Evidence-based confidence: take max of song/task, never fixed bonus
-            final_c = max(song_c, task_c)
-            # Slight blend weight toward task only when task conf higher — not average of estimates
-            final_status = (t or {}).get("status") if task_c >= song_c else (s or {}).get("status")
-            resolved[dim] = {
+        # Strong conflict: never overwrite song with task
+        if conflict and conflict.get("strong"):
+            context_resolved[dim] = {
                 "dimension": dim,
                 "label": DIMENSION_USER_LABELS.get(dim, dim),
                 "baseline": t,
                 "song": s,
-                "final_status": final_status,
+                "final_status": "CONTEXT_DEPENDENT",
+                "resolution_state": "RESOLVED_CONTEXT_DEPENDENT",
                 "song_confidence": song_c,
                 "task_confidence": task_c,
-                "final_confidence": final_c,
+                "final_confidence": max(
+                    float(song_c or 0), float(task_c or 0)
+                ),
                 "resolved": True,
-                "mode": "task_confirms_or_contextualizes",
+                "mode": "contextual_difference",
             }
             confidence_delta.append(
                 {
                     "dimension": dim,
                     "label": DIMENSION_USER_LABELS.get(dim, dim),
-                    "song_confidence": round(song_c, 2),
-                    "task_confidence": round(task_c, 2),
-                    "final_confidence": round(final_c, 2),
+                    "song_confidence": song_c,
+                    "task_confidence": task_c,
+                    "final_confidence": max(float(song_c or 0), float(task_c or 0)),
+                    "note": "context_dependent_not_merged",
                 }
             )
-        elif conflict:
+            continue
+
+        if eligible and dim in unresolved_before:
+            # Weak song + strong task → baseline resolve, keep weak song observation
+            final_c = float(task_c) if task_c is not None else None
             resolved[dim] = {
                 "dimension": dim,
                 "label": DIMENSION_USER_LABELS.get(dim, dim),
                 "baseline": t,
                 "song": s,
-                "final_status": "context_dependent",
+                "final_status": (t or {}).get("status"),
+                "resolution_state": "RESOLVED_SINGLE_PATTERN",
                 "song_confidence": song_c,
                 "task_confidence": task_c,
-                "final_confidence": max(song_c, task_c),
-                "resolved": False,
-                "mode": "contextual_difference",
+                "final_confidence": final_c,
+                "resolved": True,
+                "mode": "task_dimension_evidence",
             }
-            remaining.append(dim)
-        elif dim in unresolved_before:
-            # No valid task evidence → uncertainty remains
+            confidence_delta.append(
+                {
+                    "dimension": dim,
+                    "label": DIMENSION_USER_LABELS.get(dim, dim),
+                    "song_confidence": song_c,
+                    "task_confidence": task_c,
+                    "final_confidence": final_c,
+                }
+            )
+            continue
+
+        if dim in unresolved_before:
             remaining.append(dim)
             resolved[dim] = {
                 "dimension": dim,
@@ -259,48 +314,65 @@ def fuse_song_and_task_evidence(
                 "baseline": t,
                 "song": s,
                 "final_status": (s or {}).get("status"),
+                "resolution_state": (
+                    "UNAVAILABLE"
+                    if t and t.get("available") is False and t.get("reason") in (
+                        "quality_fail",
+                        "swell_compliance_fail",
+                        "siren_compliance_fail",
+                    )
+                    else "UNRESOLVED_WEAK_EVIDENCE"
+                ),
                 "song_confidence": song_c,
-                "task_confidence": task_c if task_valid else None,
-                "final_confidence": song_c,
+                "task_confidence": task_c,
+                "final_confidence": song_c,  # no boost without eligible evidence
                 "resolved": False,
                 "mode": "uncertainty_remains",
             }
-        elif s or t:
+            continue
+
+        if s or (t and t.get("available")):
             resolved[dim] = {
                 "dimension": dim,
                 "label": DIMENSION_USER_LABELS.get(dim, dim),
                 "baseline": t,
                 "song": s,
                 "final_status": (t or s or {}).get("status"),
+                "resolution_state": "RESOLVED_SINGLE_PATTERN" if eligible or s else "UNRESOLVED_WEAK_EVIDENCE",
                 "song_confidence": song_c,
-                "task_confidence": task_c if t else None,
-                "final_confidence": max(song_c, task_c) if t else song_c,
-                "resolved": True,
-                "mode": "already_resolved_or_observed",
+                "task_confidence": task_c,
+                "final_confidence": song_c if not eligible else (task_c if task_c is not None else song_c),
+                "resolved": bool(eligible or s),
+                "mode": "observed_without_prior_uncertainty",
             }
-
-    baseline_profile = {k: v for k, v in task_snaps.items()}
-    song_out = {k: v for k, v in song_snaps.items()}
 
     return {
         "planner_version": PLANNER_VERSION,
         "protocol_version": PROTOCOL_VERSION,
         "report_version": REPORT_VERSION,
-        "baseline_profile": baseline_profile,
-        "song_profile": song_out,
+        "baseline_profile": {k: v for k, v in task_snaps.items() if v.get("resolution_eligible")},
+        "song_profile": song_snaps,
         "contextual_differences": contextual,
-        "resolved_dimensions": {k: v for k, v in resolved.items() if v.get("resolved")},
+        "resolved_dimensions": {
+            k: v for k, v in resolved.items() if v.get("resolved") and v.get("resolution_state") != "RESOLVED_CONTEXT_DEPENDENT"
+        },
+        "context_resolved_dimensions": context_resolved,
         "remaining_uncertainties": remaining,
         "task_evidence": {
             "selected_tasks": selected_tasks,
             "task_ids_present": [tr.get("task_id") for tr in task_results if tr.get("task_id")],
             "invalid_tasks": invalid_tasks,
+            "expected_coverage": expected_coverage,
+            "actual_coverage": actual_coverage,
         },
         "confidence_delta": confidence_delta,
         "fusion_rules": {
             "blind_average": False,
             "fixed_confidence_bonus": False,
             "invalid_task_boosts_confidence": False,
+            "covers_implies_resolved": False,
+            "observed_marker_fallback": False,
+            "resolution_requires_dimension_evidence": True,
         },
     }
 
@@ -318,26 +390,38 @@ def build_final_diagnostic_profile(
         unresolved_before=plan.get("unresolved_dimensions") or [],
         selected_tasks=plan.get("selected_tasks") or [],
     )
+    planned = list(plan.get("selected_tasks") or [])
+    measured = []
+    for tr in task_results or []:
+        measured.extend(tr.get("actual_coverage") or [])
+    measured = sorted(set(measured))
     labels_resolved = [
-        DIMENSION_USER_LABELS.get(d, d) for d in (fused.get("resolved_dimensions") or {})
+        DIMENSION_USER_LABELS.get(d, d)
+        for d in list(fused.get("resolved_dimensions") or {})
+        + list(fused.get("context_resolved_dimensions") or {})
     ]
     labels_remain = [
         DIMENSION_USER_LABELS.get(d, d) for d in (fused.get("remaining_uncertainties") or [])
     ]
-    confirmed = "·".join(labels_resolved[:3]) if labels_resolved else None
+    fused["planned"] = planned
+    fused["measured"] = measured
     fused["user_summary"] = {
         "headline": "정밀 발성 진단",
+        "planned_line": (
+            f"확인하려고 녹음한 과제: {', '.join(planned)}" if planned else "추가 표준 녹음 없음"
+        ),
+        "measured_line": (
+            f"실제로 측정된 항목: {' · '.join([DIMENSION_USER_LABELS.get(d, d) for d in measured])}"
+            if measured
+            else "이번에 확정 측정된 항목이 없어요."
+        ),
         "confirmed_line": (
-            f"이번 추가 측정으로 {confirmed}을(를) 더 분명하게 확인했어요."
-            if confirmed
-            else "추가 측정으로 확인된 항목이 있어요."
-            if task_results
-            else "이번 음원에서는 추가 표준 녹음 없이 주요 특성을 확인했어요."
+            f"이번 추가 측정으로 {('·'.join(labels_resolved[:3]))}을(를) 더 분명하게 확인했어요."
+            if labels_resolved
+            else None
         ),
         "remaining_line": (
-            f"추가 확인이 남은 항목: {' · '.join(labels_remain)}"
-            if labels_remain
-            else None
+            f"추가 확인이 남은 항목: {' · '.join(labels_remain)}" if labels_remain else None
         ),
         "confidence_note": "분석 신뢰도는 측정 근거에 따라 달라지며, 정확도 %가 아닙니다.",
     }

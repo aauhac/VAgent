@@ -174,7 +174,7 @@ def test_low_confidence_goal_high_not_primary():
             "eligibility": "NEEDS_MEASUREMENT",
         }
     ]
-    primary, _ = select_primary(hyps, user_goal="HIGH_NOTE")
+    primary, _, _ = select_primary(hyps, user_goal="HIGH_NOTE")
     assert primary is None
 
 

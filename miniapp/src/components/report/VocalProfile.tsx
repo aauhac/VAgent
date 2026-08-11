@@ -7,6 +7,7 @@ type Props = {
   criteriaMatrix?: any[];
   title?: string;
   axes?: DisplayAxis[];
+  showConfidence?: boolean;
 };
 
 export default function VocalProfile({
@@ -14,6 +15,7 @@ export default function VocalProfile({
   criteriaMatrix = [],
   title = '내 발성 프로필',
   axes: axesProp,
+  showConfidence = true,
 }: Props) {
   const axes = axesProp || buildVocalAxes(dimensions, criteriaMatrix);
 
@@ -35,6 +37,7 @@ export default function VocalProfile({
             stateLabel={ax.display}
             confidencePercent={ax.confidence_percent}
             confidenceLabel={ax.confidence_label}
+            showConfidence={showConfidence}
           />
         ))
       )}

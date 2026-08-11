@@ -35,15 +35,21 @@ export default function SpectrumAxis({
         <span>{leftLabel}</span>
         <span>{rightLabel}</span>
       </div>
-      {showConfidence && (
+      {showConfidence && (confidencePercent != null || confidenceLabel) ? (
         <p className="spectrum-confidence">
-          {confidencePercent != null
-            ? `신뢰도 ${confidencePercent}%`
-            : confidenceLabel
-              ? `신뢰도 ${confidenceLabel}`
-              : null}
+          {confidencePercent != null && confidencePercent >= 70
+            ? '신뢰도 높음'
+            : confidencePercent != null && confidencePercent >= 40
+              ? '신뢰도 보통'
+              : confidenceLabel?.includes('부족') || confidenceLabel?.includes('낮')
+                ? '참고용'
+                : confidencePercent != null
+                  ? '참고용'
+                  : confidenceLabel
+                    ? `신뢰도 ${confidenceLabel}`
+                    : null}
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

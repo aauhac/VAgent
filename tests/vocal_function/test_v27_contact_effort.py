@@ -321,9 +321,9 @@ def test_versions_bumped():
     from audio_analyzer.vocal_function import config as cfg
     from audio_analyzer.song_detail.report import SONG_DETAIL_REPORT_VERSION
 
-    assert cfg.FUNCTION_ENGINE_VERSION == "vocal-function-v2.9"
-    assert cfg.REPORT_VERSION == "vocal-coach-report-v2.9"
-    assert SONG_DETAIL_REPORT_VERSION == "vocal-coach-report-v2.9"
+    assert cfg.FUNCTION_ENGINE_VERSION == "vocal-function-v2.10"
+    assert cfg.REPORT_VERSION == "vocal-coach-report-v2.10"
+    assert SONG_DETAIL_REPORT_VERSION == "vocal-coach-report-v2.10"
 
 
 def test_effort_score_monotonic_with_families():
