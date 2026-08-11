@@ -23,48 +23,62 @@ def _conf_label(n_valid: int, n_hit: int, n_fam_med: float) -> str:
 
 
 def fuse_breathy(segments: list[dict[str, Any]]) -> dict[str, Any]:
-    valid = [s for s in segments if s.get("valid")]
-    hits = []
-    for s in valid:
-        flags = segment_evidence_flags(s)["breathy"]
-        n_fam = count_true_families(flags)
-        if n_fam >= 2:
-            hits.append({**s, "families": n_fam, "flags": flags})
-    ratio = len(hits) / len(valid) if valid else 0.0
-    prev = prevalence_label(ratio, any_hit=bool(hits))
-    if len(valid) < cfg.MIN_SEGMENTS_FOR_GLOBAL:
+    """Shared breathy families; ZERO positive ≠ LOW (needs negative coverage)."""
+    from audio_analyzer.vocal_evidence.phonation_quality import classify_breathy_segment
+
+    evaluable = []
+    positives, negatives, insufficient = [], [], []
+    for s in segments:
+        c = classify_breathy_segment(s)
+        if c["verdict"] == "INSUFFICIENT" and c.get("reason") == "no_vocal_presence":
+            continue
+        evaluable.append(s)
+        if c["verdict"] == "POSITIVE":
+            positives.append({**s, "families": (c.get("families") or {}).get("n_positive", 2), "flags": c})
+        elif c["verdict"] == "NEGATIVE":
+            negatives.append(s)
+        else:
+            insufficient.append(s)
+
+    n_eval = len(evaluable)
+    n_pos, n_neg = len(positives), len(negatives)
+    ratio = n_pos / n_eval if n_eval else 0.0
+    prev = prevalence_label(ratio, any_hit=bool(positives))
+
+    if n_eval < cfg.MIN_SEGMENTS_FOR_GLOBAL:
         status = "UNKNOWN"
-    elif not hits:
-        status = "LOW"
-    elif len(hits) == 1:
-        status = "INTERMITTENT"  # single segment cannot be HIGH
-    elif ratio >= cfg.PREVALENCE_REPEATED and len(hits) >= cfg.MIN_SEGMENTS_FOR_HIGH:
+    elif n_pos >= cfg.MIN_SEGMENTS_FOR_HIGH and ratio >= cfg.PREVALENCE_REPEATED:
         status = "HIGH"
-    elif ratio >= cfg.PREVALENCE_OCCASIONAL:
+    elif n_pos >= 2 and ratio >= cfg.PREVALENCE_OCCASIONAL:
         status = "MODERATE"
-    else:
+    elif n_pos == 1:
         status = "INTERMITTENT"
-    fam_med = float(np_mean([h["families"] for h in hits])) if hits else 0.0
+    elif n_neg >= max(cfg.MIN_SEGMENTS_FOR_GLOBAL, int(0.5 * n_eval)) and n_pos == 0:
+        status = "LOW"
+    else:
+        status = "UNKNOWN"
+
+    fam_med = float(np_mean([h["families"] for h in positives])) if positives else 0.0
+    meaning = (
+        "숨이 섞이는 음질과 일치할 수 있는 음향 패턴이 관찰됐어요."
+        if status in ("MODERATE", "HIGH", "INTERMITTENT")
+        else (
+            "숨이 섞이는 음질 경향은 뚜렷하지 않았어요."
+            if status == "LOW"
+            else "이번 녹음에서는 기식성 경향을 충분히 판단하지 못했어요."
+        )
+    )
     return _dim(
         "breathy_like",
         status,
         prev,
-        valid,
-        hits,
+        evaluable,
+        positives,
         fam_med,
-        summary=_breathy_summary(status, prev, len(hits), len(valid)),
-        meaning=(
-            "숨이 섞이는 음질과 일치할 수 있는 음향 패턴이 관찰됐어요."
-            if status in ("MODERATE", "HIGH", "INTERMITTENT")
-            else "숨이 섞이는 음질 경향은 뚜렷하지 않았어요."
-        ),
+        summary=_breathy_summary(status, prev, n_pos, n_eval),
+        meaning=meaning,
         cannot="실제 성대 접촉·성문 상태를 직접 측정한 것은 아닙니다.",
-        practice=[
-            "편한 음에서 짧은 SOVT(빨대/허밍)로 소리가 맑게 모이는지 느껴보세요.",
-            "큰 소리보다 또렷한 접촉감을 유지하는 짧은 지속음을 연습해보세요.",
-        ]
-        if status in ("MODERATE", "HIGH", "INTERMITTENT")
-        else [],
+        practice=[],  # observation provider — no corrective training authority
     )
 
 
@@ -137,12 +151,7 @@ def fuse_pressed(segments: list[dict[str, Any]], breathy_hits: int) -> dict[str,
             else "압착된 음질 경향은 뚜렷하지 않았어요."
         ),
         cannot="실제 목 근육 긴장이나 후두 상태를 측정한 것은 아닙니다.",
-        practice=[
-            "문제 구간을 더 작은 음량으로 반복하며 시작을 부드럽게 해보세요.",
-            "짧은 SOVT 후 같은 음을 입 밖으로 옮겨보세요.",
-        ]
-        if status in ("MODERATE", "HIGH", "INTERMITTENT")
-        else [],
+        practice=[],
     )
 
 
@@ -151,7 +160,12 @@ def fuse_rough(segments: list[dict[str, Any]]) -> dict[str, Any]:
     hits = []
     for s in valid:
         flags = segment_evidence_flags(s)["rough"]
-        if flags.get("periodicity"):
+        # Require irregularity-specific evidence — CPP/periodicity alone rejected
+        if flags.get("irregularity") and (
+            flags.get("periodicity_loss") or flags.get("periodicity")
+        ):
+            hits.append({**s, "families": 2, "flags": flags})
+        elif flags.get("irregularity") and flags.get("temporal"):
             hits.append({**s, "families": 1, "flags": flags})
     ratio = len(hits) / len(valid) if valid else 0.0
     prev = prevalence_label(ratio, any_hit=bool(hits))
@@ -160,9 +174,8 @@ def fuse_rough(segments: list[dict[str, Any]]) -> dict[str, Any]:
     elif not hits:
         status = "LOW"
     elif len(hits) == 1:
-        status = "INTERMITTENT"  # one segment → never global HIGH
+        status = "INTERMITTENT"
     elif ratio >= cfg.PREVALENCE_REPEATED and len(hits) >= 3:
-        # rough needs temporal repetition; treat as HIGH only if repeated
         status = "HIGH"
     elif len(hits) >= 2:
         status = "MODERATE"
@@ -177,14 +190,13 @@ def fuse_rough(segments: list[dict[str, Any]]) -> dict[str, Any]:
         1.0 if hits else 0.0,
         summary=_rough_summary(status, len(hits), len(valid)),
         meaning=(
-            "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요."
+            "일부 구간에서 불규칙한 진동과 일치할 수 있는 패턴이 관찰됐어요."
             if hits
             else "거칠고 불규칙한 음질 경향은 뚜렷하지 않았어요."
         ),
         cannot="성대 병변 여부를 판단하지 않습니다.",
-        practice=["문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요."]
-        if hits
-        else [],
+        # Observation-only — not corrective coaching authority
+        practice=[],
     )
 
 
@@ -323,9 +335,7 @@ def fuse_onset(segments: list[dict[str, Any]]) -> dict[str, Any]:
         summary=summary,
         meaning="소리 시작이 급하게 또는 부드럽게 형성되는 음향 패턴 설명입니다.",
         cannot="성대 접촉 시작을 직접 측정한 것은 아닙니다.",
-        practice=["편한 음에서 ‘ㅁ—아’처럼 부드럽게 시작하는 연습을 해보세요."]
-        if status == "ABRUPT_LIKE"
-        else [],
+        practice=[],
     )
 
 
@@ -405,9 +415,7 @@ def fuse_transition(segments: list[dict[str, Any]], pitch: dict[str, Any]) -> di
         summary=summary,
         meaning="음역이 바뀌는 구간의 음향 변화 설명이며 pitch accuracy 평가가 아닙니다.",
         cannot="TA/CT 전환이나 레지스터 생리를 직접 측정하지 않습니다.",
-        practice=["전환 직전 음을 조금 더 편하게 잡고 작은 음량으로 이어가 보세요."]
-        if status in ("MILD_DISRUPTION", "BREAK_LIKE")
-        else [],
+        practice=[],
     )
 
 

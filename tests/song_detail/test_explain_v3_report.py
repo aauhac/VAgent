@@ -340,7 +340,8 @@ def test_case13_14_no_physiology_in_song_detail():
     assert "reliable_findings" not in report
     blob = str(report)
     assert "glottal_closure" not in blob
-    assert report["focus_segments"]
+    # Performance focus no longer auto-fills main problem section without Functional primary
+    assert isinstance(report.get("focus_segments"), list)
 
 
 def test_report_version_bump():

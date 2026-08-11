@@ -19,98 +19,159 @@ export default function DiagnosticTask() {
   const ctxRef = useRef<AudioContext | null>(null);
   const rafRef = useRef<number | null>(null);
   const secondsRef = useRef(0);
+  const stoppingRef = useRef(false);
 
   useEffect(() => {
     getDiagnosticProtocol().then(setProtocol).catch(() => undefined);
-    return () => cleanup();
   }, []);
+
+  function cleanup() {
+    if (timerRef.current != null) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    try {
+      mediaRef.current?.stream.getTracks().forEach((t) => t.stop());
+    } catch {
+      /* ignore */
+    }
+    mediaRef.current = null;
+    if (ctxRef.current && ctxRef.current.state !== 'closed') {
+      void ctxRef.current.close();
+    }
+    ctxRef.current = null;
+  }
+
+  function resetTaskState() {
+    cleanup();
+    stoppingRef.current = false;
+    setRecording(false);
+    setBusy(false);
+    setSeconds(0);
+    secondsRef.current = 0;
+    setMsg(null);
+    setLevels(Array(20).fill(4));
+    chunksRef.current = [];
+  }
+
+  // Same route component: taskId/sessionId change must fully reset recorder UI state
+  useEffect(() => {
+    resetTaskState();
+    return () => cleanup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, taskId]);
 
   const task = (protocol?.tasks || []).find((t: any) => t.task_id === taskId);
   const idx = ORDER.indexOf(taskId || '');
   const progressLabel = `${idx + 1} / ${ORDER.length}`;
 
-  function cleanup() {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    mediaRef.current?.stream.getTracks().forEach((t) => t.stop());
-    if (ctxRef.current && ctxRef.current.state !== 'closed') void ctxRef.current.close();
-    ctxRef.current = null;
-  }
-
   async function start() {
+    if (busy || recording || stoppingRef.current) return;
     setMsg(null);
     cleanup();
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const ctx = new AudioContext();
-    ctxRef.current = ctx;
-    const src = ctx.createMediaStreamSource(stream);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    src.connect(analyser);
-    const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ? 'audio/webm;codecs=opus'
-      : MediaRecorder.isTypeSupported('audio/mp4')
-        ? 'audio/mp4'
-        : undefined;
-    const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
     chunksRef.current = [];
-    rec.ondataavailable = (e) => {
-      if (e.data.size) chunksRef.current.push(e.data);
-    };
-    rec.start(200);
-    mediaRef.current = rec;
-    setRecording(true);
-    setSeconds(0);
-    secondsRef.current = 0;
-    timerRef.current = window.setInterval(() => {
-      secondsRef.current += 1;
-      setSeconds(secondsRef.current);
-    }, 1000);
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    const tick = () => {
-      analyser.getByteFrequencyData(data);
-      const step = Math.floor(data.length / 20) || 1;
-      setLevels(Array.from({ length: 20 }, (_, i) => Math.max(4, Math.round(((data[i * step] || 0) / 255) * 56))));
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    tick();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const ctx = new AudioContext();
+      ctxRef.current = ctx;
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/mp4')
+          ? 'audio/mp4'
+          : undefined;
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      chunksRef.current = [];
+      rec.ondataavailable = (e) => {
+        if (e.data.size) chunksRef.current.push(e.data);
+      };
+      rec.start(200);
+      mediaRef.current = rec;
+      setRecording(true);
+      setBusy(false);
+      setSeconds(0);
+      secondsRef.current = 0;
+      timerRef.current = window.setInterval(() => {
+        secondsRef.current += 1;
+        setSeconds(secondsRef.current);
+      }, 1000);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(data);
+        const step = Math.floor(data.length / 20) || 1;
+        setLevels(Array.from({ length: 20 }, (_, i) => Math.max(4, Math.round(((data[i * step] || 0) / 255) * 56))));
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch (e: any) {
+      setRecording(false);
+      setBusy(false);
+      cleanup();
+      setMsg(e?.message || '마이크 권한을 확인해 주세요.');
+    }
   }
 
   async function stopUpload() {
     const rec = mediaRef.current;
     if (!rec || !sessionId || !taskId || !task) return;
+    if (stoppingRef.current || busy) return;
     if (secondsRef.current < task.min_sec) {
       setMsg(`최소 ${task.min_sec}초 이상 녹음해 주세요.`);
       return;
     }
+    stoppingRef.current = true;
     setBusy(true);
-    await new Promise<void>((resolve) => {
-      rec.onstop = () => resolve();
-      rec.stop();
-    });
-    const mime = rec.mimeType || 'audio/webm';
-    const ext = mime.includes('mp4') ? 'mp4' : 'webm';
-    cleanup();
-    setRecording(false);
-    const blob = new Blob(chunksRef.current, { type: mime });
     try {
+      if (rec.state !== 'inactive') {
+        await new Promise<void>((resolve) => {
+          rec.onstop = () => resolve();
+          try {
+            rec.stop();
+          } catch {
+            resolve();
+          }
+        });
+      }
+      const mime = rec.mimeType || 'audio/webm';
+      const ext = mime.includes('mp4') ? 'mp4' : 'webm';
+      cleanup();
+      setRecording(false);
+      const blob = new Blob(chunksRef.current, { type: mime });
+      chunksRef.current = [];
       const res = await uploadDiagnosticTask(sessionId, taskId, blob, `task.${ext}`);
       if (!res.attempt?.passed) {
         setMsg(res.attempt?.quality?.user_message || '다시 녹음해 주세요.');
         setBusy(false);
+        setSeconds(0);
+        secondsRef.current = 0;
+        stoppingRef.current = false;
         return;
       }
       const nextId = ORDER[idx + 1];
+      setBusy(false);
+      stoppingRef.current = false;
       if (nextId) {
         nav(`/diagnostic/${sessionId}/task/${nextId}`);
       } else {
         setMsg('분석 중…');
+        setBusy(true);
         await analyzeDiagnosticSession(sessionId);
+        setBusy(false);
         nav(`/diagnostic/${sessionId}/report`);
       }
     } catch (e: any) {
       setMsg(e?.message || '업로드 실패');
       setBusy(false);
+      setRecording(false);
+      stoppingRef.current = false;
+      cleanup();
     }
   }
 

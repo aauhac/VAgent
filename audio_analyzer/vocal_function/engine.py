@@ -21,6 +21,7 @@ from audio_analyzer.vocal_function.evidence.families import (
     effort_secondary_signs,
     firmer_like,
     leakage_like,
+    rough_like,
 )
 from audio_analyzer.vocal_function.evidence_gate import normalize_artifact_flags
 from audio_analyzer.vocal_function.observations.segment import observe_segment
@@ -345,11 +346,7 @@ def compute_vocal_function_profile(
         for e in build_generic_episodes_from_segments(
             segments,
             episode_type="ROUGHNESS",
-            predicate=lambda s: (
-                ((s.get("observations") or {}).get("f0_frame_period_perturbation_proxy_percent") or 0)
-                >= 2.5
-                or ((s.get("observations") or {}).get("periodicity_primary_db") or 99) <= 6.0
-            ),
+            predicate=rough_like,
             all_segments=segments,
         )
     ]
@@ -404,9 +401,18 @@ def compute_vocal_function_profile(
 
     contact_effort_plane = compute_contact_effort_plane(segments, baseline, episodes)
 
+    from audio_analyzer.vocal_function.criteria_matrix import build_criteria_matrix
+
+    criteria_matrix = build_criteria_matrix(
+        dimensions=dimensions,
+        segments=segments,
+        episodes=episodes,
+    )
+
     profile_partial = {
         "dimensions": dimensions,
         "contact_effort_plane": contact_effort_plane,
+        "criteria_matrix": criteria_matrix,
     }
     coaching_decision = build_coaching_decision(
         profile=profile_partial,
@@ -414,6 +420,7 @@ def compute_vocal_function_profile(
         focus=focus,
         user_goal=user_goal or technique_goal or "GENERAL_EASE_AND_CONTROL",
         style_context=style_goal or "unspecified",
+        criteria_matrix=criteria_matrix,
     )
     te = coaching_decision.get("target_episode")
     if te and te.get("original_start_sec") is None:
@@ -429,13 +436,45 @@ def compute_vocal_function_profile(
                     bs2, time_origin_sec=origin
                 )
 
+    from audio_analyzer.coach_profile import compute_vocal_type_profile
+
+    vocal_type_profile = compute_vocal_type_profile(
+        segments=segments,
+        dimensions=dimensions,
+        episodes=episodes,
+        baseline=baseline,
+        coaching_decision=coaching_decision,
+        criteria_matrix=criteria_matrix,
+        user_goal=user_goal or technique_goal or "GENERAL_EASE_AND_CONTROL",
+    )
+
+    from audio_analyzer.audit.consistency import apply_consistency_patches
+
+    vocal_type_profile, coaching_decision, _cons = apply_consistency_patches(
+        vocal_type=vocal_type_profile,
+        coaching_decision=coaching_decision,
+        report={
+            "criteria_matrix": criteria_matrix,
+            "dimensions": dimensions,
+        },
+    )
+    vocal_type_profile.setdefault("warnings", [])
+    for issue in _cons.get("issues") or []:
+        if issue.get("severity") == "ERROR":
+            vocal_type_profile["warnings"].append(f"CONSISTENCY_{issue['id'].upper()}")
+
     headlines = [coaching_decision.get("headline")] if coaching_decision.get("headline") else []
+    if vocal_type_profile.get("display_name") and vocal_type_profile.get("type_id") != "UNRESOLVED":
+        headlines.insert(0, vocal_type_profile.get("display_name"))
     for d in dimensions.values():
         if d.get("hidden") or d.get("confidence_label") == "low":
             continue
         headlines.append(f"{d['display_name']}: {d.get('summary')}")
 
-    warnings = []
+    warnings = list(vocal_type_profile.get("warnings") or [])
+    for w in vocal_type_profile.get("warnings") or []:
+        if w.startswith("HEAD_CHEST") and w not in warnings:
+            warnings.append(w)
     statuses = [
         d.get("status")
         for d in dimensions.values()
@@ -445,16 +484,26 @@ def compute_vocal_function_profile(
         warnings.append("FUNCTION_PROFILE_COLLAPSE_WARNING")
     if functional_quality == "LIMITED":
         warnings.append("FUNCTIONAL_QUALITY_LIMITED")
+    for issue in _cons.get("issues") or []:
+        if issue.get("severity") in ("ERROR", "WARN"):
+            tag = f"CONSISTENCY_{issue['id'].upper()}"
+            if tag not in warnings:
+                warnings.append(tag)
 
     rejected_reg = (register.get("profile") or {}).get("rejected_events") or []
 
     quality_badge = {
-        "FULL": "충분",
-        "FULL_MIXED": "충분",
-        "FULL_VOCAL_ONLY": "충분",
+        "FULL": "기능 분석 범위: 충분",
+        "FULL_MIXED": "기능 분석 범위: 충분",
+        "FULL_VOCAL_ONLY": "입력 신호 상태: 분석 가능",
         "LIMITED": "일부 기능 분석만 가능",
         "UNAVAILABLE": "기능 분석 제한",
     }.get(functional_quality, "참고")
+    quality_badge_note = (
+        "분석 가능 범위는 충분하지만 항목별 신뢰도는 다를 수 있어요."
+        if functional_quality in ("FULL", "FULL_MIXED", "FULL_VOCAL_ONLY")
+        else None
+    )
 
     scientific_debug = {
         "engine_version": cfg.FUNCTION_ENGINE_VERSION,
@@ -469,6 +518,10 @@ def compute_vocal_function_profile(
         "time_origin_sec": origin,
         "functional_quality": functional_quality,
         "input_mode": input_mode,
+        "breathiness_coverage": leakage.get("breathiness_coverage"),
+        "roughness_coverage": regularity.get("roughness_coverage"),
+        # Full segment list for offline paired audits (stripped from public report)
+        "segments": segments,
     }
 
     return {
@@ -477,6 +530,7 @@ def compute_vocal_function_profile(
         "report_version": cfg.REPORT_VERSION,
         "functional_quality": functional_quality,
         "quality_badge": quality_badge,
+        "quality_badge_note": quality_badge_note,
         "input_mode": input_mode,
         "separation_note": separation_note,
         "calibration_status": "uncalibrated_directional",
@@ -507,6 +561,8 @@ def compute_vocal_function_profile(
         "focus_episodes": focus,
         "coaching_decision": coaching_decision,
         "contact_effort_plane": contact_effort_plane,
+        "criteria_matrix": criteria_matrix,
+        "vocal_type_profile": vocal_type_profile,
         "personal_baseline": baseline,
         "style_goal": style_goal,
         "technique_goal": technique_goal,
@@ -522,6 +578,7 @@ def compute_vocal_function_profile(
             "3": "FUNCTIONAL_STATE_ESTIMATE",
             "4": "EPISODES_BOTTLENECKS",
             "5": "COACHING_DECISION",
+            "6": "VOCAL_TYPE_COACH_PROFILE",
         },
         "disclaimer": (
             "이 분석은 음향 기반 기능 추정이며 해부학적/의학적 진단이 아닙니다."

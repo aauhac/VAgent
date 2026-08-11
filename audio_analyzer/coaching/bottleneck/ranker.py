@@ -1,4 +1,4 @@
-"""Select primary/secondary bottlenecks — hard provenance rules (v2.2)."""
+"""Select primary/secondary bottlenecks — hard provenance + criteria gates."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ def select_primary(
     hypotheses: list[dict[str, Any]],
     *,
     user_goal: str = "GENERAL_EASE_AND_CONTROL",
+    criteria_matrix: Optional[list[dict[str, Any]]] = None,
 ) -> tuple[Optional[dict[str, Any]], list[dict[str, Any]]]:
     """
     PRIMARY requires ALL of:
@@ -17,10 +18,20 @@ def select_primary(
       supporting_evidence non-empty
       eligibility != NEEDS_MEASUREMENT (if set)
       not _MEASUREMENT_ONLY placeholder
+      criteria matrix coaching_eligibility == YES (when matrix provided)
+      required criteria met for that dimension (not merely "others failed")
 
     LOW confidence NEVER becomes primary — even if goal impact is HIGH.
+    Being the only surviving candidate is NOT enough.
     """
+    from audio_analyzer.vocal_function.criteria_registry import (
+        BOTTLENECK_DIMENSION,
+        coaching_min_required,
+    )
+
+    by_dim = {r["dimension_id"]: r for r in (criteria_matrix or [])}
     usable = []
+    rejected_for_criteria = []
     for h in hypotheses:
         if h.get("id") == "_MEASUREMENT_ONLY":
             continue
@@ -34,11 +45,52 @@ def select_primary(
             continue
         if h.get("eligibility") == "NEEDS_MEASUREMENT":
             continue
+
+        dim_id = BOTTLENECK_DIMENSION.get(h.get("id") or "")
+        crow = by_dim.get(dim_id) if dim_id else None
+        if criteria_matrix is not None and crow is not None:
+            if crow.get("coaching_eligibility") != "YES":
+                rejected_for_criteria.append(
+                    {
+                        "id": h.get("id"),
+                        "reason": "criteria_not_coaching_eligible",
+                        "sufficiency": crow.get("measurement_sufficiency"),
+                        "eligibility": crow.get("coaching_eligibility"),
+                    }
+                )
+                continue
+            if int(crow.get("required_satisfied") or 0) < coaching_min_required(dim_id):
+                rejected_for_criteria.append(
+                    {
+                        "id": h.get("id"),
+                        "reason": "required_criteria_below_minimum",
+                        "satisfied": crow.get("required_satisfied"),
+                        "minimum": coaching_min_required(dim_id),
+                    }
+                )
+                continue
+            if dim_id == "register_configuration":
+                loc = next(
+                    (
+                        c
+                        for c in (crow.get("criteria") or [])
+                        if c.get("criterion_id") == "localization"
+                    ),
+                    None,
+                )
+                if not loc or loc.get("availability") != "SUFFICIENT":
+                    rejected_for_criteria.append(
+                        {"id": h.get("id"), "reason": "register_core_span_missing"}
+                    )
+                    continue
+
         usable.append(h)
 
     if not usable:
         return None, []
     primary = usable[0]
+    primary = dict(primary)
+    primary["_criteria_reject_log"] = rejected_for_criteria
     secondary = usable[1:3]
     return primary, secondary
 
@@ -58,7 +110,6 @@ def collect_measurement_candidates(hypotheses: list[dict[str, Any]]) -> list[dic
                     "eligibility": "NEEDS_MEASUREMENT",
                 }
             )
-    # dedupe by issue
     seen = set()
     deduped = []
     for m in out:

@@ -41,17 +41,17 @@ def segment_evidence_flags(obs: dict[str, Any]) -> dict[str, Any]:
         pressed_spectral = True
     pressed_temporal = onset is not None and float(onset) >= cfg.PRESSED_ONSET_ABRUPT
 
-    rough_periodicity = False
-    if per is not None and float(per) < cfg.ROUGH_CPP_DROP:
-        rough_periodicity = True
-    if perturb is not None and float(perturb) >= cfg.ROUGH_PERTURB_HIGH:
-        rough_periodicity = True
+    # Rough: periodicity loss alone is NOT a hit — need irregularity-specific
+    rough_periodicity_loss = per is not None and float(per) < cfg.ROUGH_CPP_DROP
+    rough_irregularity = perturb is not None and float(perturb) >= cfg.ROUGH_PERTURB_HIGH
+    rough_hit = rough_irregularity and (
+        rough_periodicity_loss or rough_irregularity
+    )
 
     return {
         "breathy": {
             "periodicity": breathy_periodicity,
             "spectral_or_harmonic": breathy_spectral,
-            # intensity family intentionally unused for breathy HIGH
         },
         "pressed": {
             "periodicity": pressed_periodicity,
@@ -59,8 +59,11 @@ def segment_evidence_flags(obs: dict[str, Any]) -> dict[str, Any]:
             "temporal_or_onset": pressed_temporal,
         },
         "rough": {
-            "periodicity": rough_periodicity,
-            "temporal": rough_periodicity,  # distribution handled at aggregation
+            "periodicity_loss": rough_periodicity_loss,
+            "irregularity": rough_irregularity,
+            # legacy key kept false unless irregularity-specific
+            "periodicity": rough_hit,
+            "temporal": rough_irregularity,
         },
         "timbre": {
             "centroid_hz": centroid,

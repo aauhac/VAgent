@@ -29,7 +29,7 @@ from audio_analyzer.vocal_quality.report import build_vocal_quality_public
 from audio_analyzer.vocal_function.report import build_vocal_function_public
 
 
-SONG_DETAIL_REPORT_VERSION = "vocal-coach-report-v2.0"
+SONG_DETAIL_REPORT_VERSION = "vocal-coach-report-v2.6"
 
 _FORBIDDEN_KEYS = (
     "physiology_assessments",
@@ -164,19 +164,49 @@ def build_song_detailed_report(
     vq_raw = analysis.get("vocal_quality_profile") or {}
     vocal_quality = build_vocal_quality_public(vq_raw)
 
-    # Merge focus: function segments first, then quality, then performance
+    decision = vocal_function.get("coaching_decision") or {}
+    has_primary = bool(decision.get("primary_bottleneck"))
+
+    # MAIN problem focus: Functional confirmed targets only (never VQ/Performance)
     vf_focus = list(vocal_function.get("focus_segments") or [])
-    vq_focus = list(vocal_quality.get("focus_segments") or [])
-    perf_focus = focus_segments
-    merged_focus = []
-    seen_spans = set()
-    for ev in vf_focus + vq_focus + perf_focus:
+    problem_focus = []
+    seen_spans: set[tuple[float, float]] = set()
+    for ev in vf_focus:
+        role = (ev.get("role") or "").upper()
+        state = (ev.get("state") or "").lower()
+        is_problem = role in ("MODIFY",) or state in (
+            "primary_bottleneck",
+            "secondary_bottleneck",
+        )
+        if not is_problem:
+            continue
         key = (round(float(ev.get("start_sec") or 0), 1), round(float(ev.get("end_sec") or 0), 1))
         if key in seen_spans:
             continue
         seen_spans.add(key)
-        merged_focus.append(ev)
-        if len(merged_focus) >= 8:
+        problem_focus.append({**ev, "focus_kind": "problem"})
+        if len(problem_focus) >= 4:
+            break
+    if not has_primary:
+        problem_focus = []
+
+    # Observation-only (VQ) — never labeled as "문제 구간"
+    observation_focus = []
+    obs_seen = set()
+    for ev in vocal_quality.get("focus_segments") or []:
+        key = (round(float(ev.get("start_sec") or 0), 1), round(float(ev.get("end_sec") or 0), 1))
+        if key in obs_seen or key in seen_spans:
+            continue
+        obs_seen.add(key)
+        observation_focus.append(
+            {
+                **ev,
+                "focus_kind": "observation",
+                "headline": ev.get("headline") or "참고 음질 구간",
+                "role": "OBSERVATION",
+            }
+        )
+        if len(observation_focus) >= 4:
             break
 
     # Performance supplement: only stability + dynamic_control
@@ -187,37 +217,29 @@ def build_song_detailed_report(
     ]
 
     headline_bits = list(
-        (vocal_function.get("coaching_decision") or {}).get("headline")
-        and [(vocal_function.get("coaching_decision") or {}).get("headline")]
+        (decision.get("headline") and [decision.get("headline")])
         or vocal_function.get("headline")
-        or vocal_quality.get("headline")
         or []
     )
-    summary_text = (
-        "오늘의 기능적 발성 코칭 요약이에요."
-        if headline_bits
-        else overall["text"]
-    )
-    if headline_bits:
-        summary_text = summary_text + " " + " · ".join(str(h) for h in headline_bits[:2] if h)
+    if has_primary:
+        summary_text = "오늘의 기능적 발성 코칭 요약이에요."
+        if headline_bits:
+            summary_text = summary_text + " " + " · ".join(str(h) for h in headline_bits[:2] if h)
+    else:
+        summary_text = (
+            decision.get("no_primary_message")
+            or "이번 녹음에서는 우선적으로 교정해야 할 뚜렷한 기능적 병목은 찾지 못했어요."
+        )
 
-    # Training from coaching decision first
+    # Training authority: Functional exercise_plan only — never VQ/Performance merge
     training: list[str] = list(vocal_function.get("training_plan") or [])
-    for d in vocal_quality.get("dimensions") or []:
-        for item in d.get("practice") or []:
-            if item not in training:
-                training.append(item)
-    for p in priorities:
-        if p.get("practice") and p["practice"] not in training:
-            training.append(str(p["practice"]))
-    training = training[:5]
-    if not training:
-        training = [
-            "가벼운 SOVT로 편한 음을 짧게 유지해보세요.",
-            "문제 구간을 낮은 음량으로 부드럽게 시작해 반복해보세요.",
-        ]
+    training = [t for t in training if t][:5]
+    maintenance: list[str] = []
+    if not has_primary:
+        training = []
+        # Optional explicit maintenance (not corrective)
+        maintenance = list(vocal_function.get("maintenance_plan") or [])[:3]
 
-    decision = vocal_function.get("coaching_decision") or {}
     unknown_footer = vocal_function.get("unknown_footer")
 
     limitations = [
@@ -227,7 +249,7 @@ def build_song_detailed_report(
     ]
     if quality.get("status") == "warn":
         limitations.append("녹음 품질 경고가 있어 일부 해석은 보수적으로 제한됐어요.")
-    if unknown_footer:
+    if unknown_footer and unknown_footer not in limitations:
         limitations.append(unknown_footer)
     if excluded_unknown:
         names = ", ".join(x.get("display_name") or x.get("area_id") for x in excluded_unknown)
@@ -242,7 +264,7 @@ def build_song_detailed_report(
         "analysis_id": analysis_id or analysis.get("recording_id"),
         "tier": "song_detail",
         "summary": {
-            "title": "오늘의 핵심",
+            "title": "오늘의 코칭",
             "text": summary_text,
             "overall": None,
             "label": None,
@@ -259,7 +281,13 @@ def build_song_detailed_report(
         "vocal_function_profile": vocal_function,
         "vocal_quality_profile": vocal_quality,
         "quality_badge": vocal_function.get("quality_badge"),
+        "quality_badge_note": vocal_function.get("quality_badge_note"),
         "functional_quality": vocal_function.get("functional_quality"),
+        "criteria_matrix": vocal_function.get("criteria_matrix") or [],
+        "criteria_matrix_note": vocal_function.get("criteria_matrix_note"),
+        "vocal_type_profile": vocal_function.get("vocal_type_profile")
+        or analysis.get("vocal_type_profile")
+        or {"available": False},
         "high_note_events": vocal_function.get("high_note_events") or [],
         "coaching": vocal_function.get("coaching") or {},
         "additional_measurements": (vocal_function.get("coaching") or {}).get(
@@ -277,7 +305,10 @@ def build_song_detailed_report(
         "areas": performance_areas,
         "excluded_unknown_areas": excluded_unknown,
         "areas_debug": areas_debug,
-        "focus_segments": merged_focus,
+        "focus_segments": problem_focus,
+        "observation_segments": observation_focus,
+        "show_problem_focus": bool(problem_focus),
+        "show_corrective_training": bool(has_primary and training),
         "timeline": [
             {
                 "start_sec": e["start_sec"],
@@ -289,13 +320,15 @@ def build_song_detailed_report(
                 "time_label": e.get("time_label"),
                 "practice_hint": e.get("practice_hint"),
                 "role": e.get("role"),
+                "focus_kind": e.get("focus_kind", "problem"),
             }
-            for e in merged_focus
+            for e in problem_focus
         ],
         "strengths": strengths,
-        "priority_issues": priorities,
+        "priority_issues": priorities if has_primary else [],
         "vibrato": _vibrato_public(analysis.get("optional_analysis") or {}),
         "training_plan": training,
+        "maintenance_plan": maintenance,
         "unknown_footer": unknown_footer,
         "recording_notes": list(analysis.get("analysis_notes") or [])[:8],
         "audio": public_audio(analysis.get("audio") or {}),

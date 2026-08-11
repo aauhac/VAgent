@@ -232,7 +232,7 @@ def test_unknown_hidden_in_main_report():
     ids = [d["dimension_id"] for d in report["vocal_quality_profile"]["dimensions"]]
     assert "breathy_like" not in ids
     assert "pressed_like" in ids
-    assert report["summary"]["title"] == "오늘의 핵심"
+    assert report["summary"]["title"] == "오늘의 코칭"
     assert report["performance_supplement"]["areas"]
     assert "scientific_debug" not in report["vocal_quality_profile"]
 

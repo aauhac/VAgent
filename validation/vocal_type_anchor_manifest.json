@@ -1,0 +1,55 @@
+{
+  "version": "vocal-type-anchor-manifest-v1",
+  "note": "human_notes are for post-inference audit only. Never pass into the engine.",
+  "same_pitch_future_slots": [
+    {
+      "sample_id": "same_f0_chest",
+      "path": null,
+      "intended_task": "same pitch chest-dominant phonation",
+      "human_notes": null
+    },
+    {
+      "sample_id": "same_f0_head",
+      "path": null,
+      "intended_task": "same pitch head-dominant phonation",
+      "human_notes": null
+    },
+    {
+      "sample_id": "same_f0_mix",
+      "path": null,
+      "intended_task": "same pitch mix phonation",
+      "human_notes": null
+    }
+  ],
+  "samples": [
+    {
+      "sample_id": "general_chest_oktop",
+      "path": "옥탑방.m4a",
+      "role": "chest_heavy_general_contrast",
+      "human_notes": {
+        "register_connection": null,
+        "chest_dominance": null,
+        "head_dominance": null,
+        "strain_regions": [],
+        "note": "Fill after listening; do not use as inference label."
+      }
+    },
+    {
+      "sample_id": "psh_001",
+      "path": "Lyrics.mp3",
+      "role": "park_hyo_shin_anchor",
+      "human_notes": {
+        "register_connection": "SMOOTH_OR_MIXED",
+        "chest_dominance": null,
+        "head_dominance": null,
+        "head_connection_present": null,
+        "mix_connection_present": null,
+        "passaggio_smooth_overall": null,
+        "obvious_register_break": null,
+        "high_note_effort": null,
+        "strain_regions": [],
+        "note": "Path only in manifest. Engine receives sample_id, never artist name."
+      }
+    }
+  ]
+}

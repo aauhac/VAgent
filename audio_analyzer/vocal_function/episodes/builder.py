@@ -37,10 +37,23 @@ def merge_overlapping(
 
 
 def _vocal_valid(seg: dict[str, Any]) -> bool:
+    """Legacy global gate — contact/register/high-note style episodes."""
     if not seg.get("valid"):
         return False
     ve = seg.get("vocal_evidence") or {}
     return bool(ve.get("vocal_specific", True))
+
+
+def _episode_segment_ok(seg: dict[str, Any], episode_type: str) -> bool:
+    """Dimension-aware gate: breathiness must not require global valid/GIF."""
+    from audio_analyzer.vocal_function.validity import dim_valid
+    from audio_analyzer.vocal_evidence.phonation_quality import vocal_presence_ok
+
+    if episode_type == "AIR_LEAKAGE":
+        return dim_valid(seg, "breathiness") or vocal_presence_ok(seg)
+    if episode_type == "ROUGHNESS":
+        return dim_valid(seg, "roughness") or vocal_presence_ok(seg)
+    return _vocal_valid(seg)
 
 
 def select_pre_context(
@@ -560,6 +573,45 @@ def build_feature_matrix(
     }
 
 
+def _core_evidence_span_from_members(members: list[dict[str, Any]], ep: dict[str, Any]) -> dict[str, Any]:
+    """
+    Phrase episodes may merge many windows; core span is the strongest/shortest transition.
+    Always <= parent phrase duration.
+    """
+    if not members:
+        start = float(ep.get("start_sec") or 0)
+        end = float(ep.get("end_sec") or start)
+        return {
+            "start_sec": start,
+            "end_sec": end,
+            "duration_sec": max(0.0, end - start),
+            "source": "episode",
+        }
+    scored = []
+    for m in members:
+        s = float(m.get("start_sec") or 0)
+        e = float(m.get("end_sec") or s)
+        dur = max(1e-3, e - s)
+        jump = abs(float(m.get("f0_jump_cents") or 0))
+        # Prefer high F0 jump and short duration
+        scored.append((jump, -dur, s, e, m))
+    scored.sort(reverse=True)
+    _j, _d, s, e, best = scored[0]
+    parent_s = float(ep.get("start_sec") or s)
+    parent_e = float(ep.get("end_sec") or e)
+    # Clamp inside parent
+    s = max(parent_s, min(s, parent_e))
+    e = max(s, min(e, parent_e))
+    return {
+        "start_sec": s,
+        "end_sec": e,
+        "duration_sec": max(0.0, e - s),
+        "f0_jump_cents": best.get("f0_jump_cents"),
+        "source": "strongest_member",
+        "n_core_events": len(members),
+    }
+
+
 def finalize_episode(
     ep: dict[str, Any],
     *,
@@ -588,12 +640,25 @@ def finalize_episode(
     e24_d = (feature_matrix.get("resonance") or {}).get("energy_2_4k_delta")
     shifts = feature_matrix.get("shifts") or {}
     cause_hint = classify_cause_hint(shifts, e24_delta=e24_d)
+    core = _core_evidence_span_from_members(members, ep)
+    core_events = [
+        {
+            "start_sec": float(m.get("start_sec") or 0),
+            "end_sec": float(m.get("end_sec") or 0),
+            "f0_jump_cents": m.get("f0_jump_cents"),
+            "evidence": m.get("evidence"),
+        }
+        for m in members
+    ]
 
     return {
         "episode_id": ep.get("episode_id") or f"{ep_type}_{start:.1f}_{end:.1f}",
         "type": ep_type,
         "start_sec": start,
         "end_sec": end,
+        "phrase_span": {"start_sec": start, "end_sec": end},
+        "core_evidence_span": core,
+        "core_events": core_events,
         "phases": {k: v for k, v in phases.items() if k not in ("phase_method", "phase_confidence")},
         "phase_method": phase_method,
         "phase_confidence": phase_confidence,
@@ -671,7 +736,7 @@ def build_generic_episodes_from_segments(
     """Turn matching segments into localized episodes for coachable issues."""
     windows = []
     for s in segments:
-        if not _vocal_valid(s):
+        if not _episode_segment_ok(s, episode_type):
             continue
         if predicate(s):
             windows.append(

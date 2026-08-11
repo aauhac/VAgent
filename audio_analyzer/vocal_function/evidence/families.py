@@ -122,18 +122,13 @@ def effort_like(seg: dict[str, Any], baseline: dict[str, Any] | None = None) -> 
 
 
 def leakage_like(seg: dict[str, Any]) -> bool:
-    obs = seg.get("observations") or {}
-    period = obs.get("periodicity_primary_db")
-    h1h2 = obs.get("raw_h1_h2_proxy_db")
-    tilt = obs.get("spectral_tilt_db_per_oct")
-    fam = 0
-    if period is not None and period <= 8:
-        fam += 1
-    if h1h2 is not None and h1h2 >= 7:
-        fam += 1
-    if tilt is not None and tilt <= -16:
-        fam += 1
-    src = ((seg.get("level2_proxies") or {}).get("glottal_source") or {})
-    if src.get("valid") and (src.get("estimated_oq_proxy") or 0) >= 0.6:
-        fam += 1
-    return fam >= 2
+    """Legacy boolean — prefer classify_breathy_segment for fusion."""
+    from audio_analyzer.vocal_evidence.phonation_quality import classify_breathy_segment
+
+    return classify_breathy_segment(seg).get("verdict") == "POSITIVE"
+
+
+def rough_like(seg: dict[str, Any]) -> bool:
+    from audio_analyzer.vocal_evidence.phonation_quality import classify_rough_segment
+
+    return classify_rough_segment(seg).get("verdict") == "POSITIVE"

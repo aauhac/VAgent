@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-FUNCTION_ENGINE_VERSION = "vocal-function-v2.2"
-REPORT_VERSION = "vocal-coach-report-v2.2"
+FUNCTION_ENGINE_VERSION = "vocal-function-v2.6"
+REPORT_VERSION = "vocal-coach-report-v2.6"
 METRIC_REGISTRY_VERSION = "vf-metrics-2026-08"
-RULE_VERSION = "vf-rules-2026-08-v22"
+RULE_VERSION = "vf-rules-2026-08-v23-criteria"
 LITERATURE_VERSION = "vf-lit-2026-08"
 
 MEASUREMENT_MODE = "AUDIO_ONLY"  # future: AUDIO_PLUS_EGG

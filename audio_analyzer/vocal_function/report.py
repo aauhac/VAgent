@@ -160,6 +160,9 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             }
         )
     for ev in profile.get("high_note_events") or []:
+        # High-note windows are not auto-"problem" without a confirmed bottleneck
+        if not (target and target.get("start_sec") is not None):
+            break
         if len(focus) >= 4:
             break
         key = (round(float(ev.get("start_sec") or 0), 1), round(float(ev.get("end_sec") or 0), 1))
@@ -181,6 +184,36 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
                 "headline": "고음 episode",
                 "user_message": ev.get("conclusion"),
                 "state": "high_note",
+                "role": "SECONDARY_CONTEXT",
+            }
+        )
+
+    # Secondary confirmed bottleneck targets (problem listen only)
+    for b in decision.get("secondary_bottlenecks") or []:
+        if len(focus) >= 4:
+            break
+        ep = b.get("target_episode") if isinstance(b, dict) else None
+        if not ep or ep.get("start_sec") is None:
+            continue
+        key = (round(float(ep.get("start_sec") or 0), 1), round(float(ep.get("end_sec") or 0), 1))
+        if any(
+            (round(float(f.get("start_sec") or 0), 1), round(float(f.get("end_sec") or 0), 1))
+            == key
+            for f in focus
+        ):
+            continue
+        focus.append(
+            {
+                "start_sec": ep.get("start_sec"),
+                "end_sec": ep.get("end_sec"),
+                "local_start_sec": ep.get("local_start_sec", ep.get("start_sec")),
+                "local_end_sec": ep.get("local_end_sec", ep.get("end_sec")),
+                "original_start_sec": ep.get("original_start_sec"),
+                "original_end_sec": ep.get("original_end_sec"),
+                "headline": b.get("user_title") or "확인할 구간",
+                "user_message": b.get("why") or "",
+                "state": "secondary_bottleneck",
+                "role": "MODIFY",
             }
         )
 
@@ -215,27 +248,37 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
         "needs_confirmation": decision.get("needs_confirmation") or [],
         "no_primary_message": decision.get("no_primary_message"),
         "prefer_additional_measurement": decision.get("prefer_additional_measurement"),
+        "candidate_comparison": decision.get("candidate_comparison") or [],
     }
 
     excl_names = [x.get("display_name") for x in excl if x.get("display_name")]
     unknown_footer = None
     if excl_names:
         unknown_footer = (
-            "이번 녹음에서는 "
-            + "·".join(excl_names[:6])
-            + " 등 일부 항목은 신뢰도 있게 판단하지 못했어요."
+            "일부 항목은 메인 카드에서 숨겼지만, "
+            "아래 ‘전체 발성 판단 기준’에서 측정 충분/부족을 확인할 수 있어요."
         )
+
+    # Always expose full criteria matrix (including insufficient / hidden dims)
+    criteria_matrix = profile.get("criteria_matrix") or []
 
     out = {
         "available": True,
         "engine_version": profile.get("engine_version"),
         "report_version": profile.get("report_version"),
         "functional_quality": profile.get("functional_quality") or "FULL",
-        "quality_badge": profile.get("quality_badge") or "충분",
+        "quality_badge": profile.get("quality_badge") or "기능 분석 범위: 충분",
+        "quality_badge_note": profile.get("quality_badge_note"),
         "headline": profile.get("headline") or ([public_decision["headline"]] if public_decision.get("headline") else []),
         "dimensions": pub_dims,
         "excluded": excl,
         "unknown_footer": unknown_footer,
+        "criteria_matrix": criteria_matrix,
+        "criteria_matrix_note": (
+            "기준 충족/미충족은 ‘이 결론을 낼 만큼 측정 근거가 충분한가’를 뜻하며 "
+            "발성 좋고 나쁨이 아닙니다."
+        ),
+        "vocal_type_profile": _public_vocal_type(profile.get("vocal_type_profile")),
         "focus_segments": focus[:4],
         "high_note_events": profile.get("high_note_events") or [],
         "coaching_decision": public_decision,
@@ -258,6 +301,12 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _public_vocal_type(profile: Any) -> dict[str, Any]:
+    from audio_analyzer.coach_profile import build_vocal_type_public
+
+    return build_vocal_type_public(profile if isinstance(profile, dict) else None)
+
+
 def _public_bottleneck(b: Any) -> Any:
     if not b:
         return None
@@ -272,6 +321,10 @@ def _public_bottleneck(b: Any) -> Any:
         "supporting_episode_ids": b.get("supporting_episode_ids") or [],
         "contradicting_evidence": b.get("contradicting_evidence"),
         "alternative_explanations": b.get("alternative_explanations"),
+        "criteria_matrix_row": b.get("criteria_matrix_row"),
+        "satisfied_criteria": b.get("satisfied_criteria") or [],
+        "missing_criteria": b.get("missing_criteria") or [],
+        "criteria_user_summary": b.get("criteria_user_summary"),
     }
 
 

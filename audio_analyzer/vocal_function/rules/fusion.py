@@ -221,40 +221,90 @@ def fuse_effort(
 
 
 def fuse_leakage(segments: list[dict[str, Any]]) -> dict[str, Any]:
-    valid = [s for s in segments if s.get("valid")]
-    hits = [s for s in valid if leakage_like(s)]
-    if len(valid) < cfg.MIN_SEGMENTS_GLOBAL:
-        status = "UNKNOWN"
-    elif not hits:
-        status = "LOW"
-    elif len(hits) == 1:
-        # single family / single segment cannot go HIGH
-        status = "OCCASIONAL"
-    elif len(hits) / len(valid) >= cfg.PREVALENCE_REPEATED:
-        status = "HIGH"
-    else:
-        status = "MODERATE"
+    """
+    Breathiness / leakage fusion with coverage semantics (v2.3).
 
-    return _dim(
+    LOW requires sufficient negative coverage — zero positive ≠ LOW.
+    Uses dimension-specific breathiness validity (GIF not required).
+    """
+    from audio_analyzer.vocal_evidence.phonation_quality import classify_breathy_segment
+    from audio_analyzer.vocal_function.validity import dim_valid
+
+    evaluable = [s for s in segments if dim_valid(s, "breathiness")]
+    positives, negatives, insufficient = [], [], []
+    for s in evaluable:
+        c = classify_breathy_segment(s)
+        s = {**s, "breathy_classification": c}
+        if c["verdict"] == "POSITIVE":
+            positives.append(s)
+        elif c["verdict"] == "NEGATIVE":
+            negatives.append(s)
+        else:
+            insufficient.append(s)
+
+    n_eval = len(evaluable)
+    n_pos, n_neg, n_ins = len(positives), len(negatives), len(insufficient)
+    pos_ratio = n_pos / n_eval if n_eval else 0.0
+    neg_ratio = n_neg / n_eval if n_eval else 0.0
+
+    coverage = {
+        "n_total_segments": len(segments),
+        "n_evaluable_segments": n_eval,
+        "n_positive_segments": n_pos,
+        "n_negative_segments": n_neg,
+        "n_insufficient_segments": n_ins + (len(segments) - n_eval),
+        "positive_ratio": round(pos_ratio, 3),
+        "negative_ratio": round(neg_ratio, 3),
+        "evaluable": n_eval,
+        "positive": n_pos,
+        "negative": n_neg,
+        "insufficient": n_ins + (len(segments) - n_eval),
+    }
+
+    if n_eval < cfg.MIN_SEGMENTS_GLOBAL:
+        status = "UNKNOWN"
+        meaning = "이번 녹음에서는 기식성 경향을 충분히 판단하지 못했어요."
+        summary = "판단 부족"
+    elif n_pos >= cfg.MIN_SEGMENTS_GLOBAL and pos_ratio >= cfg.PREVALENCE_REPEATED:
+        status = "HIGH"
+        meaning = "기류 누출이 많은 발성과 일치할 수 있는 음향 패턴이 여러 구간에서 관찰됐어요."
+        summary = "반복"
+    elif n_pos >= 2 and pos_ratio >= cfg.PREVALENCE_OCCASIONAL:
+        status = "MODERATE"
+        meaning = "숨이 섞이는 음질과 일치할 수 있는 음향 패턴이 여러 구간에서 관찰됐어요."
+        summary = "중간"
+    elif n_pos == 1:
+        status = "OCCASIONAL"
+        meaning = "일부 구간에서 기식성·누출과 일치할 수 있는 단서가 있어요."
+        summary = "일부"
+    elif n_neg >= max(cfg.MIN_SEGMENTS_GLOBAL, int(0.5 * n_eval)) and n_pos == 0:
+        status = "LOW"
+        meaning = "기식성·누출 경향은 뚜렷하지 않았어요."
+        summary = "낮은 편"
+    else:
+        status = "UNKNOWN"
+        meaning = "이번 녹음에서는 기식성 경향을 충분히 판단하지 못했어요."
+        summary = "판단 부족"
+
+    conf = "low"
+    if status == "UNKNOWN":
+        conf = "low"
+    elif n_eval >= 8 and status in ("LOW", "MODERATE", "HIGH"):
+        conf = "medium"
+    elif n_eval >= cfg.MIN_SEGMENTS_GLOBAL:
+        conf = "medium" if status != "OCCASIONAL" else "low"
+
+    out = _dim(
         "air_leakage_breathiness",
         status=status,
         continuum=None,
-        summary={
-            "LOW": "낮은 편",
-            "OCCASIONAL": "일부",
-            "MODERATE": "중간",
-            "HIGH": "반복",
-            "UNKNOWN": "UNKNOWN",
-        }.get(status, status),
-        meaning=(
-            "기류 누출이 많은 phonation과 일치할 수 있는 특징이 관찰됐어요."
-            if hits
-            else "기식성·누출 경향은 뚜렷하지 않았어요."
-        ),
+        summary=summary,
+        meaning=meaning,
         cannot="실제 성문 틈·성대 접촉을 측정하지 않습니다.",
         evidence=[],
-        valid=valid,
-        prevalence=_prevalence(len(hits), len(valid)),
+        valid=evaluable,
+        confidence_label=conf,
+        prevalence=_prevalence(n_pos, n_eval) if n_eval else "unknown",
         focus=[
             {
                 "start_sec": s["start_sec"],
@@ -263,22 +313,38 @@ def fuse_leakage(segments: list[dict[str, Any]]) -> dict[str, Any]:
                 "headline": "기류 누출·기식성 경향",
                 "user_message": "주기성·스펙트럼 단서가 함께 약한 구간이에요.",
                 "limitation": "성대 접촉을 직접 측정한 것은 아닙니다.",
+                "role": "OBSERVATION",
             }
-            for s in hits[:3]
+            for s in positives[:3]
         ],
+        profile=coverage,
     )
+    out["breathiness_coverage"] = coverage
+    return out
 
 
 def fuse_regularity(segments: list[dict[str, Any]]) -> dict[str, Any]:
-    valid = [s for s in segments if s.get("valid")]
+    """Roughness requires irregularity-specific evidence — CPP alone is not enough."""
+    from audio_analyzer.vocal_evidence.phonation_quality import classify_rough_segment
+    from audio_analyzer.vocal_function.validity import dim_valid
+
+    evaluable = [s for s in segments if dim_valid(s, "roughness") or s.get("valid")]
     rough = []
-    for s in valid:
-        obs = s.get("observations") or {}
-        if (obs.get("periodicity_primary_db") or 99) <= 6 or (
-            obs.get("f0_frame_period_perturbation_proxy_percent") or 0
-        ) >= 2.5:
-            rough.append(s)
-    if len(valid) < 2:
+    rejected_period_only = []
+    for s in evaluable:
+        c = classify_rough_segment(s)
+        if c["verdict"] == "POSITIVE":
+            rough.append({**s, "rough_classification": c})
+        elif c.get("reason") == "periodicity_loss_without_irregularity":
+            rejected_period_only.append(s)
+
+    coverage = {
+        "evaluable": len(evaluable),
+        "positive": len(rough),
+        "rejected_periodicity_only": len(rejected_period_only),
+    }
+
+    if len(evaluable) < 2:
         status = "UNKNOWN"
     elif not rough:
         status = "STABLE"
@@ -286,7 +352,20 @@ def fuse_regularity(segments: list[dict[str, Any]]) -> dict[str, Any]:
         status = "INTERMITTENT"
     else:
         status = "REPEATED_IRREGULAR"
-    return _dim(
+
+    meaning = (
+        "거칠고 불규칙한 음질 패턴이 일부 관찰됐어요. "
+        "의도적 distortion일 수도 있어 잘못이라고 단정하지 않아요."
+        if rough
+        else "진동 규칙성은 비교적 유지되는 편이에요."
+    )
+    if not rough and rejected_period_only:
+        meaning = (
+            "주기성 저하만으로는 거친 음질로 보지 않았어요. "
+            "불규칙 진동 특성이 뚜렷하지 않았어요."
+        )
+
+    out = _dim(
         "phonation_regularity",
         status=status,
         continuum=None,
@@ -296,17 +375,14 @@ def fuse_regularity(segments: list[dict[str, Any]]) -> dict[str, Any]:
             "REPEATED_IRREGULAR": "반복적 불규칙",
             "UNKNOWN": "UNKNOWN",
         }.get(status, status),
-        meaning=(
-            "거칠고 불규칙한 음질 패턴이 일부 관찰됐어요. "
-            "의도적 distortion일 수도 있어 잘못이라고 단정하지 않아요."
-            if rough
-            else "진동 규칙성은 비교적 유지되는 편이에요."
-        ),
+        meaning=meaning,
         cannot="병변·성대 상태를 진단하지 않습니다.",
         evidence=[],
-        valid=valid,
-        prevalence=_prevalence(len(rough), len(valid)),
+        valid=evaluable,
+        prevalence=_prevalence(len(rough), len(evaluable)) if evaluable else "unknown",
     )
+    out["roughness_coverage"] = coverage
+    return out
 
 
 def fuse_register(

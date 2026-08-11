@@ -171,12 +171,16 @@ def observe_segment(
             "restricted": True,
         }
 
-    return {
+    # Legacy global valid (strict) — used for contact/register-like dims
+    global_valid = (
+        bool(base.get("valid", True))
+        and vocal_dominant
+        and bool(vocal_evidence.get("vocal_specific"))
+    )
+    seg_out = {
         "start_sec": start_sec,
         "end_sec": end_sec,
-        "valid": bool(base.get("valid", True))
-        and vocal_dominant
-        and bool(vocal_evidence.get("vocal_specific")),
+        "valid": global_valid,
         "voiced_ratio": voiced_ratio,
         "level": 1,
         "vocal_evidence": vocal_evidence,
@@ -188,4 +192,9 @@ def observe_segment(
             "harmonic_formant_alignment": align,
             "timbre": build_timbre_profile(bands, formants.get("confidence")),
         },
+        "rms": rms,
     }
+    from audio_analyzer.vocal_function.validity import build_validity_by_dimension
+
+    seg_out["validity_by_dimension"] = build_validity_by_dimension(seg_out)
+    return seg_out

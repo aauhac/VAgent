@@ -192,8 +192,12 @@ def explain_area(area: dict[str, Any]) -> dict[str, Any]:
                 "전체 강약 점수를 끌어내렸어요."
             )
         else:
-            headline = f"{display}{topic_particle(display)} 중간 수준으로 측정됐어요."
-            interpretation = "강약 표현이 전반적으로 무난하지만, 더 분명한 대비를 만들 여지는 있어요."
+            if score is not None and float(score) >= 70:
+                headline = f"{display}{topic_particle(display)} 비교적 좋게 측정됐어요."
+                interpretation = "강약 표현이 전반적으로 양호하고, 더 분명한 대비를 만들 여지는 있어요."
+            else:
+                headline = f"{display}{topic_particle(display)} 중간 수준으로 측정됐어요."
+                interpretation = "강약 표현이 전반적으로 무난하지만, 더 분명한 대비를 만들 여지는 있어요."
     else:
         if best and weakest and float(best["score"]) >= 85 and float(weakest["score"]) < 60:
             b_name, w_name = _named(best), _named(weakest)
@@ -213,6 +217,10 @@ def explain_area(area: dict[str, Any]) -> dict[str, Any]:
             headline = f"{display}에서 개선 여지가 분명해요."
             w_name = _named(weakest) if weakest else "일부 지표"
             interpretation = f"가장 약한 세부 항목은 {w_name}예요."
+        elif score is not None and float(score) >= 70:
+            # Never pair GOOD / 80+ scores with "중간 수준"
+            headline = f"{display}{topic_particle(display)} 비교적 좋게 측정됐어요."
+            interpretation = "세부 항목이 전반적으로 양호한 편이에요."
         else:
             headline = f"{display}{topic_particle(display)} 전반적으로 중간 수준이에요."
             interpretation = "세부 항목이 한쪽으로 극단적이지 않고 중간 구간에 모여 있어요."

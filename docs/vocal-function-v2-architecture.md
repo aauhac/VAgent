@@ -1,35 +1,17 @@
-# Vocal Function Engine v2.2 — Architecture
+# Vocal Function Engine v2.6 — Architecture
 
-Five layers (never mixed):
+Layers + Coach Profile:
 
-1. DIRECT ACOUSTIC OBSERVATIONS  
-2. GLOTTAL-SOURCE / VOCAL-TRACT PROXIES  
-3. FUNCTIONAL_STATE_ESTIMATE (not ANATOMY_ESTIMATE)  
-4. TECHNIQUE / CONTROL CHARACTERIZATION  
-5. COACHING DECISION  
+1. OBSERVATIONS → 2. SOURCE PROXIES → 3. FUNCTIONAL STATE → 4. EPISODES → 5. COACHING → 6. VOCAL TYPE v1.2
 
-## analysis_mode vs input_mode (independent)
+## v1.2 highlights
 
-| analysis_mode | meaning |
-|---------------|---------|
-| QUICK | free lightweight analysis |
-| FUNCTIONAL | Song Detail / Functional Vocal Coach |
-| DIAGNOSTIC | diagnostic protocol path |
+- Signed family votes (−1 chest … +1 head)
+- Absolute vs relative baselines (no self-normalize when variance=0)
+- CONTACT supporting-only
+- Breathiness/roughness reliability gates (no auto-head)
+- `global_ratio_directionality` vs `segment_directionality_*`
+- Global type vs `local_register_events` (CHEST_PULL never renames global type)
+- `REGISTER_SPLIT_GLOBAL` requires transition-opportunity prevalence
 
-| input_mode | meaning |
-|------------|---------|
-| AUTO / MIXED | try Demucs; vocals + no_vocals contrast |
-| VOCAL_ONLY | skip Demucs; raw treated as vocal (still FUNCTIONAL) |
-
-Functional quality:
-
-- **FULL_MIXED** — separated + no_vocals  
-- **FULL_VOCAL_ONLY** — VOCAL_ONLY with usable vocal evidence (missing no_vocals is OK)  
-- **LIMITED** / **UNAVAILABLE** — restricted coaching  
-
-Episode contexts use **true PRE / DURING / POST** segments outside the episode span.  
-Primary bottlenecks require medium+ confidence, supporting_episode_ids, and a playable target.
-
-Versions: `vocal-function-v2.2` / `vocal-coach-report-v2.2`  
-
-This is engineering validity / localization — **not** human-coach validated accuracy.
+Versions: `vocal-function-v2.6` / `vocal-coach-report-v2.6` / `vocal-type-v1.2`
