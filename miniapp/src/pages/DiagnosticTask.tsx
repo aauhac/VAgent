@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { analyzeDiagnosticSession, getDiagnosticProtocol, uploadDiagnosticTask } from '../api/client';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  analyzeDiagnosticSession,
+  getDiagnosticProtocol,
+  getDiagnosticSession,
+  uploadDiagnosticTask,
+} from '../api/client';
 
-const ORDER = ['sustain_a', 'sustain_i', 'siren', 'dynamic_swell'];
+const FALLBACK_ORDER = ['sustain_a', 'sustain_i', 'siren', 'dynamic_swell'];
 
 export default function DiagnosticTask() {
   const { sessionId, taskId } = useParams();
   const nav = useNavigate();
   const [protocol, setProtocol] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [levels, setLevels] = useState<number[]>(Array(20).fill(4));
@@ -24,6 +30,11 @@ export default function DiagnosticTask() {
   useEffect(() => {
     getDiagnosticProtocol().then(setProtocol).catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    getDiagnosticSession(sessionId).then(setSession).catch(() => undefined);
+  }, [sessionId, taskId]);
 
   function cleanup() {
     if (timerRef.current != null) {
@@ -65,9 +76,17 @@ export default function DiagnosticTask() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, taskId]);
 
-  const task = (protocol?.tasks || []).find((t: any) => t.task_id === taskId);
-  const idx = ORDER.indexOf(taskId || '');
-  const progressLabel = `${idx + 1} / ${ORDER.length}`;
+  const order: string[] =
+    (session?.selected_tasks && session.selected_tasks.length
+      ? session.selected_tasks
+      : FALLBACK_ORDER) as string[];
+  const task =
+    (session?.task_plan || []).find((t: any) => t.task_id === taskId) ||
+    (protocol?.tasks || []).find((t: any) => t.task_id === taskId);
+  const idx = order.indexOf(taskId || '');
+  const progressLabel = idx >= 0 ? `${idx + 1} / ${order.length}` : `— / ${order.length}`;
+  const purpose = (task?.purpose_labels || []).join(' · ');
+  const unresolvedLabels = session?.diagnostic_offer?.unresolved_labels || [];
 
   async function start() {
     if (busy || recording || stoppingRef.current) return;
@@ -154,7 +173,9 @@ export default function DiagnosticTask() {
         stoppingRef.current = false;
         return;
       }
-      const nextId = ORDER[idx + 1];
+      const nextOrder = (res.session?.selected_tasks as string[]) || order;
+      const curIdx = nextOrder.indexOf(taskId);
+      const nextId = curIdx >= 0 ? nextOrder[curIdx + 1] : undefined;
       setBusy(false);
       stoppingRef.current = false;
       if (nextId) {
@@ -182,8 +203,14 @@ export default function DiagnosticTask() {
   return (
     <main>
       <p className="muted">Task {progressLabel}</p>
+      {unresolvedLabels.length > 0 && (
+        <p className="muted">이번에 확인할 항목 · {unresolvedLabels.join(' · ')}</p>
+      )}
       <h1 className="brand" style={{ fontSize: '1.5rem' }}>{task.title}</h1>
       <p className="lead">{task.why}</p>
+      {purpose && (
+        <p className="body-text">이 녹음으로 확인하는 것 · {purpose}</p>
+      )}
       <div className="panel">
         <p>{task.instruction}</p>
         <p className="muted">잘하려고 하지 않아도 됩니다. 평소처럼 편하게 수행하면 됩니다.</p>
@@ -198,9 +225,8 @@ export default function DiagnosticTask() {
         ) : (
           <button className="btn" onClick={stopUpload} disabled={busy}>녹음 종료 & 제출</button>
         )}
-        {msg && <p className={msg.includes('분석') ? 'muted' : 'warn'} style={{ marginTop: 12 }}>{msg}</p>}
+        {msg && <p className="muted" style={{ marginTop: 12 }}>{msg}</p>}
       </div>
-      <Link className="muted" to="/">홈</Link>
     </main>
   );
 }

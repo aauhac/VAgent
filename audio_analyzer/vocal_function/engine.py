@@ -18,7 +18,6 @@ from audio_analyzer.vocal_function.episodes.builder import (
 )
 from audio_analyzer.vocal_function.evidence.families import (
     effort_like,
-    effort_secondary_signs,
     firmer_like,
     leakage_like,
     rough_like,
@@ -30,7 +29,12 @@ from audio_analyzer.coaching.bottleneck import build_coaching_decision
 
 
 def _baseline_from_segments(segments: list[dict[str, Any]]) -> dict[str, Any]:
+    """Prefer global-valid segments; fall back to vocal-presence to reduce healthy-subset bias."""
+    from audio_analyzer.vocal_evidence.phonation_quality import vocal_presence_ok
+
     valid = [s for s in segments if s.get("valid")]
+    if len(valid) < 3:
+        valid = [s for s in segments if vocal_presence_ok(s)]
     if not valid:
         return {}
     f0s = [
@@ -43,16 +47,31 @@ def _baseline_from_segments(segments: list[dict[str, Any]]) -> dict[str, Any]:
         for s in valid
         if (s.get("observations") or {}).get("rms") is not None
     ]
+    e24s = [
+        (s.get("observations") or {}).get("energy_2_4k")
+        for s in valid
+        if (s.get("observations") or {}).get("energy_2_4k") is not None
+    ]
     mfdrs = []
     for s in valid:
         src = ((s.get("level2_proxies") or {}).get("glottal_source") or {})
         if src.get("valid") and src.get("estimated_mfdr_norm_proxy") is not None:
             mfdrs.append(float(src["estimated_mfdr_norm_proxy"]))
-    return {
-        "f0_hz": float(np.median(f0s)) if f0s else None,
-        "rms": float(np.median(rmss)) if rmss else None,
-        "mfdr_norm": float(np.median(mfdrs)) if mfdrs else None,
-    }
+    out: dict[str, Any] = {}
+    if f0s:
+        out["f0_hz"] = float(np.median(f0s))
+    if rmss:
+        out["rms"] = float(np.median(rmss))
+    if mfdrs:
+        out["mfdr_norm"] = float(np.median(mfdrs))
+    if e24s:
+        out["energy_24k"] = float(np.median(e24s))
+    out["n_baseline_segments"] = len(valid)
+    out["baseline_selection"] = (
+        "global_valid" if any(s.get("valid") for s in valid) and len([s for s in segments if s.get("valid")]) >= 3
+        else "vocal_presence_fallback"
+    )
+    return out
 
 
 def compute_contact_effort_plane(
@@ -61,15 +80,16 @@ def compute_contact_effort_plane(
     episodes: Optional[list[dict[str, Any]]] = None,
 ) -> dict[str, Any]:
     """Same-segment co-occurrence — never global firm_n>0 && effort_n>0."""
+    from audio_analyzer.vocal_function.validity import dim_valid
+
     firm_segments: list[dict[str, Any]] = []
     effort_segments: list[dict[str, Any]] = []
-    for s in segments:
-        if not s.get("valid"):
-            continue
-        if firmer_like(s, baseline):
+    for i, s in enumerate(segments):
+        if dim_valid(s, "glottal_contact") and firmer_like(s, baseline):
             firm_segments.append(s)
-        # Plane effort axis uses secondary signs (independent of firm)
-        if effort_secondary_signs(s, baseline) or effort_like(s, baseline):
+        pre = segments[i - 1] if i > 0 else None
+        post = segments[i + 1] if i + 1 < len(segments) else None
+        if dim_valid(s, "effort") and effort_like(s, baseline, pre=pre, post=post):
             effort_segments.append(s)
 
     firm_keys = {(float(s["start_sec"]), float(s["end_sec"])) for s in firm_segments}
@@ -152,14 +172,21 @@ def analyze_high_note_events(
         after = valid[i + 1] if i + 1 < len(valid) else None
 
         firm = firmer_like(s, baseline)
-        effort = effort_like(s, baseline)
+        pre = valid[i - 1] if i > 0 else None
+        after = valid[i + 1] if i + 1 < len(valid) else None
+        effort = effort_like(s, baseline, pre=pre, post=after)
         period = (s.get("observations") or {}).get("periodicity_primary_db")
         rough = (
             (s.get("observations") or {}).get("f0_frame_period_perturbation_proxy_percent")
             or 0
         ) >= 2.5
         recovery_fast = True
-        if after and effort_like(after, baseline):
+        if after and effort_like(
+            after,
+            baseline,
+            pre=s,
+            post=valid[i + 2] if i + 2 < len(valid) else None,
+        ):
             recovery_fast = False
 
         if firm and not effort and (period or 0) >= 8 and not rough and recovery_fast:
@@ -287,7 +314,7 @@ def compute_vocal_function_profile(
     valid = [s for s in segments if s.get("valid")]
     baseline = personal_baseline or _baseline_from_segments(segments)
 
-    contact = rules.fuse_contact(segments)
+    contact = rules.fuse_contact(segments, baseline_obs=baseline)
     leakage = rules.fuse_leakage(segments)
     effort = rules.fuse_effort(segments, baseline_obs=baseline)
     regularity = rules.fuse_regularity(segments)
@@ -361,12 +388,21 @@ def compute_vocal_function_profile(
             gap_sec=0.4,
         )
     ]
+    # Trajectory-aware effort elevation keys (PRE/DURING/POST)
+    effort_elevated_keys = set()
+    for i, s in enumerate(segments):
+        pre = segments[i - 1] if i > 0 else None
+        post = segments[i + 1] if i + 1 < len(segments) else None
+        if effort_like(s, baseline, pre=pre, post=post):
+            effort_elevated_keys.add((float(s["start_sec"]), float(s["end_sec"])))
+
     effort_episodes = [
         attach_time_fields(e, time_origin_sec=origin)
         for e in build_generic_episodes_from_segments(
             segments,
             episode_type="GENERAL_EFFORT",
-            predicate=lambda s: effort_like(s, baseline) or effort_secondary_signs(s, baseline),
+            predicate=lambda s: (float(s["start_sec"]), float(s["end_sec"]))
+            in effort_elevated_keys,
             all_segments=segments,
         )
     ]

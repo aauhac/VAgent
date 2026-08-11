@@ -39,6 +39,34 @@ def test_next_task_start_enabled():
     assert can_start_recording(st, stopping=False) is True
 
 
+def task_progress_label(selected_tasks: list[str], task_id: str) -> str:
+    order = selected_tasks or []
+    idx = order.index(task_id) if task_id in order else -1
+    if not order:
+        return "0 / 0"
+    if idx < 0:
+        return f"— / {len(order)}"
+    return f"{idx + 1} / {len(order)}"
+
+
+def next_task_id(selected_tasks: list[str], task_id: str):
+    idx = selected_tasks.index(task_id) if task_id in selected_tasks else -1
+    if idx < 0:
+        return None
+    return selected_tasks[idx + 1] if idx + 1 < len(selected_tasks) else None
+
+
+def test_adaptive_progress_two_tasks():
+    order = ["sustain_a", "siren"]
+    assert task_progress_label(order, "sustain_a") == "1 / 2"
+    assert task_progress_label(order, "siren") == "2 / 2"
+    assert next_task_id(order, "sustain_a") == "siren"
+    assert next_task_id(order, "siren") is None
+
+
+def test_zero_tasks_progress():
+    assert task_progress_label([], "sustain_a") == "0 / 0"
+
 def test_retry_after_quality_fail():
     st = after_quality_fail({"busy": True, "recording": True, "seconds": 5, "msg": "retry"})
     assert st["busy"] is False

@@ -8,12 +8,15 @@ import numpy as np
 
 from audio_analyzer.vocal_function import config as cfg
 from audio_analyzer.vocal_function.evidence.families import (
-    effort_like,
+    contact_direction_score,
+    contact_evidence_packet,
     firmer_like,
+    gif_usable,
     leakage_like,
     lighter_like,
 )
 from audio_analyzer.vocal_function.evidence.graph import evidence_node
+from audio_analyzer.vocal_function.validity import dim_valid
 
 
 def _prevalence(n_hit: int, n_valid: int) -> str:
@@ -29,8 +32,27 @@ def _prevalence(n_hit: int, n_valid: int) -> str:
     return "dominant"
 
 
-def fuse_contact(segments: list[dict[str, Any]]) -> dict[str, Any]:
-    valid = [s for s in segments if s.get("valid")]
+def _contact_evaluable(segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [s for s in segments if dim_valid(s, "glottal_contact")]
+
+
+def _effort_evaluable(segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [s for s in segments if dim_valid(s, "effort")]
+
+
+def fuse_contact(
+    segments: list[dict[str, Any]],
+    *,
+    baseline_obs: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+    """
+    Contact continuum using dimension-specific validity.
+
+    GIF is strong evidence, not an absolute gate. Multi-family fallback
+    (harmonic + spectral/temporal) may yield an estimate with capped confidence.
+    No fake midpoint when directional evidence is absent.
+    """
+    valid = _contact_evaluable(segments)
     if len(valid) < cfg.MIN_SEGMENTS_GLOBAL:
         return _dim(
             "glottal_contact_profile",
@@ -43,29 +65,46 @@ def fuse_contact(segments: list[dict[str, Any]]) -> dict[str, Any]:
             valid=valid,
         )
 
-    light = [s for s in valid if lighter_like(s)]
-    firm = [s for s in valid if firmer_like(s)]
-    # continuum 0=light .. 1=firm
+    packets = [contact_evidence_packet(s, baseline_obs) for s in valid]
+    scored = [
+        (s, p, contact_direction_score(s, baseline_obs))
+        for s, p in zip(valid, packets)
+    ]
+    scored = [(s, p, sc) for s, p, sc in scored if sc is not None]
+    light = [s for s, _p, sc in scored if sc is not None and sc < 0.4]
+    firm = [s for s, _p, sc in scored if sc is not None and sc > 0.6]
+    # Prefer mean of segment scores when available; else firm/(light+firm)
     score = None
-    if light or firm:
+    if scored:
+        score = float(np.mean([sc for _s, _p, sc in scored]))
+    elif light or firm:
         score = float(len(firm) / max(1, len(light) + len(firm)))
+
     status = "OBSERVED" if score is not None else "UNKNOWN"
     if score is None and len(valid) >= cfg.MIN_SEGMENTS_GLOBAL:
         status = "AMBIGUOUS"
 
-    # GIF invalid majority → cap confidence
-    gif_ok = sum(
-        1
-        for s in valid
-        if ((s.get("level2_proxies") or {}).get("glottal_source") or {}).get("valid")
+    gif_ok = sum(1 for s in valid if gif_usable(s))
+    fallback_n = sum(1 for p in packets if p.get("fallback_supported"))
+    family_counts = [int(p.get("family_count") or 0) for p in packets]
+    evidence_mass = float(np.mean([float(p.get("evidence_mass") or 0) for p in packets])) if packets else 0.0
+    agreements = [p.get("family_agreement") for p in packets if p.get("family_agreement") is not None]
+    family_agreement = (
+        (sum(1 for a in agreements if a) / len(agreements)) if agreements else None
     )
-    conf = "medium" if gif_ok >= 2 else "low"
-    if gif_ok == 0:
-        # harmonic/spectral only — still possible but capped
-        if score is not None:
-            conf = "low"
-        else:
-            status = "UNKNOWN"
+
+    # Confidence: GIF + families → medium; fallback-only → low (never inflate)
+    conf = "low"
+    lock_conf = False
+    if score is not None and gif_ok >= 2 and (np.mean(family_counts) if family_counts else 0) >= 2:
+        conf = "medium"
+    elif score is not None and gif_ok >= 1:
+        conf = "medium"
+    elif score is not None and fallback_n >= cfg.MIN_SEGMENTS_GLOBAL:
+        conf = "low"
+        lock_conf = True
+    elif score is None and gif_ok == 0:
+        status = "UNKNOWN"
 
     graph = []
     if firm:
@@ -80,10 +119,10 @@ def fuse_contact(segments: list[dict[str, Any]]) -> dict[str, Any]:
                     "microphone EQ / mastering",
                     "separation artifact",
                 ],
-                confidence_cap="medium",
+                confidence_cap=conf,
                 grade="B",
                 time_range=(s0["start_sec"], s0["end_sec"]),
-                rule_id="CONTACT_FIRM_V2",
+                rule_id="CONTACT_FIRM_V27",
             )
         )
 
@@ -113,11 +152,19 @@ def fuse_contact(segments: list[dict[str, Any]]) -> dict[str, Any]:
         evidence=graph,
         valid=valid,
         confidence_label=conf,
+        lock_confidence=lock_conf,
         prevalence=_prevalence(max(len(light), len(firm)), len(valid)),
         profile={
             "lighter_segments": len(light),
             "firmer_segments": len(firm),
             "continuum_0_light_1_firm": score,
+            "evidence_mass": round(evidence_mass, 3),
+            "family_count": int(round(float(np.mean(family_counts)))) if family_counts else 0,
+            "family_agreement": None if family_agreement is None else round(family_agreement, 3),
+            "gif_supported": gif_ok > 0,
+            "fallback_supported": fallback_n > 0,
+            "gif_valid_segments": gif_ok,
+            "fallback_segments": fallback_n,
             "good_bad": None,
         },
     )
@@ -128,9 +175,48 @@ def fuse_effort(
     *,
     baseline_obs: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
-    valid = [s for s in segments if s.get("valid")]
-    hits = [s for s in valid if effort_like(s, baseline_obs)]
-    firm_only = [s for s in valid if firmer_like(s) and not effort_like(s, baseline_obs)]
+    """
+    Effort fusion (v2.8) — trajectory PRE→DURING→POST, not absolute loudness.
+
+    Support-only (regularity + spectral) cannot produce moderate/high effort.
+    """
+    from audio_analyzer.vocal_function.evidence.effort_trajectory import (
+        compute_effort_event_context,
+    )
+
+    valid = _effort_evaluable(segments)
+    hits: list[dict[str, Any]] = []
+    hit_packets: list[dict[str, Any]] = []
+    contexts: list[dict[str, Any]] = []
+    all_scores: list[float] = []
+
+    for i, s in enumerate(valid):
+        pre = valid[i - 1] if i > 0 else None
+        post = valid[i + 1] if i + 1 < len(valid) else None
+        ctx = compute_effort_event_context(
+            s, pre=pre, post=post, baseline=baseline_obs
+        )
+        contexts.append(ctx)
+        all_scores.append(float(ctx.get("final_score") or 0))
+        if ctx.get("elevated"):
+            hits.append(s)
+            hit_packets.append(
+                {
+                    "effort_score": ctx.get("final_score"),
+                    "families": {
+                        **(ctx.get("core_families") or {}),
+                        **(ctx.get("support_families") or {}),
+                    },
+                    "trajectory": ctx,
+                }
+            )
+
+    firm_only = [
+        s
+        for i, s in enumerate(valid)
+        if firmer_like(s, baseline_obs)
+        and not (contexts[i].get("elevated") if i < len(contexts) else False)
+    ]
 
     if len(valid) < cfg.MIN_SEGMENTS_GLOBAL:
         status = "UNKNOWN"
@@ -143,7 +229,6 @@ def fuse_effort(
     else:
         status = "MODERATE"
 
-    # Critical product rule: firm alone != strain
     note_firm = ""
     if firm_only and not hits:
         note_firm = (
@@ -151,35 +236,105 @@ def fuse_effort(
             "복합 증거는 뚜렷하지 않았어요."
         )
 
+    mean_score = float(np.mean(all_scores)) if all_scores else 0.0
+    hit_scores = [float(p.get("effort_score") or 0) for p in hit_packets]
+    effort_score_out = float(max(hit_scores)) if hit_scores else mean_score
+
+    fam_agg = {
+        "intensity_trajectory": 0,
+        "temporal_attack": 0,
+        "recovery_persistence": 0,
+        "regularity_cost": 0,
+        "spectral_residual": 0,
+        "contact_shift": 0,
+        "intensity": 0,
+        "temporal": 0,
+        "regularity": 0,
+        "spectral": 0,
+        "recovery": 0,
+        "contact": 0,
+    }
+    for p in hit_packets:
+        fams = p.get("families") or {}
+        for k, v in fams.items():
+            if v and k in fam_agg:
+                fam_agg[k] += 1
+        if fams.get("intensity_trajectory"):
+            fam_agg["intensity"] += 1
+        if fams.get("temporal_attack"):
+            fam_agg["temporal"] += 1
+        if fams.get("regularity_cost"):
+            fam_agg["regularity"] += 1
+        if fams.get("spectral_residual"):
+            fam_agg["spectral"] += 1
+        if fams.get("recovery_persistence"):
+            fam_agg["recovery"] += 1
+        if fams.get("contact_shift"):
+            fam_agg["contact"] += 1
+
+    core_count = sum(
+        1
+        for k in ("intensity_trajectory", "temporal_attack", "recovery_persistence")
+        if fam_agg.get(k)
+    )
+    support_count = sum(
+        1
+        for k in ("regularity_cost", "spectral_residual", "contact_shift")
+        if fam_agg.get(k)
+    )
+
+    loud_levels = [
+        (c.get("intensity") or {}).get("loudness_level")
+        for c in contexts
+        if c.get("intensity")
+    ]
+    rising_n = sum(1 for c in contexts if (c.get("intensity") or {}).get("positive"))
+    static_loud_n = sum(
+        1 for c in contexts if (c.get("intensity") or {}).get("status") == "STATIC_LOUD"
+    )
+
     graph = []
     if hits:
         s0 = hits[0]
         graph.append(
             evidence_node(
                 observation_ids=[
-                    "estimated_naq",
-                    "periodicity_primary_db",
+                    "intensity_db",
                     "onset_slope_db_per_sec",
                     "f0_frame_period_perturbation_proxy_percent",
+                    "energy_2_4k",
                 ],
-                families=["glottal_flow", "periodicity", "temporal", "perturbation"],
-                hypothesis="effort_strain_like_pattern",
+                families=[
+                    "intensity_trajectory",
+                    "temporal_attack",
+                    "recovery_persistence",
+                    "regularity_cost",
+                ],
+                hypothesis="effort_like_acoustic_escalation",
                 alternatives=[
                     "style-intentional intensity",
+                    "controlled crescendo",
                     "mic proximity",
-                    "register transition transient",
                 ],
                 confidence_cap="medium",
                 grade="C",
                 time_range=(s0["start_sec"], s0["end_sec"]),
-                rule_id="EFFORT_V2",
+                rule_id="EFFORT_V28",
             )
         )
+
+    conf = "low"
+    if status == "LOW" and len(valid) >= cfg.MIN_SEGMENTS_GLOBAL:
+        conf = "medium"
+    elif hits and core_count >= 1 and (core_count + support_count) >= 2:
+        conf = "medium"
+    elif hits:
+        conf = "low"
 
     return _dim(
         "vocal_effort_strain",
         status=status,
-        continuum=None,
+        continuum=effort_score_out if hits or status == "LOW" else None,
         summary={
             "LOW": "안정",
             "OCCASIONAL": "일부 증가",
@@ -189,7 +344,7 @@ def fuse_effort(
         }.get(status, status),
         meaning=note_firm
         or (
-            "고음·강한 구간에서 과도한 vocal effort와 일치할 수 있는 "
+            "시간에 따라 힘이 증가하는 발성 경향과 일치할 수 있는 "
             "복합 음향 패턴이 관찰됐어요."
             if hits
             else "과도한 effort와 일치하는 복합 패턴은 뚜렷하지 않았어요."
@@ -197,25 +352,50 @@ def fuse_effort(
         cannot="실제 후두 근육 긴장·복압을 측정하지 않습니다.",
         evidence=graph,
         valid=valid,
+        confidence_label=conf,
         prevalence=_prevalence(len(hits), len(valid)),
         profile={
+            "effort_score": round(effort_score_out, 3),
+            "evidence_mass": round(float(np.mean(hit_scores)) if hit_scores else 0.0, 3),
+            "family_count": core_count + support_count,
+            "core_family_count": core_count,
+            "support_family_count": support_count,
+            "family_agreement": None,
+            "family_hits": fam_agg,
+            "hit_segments": len(hits),
             "effort_hit_segments": len(hits),
+            "persistent_segments": fam_agg["recovery_persistence"],
+            "recovery_cost": fam_agg["recovery_persistence"],
             "firm_without_effort_segments": len(firm_only),
             "contact_vs_strain_note": "FIRM_CONTACT != STRAIN",
+            "mean_segment_effort_score": round(mean_score, 3),
+            "loudness_level": max(set(loud_levels), key=loud_levels.count) if loud_levels else None,
+            "rising_intensity_segments": rising_n,
+            "static_loud_segments": static_loud_n,
+            "trajectory_priority": True,
         },
         focus=[
             {
                 "start_sec": s["start_sec"],
                 "end_sec": s["end_sec"],
                 "state": "effort_like",
-                "headline": "힘이 과하게 들어간 소리 경향",
+                "headline": "힘이 증가하는 발성 경향",
                 "user_message": (
-                    "접촉 관련 단단함과 함께 주기성·거친 음질·onset 중 "
-                    "추가 징후가 동반됐어요."
+                    "강도 상승·onset·회복 비용 중 복수 family가 동반된 "
+                    "effort-like 패턴이 관찰됐어요."
                 ),
                 "limitation": "실제 목 근육 긴장을 직접 측정한 것은 아닙니다.",
+                "effort_score": (hit_packets[i].get("effort_score") if i < len(hit_packets) else None),
+                "family_ids": [
+                    k for k, v in (hit_packets[i].get("families") or {}).items() if v
+                ]
+                if i < len(hit_packets)
+                else [],
+                "why": (hit_packets[i].get("trajectory") or {}).get("why")
+                if i < len(hit_packets)
+                else None,
             }
-            for s in hits[:3]
+            for i, s in enumerate(hits[:3])
         ],
     )
 
@@ -323,35 +503,126 @@ def fuse_leakage(segments: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def _rough_events(positives: list[dict[str, Any]], *, gap_sec: float = 1.25) -> list[dict[str, Any]]:
+    """Merge temporally adjacent rough hits into events (persistence)."""
+    if not positives:
+        return []
+    ordered = sorted(
+        positives,
+        key=lambda s: float(s.get("start") if s.get("start") is not None else s.get("t0") or 0.0),
+    )
+    events: list[dict[str, Any]] = []
+    cur: list[dict[str, Any]] = [ordered[0]]
+
+    def _end(s: dict[str, Any]) -> float:
+        if s.get("end") is not None:
+            return float(s["end"])
+        t0 = float(s.get("start") if s.get("start") is not None else s.get("t0") or 0.0)
+        return t0 + float(s.get("duration") or 0.0)
+
+    def _start(s: dict[str, Any]) -> float:
+        return float(s.get("start") if s.get("start") is not None else s.get("t0") or 0.0)
+
+    for s in ordered[1:]:
+        if _start(s) - _end(cur[-1]) <= gap_sec:
+            cur.append(s)
+        else:
+            events.append(
+                {
+                    "n_hits": len(cur),
+                    "start": _start(cur[0]),
+                    "end": _end(cur[-1]),
+                    "duration": max(0.0, _end(cur[-1]) - _start(cur[0])),
+                    "adjacent_run_length": len(cur),
+                }
+            )
+            cur = [s]
+    events.append(
+        {
+            "n_hits": len(cur),
+            "start": _start(cur[0]),
+            "end": _end(cur[-1]),
+            "duration": max(0.0, _end(cur[-1]) - _start(cur[0])),
+            "adjacent_run_length": len(cur),
+        }
+    )
+    return events
+
+
 def fuse_regularity(segments: list[dict[str, Any]]) -> dict[str, Any]:
-    """Roughness requires irregularity-specific evidence — CPP alone is not enough."""
+    """Roughness requires irregularity-specific evidence — CPP alone is not enough.
+
+    v2.9: segment hits are merged into temporal events; isolated singles stay
+    INTERMITTENT; REPEATED_IRREGULAR needs persistence (adjacent run or multiple events).
+    """
     from audio_analyzer.vocal_evidence.phonation_quality import classify_rough_segment
     from audio_analyzer.vocal_function.validity import dim_valid
 
     evaluable = [s for s in segments if dim_valid(s, "roughness") or s.get("valid")]
     rough = []
     rejected_period_only = []
+    rejected_artifact = []
+    scores: list[float] = []
     for s in evaluable:
         c = classify_rough_segment(s)
         if c["verdict"] == "POSITIVE":
             rough.append({**s, "rough_classification": c})
+            scores.append(float(c.get("roughness_score") or 0.6))
         elif c.get("reason") == "periodicity_loss_without_irregularity":
             rejected_period_only.append(s)
+        elif c.get("reason") in (
+            "tracker_artifact",
+            "tracker_artifact_irregularity",
+            "clean_phonation_tracker_noise",
+            "breathy_contamination",
+            "insufficient_voiced_frames",
+        ):
+            rejected_artifact.append(s)
+
+    events = _rough_events(rough)
+    max_run = max((e["adjacent_run_length"] for e in events), default=0)
+    total_duration = sum(float(e["duration"]) for e in events)
+    persistence = {
+        "positive_microframes": len(rough),
+        "n_events": len(events),
+        "positive_duration": round(total_duration, 3),
+        "adjacent_run_length": max_run,
+        "event_density": round(len(events) / max(len(evaluable), 1), 4),
+        "events": events,
+    }
 
     coverage = {
         "evaluable": len(evaluable),
         "positive": len(rough),
         "rejected_periodicity_only": len(rejected_period_only),
+        "rejected_tracker_artifact": len(rejected_artifact),
+        "n_events": len(events),
+        "max_adjacent_run": max_run,
     }
 
+    # Strong repeated roughness requires temporal persistence, not raw hit count.
     if len(evaluable) < 2:
         status = "UNKNOWN"
     elif not rough:
         status = "STABLE"
-    elif len(rough) == 1:
+    elif max_run >= 2:
+        # Adjacent cluster of irregularity = repeated/persistent
+        status = "REPEATED_IRREGULAR"
+    elif len(events) >= 3 and (len(rough) / max(len(evaluable), 1)) >= 0.2:
+        # Multiple separated events with meaningful prevalence
+        status = "REPEATED_IRREGULAR"
+    elif rough:
         status = "INTERMITTENT"
     else:
-        status = "REPEATED_IRREGULAR"
+        status = "STABLE"
+
+    mean_score = sum(scores) / len(scores) if scores else 0.0
+    if status == "REPEATED_IRREGULAR":
+        conf = "high" if max_run >= 3 or mean_score >= 0.7 else "medium"
+    elif status == "INTERMITTENT":
+        conf = "medium" if mean_score >= 0.6 else "low"
+    else:
+        conf = "medium"
 
     meaning = (
         "거칠고 불규칙한 음질 패턴이 일부 관찰됐어요. "
@@ -363,6 +634,11 @@ def fuse_regularity(segments: list[dict[str, Any]]) -> dict[str, Any]:
         meaning = (
             "주기성 저하만으로는 거친 음질로 보지 않았어요. "
             "불규칙 진동 특성이 뚜렷하지 않았어요."
+        )
+    if not rough and rejected_artifact:
+        meaning = (
+            "피치 추적 아티팩트로 보이는 순간 점프는 "
+            "거친 음질로 세지 않았어요."
         )
 
     out = _dim(
@@ -382,6 +658,9 @@ def fuse_regularity(segments: list[dict[str, Any]]) -> dict[str, Any]:
         prevalence=_prevalence(len(rough), len(evaluable)) if evaluable else "unknown",
     )
     out["roughness_coverage"] = coverage
+    out["roughness_persistence"] = persistence
+    out["roughness_score"] = round(mean_score, 3)
+    out["roughness_confidence"] = conf
     return out
 
 
@@ -749,11 +1028,13 @@ def _dim(
     focus: Optional[list] = None,
     continuum_label: Optional[str] = None,
     restricted: bool = False,
+    lock_confidence: bool = False,
 ) -> dict[str, Any]:
     hidden = status in ("UNKNOWN", "AMBIGUOUS")
     # Negative/positive conclusions need enough segments to leave "low"
     if (
-        confidence_label == "low"
+        not lock_confidence
+        and confidence_label == "low"
         and not restricted
         and status not in ("UNKNOWN", "AMBIGUOUS", None)
         and len(valid) >= cfg.MIN_SEGMENTS_GLOBAL

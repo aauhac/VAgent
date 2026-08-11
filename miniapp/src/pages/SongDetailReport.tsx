@@ -156,6 +156,11 @@ export default function SongDetailReport() {
         productId={diagProduct}
         unlocked={!!access.diagnostic_unlocked}
         sessionId={access.diagnostic_session_id}
+        diagnosticOffer={
+          report.diagnostic_offer ||
+          report.vocal_function_profile?.diagnostic_offer ||
+          null
+        }
       />
 
       <StickyAudioPlayer

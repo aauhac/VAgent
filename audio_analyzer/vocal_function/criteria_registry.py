@@ -66,8 +66,13 @@ CRITERIA_BY_DIMENSION: dict[str, list[dict[str, Any]]] = {
     ],
     "glottal_contact_profile": [
         {"criterion_id": "vocal_presence", "label": "목소리 신호", "required": True},
-        {"criterion_id": "glottal_source", "label": "valid source (GIF)", "required": True},
+        {"criterion_id": "glottal_source", "label": "source proxy (GIF)", "required": False},
         {"criterion_id": "harmonic", "label": "배음(H1-H2 등) 단서", "required": True},
+        {
+            "criterion_id": "contact_source_support",
+            "label": "GIF 또는 multi-family contact 단서",
+            "required": True,
+        },
         {"criterion_id": "evaluable_coverage", "label": "평가 가능 구간 수", "required": True},
     ],
     "vocal_effort_strain": [

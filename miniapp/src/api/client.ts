@@ -122,6 +122,14 @@ export async function submitSafety(sessionId: string, answers: Record<string, bo
   return res.json();
 }
 
+export async function getDiagnosticSession(sessionId: string) {
+  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}`, {
+    headers: headers(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function uploadDiagnosticTask(sessionId: string, taskId: string, file: Blob, filename: string) {
   const form = new FormData();
   form.append('file', file, filename);

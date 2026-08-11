@@ -1,14 +1,15 @@
 """
 diagnostic/protocol.py
 ----------------------
-Standardized Vocal Diagnostic Protocol v1.
+Standardized Vocal Diagnostic Protocol v1.1 (adaptive).
 """
 
 from __future__ import annotations
 
-from audio_analyzer.physiology.config import PROTOCOL_VERSION
+from audio_analyzer.diagnostic.task_registry import PROTOCOL_VERSION
+from audio_analyzer.physiology.config import PROTOCOL_VERSION as _PHYS_PROTOCOL
 
-VOCAL_DIAGNOSTIC_PROTOCOL_VERSION = PROTOCOL_VERSION
+VOCAL_DIAGNOSTIC_PROTOCOL_VERSION = PROTOCOL_VERSION or _PHYS_PROTOCOL
 
 TASKS = [
     {
@@ -21,6 +22,7 @@ TASKS = [
         "min_sec": 3.0,
         "max_attempts": 2,
         "observer": "sustained",
+        "purpose_labels": ["접촉감", "숨 섞임"],
     },
     {
         "task_id": "sustain_i",
@@ -32,6 +34,7 @@ TASKS = [
         "min_sec": 3.0,
         "max_attempts": 2,
         "observer": "sustained",
+        "purpose_labels": ["접촉감", "공명"],
     },
     {
         "task_id": "siren",
@@ -46,6 +49,7 @@ TASKS = [
         "min_sec": 4.0,
         "max_attempts": 2,
         "observer": "siren",
+        "purpose_labels": ["성구 연결"],
     },
     {
         "task_id": "dynamic_swell",
@@ -60,6 +64,7 @@ TASKS = [
         "min_sec": 3.5,
         "max_attempts": 2,
         "observer": "swell",
+        "purpose_labels": ["힘 사용", "강약 반응"],
     },
 ]
 
@@ -77,3 +82,13 @@ def get_task(task_id: str) -> dict:
         if t["task_id"] == task_id:
             return t
     raise KeyError(task_id)
+
+
+def tasks_for_ids(task_ids: list[str]) -> list[dict]:
+    out = []
+    for tid in task_ids:
+        try:
+            out.append(get_task(tid))
+        except KeyError:
+            continue
+    return out

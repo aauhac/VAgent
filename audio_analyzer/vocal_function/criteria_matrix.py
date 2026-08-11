@@ -358,8 +358,18 @@ def _contact_criteria(segments: list[dict[str, Any]], dim: dict[str, Any]) -> li
         for s in segments
         if (s.get("observations") or {}).get("raw_h1_h2_proxy_db") is not None
     )
+    spectral_n = sum(
+        1
+        for s in segments
+        if (s.get("observations") or {}).get("energy_2_4k") is not None
+        or (s.get("observations") or {}).get("spectral_tilt_db_per_oct") is not None
+    )
     presence = sum(1 for s in segments if vocal_presence_ok(s))
     contact_valid = sum(1 for s in segments if dim_valid(s, "glottal_contact"))
+    # Composite: GIF valid segments OR (harmonic + spectral directional coverage)
+    multi_family_ok = harm_n >= 2 and spectral_n >= 2
+    source_support = gif_n >= 2 or multi_family_ok
+    profile = dim.get("profile") or {}
     spec = {c["criterion_id"]: c for c in criteria_for("glottal_contact_profile")}
     return [
         _criterion_row(
@@ -372,7 +382,7 @@ def _contact_criteria(segments: list[dict[str, Any]], dim: dict[str, Any]) -> li
         _criterion_row(
             criterion_id="glottal_source",
             label=spec["glottal_source"]["label"],
-            required=True,
+            required=False,
             availability="NOT_AVAILABLE" if gif_n == 0 else _avail(gif_n >= 2),
             evidence=[f"gif_valid={gif_n}"],
             segments_used=gif_n,
@@ -384,6 +394,19 @@ def _contact_criteria(segments: list[dict[str, Any]], dim: dict[str, Any]) -> li
             availability=_avail(harm_n >= 2),
             evidence=[f"h1h2_segments={harm_n}"],
             segments_used=harm_n,
+        ),
+        _criterion_row(
+            criterion_id="contact_source_support",
+            label=spec["contact_source_support"]["label"],
+            required=True,
+            availability=_avail(source_support),
+            evidence=[
+                f"gif_valid={gif_n}",
+                f"harmonic={harm_n}",
+                f"spectral={spectral_n}",
+                f"fallback={bool(profile.get('fallback_supported'))}",
+            ],
+            segments_used=max(gif_n, min(harm_n, spectral_n)),
         ),
         _criterion_row(
             criterion_id="evaluable_coverage",

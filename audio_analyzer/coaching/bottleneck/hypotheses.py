@@ -98,8 +98,8 @@ def rank_hypotheses(
         overlap_eps = [
             e
             for e in (effort_high_eps or high_eps or general_effort_eps)
-            if ((e.get("feature_matrix") or {}).get("effort") or {}).get("strain_like", 0) >= 0.4
-            and ((e.get("feature_matrix") or {}).get("source") or {}).get("contact_firmness", 0)
+            if (((e.get("feature_matrix") or {}).get("effort") or {}).get("strain_like") or 0) >= 0.4
+            and (((e.get("feature_matrix") or {}).get("source") or {}).get("contact_firmness") or 0)
             >= 0.4
         ]
         if overlap_eps:

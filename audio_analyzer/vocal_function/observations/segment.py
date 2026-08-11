@@ -18,6 +18,10 @@ from audio_analyzer.vocal_tract import (
     spectral_bands,
 )
 from audio_analyzer.vocal_quality.metrics import segment_observations as vq_obs
+from audio_analyzer.vocal_function.evidence.effort_trajectory import (
+    extract_micro_intensity_db,
+    rms_to_db,
+)
 
 
 def _snr_proxy_db(chunk: np.ndarray) -> float:
@@ -28,17 +32,60 @@ def _snr_proxy_db(chunk: np.ndarray) -> float:
 
 
 def _f0_stats(pitch: dict[str, Any], start: float, end: float) -> dict[str, Any]:
+    """
+    F0 summary for a window.
+
+    Dropout MUST use all pitch frames in the window as denominator
+    (voiced-only denominator falsely collapses dropout toward 0).
+    """
     frames = pitch.get("frame_f0") or []
-    vals = []
-    times = []
+    vals: list[float] = []
+    all_f0: list[Optional[float]] = []
+    times: list[float] = []
     for fr in frames:
         t = float(fr.get("time_sec") or 0)
+        if not (start <= t <= end):
+            continue
         f = fr.get("f0_hz")
-        if start <= t <= end and f and float(f) > 0:
+        times.append(t)
+        if f is not None and float(f) > 0:
             vals.append(float(f))
-            times.append(t)
+            all_f0.append(float(f))
+        else:
+            all_f0.append(None)
+
+    n_all = len(all_f0)
+    n_invalid = sum(1 for v in all_f0 if v is None or v <= 0)
+    dropout = float(n_invalid / n_all) if n_all else 1.0
+
+    # Octave-jump / tracker artifact cues on voiced sequence
+    octave_jumps = 0
+    voiced_pairs = 0
+    for i in range(1, len(vals)):
+        a, b = vals[i - 1], vals[i]
+        if a <= 0 or b <= 0:
+            continue
+        voiced_pairs += 1
+        ratio = b / a
+        if ratio >= 1.8 or ratio <= (1.0 / 1.8):
+            octave_jumps += 1
+    octave_jump_ratio = float(octave_jumps / voiced_pairs) if voiced_pairs else 0.0
+    tracker_suspect = bool(octave_jump_ratio >= 0.15 and (dropout >= 0.2 or len(vals) < 8))
+
     if len(vals) < 3:
-        return {"f0_hz": None, "f0_trajectory": [], "f0_derivative_mean": None}
+        return {
+            "f0_hz": None,
+            "f0_trajectory": [],
+            "f0_derivative_mean": None,
+            "f0_dropout_ratio": dropout,
+            "f0_octave_jump_ratio": round(octave_jump_ratio, 3),
+            "f0_tracker_artifact": {
+                "suspect": tracker_suspect,
+                "octave_jumps": octave_jumps,
+                "n_frames": n_all,
+                "n_voiced": len(vals),
+            },
+        }
     arr = np.asarray(vals)
     d = np.diff(arr)
     return {
@@ -46,7 +93,14 @@ def _f0_stats(pitch: dict[str, Any], start: float, end: float) -> dict[str, Any]
         "f0_percentile_local": None,  # filled at song level
         "f0_trajectory": vals[:: max(1, len(vals) // 8)],
         "f0_derivative_mean": float(np.mean(d)),
-        "f0_dropout_ratio": float(np.mean(arr <= 0)) if len(arr) else 1.0,
+        "f0_dropout_ratio": dropout,
+        "f0_octave_jump_ratio": round(octave_jump_ratio, 3),
+        "f0_tracker_artifact": {
+            "suspect": tracker_suspect,
+            "octave_jumps": octave_jumps,
+            "n_frames": n_all,
+            "n_voiced": len(vals),
+        },
     }
 
 
@@ -141,12 +195,17 @@ def observe_segment(
     observations = {
         **base_obs,
         "rms": rms,
+        "intensity_db": rms_to_db(rms),
+        "intensity_micro": extract_micro_intensity_db(chunk, sr) if len(chunk) > 64 else {},
         **f0s,
         **bands,
         "onset_rise_sec": onset_rise_sec,
         "offset_decay_sec": offset_decay_sec,
         "snr_proxy_db": snr,
     }
+    # Flatten tracker artifact for roughness consumers
+    art = f0s.get("f0_tracker_artifact") or {}
+    observations["f0_tracker_artifact"] = art
     preliminary = {
         "voiced_ratio": voiced_ratio,
         "observations": observations,

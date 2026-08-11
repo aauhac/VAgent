@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { submitSafety } from '../api/client';
+import { analyzeDiagnosticSession, submitSafety } from '../api/client';
 
 const QUESTIONS = [
   { id: 'pain_on_phonation', label: '발성 시 통증' },
@@ -25,8 +25,20 @@ export default function SafetyCheck() {
       QUESTIONS.forEach((q) => {
         payload[q.id] = !!answers[q.id];
       });
-      await submitSafety(sessionId, payload);
-      nav(`/diagnostic/${sessionId}/task/sustain_a`);
+      const session = await submitSafety(sessionId, payload);
+      const selected: string[] = session?.selected_tasks || [];
+      const first = session?.next_task_id || selected[0];
+      if (first) {
+        nav(`/diagnostic/${sessionId}/task/${first}`);
+        return;
+      }
+      // Zero required tasks — analyze song-only precision diagnostic
+      if (session?.status === 'READY_FOR_ANALYSIS') {
+        await analyzeDiagnosticSession(sessionId);
+        nav(`/diagnostic/${sessionId}/report`);
+        return;
+      }
+      nav(`/diagnostic/${sessionId}/report`);
     } catch (e: any) {
       setError(e?.message || '제출 실패');
       setBusy(false);
@@ -41,7 +53,7 @@ export default function SafetyCheck() {
       </p>
       <div className="card">
         {QUESTIONS.map((q) => (
-          <label key={q.id} className="area-row" style={{ cursor: 'pointer' }}>
+          <label key={q.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '10px 0', cursor: 'pointer' }}>
             <span>{q.label}</span>
             <input
               type="checkbox"

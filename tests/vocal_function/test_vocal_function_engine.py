@@ -57,23 +57,37 @@ def test_firm_contact_alone_not_strain():
 
 
 def test_firm_plus_effort_evidence_eligible():
-    segs = [
-        _seg(
-            i,
-            i + 2,
-            obs={
-                "raw_h1_h2_proxy_db": -1.0,
-                "energy_2_4k": 0.22,
-                "periodicity_primary_db": 4.0,
-                "onset_slope_db_per_sec": 90.0,
-                "f0_frame_period_perturbation_proxy_percent": 3.0,
-                "rms": 0.08,
-            },
-            src={"valid": True, "estimated_naq": 0.05, "estimated_mfdr_proxy": 2.0},
+    # Escalating load: rising intensity + hardening attack + regularity cost
+    segs = []
+    for i, (rms, onset, pert, per) in enumerate(
+        [
+            (0.04, 30, 0.5, 12.0),
+            (0.06, 45, 1.0, 10.0),
+            (0.09, 70, 2.0, 7.0),
+            (0.14, 100, 3.5, 4.0),
+            (0.15, 95, 3.2, 4.0),
+            (0.13, 60, 2.8, 5.0),
+        ]
+    ):
+        segs.append(
+            _seg(
+                i * 2,
+                i * 2 + 2,
+                obs={
+                    "raw_h1_h2_proxy_db": -1.0,
+                    "energy_2_4k": 0.18 + 0.02 * i,
+                    "periodicity_primary_db": per,
+                    "onset_slope_db_per_sec": onset,
+                    "f0_frame_period_perturbation_proxy_percent": pert,
+                    "rms": rms,
+                },
+                src={"valid": True, "estimated_naq": 0.05, "estimated_mfdr_proxy": 2.0},
+            )
         )
-        for i in range(0, 12, 2)
-    ]
-    effort = fuse_effort(segs)
+    effort = fuse_effort(
+        segs,
+        baseline_obs={"rms": 0.04, "energy_24k": 0.1, "mfdr_norm": 1.0},
+    )
     assert effort["status"] in ("OCCASIONAL", "MODERATE", "REPEATED")
     assert effort["profile"]["effort_hit_segments"] >= 1
 
@@ -148,8 +162,16 @@ def test_high_note_firm_stable_no_auto_correction():
 def test_high_note_firm_rough_persistence_concern():
     from audio_analyzer.vocal_function.engine import analyze_high_note_events
 
+    # Soft mid → escalating high-note load with attack + regularity cost
+    specs = [
+        (180, 0.04, 25, 0.5, 12.0),
+        (190, 0.05, 35, 0.8, 11.0),
+        (420, 0.10, 80, 2.5, 6.0),
+        (430, 0.14, 100, 3.5, 4.0),
+        (440, 0.13, 90, 3.0, 4.5),
+    ]
     segs = []
-    for i, f0 in enumerate([180, 190, 420, 430, 440]):
+    for i, (f0, rms, onset, pert, per) in enumerate(specs):
         segs.append(
             _seg(
                 i * 2,
@@ -157,16 +179,18 @@ def test_high_note_firm_rough_persistence_concern():
                 obs={
                     "f0_hz": f0,
                     "raw_h1_h2_proxy_db": -1.0,
-                    "energy_2_4k": 0.25,
-                    "periodicity_primary_db": 4.0,
-                    "onset_slope_db_per_sec": 95.0,
-                    "f0_frame_period_perturbation_proxy_percent": 3.5,
-                    "rms": 0.12,
+                    "energy_2_4k": 0.2,
+                    "periodicity_primary_db": per,
+                    "onset_slope_db_per_sec": onset,
+                    "f0_frame_period_perturbation_proxy_percent": pert,
+                    "rms": rms,
                 },
                 src={"valid": True, "estimated_naq": 0.04, "estimated_mfdr_proxy": 2.0},
             )
         )
-    events = analyze_high_note_events(segs, {"rms": 0.04, "f0_hz": 180})
+    events = analyze_high_note_events(
+        segs, {"rms": 0.04, "f0_hz": 180, "n_baseline_segments": 8}
+    )
     assert events
     assert any(e.get("concern") for e in events)
 

@@ -45,7 +45,7 @@ def _vocal_valid(seg: dict[str, Any]) -> bool:
 
 
 def _episode_segment_ok(seg: dict[str, Any], episode_type: str) -> bool:
-    """Dimension-aware gate: breathiness must not require global valid/GIF."""
+    """Dimension-aware gate: breathiness/effort/contact must not require global valid/GIF."""
     from audio_analyzer.vocal_function.validity import dim_valid
     from audio_analyzer.vocal_evidence.phonation_quality import vocal_presence_ok
 
@@ -53,6 +53,11 @@ def _episode_segment_ok(seg: dict[str, Any], episode_type: str) -> bool:
         return dim_valid(seg, "breathiness") or vocal_presence_ok(seg)
     if episode_type == "ROUGHNESS":
         return dim_valid(seg, "roughness") or vocal_presence_ok(seg)
+    if episode_type == "GENERAL_EFFORT":
+        return dim_valid(seg, "effort") or vocal_presence_ok(seg)
+    if episode_type in ("HIGH_NOTE",):
+        # High-note F0 still prefers vocal-specific, but effort concern can use effort dim
+        return _vocal_valid(seg) or dim_valid(seg, "effort")
     return _vocal_valid(seg)
 
 

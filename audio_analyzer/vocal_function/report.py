@@ -262,6 +262,25 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
     # Always expose full criteria matrix (including insufficient / hidden dims)
     criteria_matrix = profile.get("criteria_matrix") or []
 
+    # Adaptive diagnostic offer (uncertainty resolver CTA — not a fixed 4-task upsell)
+    diagnostic_offer = None
+    try:
+        from audio_analyzer.diagnostic.planner import plan_from_song_analysis
+
+        plan = plan_from_song_analysis(
+            {
+                "vocal_function_profile": {
+                    "criteria_matrix": criteria_matrix,
+                    "dimensions": profile.get("dimensions") or {},
+                    "coaching_decision": decision,
+                    "measurement_candidates": decision.get("measurement_candidates") or [],
+                }
+            }
+        )
+        diagnostic_offer = plan.get("diagnostic_offer")
+    except Exception:
+        diagnostic_offer = None
+
     out = {
         "available": True,
         "engine_version": profile.get("engine_version"),
@@ -291,6 +310,7 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             "additional_measurement_suggestions": _adaptive_tasks(profile),
         },
         "training_plan": training,
+        "diagnostic_offer": diagnostic_offer,
         "disclaimer": profile.get("disclaimer")
         or "이 분석은 음향 기반 기능 추정이며 해부학적/의학적 진단이 아닙니다.",
         "valid_segment_count": profile.get("valid_segment_count"),

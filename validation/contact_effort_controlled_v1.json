@@ -1,0 +1,51 @@
+{
+  "version": "contact_effort_controlled_v1",
+  "note": "Human intent is for audit comparison only — never passed into inference.",
+  "samples": [
+    {
+      "sample_id": "ctrl_a",
+      "path": "편하게.m4a",
+      "human_intent": {
+        "label_ko": "편하게",
+        "effort": "low",
+        "contact": "light_or_mid",
+        "breathiness": "low_or_occasional",
+        "roughness_intentional": false
+      }
+    },
+    {
+      "sample_id": "ctrl_b",
+      "path": "목잡이.m4a",
+      "human_intent": {
+        "label_ko": "목잡이",
+        "effort": "highest",
+        "contact": "firm_possible",
+        "breathiness": "low",
+        "roughness_intentional": false
+      }
+    },
+    {
+      "sample_id": "ctrl_c",
+      "path": "호흡많고헤드.m4a",
+      "human_intent": {
+        "label_ko": "호흡많고헤드",
+        "effort": "low",
+        "contact": "light",
+        "breathiness": "highest",
+        "roughness_intentional": false
+      }
+    },
+    {
+      "sample_id": "ctrl_d",
+      "path": "편안세게.m4a",
+      "human_intent": {
+        "label_ko": "편안세게",
+        "effort": "low_or_weak",
+        "contact": "firm_or_mid",
+        "loud": true,
+        "hard_negative": "firm_loud_not_excess_effort",
+        "roughness_intentional": false
+      }
+    }
+  ]
+}

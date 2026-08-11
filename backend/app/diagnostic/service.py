@@ -20,8 +20,12 @@ from audio_analyzer.diagnostic import (
     TASKS,
     VOCAL_DIAGNOSTIC_PROTOCOL_VERSION,
     analyze_task_audio,
+    build_final_diagnostic_profile,
     get_task,
+    plan_from_song_analysis,
+    tasks_for_ids,
 )
+from audio_analyzer.diagnostic.task_registry import PLANNER_VERSION, TASK_REGISTRY
 from audio_analyzer.physiology import build_premium_report
 from audio_analyzer.physiology.report import public_premium_report
 from audio_analyzer.preprocessing.audio_io import load_analysis_audio
@@ -79,6 +83,34 @@ class DiagnosticSessionService:
             encoding="utf-8",
         )
 
+    def _load_song_payload(self, source_analysis_id: Optional[str]) -> Optional[dict[str, Any]]:
+        if not source_analysis_id:
+            return None
+        for name in ("public_result.json", "analysis.json"):
+            p = self.runtime_dir / source_analysis_id / name
+            if p.exists():
+                try:
+                    return json.loads(p.read_text(encoding="utf-8"))
+                except Exception:
+                    continue
+        return None
+
+    def _build_plan(self, source_analysis_id: Optional[str]) -> dict[str, Any]:
+        song = self._load_song_payload(source_analysis_id)
+        if song:
+            return plan_from_song_analysis(song)
+        # Standalone diagnostic (no song): full supported battery
+        from audio_analyzer.diagnostic.planner import (
+            build_uncertainty_profile,
+            explain_task_selection,
+            select_diagnostic_tasks,
+        )
+
+        profile = build_uncertainty_profile(criteria_matrix=[], dimensions={}, measurement_candidates=[])
+        plan = select_diagnostic_tasks(profile, fallback_all_if_empty_song=True)
+        explain = explain_task_selection(plan)
+        return {**plan, **explain, "uncertainty_profile": profile}
+
     def create(
         self,
         *,
@@ -88,20 +120,29 @@ class DiagnosticSessionService:
         if source_analysis_id and not validate_analysis_id(source_analysis_id):
             raise ValueError("invalid source_analysis_id")
         session_id = uuid.uuid4().hex
+        plan = self._build_plan(source_analysis_id)
+        selected = list(plan.get("selected_tasks") or [])
         session = {
             "session_id": session_id,
             "user_id": user_id,
             "source_analysis_id": source_analysis_id,
             "analysis_mode": "diagnostic",
             "protocol_version": VOCAL_DIAGNOSTIC_PROTOCOL_VERSION,
+            "planner_version": plan.get("planner_version") or PLANNER_VERSION,
             "status": "CREATED",
             "entitlement_id": None,
             "safety_flags": [],
             "safety_answers": {},
+            "unresolved_dimensions": plan.get("unresolved_dimensions") or [],
+            "selected_tasks": selected,
+            "current_task_index": 0,
+            "diagnostic_offer": plan.get("diagnostic_offer"),
+            "plan_rationale": plan.get("rationale"),
             "tasks": {
-                t["task_id"]: {"attempts": [], "passed": False} for t in TASKS
+                tid: {"attempts": [], "passed": False} for tid in selected
             },
             "task_results": [],
+            "final_diagnostic_profile": None,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "completed_at": None,
             "error": None,
@@ -176,7 +217,14 @@ class DiagnosticSessionService:
         flags = [qid for qid, val in answers.items() if val]
         session["safety_answers"] = answers
         session["safety_flags"] = flags
-        session["status"] = "TASKS_IN_PROGRESS"
+        selected = list(session.get("selected_tasks") or [])
+        if not selected:
+            # All resolved from song — no required additional recordings
+            session["status"] = "READY_FOR_ANALYSIS"
+            session["current_task_index"] = 0
+        else:
+            session["status"] = "TASKS_IN_PROGRESS"
+            session["current_task_index"] = 0
         self._save(session)
         return self.public_session(session)
 
@@ -191,6 +239,14 @@ class DiagnosticSessionService:
         session = self._require_unlocked(session_id, user_id)
         if session["status"] not in ("TASKS_IN_PROGRESS", "READY_FOR_ANALYSIS"):
             raise ValueError("tasks not in progress")
+        selected = list(session.get("selected_tasks") or [])
+        if selected and task_id not in selected:
+            raise ValueError("task not in session plan")
+        if task_id not in (session.get("tasks") or {}):
+            # Legacy sessions may lack selected_tasks — allow catalog tasks
+            if task_id not in {t["task_id"] for t in TASKS}:
+                raise ValueError("unknown task")
+            session.setdefault("tasks", {})[task_id] = {"attempts": [], "passed": False}
         task = get_task(task_id)
         state = session["tasks"][task_id]
         if len(state["attempts"]) >= task["max_attempts"] and not state["passed"]:
@@ -271,7 +327,19 @@ class DiagnosticSessionService:
         state["attempts"].append(attempt_rec)
         session["tasks"][task_id] = state
 
-        if all(session["tasks"][t["task_id"]]["passed"] for t in TASKS):
+        plan_ids = list(session.get("selected_tasks") or [t["task_id"] for t in TASKS])
+        # Advance index when this task passes
+        if attempt_rec["passed"] and task_id in plan_ids:
+            session["current_task_index"] = min(
+                plan_ids.index(task_id) + 1, len(plan_ids)
+            )
+
+        required = plan_ids
+        if required and all(
+            (session["tasks"].get(tid) or {}).get("passed") for tid in required
+        ):
+            session["status"] = "READY_FOR_ANALYSIS"
+        elif not required:
             session["status"] = "READY_FOR_ANALYSIS"
         else:
             session["status"] = "TASKS_IN_PROGRESS"
@@ -296,15 +364,15 @@ class DiagnosticSessionService:
         self._save(session)
         try:
             song_summary = None
+            song_payload = None
             src = session.get("source_analysis_id")
             if src:
-                pub = self.runtime_dir / src / "public_result.json"
-                if pub.exists():
-                    song = json.loads(pub.read_text(encoding="utf-8"))
+                song_payload = self._load_song_payload(src)
+                if song_payload:
                     song_summary = {
                         "timeline_preview": [],
-                        "overall": (song.get("score") or {}).get("overall"),
-                        "label": (song.get("score") or {}).get("label"),
+                        "overall": (song_payload.get("score") or {}).get("overall"),
+                        "label": (song_payload.get("score") or {}).get("label"),
                     }
             report = build_premium_report(
                 session_id=session_id,
@@ -313,6 +381,29 @@ class DiagnosticSessionService:
                 safety_flags=session.get("safety_flags") or [],
                 include_scientific_debug=True,  # stored server-side for developer mode
             )
+            # Adaptive fusion (song + task), additive schema
+            vf = {}
+            if song_payload:
+                vf = (
+                    song_payload.get("vocal_function_profile")
+                    or (song_payload.get("report") or {}).get("vocal_function_profile")
+                    or {}
+                )
+            final_dx = build_final_diagnostic_profile(
+                song_profile=vf,
+                task_results=session.get("task_results") or [],
+                plan={
+                    "unresolved_dimensions": session.get("unresolved_dimensions") or [],
+                    "selected_tasks": session.get("selected_tasks") or [],
+                },
+            )
+            session["final_diagnostic_profile"] = final_dx
+            report["protocol_version"] = session.get("protocol_version") or VOCAL_DIAGNOSTIC_PROTOCOL_VERSION
+            report["planner_version"] = session.get("planner_version") or PLANNER_VERSION
+            report["selected_tasks"] = session.get("selected_tasks") or []
+            report["unresolved_dimensions"] = session.get("unresolved_dimensions") or []
+            report["final_diagnostic_profile"] = final_dx
+            report["diagnostic_report_version"] = final_dx.get("report_version")
             report_path = self._dir(session_id) / "premium_report.json"
             report_path.write_text(
                 json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -364,8 +455,11 @@ class DiagnosticSessionService:
     def protocol(self) -> dict[str, Any]:
         return {
             "protocol_version": VOCAL_DIAGNOSTIC_PROTOCOL_VERSION,
+            "planner_version": PLANNER_VERSION,
             "tasks": TASKS,
+            "supported_task_ids": list(TASK_REGISTRY.keys()),
             "safety_questions": SAFETY_QUESTIONS,
+            "adaptive": True,
         }
 
     def _require_unlocked(self, session_id: str, user_id: str) -> dict[str, Any]:
@@ -387,15 +481,25 @@ class DiagnosticSessionService:
                 if st.get("attempts")
                 else None,
             }
+        selected = list(session.get("selected_tasks") or [])
+        idx = int(session.get("current_task_index") or 0)
+        next_task = selected[idx] if idx < len(selected) else None
         return {
             "session_id": session["session_id"],
             "user_id": session.get("user_id"),
             "source_analysis_id": session.get("source_analysis_id"),
             "analysis_mode": "diagnostic",
             "protocol_version": session.get("protocol_version"),
+            "planner_version": session.get("planner_version"),
             "status": session.get("status"),
             "safety_flags": session.get("safety_flags") or [],
             "tasks": tasks_pub,
+            "selected_tasks": selected,
+            "unresolved_dimensions": session.get("unresolved_dimensions") or [],
+            "current_task_index": idx,
+            "next_task_id": next_task,
+            "diagnostic_offer": session.get("diagnostic_offer"),
+            "task_plan": tasks_for_ids(selected),
             "created_at": session.get("created_at"),
             "completed_at": session.get("completed_at"),
             "error": session.get("error"),

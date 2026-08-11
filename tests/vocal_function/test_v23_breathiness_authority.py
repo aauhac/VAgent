@@ -84,7 +84,9 @@ def test_gif_invalid_still_allows_breathiness():
         src={"valid": False, "reason": "unstable"},
     )
     assert dim_valid(s, "breathiness") is True
-    assert dim_valid(s, "glottal_contact") is False
+    # v2.7: GIF invalid is not absolute — harmonic+spectral fallback can make contact evaluable
+    assert dim_valid(s, "glottal_contact") is True
+    assert (s["validity_by_dimension"]["glottal_contact"].get("confidence_cap") == "low")
     assert classify_breathy_segment(s)["verdict"] == "POSITIVE"
 
 
@@ -178,6 +180,12 @@ def test_low_cpp_plus_perturbation_rough_eligible():
         obs={
             "periodicity_primary_db": 4.0,
             "f0_frame_period_perturbation_proxy_percent": 3.5,
+            "f0_tracker_artifact": {
+                "suspect": False,
+                "n_voiced": 20,
+                "n_frames": 24,
+                "octave_jumps": 0,
+            },
         },
     )
     assert classify_rough_segment(s)["verdict"] == "POSITIVE"
@@ -208,6 +216,12 @@ def test_breathy_plus_true_irregularity_mixed():
             "raw_h1_h2_proxy_db": 10.0,
             "spectral_tilt_db_per_oct": -18.0,
             "f0_frame_period_perturbation_proxy_percent": 3.5,
+            "f0_tracker_artifact": {
+                "suspect": False,
+                "n_voiced": 20,
+                "n_frames": 24,
+                "octave_jumps": 0,
+            },
         },
     )
     d = disambiguate_breathy_vs_rough(s)
