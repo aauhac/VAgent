@@ -1,65 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { getDiagnosticReport } from '../api/client';
+import VocalProfile from '../components/report/VocalProfile';
+import {
+  buildDiagnosticHeroText,
+  buildTaskResultSummary,
+  sanitizeDisclaimer,
+  scrubUserText,
+  translateDiagnosticAxis,
+  translateDiagnosticFinding,
+  translateMechanismTitle,
+} from '../lib/reportPresentation';
 
-function StatusBadge({ status, label }: { status: string; label?: string }) {
-  const text = label || status;
-  const isUnknown = status === 'unknown';
-  return (
-    <strong style={{ opacity: isUnknown ? 0.75 : 1 }}>
-      {isUnknown ? '판단 어려움' : text}
-    </strong>
-  );
-}
-
-function FindingCard({ m, expandable }: { m: any; expandable?: boolean }) {
+function AccordionRow({
+  title,
+  meta,
+  children,
+}: {
+  title: string;
+  meta?: string;
+  children: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="panel" style={{ marginBottom: 12 }}>
-      <div className="area-row" style={{ marginBottom: 8 }}>
-        <span>{m.display_name}</span>
-        <span>
-          <StatusBadge status={m.status} label={m.status_label} />
-          {' '}
-          {m.confidence_label && (
-            <span className="muted">신뢰도 {m.confidence_label}</span>
-          )}
+    <div className="accordion-item">
+      <button type="button" className="detail-row" onClick={() => setOpen((v) => !v)}>
+        <span className="detail-label">{title}</span>
+        <span className="detail-meta">
+          {meta ? <span className="meta-count">{meta}</span> : null}
+          <span className="chevron">{open ? '▴' : '›'}</span>
         </span>
-      </div>
-      <p style={{ marginTop: 0 }}>{m.summary}</p>
-      {m.what_was_observed && (
-        <p className="muted">관찰: {m.what_was_observed}</p>
-      )}
-      {m.what_it_may_mean && m.what_it_may_mean !== m.summary && (
-        <p className="muted">해석 후보: {m.what_it_may_mean}</p>
-      )}
-      {m.what_we_cannot_know && (
-        <p className="muted">알 수 없는 것: {m.what_we_cannot_know}</p>
-      )}
-      {m.motor_cue && <p><strong>몸 사용</strong> {m.motor_cue}</p>}
-      {m.exercise?.duration && <p><strong>연습</strong> {m.exercise.duration}</p>}
-      {expandable && (
-        <>
-          <button
-            type="button"
-            className="btn secondary"
-            style={{ marginTop: 8, fontSize: '0.85rem' }}
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? '닫기' : '왜 이렇게 판단했나요?'}
-          </button>
-          {open && (
-            <div style={{ marginTop: 8 }}>
-              <p className="muted">{m.why_this_judgment || '관련 관측이 모였어요.'}</p>
-              {(m.alternative_explanations || []).length > 0 && (
-                <p className="muted">
-                  다른 가능성: {(m.alternative_explanations || []).slice(0, 3).join(' · ')}
-                </p>
-              )}
-            </div>
-          )}
-        </>
-      )}
+      </button>
+      {open && <div className="detail-panel">{children}</div>}
     </div>
   );
 }
@@ -91,7 +63,15 @@ export default function PremiumReport() {
     );
   }
   if (error) return <main><p className="fail">{error}</p></main>;
-  if (!report) return <main><p className="muted">리포트 불러오는 중…</p></main>;
+  if (!report) {
+    return (
+      <main>
+        <p className="muted">리포트 불러오는 중…</p>
+        <div className="skeleton" style={{ height: 28, width: '50%' }} />
+        <div className="skeleton" style={{ height: 100 }} />
+      </main>
+    );
+  }
 
   const sections = report.sections || {};
   const summary = report.summary || sections.A_summary || {};
@@ -108,131 +88,152 @@ export default function PremiumReport() {
     || sections.B_supporting?.items
     || sections.B_auxiliary?.items
     || [];
-  const training = report.training_plan || sections.F_training_routine || {};
-  const retry = report.retry_recommendation || {};
-  const retryTasks = retry.tasks || sections.G_next_compare?.items || [];
+  const vocalType = report.vocal_type_profile || report.baseline_vocal_type;
+  const topFindings = reliable.slice(0, 3).map(translateDiagnosticFinding);
+  const profileAxes = reliable
+    .map(translateDiagnosticAxis)
+    .filter(Boolean) as NonNullable<ReturnType<typeof translateDiagnosticAxis>>[];
+  const taskSummary = buildTaskResultSummary(reliable, uncertain);
+  const hero = buildDiagnosticHeroText(reliable);
+  const hc = vocalType?.head_chest;
 
   return (
     <main>
-      <p className="muted">상세 발성 진단 · 영구 보관</p>
-      <h1 className="brand" style={{ fontSize: '1.6rem' }}>
-        {summary.title || '정밀 발성 분석 완료'}
+      <Link className="muted" to="/">‹ 홈</Link>
+      <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 12 }}>
+        정밀 발성 진단
       </h1>
-      <p className="lead">
-        {summary.lead || '이번 진단에서 신뢰할 수 있는 특징을 중심으로 알려드릴게요.'}
-      </p>
 
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>오늘의 핵심</h3>
-        <p>{summary.headline || summary.text}</p>
-        {summary.coverage_note && <p className="muted">{summary.coverage_note}</p>}
-        {summary.safety_note && <p className="warn">{summary.safety_note}</p>}
-        <p className="muted" style={{ fontSize: '0.85rem' }}>
-          항목을 억지로 채우지 않습니다. 근거가 부족하면 판단하지 않습니다.
-        </p>
-      </div>
-
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>신뢰할 수 있게 본 항목</h3>
-        {reliable.length === 0 && (
-          <p className="muted">이번 녹음에서는 충분한 근거가 있는 핵심 항목이 없어요.</p>
-        )}
-      </div>
-      {reliable.map((m: any) => (
-        <FindingCard key={m.mechanism_id || m.display_name} m={m} expandable />
-      ))}
-
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>이번에는 판단하기 어려운 항목</h3>
-        {uncertain.length === 0 && (
-          <p className="muted">판단이 보류된 항목이 없어요.</p>
-        )}
-        {uncertain.map((m: any) => (
-          <div key={m.mechanism_id} style={{ marginBottom: 14 }}>
-            <div className="area-row">
-              <span>{m.display_name}</span>
-              <span className="muted">판단 어려움</span>
-            </div>
-            <p className="muted" style={{ marginBottom: 4 }}>{m.summary}</p>
-            {(m.why_not_judged || []).length > 0 && (
-              <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
-                {(m.why_not_judged || []).map((w: string, i: number) => (
-                  <li key={i} className="muted">{w}</li>
-                ))}
-              </ul>
+      <section className="section">
+        {vocalType?.available && vocalType?.display_name ? (
+          <>
+            <p className="eyebrow">기본 발성 타입</p>
+            <h2 className="type-title">{vocalType.display_name}</h2>
+            {hc?.available && hc.chest_ratio != null && (
+              <p className="body-text" style={{ marginTop: 8 }}>
+                흉성 {hc.chest_ratio}% · 두성 {hc.head_ratio}%
+              </p>
             )}
-          </div>
-        ))}
-        <p className="muted" style={{ marginTop: 12, fontSize: '0.85rem' }}>
-          판단하지 않은 것은 오류가 아니라 보수적 판단이에요.
-        </p>
-      </div>
+          </>
+        ) : (
+          <>
+            <p className="eyebrow">기본 발성 특성</p>
+            <p className="body-text" style={{ fontWeight: 600, lineHeight: 1.5 }}>{hero}</p>
+          </>
+        )}
+        {summary.safety_note && (
+          <p className="warn" style={{ marginTop: 10 }}>{scrubUserText(summary.safety_note)}</p>
+        )}
+      </section>
 
-      {supporting.length > 0 && (
-        <div className="panel">
-          <h3 style={{ marginTop: 0 }}>보조 관찰</h3>
-          {supporting.map((m: any) => (
-            <div key={m.mechanism_id} style={{ marginBottom: 12 }}>
-              <strong>{m.display_name}</strong>
-              <p className="muted">{m.observation || m.summary}</p>
-              {m.note && <p className="muted" style={{ fontSize: '0.85rem' }}>{m.note}</p>}
+      <section className="section">
+        <h3 className="section-title">가장 뚜렷한 특징</h3>
+        {topFindings.length === 0 ? (
+          <p className="muted body-text">이번 진단에서 특별히 강하게 나타난 특징은 제한적이에요.</p>
+        ) : (
+          topFindings.map((f: ReturnType<typeof translateDiagnosticFinding>, i: number) => (
+            <div key={`${f.title}-${i}`} className="diag-finding">
+              <p className="diag-num">{String(i + 1).padStart(2, '0')}</p>
+              <div>
+                <p className="diag-finding-title">
+                  {f.title}
+                  <span className="diag-tone">{f.tone}</span>
+                </p>
+                <p className="body-text muted" style={{ margin: '6px 0 0' }}>{f.body}</p>
+                <p className="spectrum-confidence">
+                  {f.confidence_percent != null ? `신뢰도 ${f.confidence_percent}%` : null}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+      </section>
+
+      {profileAxes.length > 0 && (
+        <VocalProfile
+          dimensions={[]}
+          title="정밀 발성 프로필"
+          axes={profileAxes}
+        />
+      )}
+
+      {taskSummary.length > 0 && (
+        <section className="section">
+          <h3 className="section-title">표준 과제에서 본 결과</h3>
+          {taskSummary.map((t) => (
+            <div key={t.task} style={{ marginBottom: 16 }}>
+              <p style={{ margin: '0 0 8px', fontWeight: 700 }}>{t.task}</p>
+              {t.rows.map((r) => (
+                <div key={`${t.task}-${r.label}`} className="trait-row">
+                  <span>{r.label}</span>
+                  <strong>{r.value}</strong>
+                </div>
+              ))}
             </div>
           ))}
-        </div>
+        </section>
       )}
 
-      {(training.motor_cues || []).length > 0 && (
-        <div className="panel">
-          <h3 style={{ marginTop: 0 }}>몸 사용 가이드</h3>
-          {(training.motor_cues || []).map((c: any) => (
-            <p key={c.mechanism_id}>
-              {c.cue}
-              {c.duration ? <span className="muted"> · {c.duration}</span> : null}
-            </p>
-          ))}
-        </div>
-      )}
+      <section className="section">
+        <h3 className="section-title">더 자세히</h3>
 
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>{training.title || '오늘의 3분 연습'}</h3>
-        <ul>
-          {(training.items || []).map((x: string, i: number) => (
-            <li key={i}>{x}</li>
-          ))}
-        </ul>
-        {training.stop_conditions && (
-          <p className="warn">{training.stop_conditions}</p>
-        )}
-      </div>
-
-      {(retryTasks.length > 0 || retry.message) && (
-        <div className="panel">
-          <h3 style={{ marginTop: 0 }}>다시 확인할 항목</h3>
-          {retry.message && <p className="muted">{retry.message}</p>}
-          <ul>
-            {(Array.isArray(retryTasks) ? retryTasks : []).map((t: string, i: number) => (
-              <li key={i}>{t}</li>
+        {supporting.length > 0 && (
+          <AccordionRow title="추가로 관찰된 특징" meta={`${supporting.length}개`}>
+            {supporting.map((m: any) => (
+              <div key={m.mechanism_id || m.display_name} style={{ marginBottom: 12 }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
+                  {translateMechanismTitle(m.mechanism_id, m.display_name)}
+                </p>
+                <p className="muted" style={{ margin: 0 }}>
+                  {scrubUserText(m.observation || m.summary)
+                    || '관련 음향 특성은 관찰됐지만 이번 진단에서는 별도 점수로 표시하지 않아요.'}
+                </p>
+              </div>
             ))}
-          </ul>
+          </AccordionRow>
+        )}
+
+        {uncertain.length > 0 && (
+          <AccordionRow title="추가 확인이 필요한 항목" meta={`${uncertain.length}개`}>
+            {uncertain.map((m: any) => (
+              <div key={m.mechanism_id || m.display_name} style={{ marginBottom: 12 }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
+                  {translateMechanismTitle(m.mechanism_id, m.display_name)}
+                </p>
+                <p className="muted" style={{ margin: 0 }}>
+                  {scrubUserText(m.summary)
+                    || '이번 과제에서는 비교할 수 있는 구간이 충분하지 않았어요.'}
+                </p>
+              </div>
+            ))}
+          </AccordionRow>
+        )}
+
+        <AccordionRow title="분석 방법과 한계">
+          <p style={{ marginTop: 0 }}>
+            {sanitizeDisclaimer(
+              (report.safety || {}).disclaimer
+                || sections.H_disclaimer?.text
+                || report.disclaimer,
+            )}
+          </p>
+        </AccordionRow>
+
+        {showDebug && report.scientific_debug && (
+          <AccordionRow title="[debug] scientific_debug">
+            <pre style={{ overflow: 'auto', fontSize: 11 }}>
+              {JSON.stringify(report.scientific_debug, null, 2)}
+            </pre>
+          </AccordionRow>
+        )}
+      </section>
+
+      <section className="section" style={{ borderBottom: 0 }}>
+        <div className="cta-row">
+          <Link className="btn" to="/record">새 노래 분석하기</Link>
+          <Link className="btn secondary" to="/history">진단 기록 보기</Link>
         </div>
-      )}
-
-      <div className="panel">
-        <h3 style={{ marginTop: 0 }}>안내</h3>
-        <p className="muted">
-          {(report.safety || {}).disclaimer
-            || sections.H_disclaimer?.text
-            || report.disclaimer}
-        </p>
-      </div>
-
-      {showDebug && report.scientific_debug && (
-        <pre className="panel" style={{ overflow: 'auto', fontSize: 11 }}>
-          {JSON.stringify(report.scientific_debug, null, 2)}
-        </pre>
-      )}
-
-      <Link className="btn secondary" to="/" style={{ display: 'block' }}>홈으로</Link>
+      </section>
     </main>
   );
 }

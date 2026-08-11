@@ -164,6 +164,8 @@ export function saveHistory(entry: {
   id: string;
   overall?: number | null;
   label?: string;
+  filename?: string;
+  vocalType?: string;
   at: string;
   sessionId?: string;
   songDetailUnlocked?: boolean;

@@ -32,6 +32,7 @@ export default function Analyzing() {
             id,
             overall: job.result.score?.overall,
             label: job.result.score?.label,
+            filename: sessionStorage.getItem('vocalfb_last_filename') || undefined,
             at: new Date().toISOString(),
           });
           nav(`/result/${id}`, { replace: true });

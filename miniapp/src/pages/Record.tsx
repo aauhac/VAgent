@@ -135,6 +135,7 @@ export default function Record() {
         input_mode: 'AUTO',
       });
       sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(blob));
+      sessionStorage.setItem('vocalfb_last_filename', `recording.${ext}`);
       nav(`/analyzing/${analysis_id}`);
     } catch (e: any) {
       setError(e?.message || '업로드 실패');

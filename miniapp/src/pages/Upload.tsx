@@ -21,6 +21,7 @@ export default function Upload() {
         separate: !pureVocal,
       });
       sessionStorage.setItem('vocalfb_last_blob', URL.createObjectURL(file));
+      sessionStorage.setItem('vocalfb_last_filename', file.name);
       nav(`/analyzing/${analysis_id}`);
     } catch (e: any) {
       setError(e?.message || '업로드 실패');

@@ -1,37 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   getAnalysis,
-  getPreviewUrl,
   getProducts,
   mockUnlockSongDetail,
   patchHistory,
   removeHistory,
   saveSongDetailUnlock,
 } from '../api/client';
-
-const AREA_COPY: Record<string, { good: string; need: string; practice: string }> = {
-  stability: {
-    good: '길게 유지한 음이 비교적 안정적이에요.',
-    need: '길게 뻗는 음에서 소리가 조금 흔들릴 수 있어요.',
-    practice: '편한 음 하나를 골라 3초 동안 같은 크기로 유지해 보세요.',
-  },
-  projection: {
-    good: '목소리가 비교적 또렷하게 전달돼요.',
-    need: '목소리가 공간에 묻혀 또렷함이 약하게 들릴 수 있어요.',
-    practice: '첫 소리를 말하듯 분명하게 시작해 보세요.',
-  },
-  resonance: {
-    good: '공명 균형이 무난해요.',
-    need: '소리가 답답하거나 가볍게 들릴 수 있어요.',
-    practice: "'네', '니', '냐'로 같은 멜로디를 편하게 불러 보세요.",
-  },
-  dynamic_control: {
-    good: '강약 표현이 자연스러워요.',
-    need: '전체적으로 비슷한 크기로 들려 표현이 밋밋할 수 있어요.',
-    practice: '중요한 부분만 살짝 더 분명하게 불러 보세요.',
-  },
-};
+import VocalTypeHero from '../components/report/VocalTypeHero';
+import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '../lib/reportPresentation';
 
 export default function Result() {
   const { id } = useParams();
@@ -40,11 +18,7 @@ export default function Result() {
   const [products, setProducts] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
-  const [showTech, setShowTech] = useState(false);
   const [busyDetail, setBusyDetail] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const blobUrl = useMemo(() => sessionStorage.getItem('vocalfb_last_blob'), []);
-  const previewUrl = id ? getPreviewUrl(id) : '';
 
   useEffect(() => {
     if (!id) return;
@@ -63,6 +37,10 @@ export default function Result() {
         if (access.diagnostic_session_id) {
           patchHistory(id, { sessionId: access.diagnostic_session_id });
         }
+        const vt = job.result.vocal_type_teaser || job.result.vocal_type_profile;
+        if (vt?.display_name) {
+          patchHistory(id, { vocalType: vt.display_name });
+        }
       })
       .catch(() => {
         setExpired(true);
@@ -77,7 +55,6 @@ export default function Result() {
     try {
       await mockUnlockSongDetail(id);
       saveSongDetailUnlock(id);
-      // Critical: go to detail report — never Safety / Diagnostic tasks
       nav(`/result/${id}/detail`);
     } catch (e: any) {
       setError(e?.message || '상세 리포트 해제 실패');
@@ -93,7 +70,7 @@ export default function Result() {
         {id && (
           <button
             className="btn secondary"
-            style={{ marginBottom: 12 }}
+            style={{ marginBottom: 12, width: '100%' }}
             onClick={() => {
               removeHistory(id);
               window.location.href = '/history';
@@ -107,160 +84,122 @@ export default function Result() {
     );
   }
 
-  if (error && !data) return <main><p className="fail">{error}</p><Link to="/">홈</Link></main>;
-  if (!data) return <main><p className="muted">불러오는 중…</p></main>;
+  if (error && !data) {
+    return (
+      <main>
+        <p className="fail">{error}</p>
+        <Link to="/">홈</Link>
+      </main>
+    );
+  }
+  if (!data) {
+    return (
+      <main>
+        <p className="muted">불러오는 중…</p>
+        <div className="skeleton" />
+        <div className="skeleton" style={{ height: 72 }} />
+      </main>
+    );
+  }
 
   const score = data.score || {};
-  const best = score.best_area;
-  const focus = score.focus_area;
   const access = data.access || {};
   const prodMap = products?.products || {};
   const songPrice = prodMap.song_detail?.display_amount || '—';
-  const diagOfferId = products?.offers?.diagnostic || 'diagnostic_full';
-  const diagPrice = prodMap[diagOfferId]?.display_amount || prodMap.diagnostic_full?.display_amount || '—';
   const songUnlocked = !!access.song_detail_unlocked;
-  const diagUnlocked = !!access.diagnostic_unlocked;
-  const diagSession = access.diagnostic_session_id;
+
+  const vocalType =
+    data.vocal_type_teaser
+    || data.vocal_type_profile
+    || null;
+
+  const findingTeaser = data.main_finding_teaser || null;
+  const primaryForUi =
+    findingTeaser && !findingTeaser.none && (findingTeaser.id || findingTeaser.user_title)
+      ? findingTeaser
+      : null;
+
+  const mapped = diagnosisFromPrimary(primaryForUi);
+  const noPrimaryTitle =
+    findingTeaser?.none
+      ? (findingTeaser.title || '이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.')
+      : null;
+
+  let fallbackFinding: { title: string; detail: string } | null = null;
+  if (!mapped && !noPrimaryTitle) {
+    const teaser = (data.vocal_function_teaser || data.vocal_quality_teaser || [])[0];
+    if (teaser) {
+      fallbackFinding = {
+        title: String(teaser).replace(/^먼저 살펴볼 후보:\s*/, '').replace(/\.$/, ''),
+        detail: '',
+      };
+    }
+  }
 
   return (
     <main>
-      <Link className="muted" to="/">← 홈</Link>
+      <Link className="muted" to="/">‹ 홈</Link>
+      <h1 className="brand" style={{ fontSize: '1.35rem', marginTop: 12, marginBottom: 0 }}>
+        내 보컬 리포트
+      </h1>
 
       {!score.available ? (
-        <div className="panel" style={{ marginTop: 16 }}>
-          <h1 className="brand" style={{ fontSize: '1.6rem' }}>정확한 분석이 어려운 녹음</h1>
+        <section className="section">
+          <h2 className="type-title" style={{ fontSize: '1.35rem' }}>정확한 분석이 어려운 녹음</h2>
           <p className="lead">{data.quality?.user_message}</p>
           <Link className="btn" to="/record">다시 녹음하기</Link>
-        </div>
+        </section>
       ) : (
         <>
-          <div className="score-hero">
-            <div className="label" style={{ fontSize: '1.25rem' }}>오늘의 발성 요약</div>
-            <p className="muted" style={{ marginTop: 8 }}>
-              {(data.vocal_quality_teaser || []).length
-                ? (data.vocal_quality_teaser || []).join(' ')
-                : '자세한 발성 상태는 노래 상세 리포트에서 확인할 수 있어요.'}
-            </p>
-          </div>
+          <VocalTypeHero profile={vocalType || { available: false }} compact />
 
-          <p className="lead">{data.short_summary}</p>
-
-          <div className="panel">
-            {(score.areas || [])
-              .filter((a: any) => a.status !== 'unknown' && a.score != null)
-              .map((a: any) => (
-              <div className="area-row" key={a.area_id}>
-                <span>{a.display_name}</span>
-                <strong>
-                  {`${Math.round(a.score)}점`}
-                  <span className="muted" style={{ marginLeft: 8, fontWeight: 500 }}>
-                    ·{' '}
-                    {a.status_label || a.status}
-                  </span>
-                </strong>
+          {mapped || fallbackFinding ? (
+            <section className="section">
+              <h3 className="section-title">가장 두드러진 특징</h3>
+              <div className="card">
+                <p className="finding-title">
+                  {(mapped || fallbackFinding)!.title}
+                </p>
+                {(mapped || fallbackFinding)!.detail ? (
+                  <p className="body-text muted">{(mapped || fallbackFinding)!.detail}</p>
+                ) : null}
               </div>
-            ))}
-          </div>
-        </>
-      )}
+            </section>
+          ) : (
+            <section className="section">
+              <h3 className="section-title">가장 두드러진 특징</h3>
+              <div className="card">
+                <p className="finding-title" style={{ fontSize: '1.05rem' }}>
+                  {noPrimaryTitle || NO_PRIMARY_MESSAGE}
+                </p>
+              </div>
+            </section>
+          )}
 
-      <audio
-        ref={audioRef}
-        src={blobUrl || previewUrl}
-        controls
-        style={{ width: '100%', marginTop: 16 }}
-      />
-
-      {score.available && (
-        <>
-          <div className="panel">
-            <h3 style={{ marginTop: 0 }}>가장 잘한 영역</h3>
-            {best ? (
-              <>
-                <strong>{best.display_name}</strong>
-                <p className="muted">{AREA_COPY[best.area_id]?.good || '좋은 편으로 측정됐어요.'}</p>
-              </>
-            ) : (
-              <p className="muted">이번엔 강조할 강점이 없어요.</p>
-            )}
-          </div>
-
-          <div className="panel">
-            <h3 style={{ marginTop: 0 }}>먼저 개선할 영역</h3>
-            {focus ? (
-              <>
-                <strong>{focus.display_name}</strong>
-                <p className="muted">{AREA_COPY[focus.area_id]?.need}</p>
-                <p>{AREA_COPY[focus.area_id]?.practice}</p>
-              </>
-            ) : (
-              <p className="muted">우선 개선 항목이 없어요.</p>
-            )}
-          </div>
-
-          <div className="panel" style={{ borderColor: 'var(--accent, #2a6)' }}>
-            <h3 style={{ marginTop: 0 }}>이 노래를 더 자세히 알고 싶나요?</h3>
-            <ul className="muted" style={{ paddingLeft: 18 }}>
-              <li>4개 영역 상세 분석</li>
-              <li>잘한 부분 / 개선할 부분</li>
-              <li>문제가 나타난 구간 · 다시 듣기</li>
-              <li>맞춤 연습법 · 비브라토 참고</li>
-            </ul>
+          <section className="section">
+            <p className="muted body-text" style={{ marginBottom: 12 }}>
+              발성 프로필 · 특징 구간 · 음역별 구성은 상세 리포트에서 확인할 수 있어요.
+            </p>
             {songUnlocked ? (
-              <Link className="btn" to={`/result/${id}/detail`}>상세 리포트 보기</Link>
+              <Link className="btn" to={`/result/${id}/detail`} style={{ width: '100%' }}>
+                상세 발성 리포트 보기
+              </Link>
             ) : (
-              <button className="btn" disabled={busyDetail} onClick={buySongDetail}>
-                {busyDetail ? '준비 중…' : `상세 리포트 영구 해제 · ${songPrice}`}
+              <button
+                className="btn"
+                disabled={busyDetail}
+                onClick={buySongDetail}
+                style={{ width: '100%' }}
+              >
+                {busyDetail ? '준비 중…' : `상세 발성 리포트 보기 · ${songPrice}`}
               </button>
             )}
-            <p className="muted" style={{ fontSize: '0.85rem', marginTop: 10 }}>
-              추가 녹음 없이 바로 확인할 수 있어요.
-            </p>
-          </div>
-
-          <div className="panel">
-            <h3 style={{ marginTop: 0 }}>내 발성 자체를 더 정밀하게 알고 싶나요?</h3>
-            <p className="muted">약 1~2분 추가 검사: 아— / 이— / 사이렌 / 강약 변화</p>
-            <ul className="muted" style={{ paddingLeft: 18 }}>
-              <li>발성 패턴 · 음역 전환</li>
-              <li>강도 변화 협응 · 발성 안정성</li>
-              <li>몸 사용 가이드</li>
-            </ul>
-            {diagUnlocked && diagSession ? (
-              <Link className="btn" to={`/diagnostic/${diagSession}/report`}>정밀 진단 보기</Link>
-            ) : (
-              <Link className="btn" to={`/premium?analysis=${id}&product=${diagOfferId}`}>
-                정밀 발성 진단 · {diagPrice}
-              </Link>
-            )}
-            <p className="muted" style={{ fontSize: '0.85rem', marginTop: 10 }}>
-              {songUnlocked ? '상세 리포트 보유 시 업그레이드 가격이 적용돼요.' : '상세 리포트 포함'}
-            </p>
-          </div>
+          </section>
         </>
       )}
 
       {error && <p className="fail">{error}</p>}
-      <p className="muted" style={{ marginTop: 16 }}>{data.disclaimer}</p>
-
-      <button className="btn secondary" style={{ width: '100%' }} onClick={() => setShowTech((v) => !v)}>
-        {showTech ? '분석 상세 닫기' : '녹음 품질'}
-      </button>
-      {showTech && (
-        <pre className="panel" style={{ overflow: 'auto', fontSize: 11 }}>
-          {JSON.stringify(
-            {
-              tier: data.tier,
-              analysis_mode: data.analysis_mode,
-              access: data.access,
-              score_version: score.version,
-              quality: data.quality,
-            },
-            null,
-            2,
-          )}
-        </pre>
-      )}
+      <p className="footer-note">{sanitizeDisclaimer(data.disclaimer)}</p>
     </main>
   );
 }

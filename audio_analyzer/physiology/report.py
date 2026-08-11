@@ -51,6 +51,24 @@ def _why_easy(m: dict[str, Any]) -> str:
     return " · ".join(parts) if parts else "관련 관측이 모였어요."
 
 
+def _scrub_evidence_bits(parts: list[str]) -> str:
+    """Drop raw metric dumps from user-facing observation strings."""
+    import re
+
+    keep: list[str] = []
+    banned = re.compile(
+        r"(sustained_residual|f0_continuity|voiced_dropout|cepstral|hnr_|h1_h2|"
+        r"onset_slope|≈|GIF|source proxy|evidence_mass|directionality)",
+        re.I,
+    )
+    for p in parts:
+        s = str(p).strip()
+        if not s or banned.search(s):
+            continue
+        keep.append(s)
+    return " · ".join(keep[:4])
+
+
 def _public_card(
     m: dict[str, Any],
     coaching: list[dict[str, Any]],
@@ -58,7 +76,7 @@ def _public_card(
     eligibility: dict[str, Any],
 ) -> dict[str, Any]:
     coach = next((c for c in coaching if c["mechanism_id"] == m["mechanism_id"]), None)
-    observed = " · ".join((m.get("supporting_evidence") or [])[:4]) or "관련 음향 관측"
+    observed = _scrub_evidence_bits(m.get("supporting_evidence") or []) or "관련 음향 특성이 관찰됐어요."
     may_mean = m.get("summary") or ""
     cannot = (m.get("limitations") or ["이 녹음만으로 해부학적 사실을 확인할 수 없습니다."])[0]
     return {
@@ -270,19 +288,6 @@ def build_premium_report(
 
     n_rel = len(reliable_findings)
     n_unc = len(uncertain_findings)
-    if n_rel and n_unc:
-        headline = (
-            f"{n_rel}개 항목은 충분한 근거가 있었고, "
-            f"{n_unc}개 항목은 이번 녹음에서 판단하지 않았어요."
-        )
-    elif n_rel:
-        headline = f"이번 진단에서 {n_rel}개 항목을 신뢰도 있게 분석했어요."
-    else:
-        headline = (
-            "오늘은 핵심 항목을 단정할 근거가 부족했어요. "
-            "판단하지 않은 것은 보수적 판단이며 측정 실패가 아니에요."
-        )
-
     if reliable_findings:
         focus = next(
             (
@@ -293,8 +298,13 @@ def build_premium_report(
             reliable_findings[0],
         )
         summary_text = focus["summary"]
+        headline = summary_text
     else:
-        summary_text = headline
+        summary_text = (
+            "표준 발성 과제를 분석했어요. "
+            "이번 세션에서 확인된 특징을 중심으로 정리했어요."
+        )
+        headline = summary_text
 
     task_metrics = []
     for tr in task_results:
@@ -321,8 +331,8 @@ def build_premium_report(
         "literature_registry_version": LITERATURE_REGISTRY_VERSION,
         "session_id": session_id,
         "summary": {
-            "title": "정밀 발성 분석 완료",
-            "lead": "이번 진단에서 신뢰할 수 있는 특징을 중심으로 알려드릴게요.",
+            "title": "정밀 발성 진단",
+            "lead": "표준 발성 과제로 확인한 기본 발성 특성이에요.",
             "text": summary_text,
             "headline": headline,
             "reliable_count": n_rel,

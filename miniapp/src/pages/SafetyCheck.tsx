@@ -37,9 +37,9 @@ export default function SafetyCheck() {
     <main>
       <h1 className="brand" style={{ fontSize: '1.6rem' }}>안전 확인</h1>
       <p className="lead">
-        질환을 진단하는 문진이 아니에요. 훈련을 계속해도 되는지 확인하는 최소한의 점검입니다.
+        질환을 진단하는 문진이 아니에요. 정밀 진단을 진행하기 전 안전 관련 증상을 확인합니다.
       </p>
-      <div className="panel">
+      <div className="card">
         {QUESTIONS.map((q) => (
           <label key={q.id} className="area-row" style={{ cursor: 'pointer' }}>
             <span>{q.label}</span>
@@ -52,7 +52,7 @@ export default function SafetyCheck() {
         ))}
       </div>
       <p className="muted">
-        해당 항목이 있으면 질병명을 추정하지 않고, 연습 참고 수준으로 제한하며
+        해당 항목이 있으면 질병명을 추정하지 않고, 분석을 제한하며
         지속되면 전문가 평가를 고려해 달라는 안내만 드려요.
       </p>
       <button className="btn" disabled={busy} onClick={next}>다음</button>

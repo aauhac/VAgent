@@ -74,7 +74,8 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
     from audio_analyzer.vocal_quality.report import free_vocal_quality_teaser
     from audio_analyzer.vocal_function.report import free_function_teaser
 
-    vf_teaser = free_function_teaser(result.get("vocal_function_profile") or {})
+    vf_profile = result.get("vocal_function_profile") or {}
+    vf_teaser = free_function_teaser(vf_profile)
     vq_teaser = free_vocal_quality_teaser(result.get("vocal_quality_profile") or {})
     teaser = vf_teaser or vq_teaser
 
@@ -82,15 +83,6 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
     if score.get("available") or teaser:
         parts = ["오늘의 발성 요약."]
         parts.extend(teaser)
-        if n_reliable:
-            stab = next((a for a in reliable_axes if a.get("area_id") == "stability"), None)
-            dyn = next(
-                (a for a in reliable_axes if a.get("area_id") == "dynamic_control"), None
-            )
-            if stab and stab.get("score") is not None:
-                parts.append(f"발성 안정성 참고 {round(float(stab['score']))}.")
-            if dyn and dyn.get("score") is not None:
-                parts.append(f"강약 컨트롤 참고 {round(float(dyn['score']))}.")
         parts.append("자세한 발성 상태 프로필은 노래 상세 리포트에서 확인할 수 있어요.")
         short_summary = " ".join(parts)
     else:
@@ -142,6 +134,8 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
         "short_summary": short_summary,
         "vocal_quality_teaser": teaser,
         "vocal_function_teaser": vf_teaser,
+        "vocal_type_teaser": _free_vocal_type_teaser(vf_profile),
+        "main_finding_teaser": _free_main_finding_teaser(vf_profile),
         "premium_available": True,
         "products_available": {
             "song_detail": True,
@@ -158,25 +152,72 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
         "song_detail_cta": {
             "title": "이 노래를 더 자세히 알고 싶나요?",
             "body": (
-                "4개 영역 상세, 잘한 부분, 개선 우선순위, 구간 다시 듣기, "
-                "맞춤 연습을 추가 녹음 없이 확인할 수 있어요."
+                "발성 프로필, 특징 구간 듣기, 음역별 구성, "
+                "분석 신뢰도를 추가 녹음 없이 확인할 수 있어요."
             ),
         },
         "diagnostic_cta": {
             "title": "내 발성 자체를 더 정밀하게 알고 싶나요?",
             "body": (
-                "아/이 지속음·사이렌·강약 변화 Task로 발성 패턴·음역 전환·"
-                "강도 협응·몸 사용 가이드를 분석해요. 상세 리포트 포함."
+                "아/이 지속음·사이렌·강약 변화 Task로 "
+                "기본 발성 패턴을 표준 과제에서 다시 확인할 수 있어요."
             ),
         },
         "disclaimer": (
             "이 결과는 녹음된 음성의 음향적 특성을 바탕으로 "
-            "발성 패턴을 분석한 연습 참고 정보입니다. "
+            "발성 패턴을 분석한 발성 분석 참고 정보입니다. "
             "성대의 실제 구조나 질환을 진단하는 검사가 아닙니다."
         ),
         "preview_available": bool(
             result.get("preview_path") or (result.get("audio") or {}).get("preview_path")
         ),
+    }
+
+
+def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]:
+    """Additive free-tier vocal type card (no criteria / timeline)."""
+    from audio_analyzer.coach_profile import build_vocal_type_public
+
+    vf = vf_profile or {}
+    raw = vf.get("vocal_type_profile") if isinstance(vf, dict) else None
+    if not isinstance(raw, dict):
+        raw = {}
+    pub = build_vocal_type_public(raw)
+    hc = pub.get("head_chest") or {}
+    return {
+        "available": bool(pub.get("available")),
+        "display_name": pub.get("display_name"),
+        "description": pub.get("description"),
+        "confidence": pub.get("confidence"),
+        "confidence_label": pub.get("confidence_label"),
+        "head_chest": {
+            "available": hc.get("available"),
+            "chest_ratio": hc.get("chest_ratio"),
+            "head_ratio": hc.get("head_ratio"),
+            "broad_label": hc.get("broad_label"),
+        },
+        "key_traits": (pub.get("key_traits") or [])[:2],
+    }
+
+
+def _free_main_finding_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]:
+    """Single primary finding for FREE — diagnosis copy only."""
+    vf = vf_profile or {}
+    decision = vf.get("coaching_decision") or {}
+    primary = decision.get("primary_bottleneck")
+    if not primary:
+        return {
+            "none": True,
+            "title": "이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.",
+            "detail": "",
+        }
+    return {
+        "none": False,
+        "id": primary.get("id"),
+        "user_title": primary.get("user_title") or primary.get("summary"),
+        "why": primary.get("why") or primary.get("summary") or "",
+        "title": primary.get("user_title") or primary.get("summary"),
+        "detail": primary.get("why") or "",
     }
 
 

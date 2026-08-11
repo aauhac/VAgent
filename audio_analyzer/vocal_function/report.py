@@ -363,17 +363,16 @@ def free_function_teaser(profile: dict[str, Any]) -> list[str]:
     bullets = []
     primary = decision.get("primary_bottleneck")
     if primary and primary.get("user_title"):
-        bullets.append(f"먼저 살펴볼 후보: {primary.get('user_title')}.")
+        bullets.append(str(primary.get("user_title")).rstrip(".") + ".")
     elif primary and primary.get("id"):
-        bullets.append("고음·effort 관련 기능 병목 후보가 있어요.")
-    preserve = decision.get("preserve") or []
-    if preserve:
-        bullets.append(f"유지하면 좋은 점: {preserve[0].get('label')}.")
+        bullets.append("일부 구간에서 발성 무게가 바뀌는 특징이 관찰됐어요.")
     if not bullets:
         dims = profile.get("dimensions") or {}
+        if isinstance(dims, list):
+            dims = {d.get("dimension_id"): d for d in dims if d.get("dimension_id")}
         e = dims.get("vocal_effort_strain") or {}
         if e.get("status") in ("OCCASIONAL", "MODERATE", "REPEATED"):
-            bullets.append("일부 구간에서 힘이 과하게 들어간 소리 가능성이 있어요.")
+            bullets.append("일부 구간에서 힘이 커지는 경향이 관찰됐어요.")
         if not bullets:
-            bullets.append("뚜렷한 기능 병목 후보는 제한적으로 관찰됐어요.")
-    return bullets[:3]
+            bullets.append("이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.")
+    return bullets[:1]
