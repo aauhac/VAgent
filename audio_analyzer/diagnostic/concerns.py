@@ -239,13 +239,34 @@ def _answer_for_concern(
     *,
     effort_level: str,
     reg_level: str,
+    evaluation: dict[str, Any] | None = None,
 ) -> str:
     label = CONCERN_CATALOG.get(concern_id, {}).get("label", concern_id)
+    ev = evaluation or {}
+    if ev.get("answer_hint"):
+        return str(ev["answer_hint"])
     if status == "SAFETY_ONLY":
         return (
             "통증이나 지속적인 불편감은 음향 분석만으로 원인을 판단할 수 없어요. "
             "불편한 상태에서는 강한 고음이나 큰 소리를 반복하지 마세요."
         )
+    if status == "CONTEXT_DEPENDENT":
+        return (
+            "노래와 표준 과제에서 패턴이 다르게 나타났어요. "
+            "곡의 강도나 표현 상황에 따라 달라질 가능성이 있습니다."
+        )
+    if status == "UNRESOLVED" and ev.get("unresolved_reason"):
+        reason = str(ev["unresolved_reason"])
+        if reason == "INVALID_HIGH_NOTE_TASK":
+            return "높은 음 과제에서 비교 가능한 구간이 충분하지 않아 편한 음과 고음의 힘 차이를 확인하지 못했어요."
+        if reason == "MISSING_BASELINE":
+            return "편한 지속음 baseline이 없어 조건 간 차이를 확정하기 어려웠어요."
+        if reason == "INSUFFICIENT_TIMBRE_FAMILIES":
+            return "음색 관련 지표가 부족해 특징을 충분히 설명하기 어려웠어요."
+        if reason == "NASALITY_NOT_DIRECTLY_MEASURED":
+            return "콧소리처럼 들린다는 인상은 이번 음향 지표만으로 단정하기 어려워요."
+        if reason == "CONFLICTING_TASK_RESULTS":
+            return "음색 관련 지표가 과제마다 서로 다르게 나타나 원인을 하나로 좁히기 어려웠어요."
     if concern_id in ("THROAT_EFFORT", "HIGH_NOTE_TOO_EFFORTFUL") and effort_level == "HIGH":
         return (
             "노래와 추가 녹음에서 확인된 힘 증가 패턴이 "
@@ -369,7 +390,12 @@ def build_personalized_qa(
 
     task_evidence = fused_profile or {}
     evaluations = [
-        evaluate_concern_status(c["id"], song_profile=song_profile, task_evidence=task_evidence)
+        evaluate_concern_status(
+            c["id"],
+            song_profile=song_profile,
+            task_evidence=task_evidence,
+            task_results=task_results,
+        )
         for c in concerns
     ]
 
@@ -389,6 +415,7 @@ def build_personalized_qa(
             ev["status"],
             effort_level=effort_level,
             reg_level=reg_level,
+            evaluation=ev,
         )
         questions.append(
             {
@@ -397,23 +424,50 @@ def build_personalized_qa(
                 "answer": a,
                 "status": ev["status"],
                 "support": ev.get("support") or [],
+                "against": ev.get("against") or [],
+                "missing": ev.get("missing") or [],
+                "unresolved_reason": ev.get("unresolved_reason"),
+                "candidate_causes": ev.get("candidate_causes") or [],
             }
         )
         answer_parts.append(a)
         label = CONCERN_CATALOG.get(cid, {}).get("label", cid)
-        if ev["status"] == "NOT_SUPPORTED_IN_THIS_RECORDING":
+        if ev["status"] in ("NOT_SUPPORTED_IN_THIS_RECORDING", "NOT_SUPPORTED"):
             not_supported.append(label)
 
+    valid_tasks = [
+        tr
+        for tr in (task_results or [])
+        if not tr.get("invalid") and str((tr.get("quality") or {}).get("status") or "").lower() != "fail"
+    ]
     if task_results:
         evidence.append(
-            {"source": "CONTROLLED_TASK_CONFIRMED", "text": f"{len(task_results)}개 과제 결과 반영"}
+            {
+                "source": "CONTROLLED_TASK_CONFIRMED",
+                "text": (
+                    f"{len(task_results)}개 과제를 분석했고, "
+                    f"그중 {len(valid_tasks)}개에서 현재 질문에 사용할 수 있는 근거를 확보했어요."
+                    if len(valid_tasks) != len(task_results)
+                    else f"{len(task_results)}개 과제 결과 반영"
+                ),
+            }
         )
     evidence.append({"source": "AUDIO_OBSERVED", "text": "노래 분석 evidence"})
 
+    from audio_analyzer.diagnostic.concern_resolver import infer_precision_bottleneck
+
+    bn_info = infer_precision_bottleneck(
+        song_profile=song_profile,
+        fused_profile=task_evidence,
+        concern_evaluations=evaluations,
+        controlled_contrasts=(task_evidence or {}).get("controlled_contrasts"),
+    )
     priorities = build_improvement_guidance(
         song_profile=song_profile,
         evaluations=evaluations,
         pain_flag=has_pain_safety_flag(concerns),
+        precision_bottleneck=bn_info.get("bottleneck"),
+        fused_profile=task_evidence,
     )
 
     qa = {
@@ -424,12 +478,14 @@ def build_personalized_qa(
         "concern_evaluations": evaluations,
         "concern_user_lines": answer_parts,
         "evidence": evidence,
-        "main_bottleneck": _infer_bottleneck(song_profile),
+        "main_bottleneck": bn_info.get("bottleneck") or "UNRESOLVED",
+        "bottleneck_source": bn_info.get("source"),
         "secondary_factors": _secondary_factors(song_profile),
         "not_supported": not_supported,
         "improvement_priorities": priorities,
         "confidence_label": "medium",
         "show_qa_section": True,
+        "controlled_contrasts": (task_evidence or {}).get("controlled_contrasts"),
     }
     blob = str(qa.get("answer_summary") or "")
     for banned in BANNED_CLAIM_SUBSTRINGS:
@@ -486,48 +542,17 @@ def evaluate_concern_status(
     *,
     song_profile: dict[str, Any],
     task_evidence: Optional[dict[str, Any]] = None,
+    task_results: Optional[list[dict[str, Any]]] = None,
 ) -> dict[str, Any]:
-    """Map one concern to CONFIRMED / PARTIALLY_SUPPORTED / NOT_SUPPORTED / UNRESOLVED / SAFETY_ONLY."""
-    if concern_id in PAIN_CONCERN_IDS:
-        return {
-            "concern": concern_id,
-            "status": "SAFETY_ONLY",
-            "support": [],
-            "note": "통증·불편은 음향 분석만으로 원인을 판단할 수 없어요.",
-        }
+    """Map one concern using song + controlled task contrast evidence."""
+    from audio_analyzer.diagnostic.concern_resolver import evaluate_concern
 
-    effort_level, effort_flags = _effort_observed(song_profile)
-    reg_level, reg_flags = _register_observed(song_profile)
-    breath_level, breath_flags = _breathiness_observed(song_profile)
-
-    if concern_id in ("THROAT_EFFORT", "HIGH_NOTE_TOO_EFFORTFUL", "LOUD_VOICE_DIFFICULT", "VOCAL_FATIGUE"):
-        if effort_level == "HIGH":
-            st = "CONFIRMED"
-        elif effort_level == "LOW":
-            st = "NOT_SUPPORTED_IN_THIS_RECORDING"
-        else:
-            st = "UNRESOLVED"
-        return {"concern": concern_id, "status": st, "support": effort_flags}
-
-    if concern_id in ("HIGH_NOTE_CANNOT_REACH", "HIGH_NOTE_FLIPS", "REGISTER_CONNECTION_DIFFICULT"):
-        if reg_level == "OBSERVED" and "REGISTER_INSUFFICIENT" not in reg_flags:
-            st = "PARTIALLY_SUPPORTED"
-        elif reg_level == "UNRESOLVED":
-            st = "UNRESOLVED"
-        else:
-            st = "NOT_SUPPORTED_IN_THIS_RECORDING" if effort_level == "LOW" else "UNRESOLVED"
-        return {"concern": concern_id, "status": st, "support": reg_flags}
-
-    if concern_id in ("VOICE_TOO_BREATHY", "VOICE_TOO_THIN", "TIMBRE_DISSATISFIED"):
-        if breath_level == "HIGH":
-            st = "CONFIRMED" if concern_id == "VOICE_TOO_BREATHY" else "PARTIALLY_SUPPORTED"
-        elif breath_level == "LOW":
-            st = "NOT_SUPPORTED_IN_THIS_RECORDING"
-        else:
-            st = "UNRESOLVED"
-        return {"concern": concern_id, "status": st, "support": breath_flags}
-
-    return {"concern": concern_id, "status": "UNRESOLVED", "support": []}
+    return evaluate_concern(
+        concern_id,
+        song_profile=song_profile,
+        task_evidence=task_evidence,
+        task_results=task_results,
+    )
 
 
 def _status_user_line(status: str, label: str) -> str:
@@ -572,6 +597,8 @@ def build_improvement_guidance(
     song_profile: dict[str, Any],
     evaluations: list[dict[str, Any]],
     pain_flag: bool,
+    precision_bottleneck: str | None = None,
+    fused_profile: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     if pain_flag:
         return [
@@ -590,7 +617,29 @@ def build_improvement_guidance(
             }
         ]
 
-    bottleneck = _infer_bottleneck(song_profile)
+    bottleneck = precision_bottleneck or _infer_bottleneck(song_profile)
+    # Promote from confirmed evaluations when song bottleneck empty
+    if bottleneck in ("", "UNRESOLVED", None):
+        for ev in evaluations:
+            if ev.get("status") not in ("CONFIRMED", "PARTIALLY_SUPPORTED"):
+                continue
+            causes = ev.get("candidate_causes") or []
+            if "EFFORT_ESCALATION_WITH_HEIGHT" in causes:
+                bottleneck = "HIGH_NOTE_EFFORT"
+                break
+            if "LOW_PRESENCE" in causes or "LOW_BRIGHTNESS" in causes:
+                bottleneck = "LOW_PRESENCE"
+                break
+            if "HIGH_AIRINESS" in causes:
+                bottleneck = "AIR_LEAKAGE"
+                break
+            if "REGISTER_TRANSITION_DISRUPTION" in causes:
+                bottleneck = "REGISTER_TRANSITION_DISRUPTION"
+                break
+            if "HIGH_NOTE_STABILITY_DROP" in causes:
+                bottleneck = "HIGH_NOTE_STABILITY_DROP"
+                break
+
     out: list[dict[str, Any]] = []
 
     if bottleneck in ("HIGH_NOTE_EFFORT", "GENERAL_EXCESS_EFFORT", "EXCESS_EFFORT"):
@@ -604,6 +653,7 @@ def build_improvement_guidance(
                     "중간 강도에서 고음 연결을 먼저 안정시키기",
                 ],
                 "safety_note": None,
+                "evidence_source": "TASK" if fused_profile else "SONG",
             }
         )
     if bottleneck == "REGISTER_TRANSITION_DISRUPTION":
@@ -611,7 +661,7 @@ def build_improvement_guidance(
             {
                 "goal_id": "REGISTER_TRANSITION",
                 "title": "중음→고음 연결 안정화",
-                "principle": "파사지오 부근에서 갑자기 소리를 밀어붙이지 않고 연속적으로 연결",
+                "principle": "전환 구간에서 갑자기 소리를 밀어붙이지 않고 연속적으로 연결",
                 "suggested_focus": ["작은 강도로 부드러운 사이렌 연습"],
                 "safety_note": None,
             }
@@ -620,14 +670,38 @@ def build_improvement_guidance(
         out.append(
             {
                 "goal_id": "AIRINESS_CONTROL",
-                "title": "숨 섞임 조절",
+                "title": "숨 섞임 조절하기",
                 "principle": "숨이 과하게 섞이지 않는 안정적인 발성 상태를 낮은 강도에서 유지",
                 "suggested_focus": ["짧은 지속음에서 안정적인 접촉 유지"],
                 "safety_note": None,
             }
         )
+    if bottleneck == "LOW_PRESENCE":
+        out.append(
+            {
+                "goal_id": "PRESENCE_BALANCE",
+                "title": "음색의 중역 존재감 유지하기",
+                "principle": "답답하거나 얇게 들릴 때는 중역 존재감을 과도하게 막지 않는 방향으로 관찰",
+                "suggested_focus": ["편한 강도에서 음색 변화 관찰"],
+                "safety_note": None,
+            }
+        )
+    if bottleneck == "HIGH_NOTE_STABILITY_DROP":
+        out.append(
+            {
+                "goal_id": "HIGH_NOTE_STABILITY",
+                "title": "고음 안정성 유지하기",
+                "principle": "높은 음에서 흔들림이 커질 때 강도·범위를 줄여 안정 구간부터 확장",
+                "suggested_focus": ["짧은 고음 지속에서 안정 유지"],
+                "safety_note": None,
+            }
+        )
 
-    if not out:
+    # Avoid generic fallback when clear derived issue exists
+    has_clear = any(
+        ev.get("status") in ("CONFIRMED", "PARTIALLY_SUPPORTED") for ev in evaluations
+    )
+    if not out and not has_clear:
         out.append(
             {
                 "goal_id": "GENERAL_AWARENESS",
@@ -637,6 +711,21 @@ def build_improvement_guidance(
                 "safety_note": None,
             }
         )
+    elif not out and has_clear:
+        # Soft target from first confirmed concern
+        for ev in evaluations:
+            if ev.get("status") in ("CONFIRMED", "PARTIALLY_SUPPORTED"):
+                cid = ev.get("concern_id") or ev.get("concern")
+                out.append(
+                    {
+                        "goal_id": f"FOCUS_{cid}",
+                        "title": "확인된 발성 특징 중심으로 관찰하기",
+                        "principle": "이번 정밀 검사에서 확인된 특징을 우선 추적해요.",
+                        "suggested_focus": ["같은 조건으로 짧게 다시 녹음해 변화 비교"],
+                        "safety_note": None,
+                    }
+                )
+                break
     return out[:3]
 
 

@@ -353,12 +353,18 @@ def evidence_resonance(seg: dict[str, Any], *, quality_valid: bool, vowel: str =
     )
 
 
-def evidence_effort_high_sustain(
+def evidence_effort_sustain(
     seg: dict[str, Any],
     *,
     quality_valid: bool,
+    context: str = "baseline",
 ) -> dict[str, Any]:
-    """Effort-ish cue on high sustain — not loudness alone."""
+    """Controlled-task effort cue — LOUD≠EFFORT, FIRM≠EFFORT.
+
+    Status is severity/availability, not mere OBSERVED:
+    INSUFFICIENT | LOW | INCREASED | HIGH
+    Absolute severity is weak alone; HIGH_NOTE contrast uses baseline vs high.
+    """
     if not quality_valid:
         return empty_evidence(
             "effort",
@@ -368,9 +374,14 @@ def evidence_effort_high_sustain(
     obs = seg.get("observations") or {}
     rms = obs.get("rms")
     period = obs.get("periodicity_primary_db")
+    tilt = obs.get("spectral_tilt_db_per_oct")
+    firm = bool(firmer_like(seg))
+    light = bool(lighter_like(seg))
     families = {
         "rms": rms is not None,
         "periodicity": period is not None,
+        "spectral_tilt": tilt is not None,
+        "contact_proxy": firm or light,
     }
     family_count = sum(1 for v in families.values() if v)
     if family_count < 2:
@@ -379,21 +390,67 @@ def evidence_effort_high_sustain(
             reason="insufficient_effort_families",
             quality_valid=quality_valid,
         )
+
+    # Relative proxy score in [0,1] — not absolute physiological effort.
+    score = 0.35
+    cues: list[str] = []
+    if period is not None and float(period) <= 8.0:
+        score += 0.22
+        cues.append("low_periodicity")
+    if firm:
+        score += 0.18
+        cues.append("firmer_contact_proxy")
+    if tilt is not None and float(tilt) <= -8.0:
+        score += 0.12
+        cues.append("steep_tilt")
+    if rms is not None and float(rms) >= 0.12:
+        # intensity support only — never sole HIGH
+        score += 0.08
+        cues.append("elevated_rms_support")
+    if light and not firm:
+        score -= 0.15
+        cues.append("lighter_contact_proxy")
+
+    score = max(0.05, min(0.95, score))
+    if score >= 0.72:
+        status = "HIGH"
+    elif score >= 0.55:
+        status = "INCREASED"
+    else:
+        status = "LOW"
+
     return make_evidence(
         "effort",
         available=True,
-        estimate=None,
-        status="OBSERVED",
-        confidence_score=0.55,
+        estimate=round(score, 3),
+        status=status,
+        confidence_score=0.5 + 0.1 * min(family_count, 3),
         family_count=family_count,
         evidence_families=families,
-        evidence_mass=0.5,
+        evidence_mass=round(score, 3),
         resolution_eligible=True,
         quality_valid=quality_valid,
-        reason="high_sustain_effort_families_present",
-        confidence_source="intensity_periodicity",
-        extra={"rms": rms, "periodicity_primary_db": period},
+        reason=f"effort_{context}_{status.lower()}",
+        confidence_source="multi_family_effort_proxy",
+        extra={
+            "rms": rms,
+            "periodicity_primary_db": period,
+            "spectral_tilt_db_per_oct": tilt,
+            "effort_cues": cues,
+            "context": context,
+            # OBSERVED is availability alias — severity is status above
+            "availability": "AVAILABLE",
+        },
     )
+
+
+def evidence_effort_high_sustain(
+    seg: dict[str, Any],
+    *,
+    quality_valid: bool,
+) -> dict[str, Any]:
+    """High-note sustain effort — severity, not mere presence of RMS/periodicity."""
+    return evidence_effort_sustain(seg, quality_valid=quality_valid, context="high_note")
 
 
 def build_sustain_dimension_evidence(
@@ -415,6 +472,9 @@ def build_sustain_dimension_evidence(
         "breathiness": evidence_breathiness(seg, quality_valid=usable),
         "stability": evidence_stability(seg, quality_valid=usable),
     }
+    if tid == "sustain_a":
+        out["effort"] = evidence_effort_sustain(seg, quality_valid=usable, context="baseline")
+        out["resonance"] = evidence_resonance(seg, quality_valid=usable, vowel="a")
     if tid == "sustain_i":
         out["resonance"] = evidence_resonance(seg, quality_valid=usable, vowel="i")
     if tid == "high_note_sustain_a":

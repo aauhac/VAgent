@@ -211,6 +211,13 @@ def fuse_song_and_task_evidence(
         k: _song_dim_snapshot(dims, eid, k) for k, eid in _ENGINE_MAP.items() if dims.get(eid)
     }
     task_snaps = _extract_dimension_evidence(task_results)
+    from audio_analyzer.diagnostic.concern_resolver import (
+        build_controlled_contrasts,
+        build_task_profiles,
+    )
+
+    task_profiles = build_task_profiles(task_results)
+    controlled_contrasts = build_controlled_contrasts(task_profiles)
 
     expected_coverage: dict[str, list[str]] = {}
     actual_coverage: dict[str, list[str]] = {}
@@ -365,6 +372,8 @@ def fuse_song_and_task_evidence(
             "expected_coverage": expected_coverage,
             "actual_coverage": actual_coverage,
         },
+        "task_profiles": task_profiles,
+        "controlled_contrasts": controlled_contrasts,
         "confidence_delta": confidence_delta,
         "fusion_rules": {
             "blind_average": False,

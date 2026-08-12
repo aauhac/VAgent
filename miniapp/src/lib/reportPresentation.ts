@@ -916,9 +916,14 @@ const TASK_LABEL: Record<string, string> = {
   sustain_i: '이— 지속음',
   siren: '사이렌',
   dynamic_swell: '강약 변화',
+  high_note_sustain_a: "높은 음 '아—'",
 };
 
-export function buildTaskResultSummary(reliable: any[], uncertain: any[] = []): Array<{
+export function buildTaskResultSummary(
+  reliable: any[],
+  uncertain: any[] = [],
+  selectedTasks: string[] = [],
+): Array<{
   task: string;
   rows: Array<{ label: string; value: string }>;
 }> {
@@ -927,6 +932,7 @@ export function buildTaskResultSummary(reliable: any[], uncertain: any[] = []): 
     sustain_i: [],
     siren: [],
     dynamic_swell: [],
+    high_note_sustain_a: [],
   };
 
   function addFromFinding(m: any) {
@@ -941,7 +947,9 @@ export function buildTaskResultSummary(reliable: any[], uncertain: any[] = []): 
             ? ['sustain_i', 'sustain_a']
             : m.mechanism_id === 'phonation_stability'
               ? ['sustain_a']
-              : ['sustain_a'];
+              : m.mechanism_id === 'high_note_effort' || String(m.dimension_id || '').includes('effort')
+                ? ['high_note_sustain_a', 'sustain_a']
+                : ['sustain_a'];
     const targets = tasks.length ? tasks : fallback;
     for (const t of targets) {
       if (!byTask[t]) byTask[t] = [];
@@ -951,12 +959,25 @@ export function buildTaskResultSummary(reliable: any[], uncertain: any[] = []): 
   }
 
   for (const m of reliable) addFromFinding(m);
+  for (const m of uncertain || []) addFromFinding(m);
+
+  // Ensure planned tasks appear even if finding tags missed them
+  for (const tid of selectedTasks) {
+    if (!byTask[tid]) byTask[tid] = [];
+    if (!byTask[tid].length) {
+      byTask[tid].push({ label: '과제 완료', value: '반영됨' });
+    }
+  }
+
+  const order = selectedTasks.length
+    ? selectedTasks
+    : Object.keys(byTask);
   const out: Array<{ task: string; rows: Array<{ label: string; value: string }> }> = [];
-  for (const [tid, rows] of Object.entries(byTask)) {
+  for (const tid of order) {
+    const rows = byTask[tid] || [];
     if (!rows.length) continue;
     out.push({ task: TASK_LABEL[tid] || tid, rows: rows.slice(0, 3) });
   }
-  void uncertain;
   return out;
 }
 

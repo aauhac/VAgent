@@ -94,7 +94,11 @@ export default function PremiumReport() {
   const profileAxes = reliable
     .map(translateDiagnosticAxis)
     .filter(Boolean) as NonNullable<ReturnType<typeof translateDiagnosticAxis>>[];
-  const taskSummary = buildTaskResultSummary(reliable, uncertain);
+  const taskSummary = buildTaskResultSummary(
+    reliable,
+    uncertain,
+    report.selected_tasks || report.final_diagnostic_profile?.task_evidence?.selected_tasks || [],
+  );
   const hero = buildDiagnosticHeroText(reliable);
   const hc = vocalType?.head_chest;
   const pqa = report.personalized_qa || {};
@@ -121,14 +125,33 @@ export default function PremiumReport() {
         <section className="section">
           <h3 className="section-title">당신이 궁금했던 것</h3>
           {(pqa.questions || []).length > 0
-            ? (pqa.questions as Array<{ question: string; answer: string }>).map((qa, i) => (
-                <div key={`${qa.question}-${i}`} style={{ marginBottom: 16 }}>
+            ? (pqa.questions as Array<{
+                question: string;
+                answer: string;
+                support?: string[];
+                against?: string[];
+                missing?: string[];
+              }>).map((qa, i) => (
+                <div key={`${qa.question}-${i}`} style={{ marginBottom: 18 }}>
                   <p className="body-text" style={{ fontWeight: 600 }}>
                     Q{i + 1}. {qa.question}
                   </p>
                   <p className="body-text" style={{ marginTop: 8, lineHeight: 1.55 }}>
                     A. {scrubUserText(qa.answer || '')}
                   </p>
+                  {((qa.support || []).length > 0 || (qa.against || []).length > 0 || (qa.missing || []).length > 0) && (
+                    <ul className="body-text muted" style={{ marginTop: 8, paddingLeft: 18, fontSize: '0.9rem' }}>
+                      {(qa.support || []).slice(0, 3).map((s) => (
+                        <li key={`s-${s}`}>✓ {scrubUserText(s)}</li>
+                      ))}
+                      {(qa.against || []).slice(0, 2).map((s) => (
+                        <li key={`a-${s}`}>○ {scrubUserText(s)}</li>
+                      ))}
+                      {(qa.missing || []).slice(0, 2).map((s) => (
+                        <li key={`m-${s}`}>? {scrubUserText(s)}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))
             : (

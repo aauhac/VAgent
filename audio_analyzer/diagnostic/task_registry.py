@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 
+REPORT_VERSION = "diagnostic-report-v2.2"
 PLANNER_VERSION = "adaptive-dx-planner-v1.3"
 PROTOCOL_VERSION = "diagnostic-protocol-v1.3"
-REPORT_VERSION = "diagnostic-report-v1.3"
 
 # Precision core: steady-state phonation + pitch/register transition
 # Covers contact, breathiness, stability, register with only 2 tasks.
