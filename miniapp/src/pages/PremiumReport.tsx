@@ -5,6 +5,7 @@ import VocalProfile from '../components/report/VocalProfile';
 import {
   buildDiagnosticHeroText,
   buildTaskResultSummary,
+  formatAnalysisConfidence,
   sanitizeDisclaimer,
   scrubUserText,
   translateDiagnosticAxis,
@@ -96,24 +97,119 @@ export default function PremiumReport() {
   const taskSummary = buildTaskResultSummary(reliable, uncertain);
   const hero = buildDiagnosticHeroText(reliable);
   const hc = vocalType?.head_chest;
+  const pqa = report.personalized_qa || {};
+  const improvements = report.improvement_priorities || pqa.improvement_priorities || [];
+  const safetyNote = report.safety_note || summary.safety_note;
 
   return (
     <main>
       <Link className="muted" to="/">‹ 홈</Link>
+      {report.source_analysis_id || report.final_diagnostic_profile?.source_analysis_id ? (
+        <p className="muted" style={{ marginTop: 8 }}>
+          <Link
+            to={`/result/${report.source_analysis_id || report.final_diagnostic_profile?.source_analysis_id}/detail`}
+          >
+            상세 리포트로 돌아가기
+          </Link>
+        </p>
+      ) : null}
       <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 12 }}>
         정밀 발성 진단
       </h1>
 
+      {pqa.show_qa_section !== false && (pqa.questions?.length > 0 || pqa.question) ? (
+        <section className="section">
+          <h3 className="section-title">당신이 궁금했던 것</h3>
+          {(pqa.questions || []).length > 0
+            ? (pqa.questions as Array<{ question: string; answer: string }>).map((qa, i) => (
+                <div key={`${qa.question}-${i}`} style={{ marginBottom: 16 }}>
+                  <p className="body-text" style={{ fontWeight: 600 }}>
+                    Q{i + 1}. {qa.question}
+                  </p>
+                  <p className="body-text" style={{ marginTop: 8, lineHeight: 1.55 }}>
+                    A. {scrubUserText(qa.answer || '')}
+                  </p>
+                </div>
+              ))
+            : (
+              <>
+                <p className="body-text" style={{ fontWeight: 600 }}>Q. {pqa.question}</p>
+                <p className="body-text" style={{ marginTop: 10, lineHeight: 1.55 }}>
+                  A. {scrubUserText(pqa.answer_summary || '')}
+                </p>
+              </>
+            )}
+          {(pqa.evidence || []).length > 0 && (
+            <>
+              <p className="eyebrow" style={{ marginTop: 14 }}>확인된 근거</p>
+              <ul className="body-text" style={{ paddingLeft: 18 }}>
+                {(pqa.evidence as Array<{ source: string; text: string }>).map((ev) => (
+                  <li key={`${ev.source}-${ev.text}`}>
+                    {ev.source === 'CONTROLLED_TASK_CONFIRMED' ? '✓' : '·'}{' '}
+                    {scrubUserText(ev.text)}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      ) : null}
+
+      {(pqa.show_qa_section === false || report.diagnostic_mode === 'GENERAL_DISCOVERY') && (
+        <section className="section">
+          <h3 className="section-title">정밀 진단에서 확인된 핵심 특징</h3>
+          <p className="muted body-text" style={{ marginBottom: 10 }}>
+            현재 노래와 추가 녹음을 함께 분석한 결과예요.
+          </p>
+          {(pqa.discovered_features || report.discovered_features || []).length > 0 ? (
+            <ul className="body-text" style={{ paddingLeft: 18 }}>
+              {(pqa.discovered_features || report.discovered_features).map((f: string) => (
+                <li key={f}>{scrubUserText(f)}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="body-text">{scrubUserText(pqa.answer_summary || hero)}</p>
+          )}
+        </section>
+      )}
+
+      {improvements.length > 0 && (
+        <section className="section">
+          <h3 className="section-title">개선 우선순위</h3>
+          {improvements.map((g: any, i: number) => (
+            <div key={g.goal_id || i} style={{ marginBottom: 14 }}>
+              <p style={{ margin: 0, fontWeight: 700 }}>
+                {i + 1}. {g.title}
+              </p>
+              {g.principle ? (
+                <p className="body-text muted" style={{ margin: '6px 0 0' }}>{scrubUserText(g.principle)}</p>
+              ) : null}
+              {(g.suggested_focus || []).map((f: string) => (
+                <p key={f} className="body-text" style={{ margin: '4px 0 0', fontSize: '0.92rem' }}>
+                  · {scrubUserText(f)}
+                </p>
+              ))}
+              {g.safety_note ? <p className="warn" style={{ marginTop: 6 }}>{scrubUserText(g.safety_note)}</p> : null}
+            </div>
+          ))}
+        </section>
+      )}
+
       <section className="section">
         {vocalType?.available && vocalType?.display_name ? (
           <>
-            <p className="eyebrow">기본 발성 타입</p>
+            <p className="eyebrow">기본 발성 성향</p>
             <h2 className="type-title">{vocalType.display_name}</h2>
             {hc?.available && hc.chest_ratio != null && (
               <p className="body-text" style={{ marginTop: 8 }}>
                 흉성 {hc.chest_ratio}% · 두성 {hc.head_ratio}%
               </p>
             )}
+            {vocalType?.register_strategy?.title ? (
+              <p className="body-text muted" style={{ marginTop: 10 }}>
+                성구 연결 · {vocalType.register_strategy.title}
+              </p>
+            ) : null}
           </>
         ) : (
           <>
@@ -121,8 +217,8 @@ export default function PremiumReport() {
             <p className="body-text" style={{ fontWeight: 600, lineHeight: 1.5 }}>{hero}</p>
           </>
         )}
-        {summary.safety_note && (
-          <p className="warn" style={{ marginTop: 10 }}>{scrubUserText(summary.safety_note)}</p>
+        {safetyNote && (
+          <p className="warn" style={{ marginTop: 10 }}>{scrubUserText(safetyNote)}</p>
         )}
       </section>
 
@@ -141,7 +237,7 @@ export default function PremiumReport() {
                 </p>
                 <p className="body-text muted" style={{ margin: '6px 0 0' }}>{f.body}</p>
                 <p className="spectrum-confidence">
-                  {f.confidence_percent != null ? `신뢰도 ${f.confidence_percent}%` : null}
+                  {formatAnalysisConfidence(f.confidence_label, f.confidence_percent)}
                 </p>
               </div>
             </div>

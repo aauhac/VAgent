@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from audio_analyzer.vocal_function import config as cfg
 
@@ -115,6 +115,8 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             "coaching": {},
             "coaching_decision": {},
             "high_note_events": [],
+            "high_note_function_profile": {"available": False},
+            "timbre_profile": {"available": False},
         }
     pub_dims = public_dimensions(profile)
     excl = excluded_dimensions(profile)
@@ -181,7 +183,7 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
                 "original_start_sec": ev.get("original_start_sec"),
                 "original_end_sec": ev.get("original_end_sec"),
                 "time_origin_sec": ev.get("time_origin_sec"),
-                "headline": "고음 episode",
+                "headline": "고음 특징 구간",
                 "user_message": ev.get("conclusion"),
                 "state": "high_note",
                 "role": "SECONDARY_CONTEXT",
@@ -251,6 +253,28 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
         "candidate_comparison": decision.get("candidate_comparison") or [],
     }
 
+    # Severity-aware effort finding copy from canonical assessment
+    effort_assessment = profile.get("effort_assessment")
+    pb = public_decision.get("primary_bottleneck")
+    if isinstance(pb, dict) and pb.get("id") in (
+        "GENERAL_EXCESS_EFFORT",
+        "EXCESS_EFFORT_HIGH_NOTE",
+        "EXCESS_FIRMNESS_WITH_STRAIN",
+    ):
+        if isinstance(effort_assessment, dict):
+            from audio_analyzer.vocal_function.derived.effort_assessment import (
+                finding_copy_for_effort,
+            )
+
+            copy = finding_copy_for_effort(effort_assessment, pb.get("id"))
+            pb["user_title"] = copy["title"]
+            pb["why"] = copy["detail"]
+            if not public_decision.get("headline"):
+                public_decision["headline"] = copy["title"]
+            elif "힘" in str(public_decision.get("headline") or ""):
+                public_decision["headline"] = copy["title"]
+
+
     excl_names = [x.get("display_name") for x in excl if x.get("display_name")]
     unknown_footer = None
     if excl_names:
@@ -298,6 +322,11 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             "발성 좋고 나쁨이 아닙니다."
         ),
         "vocal_type_profile": _public_vocal_type(profile.get("vocal_type_profile")),
+        "high_note_function_profile": _public_derived_profile(
+            profile.get("high_note_function_profile")
+        ),
+        "timbre_profile": _public_derived_profile(profile.get("timbre_profile")),
+        "effort_assessment": _public_effort_assessment(profile.get("effort_assessment")),
         "focus_segments": focus[:4],
         "high_note_events": profile.get("high_note_events") or [],
         "coaching_decision": public_decision,
@@ -320,6 +349,50 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
     assert_no_banned_claims(affirmative_blob(out))
     return out
 
+
+def _public_effort_assessment(assessment: Any) -> Optional[dict[str, Any]]:
+    """User-safe effort assessment slice (keeps numeric confidence internally)."""
+    if not isinstance(assessment, dict):
+        return None
+    from audio_analyzer.vocal_function.derived.effort_assessment import effort_display_bundle
+
+    bundle = effort_display_bundle(assessment)
+    return {
+        **bundle,
+        "confidence_score": assessment.get("peak_event_score"),
+        "confidence_label": assessment.get("confidence_label"),
+        "confidence_source": assessment.get("confidence_source"),
+        "peak_event_score": assessment.get("peak_event_score"),
+        "hit_ratio": assessment.get("hit_ratio"),
+        "prevalence": assessment.get("prevalence"),
+        "core_family_count": assessment.get("core_family_count"),
+        "support_family_count": assessment.get("support_family_count"),
+        "persistent": assessment.get("persistent"),
+        "localized_episode_count": assessment.get("localized_episode_count"),
+        "derived_from": assessment.get("derived_from"),
+        "engine_version": assessment.get("engine_version"),
+    }
+
+
+def _public_derived_profile(profile: Any) -> dict[str, Any]:
+    """Strip debug provenance from derived high-note / timbre profiles."""
+    if not isinstance(profile, dict):
+        return {"available": False}
+    out = {
+        k: v
+        for k, v in profile.items()
+        if k not in ("scientific_debug",)
+    }
+    axes = out.get("axes")
+    if isinstance(axes, dict):
+        cleaned = {}
+        for ax_id, ax in axes.items():
+            if not isinstance(ax, dict):
+                cleaned[ax_id] = ax
+                continue
+            cleaned[ax_id] = {k: v for k, v in ax.items() if k != "provenance"}
+        out["axes"] = cleaned
+    return out
 
 def _public_vocal_type(profile: Any) -> dict[str, Any]:
     from audio_analyzer.coach_profile import build_vocal_type_public

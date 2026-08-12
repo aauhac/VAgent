@@ -212,7 +212,7 @@ def test_unknown_hidden_in_main_report():
                     },
                     "pressed_like": {
                         "dimension_id": "pressed_like",
-                        "display_name": "압착된 음질 경향",
+                        "display_name": "단단하고 강한 음질 경향",
                         "status": "MODERATE",
                         "status_label": "중간",
                         "prevalence_label": "일부",
@@ -220,7 +220,7 @@ def test_unknown_hidden_in_main_report():
                         "summary": "일부 반복",
                         "focus_segments": [],
                         "practice": ["가벼운 SOVT"],
-                        "what_it_may_mean": "압착된 음질과 일치할 수 있습니다.",
+                        "what_it_may_mean": "단단하고 강한 음질과 일치할 수 있습니다.",
                         "what_we_cannot_know": "목 근육 긴장을 측정하지 않습니다.",
                     },
                 },

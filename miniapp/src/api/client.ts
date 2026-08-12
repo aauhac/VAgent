@@ -1,5 +1,6 @@
+import { ensureIdentityHeaders } from '../lib/userIdentity';
+
 const API_BASE = import.meta.env.VITE_API_BASE || '';
-const USER_ID = 'demo-user';
 
 export type AnalysisJob = {
   analysis_id: string;
@@ -12,8 +13,8 @@ export type AnalysisJob = {
   feedback_status?: string;
 };
 
-function headers(extra?: HeadersInit): HeadersInit {
-  return { 'X-User-Id': USER_ID, ...(extra || {}) };
+async function headers(extra?: HeadersInit): Promise<HeadersInit> {
+  return ensureIdentityHeaders(extra);
 }
 
 export async function createAnalysis(
@@ -42,13 +43,31 @@ export async function createAnalysis(
   form.append('analysis_mode', mode);
   form.append('input_mode', inputMode);
   form.append('include_feedback', 'false');
-  const res = await fetch(`${API_BASE}/v1/analyses`, { method: 'POST', body: form });
-  if (!res.ok) throw new Error(await res.text());
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}/v1/analyses`, {
+      method: 'POST',
+      headers: await headers(),
+      body: form,
+    });
+  } catch {
+    throw new Error(
+      '서버에 연결할 수 없어요. backend(http://127.0.0.1:8000)가 실행 중인지 확인해 주세요.',
+    );
+  }
+  if (!res.ok) {
+    if (res.status >= 500) {
+      throw new Error(
+        '분석 요청이 서버에서 실패했어요. backend 로그와 Vite proxy(/v1 → :8000)를 확인해 주세요.',
+      );
+    }
+    throw new Error(await res.text());
+  }
   return res.json();
 }
 
 export async function getAnalysis(id: string): Promise<AnalysisJob> {
-  const res = await fetch(`${API_BASE}/v1/analyses/${id}`, { headers: headers() });
+  const res = await fetch(`${API_BASE}/v1/analyses/${id}`, { headers: await headers() });
   if (!res.ok) throw new Error('not found');
   return res.json();
 }
@@ -59,14 +78,41 @@ export function getPreviewUrl(id: string): string {
 
 export async function getProducts(analysisId?: string) {
   const q = analysisId ? `?analysis_id=${encodeURIComponent(analysisId)}` : '';
-  const res = await fetch(`${API_BASE}/v1/products${q}`, { headers: headers() });
+  const res = await fetch(`${API_BASE}/v1/products${q}`, { headers: await headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function getAnalysisAccess(analysisId: string) {
   const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/access`, {
-    headers: headers(),
+    headers: await headers(),
+  });
+  if (res.status === 404) {
+    const err: any = new Error('ANALYSIS_NOT_FOUND');
+    err.code = 'ANALYSIS_NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getServerHistory(limit = 50): Promise<{
+  items: Array<{
+    analysis_id: string;
+    created_at?: string | null;
+    filename?: string | null;
+    status?: string;
+    vocal_type?: string | null;
+    song_detail_unlocked?: boolean;
+    diagnostic_unlocked?: boolean;
+    diagnostic_session_id?: string | null;
+    artifact_missing?: boolean;
+    error_code?: string | null;
+  }>;
+}> {
+  const res = await fetch(`${API_BASE}/v1/history?limit=${limit}`, {
+    headers: await headers(),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -75,7 +121,7 @@ export async function getAnalysisAccess(analysisId: string) {
 export async function mockUnlockSongDetail(analysisId: string) {
   const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/mock-unlock-detail`, {
     method: 'POST',
-    headers: headers(),
+    headers: await headers(),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -83,7 +129,7 @@ export async function mockUnlockSongDetail(analysisId: string) {
 
 export async function getSongDetailedReport(analysisId: string) {
   const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/detailed-report`, {
-    headers: headers(),
+    headers: await headers(),
   });
   if (res.status === 402) {
     return { error: 'SONG_DETAIL_LOCKED' };
@@ -96,7 +142,7 @@ export async function createDiagnosticSession(sourceAnalysisId?: string) {
   const q = sourceAnalysisId ? `?source_analysis_id=${encodeURIComponent(sourceAnalysisId)}` : '';
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions${q}`, {
     method: 'POST',
-    headers: headers(),
+    headers: await headers(),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -105,9 +151,32 @@ export async function createDiagnosticSession(sourceAnalysisId?: string) {
 export async function mockPaySession(sessionId: string, productId?: string) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/mock-pay`, {
     method: 'POST',
-    headers: headers({ 'Content-Type': 'application/json' }),
+    headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(productId ? { product_id: productId } : {}),
   });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function submitConcerns(
+  sessionId: string,
+  userConcerns: Array<{ id: string; source?: string; priority?: number; follow_up?: string }>,
+  diagnosticMode?: 'CONCERN_FOCUSED' | 'GENERAL_DISCOVERY',
+) {
+  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/concerns`, {
+    method: 'POST',
+    headers: await headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({
+      user_concerns: userConcerns,
+      diagnostic_mode: diagnosticMode,
+    }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getDiagnosticProtocol() {
+  const res = await fetch(`${API_BASE}/v1/diagnostic/protocol`, { headers: await headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -115,7 +184,7 @@ export async function mockPaySession(sessionId: string, productId?: string) {
 export async function submitSafety(sessionId: string, answers: Record<string, boolean>) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/safety`, {
     method: 'POST',
-    headers: headers({ 'Content-Type': 'application/json' }),
+    headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ answers }),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -124,7 +193,7 @@ export async function submitSafety(sessionId: string, answers: Record<string, bo
 
 export async function getDiagnosticSession(sessionId: string) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}`, {
-    headers: headers(),
+    headers: await headers(),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -135,7 +204,7 @@ export async function uploadDiagnosticTask(sessionId: string, taskId: string, fi
   form.append('file', file, filename);
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/tasks/${taskId}`, {
     method: 'POST',
-    headers: headers(),
+    headers: await headers(),
     body: form,
   });
   if (!res.ok) throw new Error(await res.text());
@@ -145,7 +214,7 @@ export async function uploadDiagnosticTask(sessionId: string, taskId: string, fi
 export async function analyzeDiagnosticSession(sessionId: string) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/analyze`, {
     method: 'POST',
-    headers: headers(),
+    headers: await headers(),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -153,17 +222,11 @@ export async function analyzeDiagnosticSession(sessionId: string) {
 
 export async function getDiagnosticReport(sessionId: string, opts?: { debug?: boolean }) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/report`, {
-    headers: headers(opts?.debug ? { 'X-VAgent-Debug': '1' } : undefined),
+    headers: await headers(opts?.debug ? { 'X-VAgent-Debug': '1' } : undefined),
   });
   if (res.status === 402) {
     return { error: 'REPORT_LOCKED' };
   }
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-export async function getDiagnosticProtocol() {
-  const res = await fetch(`${API_BASE}/v1/diagnostic/protocol`);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }

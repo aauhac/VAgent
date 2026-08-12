@@ -1,0 +1,351 @@
+{
+  "demo-user": {
+    "sessions": {
+      "0b5a9ad8bbc14ae0a3dd0718b7e670e8": {
+        "entitlement_id": "mock_3db3967e30fc",
+        "permanent": true
+      },
+      "dbbc8edd233d48ab8d9c7def9fdb9ee9": {
+        "entitlement_id": "mock_62ec8917c193",
+        "permanent": true
+      },
+      "ba62f95fa43f43688d0dcd34aa0b336c": {
+        "entitlement_id": "mock_a4c1bcfa0245",
+        "entitlement_type": "DIAGNOSTIC",
+        "resource_type": "DIAGNOSTIC_SESSION",
+        "resource_id": "ba62f95fa43f43688d0dcd34aa0b336c",
+        "permanent": true,
+        "unlocked_at": "2026-08-10T12:02:42.955432+00:00",
+        "product_id": "diagnostic_upgrade",
+        "meta": {}
+      },
+      "c84304fcb6b843d2a1e6eb5087134291": {
+        "entitlement_id": "mock_7f2ef48dd352",
+        "entitlement_type": "DIAGNOSTIC",
+        "resource_type": "DIAGNOSTIC_SESSION",
+        "resource_id": "c84304fcb6b843d2a1e6eb5087134291",
+        "permanent": true,
+        "unlocked_at": "2026-08-11T07:55:15.435434+00:00",
+        "product_id": "diagnostic_upgrade",
+        "meta": {
+          "source_analysis_id": "0ff873201e0f4ce8adeb1f176d39cb16"
+        }
+      }
+    },
+    "analyses": {
+      "659812e75e2e430ab10d7a1281f5c61f": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_61b99526f01d",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "659812e75e2e430ab10d7a1281f5c61f",
+          "permanent": true,
+          "unlocked_at": "2026-08-09T16:53:53.320090+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "3e877c0cdda646c99b39f70cc793e0c7": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_53b822e77e47",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "3e877c0cdda646c99b39f70cc793e0c7",
+          "permanent": true,
+          "unlocked_at": "2026-08-09T17:29:58.901728+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "3e0967793492445f93726105feeb5367": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_c1932d8451ca",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "3e0967793492445f93726105feeb5367",
+          "permanent": true,
+          "unlocked_at": "2026-08-09T17:35:18.156908+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "74cd88f992874f16bceed5a5bd2e6666": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_bf92d473887f",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "74cd88f992874f16bceed5a5bd2e6666",
+          "permanent": true,
+          "unlocked_at": "2026-08-09T17:53:29.834330+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "8d528a74ae9e4061b381a68a86305d3b": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_f6a18eaeb33f",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "8d528a74ae9e4061b381a68a86305d3b",
+          "permanent": true,
+          "unlocked_at": "2026-08-09T17:56:35.771514+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "df7a1ad4579944e989512bcc0272ea17": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_f19d6a367dc5",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "df7a1ad4579944e989512bcc0272ea17",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T00:37:45.747934+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "dcdba92fb67a4a87ab7f0669a037cdd3": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_2b8d02e9169e",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "dcdba92fb67a4a87ab7f0669a037cdd3",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T00:54:03.449880+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "a6ac3d8b58204b599fe8640d8b188850": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_2d7c2bc37fe1",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "a6ac3d8b58204b599fe8640d8b188850",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T00:59:16.321125+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "b270b55178ef458aafa18abe76918cb2": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_40937e76fadb",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "b270b55178ef458aafa18abe76918cb2",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T01:03:20.938782+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "5476ce7e755246dc9ee2464149e2af5a": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_30ee511fba05",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "5476ce7e755246dc9ee2464149e2af5a",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T02:01:19.330967+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "6e6e9d0ff8254113b1470ddcb80e7f92": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_9c7b39b4c0ae",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "6e6e9d0ff8254113b1470ddcb80e7f92",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T02:04:49.214251+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "56d38088aeba4c2a87b4cd8f43b8a1fa": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_2245e960bbcb",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "56d38088aeba4c2a87b4cd8f43b8a1fa",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T12:00:00.492179+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "2321ae4482414bd4ad33796695d1f1ee": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_27129459bd30",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "2321ae4482414bd4ad33796695d1f1ee",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T12:01:39.852000+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "02ca15a9e9a542cf99c19dfd6c9d1fe2": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_aba652870e96",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "02ca15a9e9a542cf99c19dfd6c9d1fe2",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T15:50:37.728881+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "0547c7e124584191b7db3f126479425e": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_c2f85bfff360",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "0547c7e124584191b7db3f126479425e",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T15:58:28.992277+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "7e467a88f8c845aa9b8587afd4fc90ee": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_a4b79c22a502",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "7e467a88f8c845aa9b8587afd4fc90ee",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T16:25:56.988204+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "fce31e25965045ea8778700dad4b31cc": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_566b6684c526",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "fce31e25965045ea8778700dad4b31cc",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T16:29:43.674685+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "063a76707a2a41dbbeb6dd893fa911bc": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_f63725b6973b",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "063a76707a2a41dbbeb6dd893fa911bc",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T17:57:09.621503+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "f3e2f575643749f39bb9fb6ae03d90a8": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_052e978d8f34",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "f3e2f575643749f39bb9fb6ae03d90a8",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T17:58:49.220831+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "d179e0c200d54c6b88096a258603186e": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_bce3a39b83a5",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "d179e0c200d54c6b88096a258603186e",
+          "permanent": true,
+          "unlocked_at": "2026-08-10T18:01:45.601693+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "c33e338ba1a04e7aa158fcc35215f5c0": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_6680ad559d4b",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "c33e338ba1a04e7aa158fcc35215f5c0",
+          "permanent": true,
+          "unlocked_at": "2026-08-11T07:49:42.596721+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "9dff792efb0e44f59e4dd49882ed4ef2": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_4671b619f15b",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "9dff792efb0e44f59e4dd49882ed4ef2",
+          "permanent": true,
+          "unlocked_at": "2026-08-11T07:51:13.534331+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      },
+      "0ff873201e0f4ce8adeb1f176d39cb16": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_027887dc0da0",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "0ff873201e0f4ce8adeb1f176d39cb16",
+          "permanent": true,
+          "unlocked_at": "2026-08-11T07:52:17.491647+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true,
+        "diagnostic_session_id": "c84304fcb6b843d2a1e6eb5087134291"
+      },
+      "1183bbb7c8554599badbb4ab69e7ba23": {
+        "SONG_DETAIL": {
+          "entitlement_id": "mock_detail_8a54a9baed31",
+          "entitlement_type": "SONG_DETAIL",
+          "resource_type": "ANALYSIS",
+          "resource_id": "1183bbb7c8554599badbb4ab69e7ba23",
+          "permanent": true,
+          "unlocked_at": "2026-08-11T08:48:49.147488+00:00",
+          "product_id": "song_detail",
+          "meta": {}
+        },
+        "song_detail_unlocked": true
+      }
+    }
+  }
+}

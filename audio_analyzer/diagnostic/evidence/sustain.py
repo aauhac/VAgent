@@ -353,6 +353,49 @@ def evidence_resonance(seg: dict[str, Any], *, quality_valid: bool, vowel: str =
     )
 
 
+def evidence_effort_high_sustain(
+    seg: dict[str, Any],
+    *,
+    quality_valid: bool,
+) -> dict[str, Any]:
+    """Effort-ish cue on high sustain — not loudness alone."""
+    if not quality_valid:
+        return empty_evidence(
+            "effort",
+            reason="quality_or_compliance_failed",
+            quality_valid=False,
+        )
+    obs = seg.get("observations") or {}
+    rms = obs.get("rms")
+    period = obs.get("periodicity_primary_db")
+    families = {
+        "rms": rms is not None,
+        "periodicity": period is not None,
+    }
+    family_count = sum(1 for v in families.values() if v)
+    if family_count < 2:
+        return empty_evidence(
+            "effort",
+            reason="insufficient_effort_families",
+            quality_valid=quality_valid,
+        )
+    return make_evidence(
+        "effort",
+        available=True,
+        estimate=None,
+        status="OBSERVED",
+        confidence_score=0.55,
+        family_count=family_count,
+        evidence_families=families,
+        evidence_mass=0.5,
+        resolution_eligible=True,
+        quality_valid=quality_valid,
+        reason="high_sustain_effort_families_present",
+        confidence_source="intensity_periodicity",
+        extra={"rms": rms, "periodicity_primary_db": period},
+    )
+
+
 def build_sustain_dimension_evidence(
     task_result: dict[str, Any],
     *,
@@ -374,4 +417,12 @@ def build_sustain_dimension_evidence(
     }
     if tid == "sustain_i":
         out["resonance"] = evidence_resonance(seg, quality_valid=usable, vowel="i")
+    if tid == "high_note_sustain_a":
+        out["resonance"] = evidence_resonance(seg, quality_valid=usable, vowel="a")
+        out["effort"] = evidence_effort_high_sustain(seg, quality_valid=usable)
+        # Task completion alone insufficient: compliance gate already in usable
+        if not usable:
+            for ev in out.values():
+                if isinstance(ev, dict):
+                    ev["resolution_eligible"] = False
     return out

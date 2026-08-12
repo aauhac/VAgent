@@ -85,16 +85,25 @@ class EntitlementProvider(ABC):
 
     def analysis_access(self, user_id: str, analysis_id: str) -> dict[str, Any]:
         data = self._user_blob(user_id) if hasattr(self, "_user_blob") else {}
-        analyses = (data.get("analyses") or {}).get(analysis_id) or {}
-        sessions = data.get("sessions") or {}
-        linked = analyses.get("diagnostic_session_id")
+        analyses = (data.get("analyses") or {}) if isinstance(data, dict) else {}
+        if not isinstance(analyses, dict):
+            analyses = {}
+        sessions = (data.get("sessions") or {}) if isinstance(data, dict) else {}
+        if not isinstance(sessions, dict):
+            sessions = {}
+        analyses_rec = analyses.get(analysis_id)
+        if not isinstance(analyses_rec, dict):
+            analyses_rec = {}
+        linked = analyses_rec.get("diagnostic_session_id")
         diagnostic_unlocked = False
-        if linked and linked in sessions:
+        if linked and linked in sessions and isinstance(sessions.get(linked), dict):
             diagnostic_unlocked = True
         # also scan sessions for source link stored in meta
         if not diagnostic_unlocked:
             for sid, rec in sessions.items():
-                meta = rec.get("meta") or {}
+                if not isinstance(rec, dict):
+                    continue
+                meta = rec.get("meta") if isinstance(rec.get("meta"), dict) else {}
                 if meta.get("source_analysis_id") == analysis_id:
                     diagnostic_unlocked = True
                     linked = sid
@@ -103,7 +112,7 @@ class EntitlementProvider(ABC):
             "analysis_id": analysis_id,
             "song_detail_unlocked": self.has_song_detail(user_id, analysis_id),
             "diagnostic_unlocked": diagnostic_unlocked,
-            "diagnostic_session_id": linked,
+            "diagnostic_session_id": linked if diagnostic_unlocked else analyses_rec.get("diagnostic_session_id"),
         }
 
 
@@ -129,10 +138,14 @@ class MockEntitlementProvider(EntitlementProvider):
         raw = self._load().get(user_id)
         if not raw:
             return {"sessions": {}, "analyses": {}}
+        if not isinstance(raw, dict):
+            return {"sessions": {}, "analyses": {}}
         if "sessions" in raw or "analyses" in raw:
+            sessions = raw.get("sessions") or {}
+            analyses = raw.get("analyses") or {}
             return {
-                "sessions": dict(raw.get("sessions") or {}),
-                "analyses": dict(raw.get("analyses") or {}),
+                "sessions": dict(sessions) if isinstance(sessions, dict) else {},
+                "analyses": dict(analyses) if isinstance(analyses, dict) else {},
             }
         # Legacy flat map: session_id → record
         return {"sessions": dict(raw), "analyses": {}}
@@ -155,6 +168,8 @@ class MockEntitlementProvider(EntitlementProvider):
             return bool(rec)
         if resource_type == RESOURCE_ANALYSIS:
             rec = (blob.get("analyses") or {}).get(resource_id) or {}
+            if not isinstance(rec, dict):
+                return False
             if entitlement_type == ENTITLEMENT_SONG_DETAIL:
                 return bool(rec.get(ENTITLEMENT_SONG_DETAIL) or rec.get("song_detail_unlocked"))
         return False
@@ -258,10 +273,20 @@ class TossIAPEntitlementProvider(EntitlementProvider):
         self._fallback.link_diagnostic_session(user_id, analysis_id, session_id)
 
 
-def get_entitlement_provider(runtime_dir: Path) -> EntitlementProvider:
-    env = (os.environ.get("VAGENT_ENV") or "development").lower()
-    store = runtime_dir / "entitlements.json"
+def get_entitlement_provider(runtime_dir: Path | None = None) -> EntitlementProvider:
+    from ..config import database_url, get_environment, get_runtime_dir
+
+    # PostgreSQL is SoT whenever DATABASE_URL is configured
+    if database_url():
+        from ..db.entitlements_db import DatabaseEntitlementProvider
+
+        return DatabaseEntitlementProvider(provider_name="DEV")
+
+    env = get_environment()
+    base = runtime_dir if runtime_dir is not None else get_runtime_dir()
+    store = Path(base) / "entitlements.json"
     if env == "production":
+        # Production without DATABASE_URL should fail at startup; keep Toss stub for safety
         return TossIAPEntitlementProvider(store)
     return MockEntitlementProvider(store)
 

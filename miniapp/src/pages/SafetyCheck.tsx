@@ -32,15 +32,15 @@ export default function SafetyCheck() {
         nav(`/diagnostic/${sessionId}/task/${first}`);
         return;
       }
-      // Zero required tasks — analyze song-only precision diagnostic
-      if (session?.status === 'READY_FOR_ANALYSIS') {
+      // SAFETY_LIMITED (or legacy empty) — analyze without controlled recordings
+      if (session?.status === 'READY_FOR_ANALYSIS' || selected.length === 0) {
         await analyzeDiagnosticSession(sessionId);
         nav(`/diagnostic/${sessionId}/report`);
         return;
       }
       nav(`/diagnostic/${sessionId}/report`);
     } catch (e: any) {
-      setError(e?.message || '제출 실패');
+      setError(e?.message || '제출에 실패했어요. 홈으로 이동하지 않고 여기서 다시 시도할 수 있어요.');
       setBusy(false);
     }
   }
@@ -50,6 +50,7 @@ export default function SafetyCheck() {
       <h1 className="brand" style={{ fontSize: '1.6rem' }}>안전 확인</h1>
       <p className="lead">
         질환을 진단하는 문진이 아니에요. 정밀 진단을 진행하기 전 안전 관련 증상을 확인합니다.
+        정상 흐름에서는 짧은 추가 녹음이 포함되며, 통증이 있으면 강한 검사는 제한해요.
       </p>
       <div className="card">
         {QUESTIONS.map((q) => (

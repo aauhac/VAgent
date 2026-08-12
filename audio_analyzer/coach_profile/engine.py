@@ -24,6 +24,11 @@ from .naming import (
     key_traits,
     one_line_description,
 )
+from .register_strategy import (
+    classify_register_strategy,
+    classify_source_balance,
+    register_strategy_display,
+)
 
 
 def compute_vocal_type_profile(
@@ -108,7 +113,18 @@ def compute_vocal_type_profile(
         float(cov.get("mid") or 0) + float(cov.get("high") or 0) >= 0.05
         or n_ok >= cfg.MIN_SEGMENTS_FOR_RATIO
     )
-    base_type = classify_base_type(
+    source_balance = classify_source_balance(index_for_type)
+    register_strategy = classify_register_strategy(
+        index=index_for_type,
+        bridge=bridge,
+        confidence=conf,
+        neutral_collapse=neutral_collapse,
+        register_split_ok=split_ok,
+        family_agreement=agree,
+        mix_coverage_ok=mix_coverage_ok,
+        modifiers=modifiers,
+    )
+    base_type = register_strategy.get("type_id") or classify_base_type(
         index=index_for_type,
         bridge=bridge,
         modifiers=modifiers,
@@ -123,8 +139,14 @@ def compute_vocal_type_profile(
         base_type = "REGISTER_SPLIT_GLOBAL"
 
     if conf == "low" or not ratios.get("available"):
-        if base_type != "REGISTER_SPLIT_GLOBAL":
+        if base_type not in ("REGISTER_SPLIT_GLOBAL", "TRANSITION_UNSTABLE"):
             base_type = "UNRESOLVED"
+            register_strategy = {
+                **register_strategy,
+                "status": "UNRESOLVED",
+                "type_id": "UNRESOLVED",
+                "confidence_label": "low",
+            }
         ratios = {
             "available": False,
             "chest_ratio": None,
@@ -132,9 +154,18 @@ def compute_vocal_type_profile(
             "index": index,
             "broad_label": _broad_label(index),
         }
+        source_balance = {
+            "balance_class": "UNKNOWN",
+            "label": "발성 성향 판단 보류",
+            "confidence_label": "low",
+        }
 
     display_name = compose_display_name(
-        base_type, modifiers, local_events=local_events
+        base_type,
+        modifiers,
+        local_events=local_events,
+        source_balance=source_balance,
+        register_strategy=register_strategy,
     )
     description = one_line_description(
         base_type=base_type,
@@ -143,7 +174,10 @@ def compute_vocal_type_profile(
         bridge=bridge,
         modifiers=modifiers,
         local_events=local_events,
+        source_balance=source_balance,
+        register_strategy=register_strategy,
     )
+    reg_ui = register_strategy_display(register_strategy)
     primary = coaching_decision.get("primary_bottleneck")
     coach_line = coaching_link_sentence(
         base_type=base_type, primary=primary, modifiers=modifiers
@@ -174,8 +208,17 @@ def compute_vocal_type_profile(
             ),
         }
 
-    available = base_type != "UNRESOLVED" and (
-        bool(ratios.get("available")) or base_type == "REGISTER_SPLIT_GLOBAL"
+    # BALANCED_SOURCE keeps ratios visible even when Mix is unresolved
+    available = bool(ratios.get("available")) or base_type in (
+        "REGISTER_SPLIT_GLOBAL",
+        "TRANSITION_UNSTABLE",
+        "BALANCED_SOURCE",
+        "CHEST_DOMINANT",
+        "HEAD_DOMINANT",
+        "BALANCED_MIX",
+        "CHEST_DOMINANT_MIX",
+        "HEAD_DOMINANT_MIX",
+        "LIGHT_HEAD_FALSETTO_LIKE",
     )
 
     return {
@@ -188,12 +231,30 @@ def compute_vocal_type_profile(
         "display_name": display_name,
         "confidence": conf,
         "confidence_label": {"high": "높음", "medium": "중간", "low": "낮음"}.get(conf, conf),
+        "source_balance": {
+            "chest_percent": ratios.get("chest_ratio"),
+            "head_percent": ratios.get("head_ratio"),
+            "balance_class": source_balance.get("balance_class"),
+            "label": source_balance.get("label"),
+            "confidence_label": source_balance.get("confidence_label") or conf,
+            "index": ratios.get("index") if ratios.get("available") else index,
+        },
+        "register_strategy": {
+            "status": register_strategy.get("status"),
+            "mix_evidence": register_strategy.get("mix_evidence"),
+            "continuity": register_strategy.get("continuity"),
+            "source_transition": register_strategy.get("source_transition"),
+            "confidence_label": register_strategy.get("confidence_label"),
+            "title": reg_ui.get("title"),
+            "description": reg_ui.get("description"),
+            "evidence": register_strategy.get("evidence"),
+        },
         "head_chest": {
             "chest_ratio": ratios.get("chest_ratio"),
             "head_ratio": ratios.get("head_ratio"),
             "index": ratios.get("index") if ratios.get("available") else index,
             "available": bool(ratios.get("available")),
-            "broad_label": ratios.get("broad_label"),
+            "broad_label": ratios.get("broad_label") or source_balance.get("label"),
             "evidence_mass": stats.get("total_evidence_mass"),
             "global_ratio_directionality": stats.get("global_ratio_directionality"),
             "segment_directionality_mean": stats.get("segment_directionality_mean"),
@@ -248,7 +309,7 @@ def compute_vocal_type_profile(
         "n_scored_segments": n_ok,
         "user_goal": user_goal,
         "warnings": warnings,
-        "note_internal": "ratios are goal-invariant; no artist metadata used",
+        "note_internal": "ratios are goal-invariant; no artist metadata used; mix != chest/head balance",
     }
 
 
@@ -340,9 +401,15 @@ def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]
     if not profile or not profile.get("available"):
         return {
             "available": False,
-            "display_name": "발성 타입 판단 보류",
-            "description": "이번 녹음에서는 발성 타입을 충분히 구분하지 못했어요.",
+            "display_name": "발성 성향 판단 보류",
+            "description": "이번 녹음에서는 발성 성향을 충분히 구분하지 못했어요.",
             "head_chest": {"available": False},
+            "source_balance": {"balance_class": "UNKNOWN"},
+            "register_strategy": {
+                "status": "UNRESOLVED",
+                "title": "추가 확인 필요",
+                "description": "이번 녹음만으로 성구 연결 방식을 충분히 확인하기 어려웠어요.",
+            },
             "key_traits": [],
             "modifiers": [],
             "local_register_events": [],
@@ -350,6 +417,8 @@ def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]
             "warnings": (profile or {}).get("warnings") or [],
         }
     hc = profile.get("head_chest") or {}
+    sb = profile.get("source_balance") or {}
+    rs = profile.get("register_strategy") or {}
     return {
         "available": True,
         "type_id": profile.get("type_id"),
@@ -358,6 +427,21 @@ def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]
         "display_name": profile.get("display_name"),
         "confidence": profile.get("confidence"),
         "confidence_label": profile.get("confidence_label"),
+        "source_balance": {
+            "chest_percent": sb.get("chest_percent", hc.get("chest_ratio")),
+            "head_percent": sb.get("head_percent", hc.get("head_ratio")),
+            "balance_class": sb.get("balance_class"),
+            "label": sb.get("label"),
+            "confidence_label": sb.get("confidence_label"),
+        },
+        "register_strategy": {
+            "status": rs.get("status"),
+            "mix_evidence": rs.get("mix_evidence"),
+            "continuity": rs.get("continuity"),
+            "confidence_label": rs.get("confidence_label"),
+            "title": rs.get("title"),
+            "description": rs.get("description"),
+        },
         "head_chest": {
             "available": hc.get("available"),
             "chest_ratio": hc.get("chest_ratio"),

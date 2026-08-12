@@ -155,7 +155,7 @@ const PRIMARY_DIAGNOSIS: Record<string, { title: string; detail?: string }> = {
     detail: '일부 고음에서 발성 무게와 힘이 함께 증가했어요.',
   },
   GENERAL_EXCESS_EFFORT: {
-    title: '전반적으로 힘이 커지는 경향',
+    title: '여러 구간에서 힘이 크게 증가하는 경향',
     detail: '여러 구간에서 힘을 밀어붙이는 패턴이 관찰됐어요.',
   },
   AIR_LEAKAGE: {
@@ -173,6 +173,26 @@ const PRIMARY_DIAGNOSIS: Record<string, { title: string; detail?: string }> = {
   RESONANCE_HIGH_NOTE_COLLAPSE: {
     title: '고음에서 공명 존재감이 감소하는 경향',
     detail: '고음에서 소리가 모이지 않고 존재감이 줄어드는 패턴이 관찰됐어요.',
+  },
+  HIGH_NOTE_EFFORT_INCREASE: {
+    title: '고음에서 힘이 증가하는 경향이 가장 두드러졌어요',
+    detail: '고음 자체의 도달보다, 높은 음에서 힘이 더 커지는 패턴이 관찰됐어요.',
+  },
+  HIGH_NOTE_BREATHINESS_INCREASE: {
+    title: '고음에서 숨이 섞이는 음질이 증가했어요',
+    detail: '고음에서 힘 증가보다 숨이 섞이는 음질 변화가 더 분명했어요.',
+  },
+  HIGH_NOTE_STABILITY_DROP: {
+    title: '고음에서 안정성이 일부 떨어졌어요',
+    detail: '고음으로 올라갈수록 음높이 연결과 진동 안정성이 일부 떨어졌어요.',
+  },
+  HIGH_NOTE_RESONANCE_PRESENCE_LOSS: {
+    title: '고음에서 중역 존재감이 줄어들어요',
+    detail: '고음에서 중역 존재감이 함께 줄어드는 경향이 있어요.',
+  },
+  HIGH_NOTE_TIMBRE_SHIFT: {
+    title: '고음에서 음색이 달라지는 경향이 있어요',
+    detail: '고음으로 갈 때 밝기·존재감 등 음색 특성이 함께 변하는 패턴이 관찰됐어요.',
   },
   ABRUPT_ONSET: {
     title: '소리를 급하게 시작하는 경향',
@@ -192,13 +212,55 @@ const PRIMARY_DIAGNOSIS: Record<string, { title: string; detail?: string }> = {
   },
 };
 
-export function diagnosisFromPrimary(primary: any): { title: string; detail: string } | null {
+export function diagnosisFromPrimary(primary: any, effortAssessment?: any): { title: string; detail: string } | null {
   if (!primary) return null;
+  const assessment = effortAssessment || primary?.effort_assessment;
+  if (
+    assessment
+    && ['GENERAL_EXCESS_EFFORT', 'EXCESS_EFFORT_HIGH_NOTE', 'EXCESS_FIRMNESS_WITH_STRAIN'].includes(
+      primary.id,
+    )
+  ) {
+    const sev = String(assessment.global_severity || assessment.severity || '').toUpperCase();
+    const note = scrubUserText(assessment.context_note || '');
+    if (primary.id === 'EXCESS_EFFORT_HIGH_NOTE' || (sev === 'LOW' && assessment.high_note_severity === 'HIGH')) {
+      return {
+        title: '고음에서 힘이 증가하는 경향',
+        detail: note || '전반적으로는 편안하지만, 고음에서만 힘이 크게 증가해요.',
+      };
+    }
+    if (sev === 'HIGH') {
+      return {
+        title: '여러 구간에서 힘이 크게 증가하는 경향',
+        detail: note || '강한 음과 높은 음을 낼 때 힘을 밀어붙이는 패턴이 반복됐어요.',
+      };
+    }
+    if (sev === 'MODERATE') {
+      const hits = Number(assessment.hit_segments || 0);
+      return {
+        title:
+          hits <= 1
+            ? '특정 구간에서 힘이 크게 증가하는 경향'
+            : '여러 구간에서 힘이 크게 증가하는 경향',
+        detail:
+          note
+          || (hits <= 1
+            ? '강한 음과 높은 음을 낼 때 힘을 밀어붙이는 패턴이 관찰됐어요.'
+            : '여러 구간에서 힘을 밀어붙이는 패턴이 관찰됐어요.'),
+      };
+    }
+    if (sev === 'MILD') {
+      return {
+        title: '일부 구간에서 힘이 증가하는 경향',
+        detail: note || '일부 구간에서 힘이 늘어나는 패턴이 관찰됐어요.',
+      };
+    }
+  }
   const mapped = PRIMARY_DIAGNOSIS[primary.id];
   if (mapped) {
     return {
-      title: mapped.title,
-      detail: scrubUserText(mapped.detail || primary.why || ''),
+      title: primary.user_title ? scrubUserText(primary.user_title) : mapped.title,
+      detail: scrubUserText(primary.why || mapped.detail || ''),
     };
   }
   return {
@@ -258,8 +320,32 @@ export function confidenceLabelFromPercent(pct: number | null): string {
   if (pct == null) return '보통';
   if (pct >= 80) return '높음';
   if (pct >= 60) return '보통';
-  if (pct >= 40) return '낮음';
-  return '매우 낮음';
+  if (pct >= 40) return '참고';
+  return '참고';
+}
+
+/** Production UI: categorical only — never render percent-style confidence. */
+export function formatAnalysisConfidence(
+  confidenceLabel?: string | null,
+  confidencePercent?: number | null,
+): string {
+  let label = (confidenceLabel || '').trim();
+  if (!label || label === '보통') {
+    const fromPct = confidenceLabelFromPercent(
+      confidencePercent == null ? null : Number(confidencePercent),
+    );
+    label = fromPct === '보통' ? '보통' : fromPct;
+  }
+  if (label.includes('높')) return '분석 신뢰도 높음';
+  if (label.includes('참') || label.includes('낮') || label.includes('매우')) return '분석 신뢰도 참고';
+  if (label.includes('중') || label.includes('보통')) return '분석 신뢰도 보통';
+  const mapped: Record<string, string> = {
+    high: '분석 신뢰도 높음',
+    medium: '분석 신뢰도 보통',
+    low: '분석 신뢰도 참고',
+  };
+  const key = label.toLowerCase();
+  return mapped[key] || '분석 신뢰도 보통';
 }
 
 function labelToPercent(label?: string | null): number | null {
@@ -425,14 +511,14 @@ export function getDimensionLabel(
   }
   if (kind === 'effort') {
     if (st === 'LOW') return '편안한 편';
-    if (st === 'OCCASIONAL') return '보통';
-    if (st === 'MODERATE') return '힘이 다소 증가';
-    if (st === 'REPEATED' || st === 'HIGH') return '강한 편';
-    if (value == null) return '보통';
-    if (value < 0.3) return '편안한 편';
-    if (value < 0.5) return '보통';
-    if (value < 0.7) return '힘이 다소 증가';
-    return '강한 편';
+    if (st === 'OCCASIONAL' || st === 'MILD') return '일부 구간에서 힘이 증가';
+    if (st === 'MODERATE') return '힘이 들어가는 편';
+    if (st === 'REPEATED' || st === 'HIGH') return '힘이 많이 들어가는 편';
+    if (value == null) return '편안한 편';
+    if (value < 0.28) return '편안한 편';
+    if (value < 0.5) return '일부 구간에서 힘이 증가';
+    if (value < 0.72) return '힘이 들어가는 편';
+    return '힘이 많이 들어가는 편';
   }
   if (kind === 'register') {
     if (st.includes('STABLE') || st.includes('SMOOTH')) return '비교적 자연스러움';
@@ -505,14 +591,31 @@ function estimateBreath(d: any): { value: number; display: string } | null {
 
 function estimateEffort(d: any): { value: number; display: string } | null {
   if (!d) return null;
+  const assessment = d.effort_assessment || d.display;
+  if (assessment && (assessment.display_continuum != null || assessment.continuum != null)) {
+    const value = Math.max(
+      0,
+      Math.min(1, Number(assessment.display_continuum ?? assessment.continuum)),
+    );
+    const sev = String(assessment.global_severity || assessment.severity || '').toUpperCase();
+    const display =
+      assessment.label
+      || getDimensionLabel('effort', value, sev || d.status);
+    return { value, display };
+  }
   const st = (d.status || '').toUpperCase();
   if (!st || st === 'UNKNOWN' || st === 'UNAVAILABLE') return null;
+  if (d.display_continuum_0_to_1 != null) {
+    const value = Math.max(0, Math.min(1, Number(d.display_continuum_0_to_1)));
+    return { value, display: getDimensionLabel('effort', value, st) };
+  }
   const map: Record<string, number> = {
-    LOW: 0.22,
-    OCCASIONAL: 0.45,
-    MODERATE: 0.65,
-    REPEATED: 0.8,
-    HIGH: 0.9,
+    LOW: 0.18,
+    OCCASIONAL: 0.38,
+    MILD: 0.38,
+    MODERATE: 0.62,
+    REPEATED: 0.85,
+    HIGH: 0.85,
   };
   const value = map[st];
   if (value == null) return null;

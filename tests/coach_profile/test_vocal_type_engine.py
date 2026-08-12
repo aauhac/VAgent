@@ -137,11 +137,18 @@ def test_one_metric_family_not_high_confidence_type():
 
 
 def test_mix_requires_smooth_bridge():
-    bridge_smooth = {"type": "SMOOTH_BRIDGE", "score": 0.75, "available": True}
+    bridge_smooth = {
+        "type": "SMOOTH_BRIDGE",
+        "score": 0.75,
+        "available": True,
+        "register_sufficiency": "SUFFICIENT",
+        "n_transition_opportunities": 3,
+    }
     bridge_break = {
         "type": "ABRUPT_REGISTER_BREAK",
         "score": 0.25,
         "available": True,
+        "register_sufficiency": "SUFFICIENT",
         "split_eligibility": {"eligible": True},
     }
     assert classify_base_type(index=0.50, bridge=bridge_smooth, modifiers=[], confidence="medium") == "BALANCED_MIX"
@@ -163,6 +170,7 @@ def test_one_chest_pull_not_global_split():
         bridge={
             "type": "UNSTABLE_BRIDGE",
             "score": 0.45,
+            "register_sufficiency": "PARTIAL",
             "split_eligibility": {
                 "eligible": False,
                 "break_prevalence": 0.1,
@@ -174,7 +182,8 @@ def test_one_chest_pull_not_global_split():
         register_split_ok=False,
     )
     assert t != "REGISTER_SPLIT_GLOBAL"
-    assert t in ("CHEST_DOMINANT_MIX", "BALANCED_MIX", "HEAD_DOMINANT_MIX", "UNRESOLVED")
+    # v2.13: weak/unstable bridge without positive continuity → not Mix
+    assert t in ("BALANCED_SOURCE", "UNRESOLVED", "CHEST_DOMINANT", "HEAD_DOMINANT")
 
 
 def test_chest_pull_does_not_rename_global_mix():
@@ -182,15 +191,22 @@ def test_chest_pull_does_not_rename_global_mix():
         "CHEST_DOMINANT_MIX",
         ["CHEST_PULL", "EXCESS_EFFORT"],
         local_events=[{"type": "LOCAL_CHEST_PULL", "start_sec": 11, "end_sec": 23}],
+        register_strategy={"status": "MIX_LIKE_CHEST_DOMINANT"},
     )
     assert "끌어올리는" not in name
     assert "믹스" in name
+    assert "힘이 함께 증가" not in name
 
 
 def test_chest_heavy_smooth_is_chest_dominant_mix():
     t = classify_base_type(
         index=0.28,
-        bridge={"type": "SMOOTH_BRIDGE", "score": 0.8},
+        bridge={
+            "type": "SMOOTH_BRIDGE",
+            "score": 0.8,
+            "register_sufficiency": "SUFFICIENT",
+            "n_transition_opportunities": 3,
+        },
         modifiers=[],
         confidence="medium",
     )
@@ -200,7 +216,12 @@ def test_chest_heavy_smooth_is_chest_dominant_mix():
 def test_head_heavy_smooth_is_head_dominant_mix():
     t = classify_base_type(
         index=0.72,
-        bridge={"type": "SMOOTH_BRIDGE", "score": 0.8},
+        bridge={
+            "type": "SMOOTH_BRIDGE",
+            "score": 0.8,
+            "register_sufficiency": "SUFFICIENT",
+            "n_transition_opportunities": 3,
+        },
         modifiers=[],
         confidence="medium",
     )
@@ -208,27 +229,47 @@ def test_head_heavy_smooth_is_head_dominant_mix():
 
 
 def test_chest_without_strain_no_effort_modifier_in_name():
-    name = compose_display_name("CHEST_DOMINANT_MIX", ["GOOD_BRIDGE"])
+    name = compose_display_name(
+        "CHEST_DOMINANT_MIX",
+        ["GOOD_BRIDGE"],
+        register_strategy={"status": "MIX_LIKE_CHEST_DOMINANT"},
+    )
     assert "힘" not in name
     assert "믹스" in name
 
 
 def test_weak_contact_mix_naming():
-    name = compose_display_name("CHEST_DOMINANT_MIX", ["WEAK_CONTACT"])
-    assert "가벼운" in name
+    # v2.13: contact modifiers no longer rewrite Mix title
+    name = compose_display_name(
+        "CHEST_DOMINANT_MIX",
+        ["WEAK_CONTACT"],
+        register_strategy={"status": "MIX_LIKE_CHEST_DOMINANT"},
+    )
+    assert "믹스" in name
+    assert "단단한 믹스보이스" not in name
 
 
 def test_chest_pull_precedence():
-    # v1.2: local CHEST_PULL must not override global mix display
-    name = compose_display_name("CHEST_DOMINANT_MIX", ["CHEST_PULL", "EXCESS_EFFORT"])
+    # v1.2/v2.13: local CHEST_PULL must not override global mix display
+    name = compose_display_name(
+        "CHEST_DOMINANT_MIX",
+        ["CHEST_PULL", "EXCESS_EFFORT"],
+        register_strategy={"status": "MIX_LIKE_CHEST_DOMINANT"},
+    )
     assert "믹스" in name
     assert "끌어올리는" not in name
+    assert "힘이 함께 증가" not in name
 
 def test_korean_names():
-    assert "흉성" in compose_display_name("CHEST_DOMINANT_MIX", [])
-    assert "두성" in compose_display_name("HEAD_DOMINANT_MIX", [])
-    assert "균형" in compose_display_name("BALANCED_MIX", [])
-
+    assert "흉성" in compose_display_name(
+        "CHEST_DOMINANT_MIX", [], register_strategy={"status": "MIX_LIKE_CHEST_DOMINANT"}
+    )
+    assert "두성" in compose_display_name(
+        "HEAD_DOMINANT_MIX", [], register_strategy={"status": "MIX_LIKE_HEAD_DOMINANT"}
+    )
+    assert "믹스" in compose_display_name(
+        "BALANCED_MIX", [], register_strategy={"status": "MIX_LIKE_BALANCED"}
+    )
 
 def test_range_missing_high_not_5050():
     segs = [_seg(i, i + 2, f0=180, naq=0.06, h1h2=1.0, tilt=-8) for i in range(0, 10, 2)]

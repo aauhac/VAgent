@@ -82,7 +82,7 @@ BANNED_USER_SUBSTRINGS = (
 
 DIMENSION_DISPLAY = {
     "breathy_like": "숨이 섞이는 음질 경향",
-    "pressed_like": "압착된 음질 경향",
+    "pressed_like": "단단하고 강한 음질 경향",
     "rough_like": "거칠고 불규칙한 음질 경향",
     "resonance_timbre": "공명·음색 프로필",
     "onset_behavior": "발성 시작 특성",

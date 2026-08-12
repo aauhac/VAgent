@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-COACH_PROFILE_VERSION = "vocal-type-v1.2"
-CALIBRATION_STATUS = "semantic_calibration_v1_2"
+COACH_PROFILE_VERSION = "vocal-type-v1.3"
+CALIBRATION_STATUS = "semantic_calibration_v1_3"
 
 # Soft directional cues — relative to local baseline
 NAQ_CHEST_DELTA = -0.02
@@ -68,15 +68,17 @@ CHEST_LEAN_MAX = 0.45  # soft lean within mix band
 HEAD_LEAN_MIN = 0.55
 
 TYPE_DISPLAY = {
-    "CHEST_DOMINANT": "흉성 중심 발성",
-    "CHEST_DOMINANT_MIX": "흉성 비율이 높은 믹스보이스",
-    "BALANCED_MIX": "균형형 믹스보이스",
-    "HEAD_DOMINANT_MIX": "두성 비율이 높은 믹스보이스",
-    "HEAD_DOMINANT": "두성 중심 발성",
+    "CHEST_DOMINANT": "흉성 쪽 성향이 더 강한 편",
+    "CHEST_DOMINANT_MIX": "흉성 중심의 믹스 성향",
+    "BALANCED_MIX": "흉성·두성을 연결하는 믹스 성향",
+    "BALANCED_SOURCE": "흉성·두성 균형형",
+    "HEAD_DOMINANT_MIX": "두성 중심의 믹스 성향",
+    "HEAD_DOMINANT": "두성 쪽 성향이 더 강한 편",
     "LIGHT_HEAD_FALSETTO_LIKE": "가벼운 두성 중심 발성",
-    "REGISTER_SPLIT": "흉성·두성 전환이 분리된 발성",
-    "REGISTER_SPLIT_GLOBAL": "흉성·두성 전환이 분리된 발성",
-    "UNRESOLVED": "발성 타입 판단 보류",
+    "REGISTER_SPLIT": "성구 전환이 급격한 편",
+    "REGISTER_SPLIT_GLOBAL": "성구 전환이 급격한 편",
+    "TRANSITION_UNSTABLE": "성구 전환이 급격한 편",
+    "UNRESOLVED": "발성 성향 판단 보류",
 }
 
 LOCAL_EVENT_DISPLAY = {

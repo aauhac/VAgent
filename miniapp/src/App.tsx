@@ -8,6 +8,7 @@ import Result from './pages/Result';
 import SongDetailReport from './pages/SongDetailReport';
 import History from './pages/History';
 import PremiumUnlock from './pages/PremiumUnlock';
+import ConcernIntake from './pages/ConcernIntake';
 import SafetyCheck from './pages/SafetyCheck';
 import DiagnosticTask from './pages/DiagnosticTask';
 import PremiumReport from './pages/PremiumReport';
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/result/:id/detail" element={<SongDetailReport />} />
         <Route path="/history" element={<History />} />
         <Route path="/premium" element={<PremiumUnlock />} />
+        <Route path="/diagnostic/:sessionId/concerns" element={<ConcernIntake />} />
         <Route path="/diagnostic/:sessionId/safety" element={<SafetyCheck />} />
         <Route path="/diagnostic/:sessionId/task/:taskId" element={<DiagnosticTask />} />
         <Route path="/diagnostic/:sessionId/report" element={<PremiumReport />} />

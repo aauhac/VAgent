@@ -21,11 +21,22 @@ from audio_analyzer.diagnostic import (
     VOCAL_DIAGNOSTIC_PROTOCOL_VERSION,
     analyze_task_audio,
     build_final_diagnostic_profile,
+    build_personalized_qa,
     get_task,
+    has_pain_safety_flag,
+    normalize_user_concerns,
     plan_from_song_analysis,
+    public_concern_catalog,
     tasks_for_ids,
 )
-from audio_analyzer.diagnostic.task_registry import PLANNER_VERSION, TASK_REGISTRY
+from audio_analyzer.diagnostic.concerns import normalize_diagnostic_mode
+from audio_analyzer.diagnostic.task_registry import (
+    DIAGNOSTIC_MODE_CONCERN,
+    DIAGNOSTIC_MODE_GENERAL,
+    DIAGNOSTIC_STATUS_SAFETY_LIMITED,
+    PLANNER_VERSION,
+    TASK_REGISTRY,
+)
 from audio_analyzer.physiology import build_premium_report
 from audio_analyzer.physiology.report import public_premium_report
 from audio_analyzer.preprocessing.audio_io import load_analysis_audio
@@ -67,6 +78,25 @@ class DiagnosticSessionService:
     def _load(self, session_id: str) -> Optional[dict[str, Any]]:
         if not validate_session_id(session_id):
             return None
+        # Production / DATABASE_URL: PostgreSQL is SoT (file is cache only)
+        try:
+            from ..db.diagnostic_repo import db_enabled, load_session_dict
+
+            if db_enabled():
+                db_session = load_session_dict(session_id)
+                if db_session is not None:
+                    return db_session
+                # DB enabled but row missing: do not resurrect from file in production
+                from ..config import is_production
+
+                if is_production():
+                    return None
+        except Exception:
+            from ..config import is_production
+
+            if is_production():
+                raise
+
         p = self._path(session_id)
         if not p.exists():
             return None
@@ -76,12 +106,20 @@ class DiagnosticSessionService:
             return None
 
     def _save(self, session: dict[str, Any]) -> None:
+        # File cache for artifacts/compat (never overwrites DB as SoT when DB enabled)
         d = self._dir(session["session_id"])
         d.mkdir(parents=True, exist_ok=True)
         self._path(session["session_id"]).write_text(
             json.dumps(session, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
+        try:
+            from ..db.diagnostic_repo import upsert_session_from_dict
+
+            upsert_session_from_dict(session)
+        except Exception:
+            # Never break mock-pay / safety unit paths when DB is unavailable
+            pass
 
     def _load_song_payload(self, source_analysis_id: Optional[str]) -> Optional[dict[str, Any]]:
         if not source_analysis_id:
@@ -95,19 +133,51 @@ class DiagnosticSessionService:
                     continue
         return None
 
-    def _build_plan(self, source_analysis_id: Optional[str]) -> dict[str, Any]:
+    def _build_plan(
+        self,
+        source_analysis_id: Optional[str],
+        *,
+        user_concerns: Optional[list[dict[str, Any]]] = None,
+        pain_safety_flag: bool = False,
+        diagnostic_mode: Optional[str] = None,
+        safety_flags: Optional[list[str]] = None,
+        precision: bool = False,
+    ) -> dict[str, Any]:
         song = self._load_song_payload(source_analysis_id)
+        concerns = normalize_user_concerns(user_concerns)
+        pain = pain_safety_flag or has_pain_safety_flag(concerns)
+        mode = normalize_diagnostic_mode(diagnostic_mode, concerns)
         if song:
-            return plan_from_song_analysis(song)
-        # Standalone diagnostic (no song): full supported battery
+            return plan_from_song_analysis(
+                song,
+                user_concerns=concerns if mode == DIAGNOSTIC_MODE_CONCERN else None,
+                pain_safety_flag=pain,
+                diagnostic_mode=mode if precision else None,
+                safety_flags=safety_flags,
+                precision=precision,
+            )
         from audio_analyzer.diagnostic.planner import (
             build_uncertainty_profile,
             explain_task_selection,
+            plan_precision_protocol,
             select_diagnostic_tasks,
         )
 
-        profile = build_uncertainty_profile(criteria_matrix=[], dimensions={}, measurement_candidates=[])
-        plan = select_diagnostic_tasks(profile, fallback_all_if_empty_song=True)
+        profile = build_uncertainty_profile(
+            criteria_matrix=[], dimensions={}, measurement_candidates=[]
+        )
+        if precision:
+            plan = plan_precision_protocol(
+                profile,
+                diagnostic_mode=mode,
+                user_concerns=concerns if mode == DIAGNOSTIC_MODE_CONCERN else None,
+                pain_safety_flag=pain,
+                safety_flags=safety_flags,
+            )
+        else:
+            plan = select_diagnostic_tasks(
+                profile, fallback_all_if_empty_song=True, user_concerns=concerns, pain_safety_flag=pain
+            )
         explain = explain_task_selection(plan)
         return {**plan, **explain, "uncertainty_profile": profile}
 
@@ -119,9 +189,15 @@ class DiagnosticSessionService:
     ) -> dict[str, Any]:
         if source_analysis_id and not validate_analysis_id(source_analysis_id):
             raise ValueError("invalid source_analysis_id")
+        if source_analysis_id:
+            from ..services.ownership import can_access_analysis
+
+            if not can_access_analysis(user_id, source_analysis_id, self.runtime_dir):
+                raise ValueError("source analysis not found")
         session_id = uuid.uuid4().hex
-        plan = self._build_plan(source_analysis_id)
-        selected = list(plan.get("selected_tasks") or [])
+        # Provisional song-only offer — final tasks planned after concern intake
+        plan = self._build_plan(source_analysis_id, precision=False)
+        selected: list[str] = []  # filled after concerns / general discovery
         session = {
             "session_id": session_id,
             "user_id": user_id,
@@ -133,14 +209,19 @@ class DiagnosticSessionService:
             "entitlement_id": None,
             "safety_flags": [],
             "safety_answers": {},
+            "user_concerns": [],
+            "diagnostic_mode": None,
+            "diagnostic_status": "NORMAL",
             "unresolved_dimensions": plan.get("unresolved_dimensions") or [],
             "selected_tasks": selected,
+            "core_tasks": [],
+            "adaptive_tasks": [],
+            "provisional_task_count": plan.get("provisional_task_count"),
+            "planned_task_count": None,
             "current_task_index": 0,
             "diagnostic_offer": plan.get("diagnostic_offer"),
             "plan_rationale": plan.get("rationale"),
-            "tasks": {
-                tid: {"attempts": [], "passed": False} for tid in selected
-            },
+            "tasks": {},
             "task_results": [],
             "final_diagnostic_profile": None,
             "created_at": datetime.now(timezone.utc).isoformat(),
@@ -161,6 +242,9 @@ class DiagnosticSessionService:
             raise PermissionError("mock pay disabled in production")
         session = self._load(session_id)
         if not session:
+            raise KeyError("session not found")
+        owner = session.get("user_id") or "anon"
+        if owner != user_id:
             raise KeyError("session not found")
         from ..products import (
             PRODUCT_DIAGNOSTIC_FULL,
@@ -205,6 +289,54 @@ class DiagnosticSessionService:
         self._save(session)
         return self.public_session(session)
 
+    def submit_concerns(
+        self,
+        session_id: str,
+        user_concerns: list[dict[str, Any]],
+        user_id: str = "anon",
+        *,
+        diagnostic_mode: Optional[str] = None,
+    ) -> dict[str, Any]:
+        session = self._require_unlocked(session_id, user_id)
+        if session["status"] not in ("PAID", "SAFETY_CHECK"):
+            raise ValueError("invalid status for concern intake")
+        concerns = normalize_user_concerns(user_concerns)
+        mode = normalize_diagnostic_mode(diagnostic_mode, concerns)
+        if mode == DIAGNOSTIC_MODE_GENERAL:
+            concerns = []
+        elif mode == DIAGNOSTIC_MODE_CONCERN:
+            if not concerns:
+                raise ValueError("CONCERN_FOCUSED requires 1–3 concerns")
+            if len(concerns) > 3:
+                raise ValueError("max 3 concerns allowed")
+        session["user_concerns"] = concerns
+        session["diagnostic_mode"] = mode
+        session["safety_flag_pain"] = has_pain_safety_flag(concerns)
+        src = session.get("source_analysis_id")
+        plan = self._build_plan(
+            src,
+            user_concerns=concerns,
+            pain_safety_flag=bool(session.get("safety_flag_pain")),
+            diagnostic_mode=mode,
+            precision=True,
+        )
+        selected = list(plan.get("selected_tasks") or [])
+        session["selected_tasks"] = selected
+        session["core_tasks"] = plan.get("core_tasks") or []
+        session["adaptive_tasks"] = plan.get("adaptive_tasks") or []
+        session["planned_task_count"] = plan.get("planned_task_count")
+        session["provisional_task_count"] = plan.get("provisional_task_count")
+        session["diagnostic_status"] = plan.get("diagnostic_status") or "NORMAL"
+        session["unresolved_dimensions"] = plan.get("unresolved_dimensions") or []
+        session["diagnostic_offer"] = plan.get("diagnostic_offer")
+        session["plan_rationale"] = plan.get("rationale")
+        session["planner_version"] = plan.get("planner_version") or session.get("planner_version")
+        session["tasks"] = {tid: {"attempts": [], "passed": False} for tid in selected}
+        session["current_task_index"] = 0
+        session["status"] = "PAID"
+        self._save(session)
+        return self.public_session(session)
+
     def submit_safety(
         self,
         session_id: str,
@@ -217,11 +349,54 @@ class DiagnosticSessionService:
         flags = [qid for qid, val in answers.items() if val]
         session["safety_answers"] = answers
         session["safety_flags"] = flags
-        selected = list(session.get("selected_tasks") or [])
+
+        # Replan with safety state after concern intake
+        mode = session.get("diagnostic_mode") or normalize_diagnostic_mode(
+            None, session.get("user_concerns") or []
+        )
+        if not session.get("diagnostic_mode"):
+            # Legacy: if concerns never submitted, default to general discovery + plan now
+            session["diagnostic_mode"] = DIAGNOSTIC_MODE_GENERAL
+            mode = DIAGNOSTIC_MODE_GENERAL
+
+        plan = self._build_plan(
+            session.get("source_analysis_id"),
+            user_concerns=session.get("user_concerns") or [],
+            pain_safety_flag=bool(session.get("safety_flag_pain")) or bool(flags),
+            diagnostic_mode=mode,
+            safety_flags=flags,
+            precision=True,
+        )
+        selected = list(plan.get("selected_tasks") or [])
+        session["selected_tasks"] = selected
+        session["core_tasks"] = plan.get("core_tasks") or []
+        session["adaptive_tasks"] = plan.get("adaptive_tasks") or []
+        session["planned_task_count"] = len(selected)
+        session["diagnostic_status"] = plan.get("diagnostic_status") or "NORMAL"
+        session["plan_rationale"] = plan.get("rationale")
+        session["diagnostic_offer"] = plan.get("diagnostic_offer")
+        session["tasks"] = {
+            tid: session.get("tasks", {}).get(tid) or {"attempts": [], "passed": False}
+            for tid in selected
+        }
+
         if not selected:
-            # All resolved from song — no required additional recordings
-            session["status"] = "READY_FOR_ANALYSIS"
-            session["current_task_index"] = 0
+            # Only safety-limited may proceed with zero controlled recordings
+            if session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED or flags:
+                session["diagnostic_status"] = DIAGNOSTIC_STATUS_SAFETY_LIMITED
+                session["status"] = "READY_FOR_ANALYSIS"
+                session["current_task_index"] = 0
+            else:
+                # Invariant fallback — should not happen if planner works
+                from audio_analyzer.diagnostic.task_registry import PRECISION_CORE_FALLBACK
+
+                selected = list(PRECISION_CORE_FALLBACK)
+                session["selected_tasks"] = selected
+                session["core_tasks"] = selected
+                session["tasks"] = {tid: {"attempts": [], "passed": False} for tid in selected}
+                session["planned_task_count"] = len(selected)
+                session["status"] = "TASKS_IN_PROGRESS"
+                session["current_task_index"] = 0
         else:
             session["status"] = "TASKS_IN_PROGRESS"
             session["current_task_index"] = 0
@@ -311,6 +486,7 @@ class DiagnosticSessionService:
         }
         # Persist wav for analysis
         sf.write(str(work / "analysis.wav"), y, sr)
+        audio_key = f"diagnostic_sessions/{session_id}/tasks/{task_id}/attempt_{attempt}/analysis.wav"
 
         if attempt_rec["passed"]:
             result = analyze_task_audio(y, sr, task_id=task_id, attempt=attempt)
@@ -324,6 +500,7 @@ class DiagnosticSessionService:
             ]
             session["task_results"].append(result)
 
+        attempt_rec["audio_storage_key"] = audio_key
         state["attempts"].append(attempt_rec)
         session["tasks"][task_id] = state
 
@@ -345,6 +522,25 @@ class DiagnosticSessionService:
             session["status"] = "TASKS_IN_PROGRESS"
 
         self._save(session)
+        try:
+            from ..db.diagnostic_repo import insert_task_attempt
+
+            insert_task_attempt(
+                session_id=session_id,
+                task_id=task_id,
+                attempt_number=attempt,
+                audio_storage_key=audio_key,
+                quality_status=attempt_rec.get("quality_status"),
+                passed=attempt_rec.get("passed"),
+                dimension_evidence=(attempt_rec.get("result") or {}).get("dimension_evidence")
+                if isinstance(attempt_rec.get("result"), dict)
+                else None,
+            )
+        except Exception:
+            from ..config import is_production
+
+            if is_production():
+                raise
         return {
             "session": self.public_session(session),
             "task_id": task_id,
@@ -397,17 +593,41 @@ class DiagnosticSessionService:
                     "selected_tasks": session.get("selected_tasks") or [],
                 },
             )
+            concerns = session.get("user_concerns") or []
+            personalized = build_personalized_qa(
+                user_concerns=concerns,
+                song_profile={"vocal_function_profile": vf} if vf else {},
+                task_results=session.get("task_results") or [],
+                fused_profile=final_dx,
+                diagnostic_mode=session.get("diagnostic_mode"),
+            )
             session["final_diagnostic_profile"] = final_dx
             report["protocol_version"] = session.get("protocol_version") or VOCAL_DIAGNOSTIC_PROTOCOL_VERSION
             report["planner_version"] = session.get("planner_version") or PLANNER_VERSION
             report["selected_tasks"] = session.get("selected_tasks") or []
+            report["core_tasks"] = session.get("core_tasks") or []
+            report["adaptive_tasks"] = session.get("adaptive_tasks") or []
+            report["planned_task_count"] = session.get("planned_task_count")
             report["unresolved_dimensions"] = session.get("unresolved_dimensions") or []
+            report["source_analysis_id"] = session.get("source_analysis_id")
+            report["diagnostic_mode"] = session.get("diagnostic_mode")
+            report["diagnostic_status"] = session.get("diagnostic_status")
             report["final_diagnostic_profile"] = final_dx
+            report["user_concerns"] = concerns
+            report["personalized_qa"] = personalized
+            report["improvement_priorities"] = personalized.get("improvement_priorities") or []
+            report["discovered_features"] = personalized.get("discovered_features") or []
+            if session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED or session.get("safety_flag_pain") or has_pain_safety_flag(concerns):
+                report["safety_note"] = (
+                    "통증이나 지속적인 불편감은 음향 분석만으로 원인을 판단할 수 없어요. "
+                    "불편한 상태에서는 강한 고음이나 큰 소리를 반복하지 마세요."
+                )
             report["diagnostic_report_version"] = final_dx.get("report_version")
             report_path = self._dir(session_id) / "premium_report.json"
             report_path.write_text(
                 json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
             )
+            session["report_storage_key"] = f"diagnostic_sessions/{session_id}/premium_report.json"
             session["status"] = "COMPLETED"
             session["completed_at"] = datetime.now(timezone.utc).isoformat()
             self._save(session)
@@ -427,6 +647,9 @@ class DiagnosticSessionService:
     ) -> dict[str, Any]:
         session = self._load(session_id)
         if not session:
+            raise KeyError("session not found")
+        owner = session.get("user_id") or "anon"
+        if owner != user_id:
             raise KeyError("session not found")
         if not self.entitlements.has_session_unlock(user_id, session_id):
             return {
@@ -448,6 +671,9 @@ class DiagnosticSessionService:
         session = self._load(session_id)
         if not session:
             return None
+        owner = session.get("user_id") or "anon"
+        if owner != user_id:
+            return None
         pub = self.public_session(session)
         pub["unlocked"] = self.entitlements.has_session_unlock(user_id, session_id)
         return pub
@@ -460,12 +686,20 @@ class DiagnosticSessionService:
             "supported_task_ids": list(TASK_REGISTRY.keys()),
             "safety_questions": SAFETY_QUESTIONS,
             "adaptive": True,
+            "concern_catalog": public_concern_catalog(),
         }
 
-    def _require_unlocked(self, session_id: str, user_id: str) -> dict[str, Any]:
+    def _require_owner(self, session_id: str, user_id: str) -> dict[str, Any]:
         session = self._load(session_id)
         if not session:
             raise KeyError("session not found")
+        owner = session.get("user_id") or "anon"
+        if owner != user_id:
+            raise KeyError("session not found")
+        return session
+
+    def _require_unlocked(self, session_id: str, user_id: str) -> dict[str, Any]:
+        session = self._require_owner(session_id, user_id)
         if not self.entitlements.has_session_unlock(user_id, session_id):
             raise PermissionError("REPORT_LOCKED")
         return session
@@ -499,6 +733,14 @@ class DiagnosticSessionService:
             "current_task_index": idx,
             "next_task_id": next_task,
             "diagnostic_offer": session.get("diagnostic_offer"),
+            "user_concerns": session.get("user_concerns") or [],
+            "diagnostic_mode": session.get("diagnostic_mode"),
+            "diagnostic_status": session.get("diagnostic_status") or "NORMAL",
+            "safety_flag_pain": bool(session.get("safety_flag_pain")),
+            "core_tasks": session.get("core_tasks") or [],
+            "adaptive_tasks": session.get("adaptive_tasks") or [],
+            "planned_task_count": session.get("planned_task_count"),
+            "provisional_task_count": session.get("provisional_task_count"),
             "task_plan": tasks_for_ids(selected),
             "created_at": session.get("created_at"),
             "completed_at": session.get("completed_at"),

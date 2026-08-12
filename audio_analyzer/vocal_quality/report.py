@@ -90,9 +90,9 @@ def free_vocal_quality_teaser(profile: dict[str, Any]) -> list[str]:
         bullets.append("일부 구간에서 숨이 섞이는 음질 가능성이 있어요.")
     p = dims.get("pressed_like") or {}
     if p.get("status") in ("MODERATE", "HIGH", "INTERMITTENT"):
-        bullets.append("일부 구간에서 압착된 음질과 일치할 수 있는 경향이 있어요.")
+        bullets.append("일부 구간에서 단단하고 강한 음질과 일치할 수 있는 경향이 있어요.")
     r = dims.get("rough_like") or {}
-    if r.get("status") in ("MODERATE", "HIGH", "INTERMITTENT"):
+    if r.get("status") in ("MODERATE", "HIGH"):
         bullets.append("일부 구간에서 거친 음질 경향이 관찰됐어요.")
     t = dims.get("register_transition") or {}
     if t.get("status") in ("MILD_DISRUPTION", "BREAK_LIKE"):

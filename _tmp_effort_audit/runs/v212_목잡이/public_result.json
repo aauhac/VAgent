@@ -1,0 +1,160 @@
+{
+  "analysis_version": "2.0",
+  "analysis_mode": "song",
+  "recording_id": "v212_목잡이",
+  "analysis_status": "completed",
+  "feedback_status": "skipped",
+  "tier": "free",
+  "audio": {
+    "duration_sec": 19.52,
+    "sample_rate": 44100,
+    "source_mode": "raw",
+    "separation": {
+      "used": false
+    }
+  },
+  "quality": {
+    "status": "warn",
+    "confidence": 0.65,
+    "reasons": [
+      "녹음 레벨이 낮음 (-35.9 dBFS)",
+      "저역 잡음이 다소 높음 (10.5 dB)"
+    ],
+    "codes": [
+      "LOW_LEVEL",
+      "RUMBLE"
+    ],
+    "metrics": {
+      "duration_sec": 19.52,
+      "rms_dbfs": -35.92,
+      "silent_ratio": 0.4001,
+      "voiced_ratio": 0.5571,
+      "voiced_duration_sec": 10.875,
+      "clipping_ratio": 0.0
+    },
+    "user_message": "분석은 가능하지만 녹음 조건이 완벽하지 않아요. 결과는 참고용으로 봐 주세요."
+  },
+  "score": {
+    "available": true,
+    "version": "vocal-score-v3.0",
+    "calibration_status": "uncalibrated",
+    "overall": 54.0,
+    "label": "다시 녹음해 보면 좋아요",
+    "overall_display_state": "FULL",
+    "reliable_axis_count": 4,
+    "areas": [
+      {
+        "area_id": "stability",
+        "display_name": "발성 안정성",
+        "score": 70.0,
+        "status": "normal",
+        "status_label": "보통 이상",
+        "confidence": 0.437
+      },
+      {
+        "area_id": "projection",
+        "display_name": "목소리 전달력",
+        "score": 56.2,
+        "status": "needs_work",
+        "status_label": "개선 여지 있음",
+        "confidence": 0.637
+      },
+      {
+        "area_id": "resonance",
+        "display_name": "공명 균형",
+        "score": 44.7,
+        "status": "needs_work",
+        "status_label": "집중 개선 권장",
+        "confidence": 0.6
+      },
+      {
+        "area_id": "dynamic_control",
+        "display_name": "강약 컨트롤",
+        "score": 67.3,
+        "status": "needs_work",
+        "status_label": "개선 여지 있음",
+        "confidence": 0.697
+      }
+    ],
+    "best_area": null,
+    "focus_area": {
+      "area_id": "resonance",
+      "display_name": "공명 균형",
+      "score": 44.7,
+      "status": "needs_work"
+    },
+    "reason": null
+  },
+  "short_summary": "오늘의 발성 요약. 전반적 힘 과다. 자세한 발성 상태 프로필은 노래 상세 리포트에서 확인할 수 있어요.",
+  "vocal_quality_teaser": [
+    "전반적 힘 과다."
+  ],
+  "vocal_function_teaser": [
+    "전반적 힘 과다."
+  ],
+  "vocal_type_teaser": {
+    "available": true,
+    "display_name": "단단한 믹스보이스 · 힘이 함께 증가",
+    "description": "흉성과 두성 쪽 발성 성향을 비교적 균형 있게 연결하는 믹스보이스입니다.",
+    "confidence": "medium",
+    "confidence_label": "중간",
+    "head_chest": {
+      "available": true,
+      "chest_ratio": 52,
+      "head_ratio": 48,
+      "broad_label": null
+    },
+    "key_traits": [
+      {
+        "key": "contact",
+        "label": "접촉",
+        "value": "단단한 편"
+      },
+      {
+        "key": "local_effort_spike",
+        "label": "국소 구간",
+        "value": "4–8초 · 일부 고음에서 힘 증가"
+      }
+    ]
+  },
+  "main_finding_teaser": {
+    "none": false,
+    "id": "GENERAL_EXCESS_EFFORT",
+    "user_title": "전반적 힘 과다",
+    "why": "여러 구간에서 effort 관련 패턴이 반복됐어요.",
+    "title": "전반적 힘 과다",
+    "detail": "여러 구간에서 effort 관련 패턴이 반복됐어요."
+  },
+  "premium_available": true,
+  "products_available": {
+    "song_detail": true,
+    "diagnostic": true
+  },
+  "premium_cta": {
+    "title": "정밀 발성 진단",
+    "body": "필요한 항목만 짧은 추가 녹음으로 더 정밀하게 확인할 수 있어요. 노래 상세 리포트는 별도 상품입니다."
+  },
+  "song_detail_cta": {
+    "title": "이 노래를 더 자세히 알고 싶나요?",
+    "body": "발성 프로필, 특징 구간 듣기, 음역별 구성, 분석 신뢰도를 추가 녹음 없이 확인할 수 있어요."
+  },
+  "diagnostic_cta": {
+    "title": "내 발성 자체를 더 정밀하게 알고 싶나요?",
+    "body": "노래만으로 구분하기 어려운 항목을 짧은 추가 녹음으로 다시 확인할 수 있어요."
+  },
+  "diagnostic_offer": {
+    "unresolved_count": 4,
+    "unresolved_labels": [
+      "성구 연결",
+      "공명",
+      "시작음",
+      "강약 반응"
+    ],
+    "selected_task_count": 4,
+    "estimated_duration_text": "약 3분",
+    "required": true,
+    "required_tasks": true
+  },
+  "disclaimer": "이 결과는 녹음된 음성의 음향적 특성을 바탕으로 발성 패턴을 분석한 발성 분석 참고 정보입니다. 성대의 실제 구조나 질환을 진단하는 검사가 아닙니다.",
+  "preview_available": false
+}

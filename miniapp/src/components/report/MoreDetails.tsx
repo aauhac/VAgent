@@ -2,6 +2,7 @@ import { ReactNode, useState } from 'react';
 import {
   buildAdditionalFindings,
   buildConfidenceEvidenceRows,
+  formatAnalysisConfidence,
   sanitizeDisclaimer,
 } from '../../lib/reportPresentation';
 
@@ -117,9 +118,7 @@ export default function MoreDetails({
             <div key={row.id} style={{ marginBottom: 16 }}>
               <p style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--text)' }}>{row.label}</p>
               <p className="muted" style={{ margin: '0 0 6px' }}>
-                {row.confidence_percent != null
-                  ? `신뢰도 ${row.confidence_percent}%`
-                  : `신뢰도 ${row.confidence_label}`}
+                {formatAnalysisConfidence(row.confidence_label, row.confidence_percent)}
               </p>
               {row.evidence_labels.length > 0 && (
                 <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>

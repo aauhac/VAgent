@@ -1,3 +1,5 @@
+import { formatAnalysisConfidence } from '../../lib/reportPresentation';
+
 type Props = {
   label: string;
   leftLabel: string;
@@ -22,6 +24,10 @@ export default function SpectrumAxis({
   showConfidence = true,
 }: Props) {
   const pct = Math.max(0, Math.min(100, Math.round(Number(value) * 100)));
+  const confText =
+    confidencePercent != null || confidenceLabel
+      ? formatAnalysisConfidence(confidenceLabel, confidencePercent)
+      : null;
   return (
     <div className="spectrum-axis">
       <div className="spectrum-head">
@@ -35,21 +41,7 @@ export default function SpectrumAxis({
         <span>{leftLabel}</span>
         <span>{rightLabel}</span>
       </div>
-      {showConfidence && (confidencePercent != null || confidenceLabel) ? (
-        <p className="spectrum-confidence">
-          {confidencePercent != null && confidencePercent >= 70
-            ? '신뢰도 높음'
-            : confidencePercent != null && confidencePercent >= 40
-              ? '신뢰도 보통'
-              : confidenceLabel?.includes('부족') || confidenceLabel?.includes('낮')
-                ? '참고용'
-                : confidencePercent != null
-                  ? '참고용'
-                  : confidenceLabel
-                    ? `신뢰도 ${confidenceLabel}`
-                    : null}
-        </p>
-      ) : null}
+      {showConfidence && confText ? <p className="spectrum-confidence">{confText}</p> : null}
     </div>
   );
 }

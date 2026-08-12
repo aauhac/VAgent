@@ -78,8 +78,15 @@ def analyze_task_audio(
     attempt: int = 1,
 ) -> dict[str, Any]:
     pitch = extract_pitch_features(y, sr)
-    if task_id in ("sustain_a", "sustain_i"):
-        result = observe_sustained_task(y, sr, task_id=task_id, attempt=attempt)
+    if task_id in ("sustain_a", "sustain_i", "high_note_sustain_a"):
+        result = observe_sustained_task(
+            y,
+            sr,
+            task_id="sustain_a" if task_id == "high_note_sustain_a" else task_id,
+            attempt=attempt,
+        )
+        if task_id == "high_note_sustain_a":
+            result["task_id"] = "high_note_sustain_a"
     elif task_id == "siren":
         result = observe_siren_task(y, sr, attempt=attempt)
         _attach_normalized_siren_obs(result, pitch)
@@ -92,10 +99,16 @@ def analyze_task_audio(
     quality_valid = _quality_ok(result)
     usable = quality_valid and bool(compliance.get("ok"))
 
-    if task_id in ("sustain_a", "sustain_i"):
+    if task_id in ("sustain_a", "sustain_i", "high_note_sustain_a"):
         dim_ev = build_sustain_dimension_evidence(
             result, quality_valid=quality_valid, compliance_ok=bool(compliance.get("ok"))
         )
+        # Task ID alone never resolves — require compliance (+ elevation when known)
+        if task_id == "high_note_sustain_a" and not compliance.get("ok"):
+            for _k, ev in (dim_ev or {}).items():
+                if isinstance(ev, dict):
+                    ev["resolution_eligible"] = False
+                    ev["reason"] = ev.get("reason") or "high_note_compliance_failed"
     elif task_id == "siren":
         dim_ev = build_siren_dimension_evidence(
             result,

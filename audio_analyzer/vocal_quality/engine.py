@@ -127,7 +127,7 @@ def compute_vocal_quality_profile(
                 **pressed,
                 "status": "UNKNOWN",
                 "status_label": cfg.STATUS_LABELS["UNKNOWN"],
-                "summary": "분리 아티팩트 가능성으로 압착된 음질 경향을 확정하지 않았어요.",
+                "summary": "분리 아티팩트 가능성으로 단단하고 강한 음질 경향을 확정하지 않았어요.",
                 "hidden": True,
                 "focus_segments": [],
             }

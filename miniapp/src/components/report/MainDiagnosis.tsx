@@ -9,6 +9,7 @@ type Props = {
   coreSpan?: any;
   onPlay?: (ev: any) => void;
   showAudio?: boolean;
+  effortAssessment?: any;
 };
 
 export default function MainDiagnosis({
@@ -16,8 +17,9 @@ export default function MainDiagnosis({
   coreSpan,
   onPlay,
   showAudio = true,
+  effortAssessment,
 }: Props) {
-  const diag = diagnosisFromPrimary(primary);
+  const diag = diagnosisFromPrimary(primary, effortAssessment);
   const range = formatSecRange(
     coreSpan?.original_start_sec ?? coreSpan?.start_sec,
     coreSpan?.original_end_sec ?? coreSpan?.end_sec,

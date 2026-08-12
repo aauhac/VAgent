@@ -98,7 +98,7 @@ def validate_report_consistency(
         patches.setdefault("vocal_type", {})["type_id"] = "UNRESOLVED"
         patches["vocal_type"]["base_type"] = "UNRESOLVED"
         patches["vocal_type"]["global_type"] = "UNRESOLVED"
-        patches["vocal_type"]["display_name"] = "발성 타입 판단 보류"
+        patches["vocal_type"]["display_name"] = "발성 성향 판단 보류"
         patches["vocal_type"]["available"] = False
 
     if btype == "SMOOTH_BRIDGE" and reg_suf in ("INSUFFICIENT", "UNAVAILABLE"):
@@ -209,6 +209,22 @@ def validate_report_consistency(
                         "message": f"Modifier {mod} with {suf} criteria",
                     }
                 )
+
+    # Effort Main Finding vs profile (debug/warn only — no production overwrite)
+    effort_dim = dims.get("vocal_effort_strain") or {}
+    assessment = effort_dim.get("effort_assessment")
+    primary_bn = decision.get("primary_bottleneck") or decision.get("primary") or {}
+    primary_id = primary_bn.get("id")
+    if assessment and primary_id == "GENERAL_EXCESS_EFFORT":
+        sev = (assessment.get("global_severity") or assessment.get("severity") or "").upper()
+        if sev == "LOW":
+            issues.append(
+                {
+                    "id": "general_excess_effort_vs_low_severity",
+                    "severity": "WARN",
+                    "message": "GENERAL_EXCESS_EFFORT primary with LOW canonical effort severity",
+                }
+            )
 
     return {
         "ok": not any(i["severity"] == "ERROR" for i in issues),

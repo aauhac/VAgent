@@ -55,9 +55,9 @@ def test_flow_a_song_detail_no_safety_redirect(client):
     """FLOW A: free → mock song detail → detailed report (NOT diagnostic tasks)."""
     c = client
     h = {"X-User-Id": "demo-user"}
-    aid = c.post("/v1/analyses", files={"file": ("s.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
+    aid = c.post(
+        "/v1/analyses", files={"file": ("s.wav", _wav(), "audio/wav")}, headers=h
+    ).json()["analysis_id"]
     _wait(c, aid)
     unlock = c.post(f"/v1/analyses/{aid}/mock-unlock-detail", headers=h).json()
     assert "/detail" in unlock["redirect"]
@@ -79,9 +79,9 @@ def test_flow_b_diagnostic_full_to_safety(client):
     """FLOW B: free → diagnostic full mock → safety allowed (+ song detail)."""
     c = client
     h = {"X-User-Id": "demo-user"}
-    aid = c.post("/v1/analyses", files={"file": ("s.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
+    aid = c.post(
+        "/v1/analyses", files={"file": ("s.wav", _wav(), "audio/wav")}, headers=h
+    ).json()["analysis_id"]
     _wait(c, aid)
     sid = c.post(
         "/v1/diagnostic-sessions", headers=h, params={"source_analysis_id": aid}
@@ -106,9 +106,9 @@ def test_flow_c_upgrade_after_song_detail(client):
     """FLOW C: song detail → upgrade → safety."""
     c = client
     h = {"X-User-Id": "demo-user"}
-    aid = c.post("/v1/analyses", files={"file": ("s.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
+    aid = c.post(
+        "/v1/analyses", files={"file": ("s.wav", _wav(), "audio/wav")}, headers=h
+    ).json()["analysis_id"]
     _wait(c, aid)
     c.post(f"/v1/analyses/{aid}/mock-unlock-detail", headers=h)
     offers = c.get(f"/v1/products?analysis_id={aid}", headers=h).json()

@@ -44,6 +44,9 @@ def test_registry_covers_have_evidence_builders():
         elif tid == "siren":
             y2, sr2 = _siren()
             res = analyze_task_audio(y2, sr2, task_id=tid)
+        elif tid == "high_note_sustain_a":
+            y2, sr2 = _tone(dur=4.0, freq=440.0)
+            res = analyze_task_audio(y2, sr2, task_id=tid)
         else:
             res = analyze_task_audio(y, sr, task_id=tid)
         assert "dimension_evidence" in res

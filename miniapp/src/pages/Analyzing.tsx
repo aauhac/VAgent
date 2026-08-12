@@ -28,6 +28,11 @@ export default function Analyzing() {
             nav('/quality', { state: { quality: q, analysisId: id }, replace: true });
             return;
           }
+          try {
+            sessionStorage.setItem('vocalfb_last_analysis_id', id);
+          } catch {
+            /* ignore */
+          }
           saveHistory({
             id,
             overall: job.result.score?.overall,

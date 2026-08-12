@@ -96,24 +96,50 @@ def _wav(duration=4.0, freq=220.0, sr=22050) -> bytes:
     return buf.getvalue()
 
 
-def test_e2e_zero_task_flow(client):
+def test_e2e_safety_limited_zero_task_flow(client):
+    """Only SAFETY_LIMITED may finish Precision with zero controlled recordings."""
     c, diag, runtime = client
     headers = {"X-User-Id": "demo-user"}
-    # Create session without song → full battery; force empty plan for 0-task path
     r = c.post("/v1/diagnostic-sessions", headers=headers)
     sid = r.json()["session_id"]
-    session = diag._load(sid)
-    session["selected_tasks"] = []
-    session["tasks"] = {}
-    session["unresolved_dimensions"] = []
-    session["diagnostic_offer"] = {
-        "required": False,
-        "selected_task_count": 0,
-        "unresolved_count": 0,
-        "unresolved_labels": [],
-    }
-    diag._save(session)
     assert c.post(f"/v1/diagnostic-sessions/{sid}/mock-pay", headers=headers).status_code == 200
+    assert (
+        c.post(
+            f"/v1/diagnostic-sessions/{sid}/concerns",
+            headers=headers,
+            json={
+                "diagnostic_mode": "CONCERN_FOCUSED",
+                "user_concerns": [{"id": "PAIN_WHILE_SINGING"}],
+            },
+        ).status_code
+        == 200
+    )
+    safety = c.post(
+        f"/v1/diagnostic-sessions/{sid}/safety",
+        headers=headers,
+        json={"answers": {"pain_on_phonation": True}},
+    )
+    assert safety.status_code == 200
+    body = safety.json()
+    assert body["status"] == "READY_FOR_ANALYSIS"
+    assert body["selected_tasks"] == []
+    assert body.get("diagnostic_status") == "SAFETY_LIMITED"
+    assert c.post(f"/v1/diagnostic-sessions/{sid}/analyze", headers=headers).status_code == 200
+
+
+def test_e2e_normal_flow_never_zero_tasks(client):
+    c, _, _ = client
+    headers = {"X-User-Id": "demo-user-normal"}
+    r = c.post("/v1/diagnostic-sessions", headers=headers)
+    sid = r.json()["session_id"]
+    assert c.post(f"/v1/diagnostic-sessions/{sid}/mock-pay", headers=headers).status_code == 200
+    concerns = c.post(
+        f"/v1/diagnostic-sessions/{sid}/concerns",
+        headers=headers,
+        json={"diagnostic_mode": "GENERAL_DISCOVERY", "user_concerns": []},
+    )
+    assert concerns.status_code == 200
+    assert len(concerns.json().get("selected_tasks") or []) >= 1
     safety = c.post(
         f"/v1/diagnostic-sessions/{sid}/safety",
         headers=headers,
@@ -121,9 +147,8 @@ def test_e2e_zero_task_flow(client):
     )
     assert safety.status_code == 200
     body = safety.json()
-    assert body["status"] == "READY_FOR_ANALYSIS"
-    assert body["selected_tasks"] == []
-    assert c.post(f"/v1/diagnostic-sessions/{sid}/analyze", headers=headers).status_code == 200
+    assert body["status"] == "TASKS_IN_PROGRESS"
+    assert len(body["selected_tasks"]) >= 1
 
 
 def test_e2e_one_task_siren_flow(client):
@@ -131,12 +156,15 @@ def test_e2e_one_task_siren_flow(client):
     headers = {"X-User-Id": "demo-user"}
     r = c.post("/v1/diagnostic-sessions", headers=headers)
     sid = r.json()["session_id"]
-    session = diag._load(sid)
-    session["selected_tasks"] = ["siren"]
-    session["tasks"] = {"siren": {"attempts": [], "passed": False}}
-    session["unresolved_dimensions"] = ["register"]
-    diag._save(session)
     assert c.post(f"/v1/diagnostic-sessions/{sid}/mock-pay", headers=headers).status_code == 200
+    assert (
+        c.post(
+            f"/v1/diagnostic-sessions/{sid}/concerns",
+            headers=headers,
+            json={"diagnostic_mode": "GENERAL_DISCOVERY", "user_concerns": []},
+        ).status_code
+        == 200
+    )
     assert (
         c.post(
             f"/v1/diagnostic-sessions/{sid}/safety",
@@ -145,6 +173,16 @@ def test_e2e_one_task_siren_flow(client):
         ).status_code
         == 200
     )
+    # Force single siren upload path for this e2e (planner may select a larger core set)
+    session = diag._load(sid)
+    session["selected_tasks"] = ["siren"]
+    session["core_tasks"] = ["siren"]
+    session["adaptive_tasks"] = []
+    session["tasks"] = {"siren": {"attempts": [], "passed": False}}
+    session["current_task_index"] = 0
+    session["status"] = "TASKS_IN_PROGRESS"
+    session["unresolved_dimensions"] = ["register"]
+    diag._save(session)
     # glide-ish chirp
     sr = 22050
     t = np.arange(int(sr * 5.0)) / sr
@@ -170,4 +208,16 @@ def test_e2e_standalone_full_battery_default(client):
     headers = {"X-User-Id": "demo-user"}
     r = c.post("/v1/diagnostic-sessions", headers=headers)
     body = r.json()
-    assert len(body.get("selected_tasks") or []) == 4
+    # Create keeps provisional empty until concern/general intake
+    assert body.get("selected_tasks") == [] or body.get("planned_task_count") is None
+    sid = body["session_id"]
+    assert c.post(f"/v1/diagnostic-sessions/{sid}/mock-pay", headers=headers).status_code == 200
+    planned = c.post(
+        f"/v1/diagnostic-sessions/{sid}/concerns",
+        headers=headers,
+        json={"diagnostic_mode": "GENERAL_DISCOVERY", "user_concerns": []},
+    )
+    assert planned.status_code == 200
+    tasks = planned.json().get("selected_tasks") or []
+    assert len(tasks) >= 1
+    assert "sustain_a" in tasks

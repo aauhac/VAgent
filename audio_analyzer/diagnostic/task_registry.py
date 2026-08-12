@@ -8,9 +8,19 @@ from __future__ import annotations
 
 from typing import Any
 
-PLANNER_VERSION = "adaptive-dx-planner-v1.2"
-PROTOCOL_VERSION = "diagnostic-protocol-v1.2"
-REPORT_VERSION = "diagnostic-report-v1.2"
+PLANNER_VERSION = "adaptive-dx-planner-v1.3"
+PROTOCOL_VERSION = "diagnostic-protocol-v1.3"
+REPORT_VERSION = "diagnostic-report-v1.3"
+
+# Precision core: steady-state phonation + pitch/register transition
+# Covers contact, breathiness, stability, register with only 2 tasks.
+PRECISION_CORE_GENERAL = ("sustain_a", "siren")
+PRECISION_CORE_FALLBACK = ("sustain_a",)
+
+DIAGNOSTIC_MODE_CONCERN = "CONCERN_FOCUSED"
+DIAGNOSTIC_MODE_GENERAL = "GENERAL_DISCOVERY"
+DIAGNOSTIC_STATUS_NORMAL = "NORMAL"
+DIAGNOSTIC_STATUS_SAFETY_LIMITED = "SAFETY_LIMITED"
 
 # Product-facing dimension keys (planner) → song engine dimension ids
 DIMENSION_ALIASES = {
@@ -103,6 +113,23 @@ TASK_REGISTRY: dict[str, dict[str, Any]] = {
         "cost": 1.0,
         "purpose_labels": ["힘 사용", "강약 반응"],
     },
+    "high_note_sustain_a": {
+        "task_id": "high_note_sustain_a",
+        "covers": ["effort", "breathiness", "stability", "resonance"],
+        "secondary": ["contact"],
+        "expected_gain": {
+            "effort": 1.0,
+            "breathiness": 0.9,
+            "stability": 0.9,
+            "resonance": 0.95,
+            "contact": 0.45,
+        },
+        "cost": 1.15,
+        "optional_high_note": True,
+        "purpose_labels": ["고음 힘", "고음 숨 섞임", "고음 안정", "고음 공명"],
+        "user_prompt": "무리하지 않는 범위에서 평소보다 높은 음으로 '아—'를 3~4초 유지해 주세요.",
+        "safety_note": "통증·불편·목소리 이상이 느껴지면 즉시 중단하세요.",
+    },
 }
 
 # Map legacy / coaching recommended_task strings → supported task ids
@@ -111,6 +138,8 @@ RECOMMENDED_TASK_NORMALIZE: dict[str, str | None] = {
     "sustain_i": "sustain_i",
     "siren": "siren",
     "dynamic_swell": "dynamic_swell",
+    "high_note_sustain_a": "high_note_sustain_a",
+    "high_note_sustain": "high_note_sustain_a",
     "sustain_a_soft": "sustain_a",
     "sustain_a_strong": "sustain_a",
     "sustain_a_comfortable": "sustain_a",

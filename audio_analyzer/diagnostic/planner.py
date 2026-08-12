@@ -12,7 +12,13 @@ from audio_analyzer.diagnostic.task_registry import (
     DIMENSION_ALIASES,
     DIMENSION_PRIORITY,
     DIMENSION_USER_LABELS,
+    DIAGNOSTIC_MODE_CONCERN,
+    DIAGNOSTIC_MODE_GENERAL,
+    DIAGNOSTIC_STATUS_NORMAL,
+    DIAGNOSTIC_STATUS_SAFETY_LIMITED,
     PLANNER_VERSION,
+    PRECISION_CORE_FALLBACK,
+    PRECISION_CORE_GENERAL,
     PROTOCOL_VERSION,
     TASK_REGISTRY,
     normalize_recommended_task,
@@ -188,24 +194,33 @@ def build_uncertainty_profile(
             e["dimension_id"] for e in entries if e["state"] == "PARTIALLY_RESOLVED"
         ],
         "unsupported_recommendations": unsupported,
+        "song_context": song_context,
     }
 
 
-def _task_gain(task_id: str, remaining: set[str]) -> float:
+def _task_gain(
+    task_id: str,
+    remaining: set[str],
+    *,
+    concern_boost: Optional[dict[str, float]] = None,
+) -> float:
     meta = TASK_REGISTRY.get(task_id) or {}
     gains = meta.get("expected_gain") or {}
     primary = set(meta.get("covers") or [])
     score = 0.0
+    boost = concern_boost or {}
     for d in remaining:
         g = float(gains.get(d) or 0.0)
         if d in primary:
             score += g
         elif g > 0:
             score += g * 0.5
+        score += float(boost.get(d) or 0.0) * 0.35
     # Priority bonus
     for i, d in enumerate(DIMENSION_PRIORITY):
         if d in remaining and d in primary:
             score += 0.15 * (len(DIMENSION_PRIORITY) - i) / len(DIMENSION_PRIORITY)
+            score += float(boost.get(d) or 0.0) * 0.2
     return score
 
 
@@ -214,6 +229,8 @@ def select_diagnostic_tasks(
     *,
     fallback_all_if_empty_song: bool = False,
     force_tasks: Optional[list[str]] = None,
+    user_concerns: Optional[list[dict[str, Any]]] = None,
+    pain_safety_flag: bool = False,
 ) -> dict[str, Any]:
     """Greedy set-cover: minimize recordings while maximizing unresolved coverage."""
     if force_tasks is not None:
@@ -228,9 +245,27 @@ def select_diagnostic_tasks(
             "rationale": {"mode": "forced", "tasks": selected},
         }
 
+    from .concerns import concern_dimension_boost, filter_tasks_for_safety, normalize_user_concerns
+
+    concerns = normalize_user_concerns(user_concerns)
+    concern_boost = concern_dimension_boost(concerns) if concerns else {}
+
     remaining = set(uncertainty_profile.get("unresolved_dimensions") or [])
+    # Concern relevance: boost dimensions in hypothesis space without forcing re-measure of RESOLVED
+    if concern_boost:
+        dim_states = {
+            e["dimension_id"]: e.get("state")
+            for e in (uncertainty_profile.get("dimensions") or [])
+        }
+        for dim, _b in sorted(concern_boost.items(), key=lambda kv: -kv[1]):
+            if dim_states.get(dim) in ("UNRESOLVED", "PARTIALLY_RESOLVED"):
+                remaining.add(dim)
+            elif dim_states.get(dim) is None and dim in DIMENSION_PRIORITY:
+                remaining.add(dim)
+
     if not remaining and fallback_all_if_empty_song:
-        selected = list(TASK_REGISTRY.keys())
+        # Optional high-note task is song-context driven — not part of default battery
+        selected = [t for t in TASK_REGISTRY.keys() if not (TASK_REGISTRY[t].get("optional_high_note"))]
         return {
             "planner_version": PLANNER_VERSION,
             "protocol_version": PROTOCOL_VERSION,
@@ -244,7 +279,16 @@ def select_diagnostic_tasks(
     selected: list[str] = []
     coverage: dict[str, list[str]] = {}
     rationale_steps: list[dict[str, Any]] = []
-    available = list(TASK_REGISTRY.keys())
+    song_ctx = uncertainty_profile.get("song_context") or {}
+    high_note_needed = bool(
+        song_ctx.get("high_note_profile_unavailable")
+        or song_ctx.get("high_note_uncertain")
+    )
+    available = [
+        tid
+        for tid in TASK_REGISTRY.keys()
+        if (not TASK_REGISTRY[tid].get("optional_high_note")) or high_note_needed
+    ]
 
     while remaining:
         best_id = None
@@ -259,7 +303,9 @@ def select_diagnostic_tasks(
                 gains = TASK_REGISTRY[tid].get("expected_gain") or {}
                 if not any(d in remaining and float(gains.get(d) or 0) >= 0.5 for d in remaining):
                     continue
-            score = _task_gain(tid, remaining) / float(TASK_REGISTRY[tid].get("cost") or 1.0)
+            score = _task_gain(tid, remaining, concern_boost=concern_boost) / float(
+                TASK_REGISTRY[tid].get("cost") or 1.0
+            )
             if score > best_score:
                 best_score = score
                 best_id = tid
@@ -285,6 +331,13 @@ def select_diagnostic_tasks(
     # Stable order: registry order
     order = list(TASK_REGISTRY.keys())
     selected = sorted(selected, key=lambda t: order.index(t) if t in order else 99)
+    selected = filter_tasks_for_safety(
+        selected,
+        pain_flag=pain_safety_flag or bool(concerns and any(
+            c.get("id") in {"PAIN_WHILE_SINGING", "PAIN_AFTER_SINGING", "SPEAKING_DISCOMFORT", "PERSISTENT_HOARSENESS"}
+            for c in concerns
+        )),
+    )
 
     return {
         "planner_version": PLANNER_VERSION,
@@ -292,8 +345,16 @@ def select_diagnostic_tasks(
         "resolved_dimensions": uncertainty_profile.get("resolved_dimensions") or [],
         "unresolved_dimensions": uncertainty_profile.get("unresolved_dimensions") or [],
         "selected_tasks": selected,
+        "provisional_task_count": len(selected),
+        "planned_task_count": len(selected),
         "expected_coverage": coverage,
-        "rationale": {"mode": "set_cover", "steps": rationale_steps},
+        "rationale": {
+            "mode": "set_cover_provisional",
+            "steps": rationale_steps,
+            "concern_boost": concern_boost if concern_boost else None,
+            "user_concern_ids": [c.get("id") for c in concerns],
+            "note": "song-only provisional; precision protocol may add core tasks",
+        },
         "debug": {
             "dimension_states": [
                 {"dimension": e["dimension_id"], "state": e["state"], "confidence": e.get("confidence")}
@@ -304,14 +365,164 @@ def select_diagnostic_tasks(
     }
 
 
+def _concern_wants_register(concerns: list[dict[str, Any]]) -> bool:
+    ids = {str(c.get("id")) for c in concerns}
+    return bool(
+        ids
+        & {
+            "HIGH_NOTE_CANNOT_REACH",
+            "HIGH_NOTE_FLIPS",
+            "HIGH_NOTE_UNSTABLE",
+            "REGISTER_CONNECTION_DIFFICULT",
+            "TIMBRE_CHANGES_HIGH",
+        }
+    )
+
+
+def _concern_wants_high_note(concerns: list[dict[str, Any]]) -> bool:
+    ids = {str(c.get("id")) for c in concerns}
+    return bool(
+        ids
+        & {
+            "HIGH_NOTE_CANNOT_REACH",
+            "HIGH_NOTE_TOO_EFFORTFUL",
+            "HIGH_NOTE_FLIPS",
+            "HIGH_NOTE_THINS",
+            "HIGH_NOTE_UNSTABLE",
+            "TIMBRE_CHANGES_HIGH",
+        }
+    )
+
+
+def plan_precision_protocol(
+    uncertainty_profile: dict[str, Any],
+    *,
+    diagnostic_mode: str = DIAGNOSTIC_MODE_GENERAL,
+    user_concerns: Optional[list[dict[str, Any]]] = None,
+    pain_safety_flag: bool = False,
+    safety_flags: Optional[list[str]] = None,
+) -> dict[str, Any]:
+    """Precision protocol: CORE + ADAPTIVE. Normal flow always has >= 1 controlled task."""
+    from .concerns import concern_dimension_boost, filter_tasks_for_safety, normalize_user_concerns
+
+    concerns = normalize_user_concerns(user_concerns)
+    raw_mode = (diagnostic_mode or "").upper().strip()
+    if raw_mode in (DIAGNOSTIC_MODE_GENERAL, "GENERAL"):
+        mode = DIAGNOSTIC_MODE_GENERAL
+        concerns = []
+    elif raw_mode in (DIAGNOSTIC_MODE_CONCERN, "CONCERN") or concerns:
+        mode = DIAGNOSTIC_MODE_CONCERN
+    else:
+        mode = DIAGNOSTIC_MODE_GENERAL
+        concerns = []
+
+    pain = bool(pain_safety_flag) or any(
+        c.get("id") in {"PAIN_WHILE_SINGING", "PAIN_AFTER_SINGING", "SPEAKING_DISCOMFORT", "PERSISTENT_HOARSENESS"}
+        for c in concerns
+    )
+    safety_flags = list(safety_flags or [])
+
+    # --- CORE ---
+    if mode == DIAGNOSTIC_MODE_GENERAL:
+        core = list(PRECISION_CORE_GENERAL)
+    else:
+        core = ["sustain_a"]
+        if _concern_wants_register(concerns):
+            core.append("siren")
+        # High-note concern → prefer high_note_sustain_a in adaptive, keep sustain baseline
+
+    # --- ADAPTIVE set-cover on remaining unresolved ---
+    provisional = select_diagnostic_tasks(
+        uncertainty_profile,
+        user_concerns=concerns if mode == DIAGNOSTIC_MODE_CONCERN else None,
+        pain_safety_flag=False,  # apply safety once at the end
+    )
+    adaptive = [t for t in (provisional.get("selected_tasks") or []) if t not in core]
+
+    if mode == DIAGNOSTIC_MODE_CONCERN and _concern_wants_high_note(concerns):
+        song_ctx = uncertainty_profile.get("song_context") or {}
+        # Prefer controlled high-note evidence when concern mentions high notes
+        if "high_note_sustain_a" not in adaptive and "high_note_sustain_a" not in core:
+            adaptive.append("high_note_sustain_a")
+        # Allow high_note even if song didn't flag uncertain
+        _ = song_ctx
+
+    # Merge unique, registry order
+    order = list(TASK_REGISTRY.keys())
+    merged = list(dict.fromkeys([*core, *adaptive]))
+    merged = sorted(merged, key=lambda t: order.index(t) if t in order else 99)
+
+    # Safety filter
+    filtered = filter_tasks_for_safety(merged, pain_flag=pain, safety_flags=safety_flags)
+    status = DIAGNOSTIC_STATUS_NORMAL
+
+    # Acute phonation pain / breathing difficulty → do not force any controlled recording
+    severe_safety = {"pain_on_phonation", "breathing_difficulty"}
+    if any(f in severe_safety for f in safety_flags) or (
+        pain and not filtered and pain_safety_flag
+    ):
+        if any(f in severe_safety for f in safety_flags):
+            filtered = []
+            status = DIAGNOSTIC_STATUS_SAFETY_LIMITED
+        elif pain and not filtered:
+            status = DIAGNOSTIC_STATUS_SAFETY_LIMITED
+
+    if pain and not filtered:
+        status = DIAGNOSTIC_STATUS_SAFETY_LIMITED
+    elif not filtered:
+        # Normal invariant: never finish with zero controlled tasks
+        filtered = list(PRECISION_CORE_FALLBACK)
+        core = list(PRECISION_CORE_FALLBACK)
+        adaptive = []
+
+    core_final = [t for t in filtered if t in core]
+    adaptive_final = [t for t in filtered if t not in core_final]
+    if not core_final and filtered:
+        core_final = [filtered[0]]
+        adaptive_final = filtered[1:]
+
+    coverage = {t: task_covers_primary(t) for t in filtered}
+    return {
+        "planner_version": PLANNER_VERSION,
+        "protocol_version": PROTOCOL_VERSION,
+        "diagnostic_mode": mode,
+        "diagnostic_status": status,
+        "resolved_dimensions": uncertainty_profile.get("resolved_dimensions") or [],
+        "unresolved_dimensions": uncertainty_profile.get("unresolved_dimensions") or [],
+        "core_tasks": core_final,
+        "adaptive_tasks": adaptive_final,
+        "selected_tasks": filtered,
+        "provisional_task_count": int(provisional.get("provisional_task_count") or 0),
+        "planned_task_count": len(filtered),
+        "expected_coverage": coverage,
+        "rationale": {
+            "mode": "precision_core_adaptive",
+            "diagnostic_mode": mode,
+            "diagnostic_status": status,
+            "core": core_final,
+            "adaptive": adaptive_final,
+            "pain_safety": pain,
+            "user_concern_ids": [c.get("id") for c in concerns],
+            "provisional_set_cover": provisional.get("rationale"),
+        },
+        "debug": provisional.get("debug") or {},
+    }
+
+
 def task_covers_primary(task_id: str) -> list[str]:
     return list((TASK_REGISTRY.get(task_id) or {}).get("covers") or [])
 
 
 def explain_task_selection(plan: dict[str, Any]) -> dict[str, Any]:
-    """User-safe explanation (no criterion ids)."""
+    """User-safe explanation (no criterion ids).
+
+    Song-only provisional counts are NOT used to claim 'no recording needed'.
+    Precision product always expects controlled recordings in normal flow.
+    """
     unresolved = plan.get("unresolved_dimensions") or []
     selected = plan.get("selected_tasks") or []
+    planned = int(plan.get("planned_task_count") if plan.get("planned_task_count") is not None else len(selected))
+    provisional = int(plan.get("provisional_task_count") if plan.get("provisional_task_count") is not None else planned)
     labels = user_labels_for_dimensions(unresolved)
     purposes = []
     for tid in selected:
@@ -322,41 +533,78 @@ def explain_task_selection(plan: dict[str, Any]) -> dict[str, Any]:
                 "purpose_labels": meta.get("purpose_labels") or [],
             }
         )
-    n = len(selected)
-    if n == 0:
-        cta = (
-            "이번 음원에서는 주요 발성 특성이 이미 충분히 확인됐어요."
-        )
-        lead = "추가 표준 녹음이 필수는 아니에요."
+    mode = plan.get("diagnostic_mode")
+    status = plan.get("diagnostic_status") or DIAGNOSTIC_STATUS_NORMAL
+
+    if status == DIAGNOSTIC_STATUS_SAFETY_LIMITED and planned == 0:
+        cta = "현재 불편감이 있어 추가 고음·강한 소리 검사는 진행하지 않아요."
+        lead = "안전을 위해 추가 녹음을 제한했어요."
+        est = "추가 녹음 없음"
+    elif planned > 0:
+        if mode == DIAGNOSTIC_MODE_CONCERN:
+            cta = (
+                f"선택한 고민을 더 정확히 확인하기 위해 "
+                f"짧은 추가 녹음 {planned}개를 진행해요."
+            )
+            lead = f"추가 녹음 {planned}개"
+        elif mode == DIAGNOSTIC_MODE_GENERAL:
+            cta = "전체 발성 특성을 더 정확히 확인하기 위해 짧은 추가 녹음을 진행해요."
+            lead = f"추가 녹음 {planned}개"
+        else:
+            # Provisional / pre-concern offer — never claim zero recordings skip precision
+            cta = (
+                "현재 노래와 짧은 추가 녹음을 함께 분석해 "
+                "발성 특성을 더 정밀하게 확인해요."
+            )
+            lead = "몇 가지 짧은 추가 녹음"
+        est = f"약 {max(1, int(round(planned * 0.75)))}분"
     else:
-        joined = "·".join(labels[:3]) if labels else "일부 발성 요소"
+        # Provisional song-only zero — still advertise precision as controlled recording product
         cta = (
-            f"노래만으로 확인하기 어려운 부분이 있어요. "
-            f"{joined}은(는) 이번 노래만으로 구분하기 어려웠어요. "
-            f"짧은 표준 발성 {n}가지를 추가하면 이 부분을 더 정밀하게 확인할 수 있어요."
+            "현재 노래와 짧은 추가 녹음을 함께 분석해 "
+            "발성 특성을 더 정밀하게 확인해요."
         )
-        lead = f"이번에 확인할 항목: {' · '.join(labels[:4])}" if labels else "추가 확인"
-    est_min = max(1, int(round(n * 0.75))) if n else 0
+        lead = "몇 가지 짧은 추가 녹음"
+        est = "짧은 추가 녹음"
+
     return {
         "lead": lead,
         "cta_text": cta,
         "unresolved_labels": labels,
         "task_purposes": purposes,
-        "selected_task_count": n,
-        "estimated_duration_text": f"약 {est_min}분" if n else "추가 녹음 없음",
+        "selected_task_count": planned,
+        "provisional_task_count": provisional,
+        "planned_task_count": planned,
+        "estimated_duration_text": est,
         "diagnostic_offer": {
             "unresolved_count": len(unresolved),
             "unresolved_labels": labels,
-            "selected_task_count": n,
-            "estimated_duration_text": f"약 {est_min}분" if n else "추가 녹음 없음",
-            "required": n > 0,
-            "required_tasks": n > 0,
+            # Provisional only — UI must not treat this as final planned count
+            "selected_task_count": None,
+            "provisional_task_count": provisional,
+            "planned_task_count": planned if mode else None,
+            "estimated_duration_text": est,
+            "required": True,
+            "required_tasks": True,
+            "precision_requires_recording": True,
         },
     }
 
 
-def plan_from_song_analysis(song: dict[str, Any]) -> dict[str, Any]:
-    """Convenience: song public/internal analysis → full plan + UX copy."""
+def plan_from_song_analysis(
+    song: dict[str, Any],
+    *,
+    user_concerns: Optional[list[dict[str, Any]]] = None,
+    pain_safety_flag: bool = False,
+    diagnostic_mode: Optional[str] = None,
+    safety_flags: Optional[list[str]] = None,
+    precision: bool = False,
+) -> dict[str, Any]:
+    """Song analysis → plan.
+
+    precision=False: provisional song-only set-cover (CTA offer).
+    precision=True: CORE+ADAPTIVE protocol with controlled recording invariant.
+    """
     vf = song.get("vocal_function_profile") or song.get("vocal_function") or {}
     if not vf and isinstance(song.get("report"), dict):
         vf = (song["report"].get("vocal_function_profile") or {})
@@ -364,12 +612,43 @@ def plan_from_song_analysis(song: dict[str, Any]) -> dict[str, Any]:
     dims = vf.get("dimensions") or {}
     coach = vf.get("coaching_decision") or {}
     cands = coach.get("measurement_candidates") or vf.get("measurement_candidates") or []
+    hn = vf.get("high_note_function_profile") or {}
+    high_note_unavailable = isinstance(hn, dict) and hn.get("available") is False
+    high_note_uncertain = False
+    if isinstance(hn, dict) and hn.get("available"):
+        axes = hn.get("axes") or {}
+        uncertain_n = sum(
+            1
+            for ax in axes.values()
+            if isinstance(ax, dict) and str(ax.get("status") or "").upper() == "UNCERTAIN"
+        )
+        high_note_uncertain = uncertain_n >= 2 or (hn.get("confidence_label") == "low")
     profile = build_uncertainty_profile(
         criteria_matrix=criteria,
         dimensions=dims,
         measurement_candidates=cands,
-        song_context={"has_song": True},
+        song_context={
+            "has_song": True,
+            "high_note_profile_unavailable": high_note_unavailable,
+            "high_note_uncertain": high_note_uncertain,
+        },
     )
-    plan = select_diagnostic_tasks(profile)
+    if precision or diagnostic_mode:
+        mode = diagnostic_mode or (
+            DIAGNOSTIC_MODE_CONCERN if user_concerns else DIAGNOSTIC_MODE_GENERAL
+        )
+        plan = plan_precision_protocol(
+            profile,
+            diagnostic_mode=mode,
+            user_concerns=user_concerns,
+            pain_safety_flag=pain_safety_flag,
+            safety_flags=safety_flags,
+        )
+    else:
+        plan = select_diagnostic_tasks(
+            profile,
+            user_concerns=user_concerns,
+            pain_safety_flag=pain_safety_flag,
+        )
     explain = explain_task_selection(plan)
     return {**plan, **explain, "uncertainty_profile": profile}

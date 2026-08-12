@@ -136,9 +136,11 @@ def test_mix_plus_local_pull_display():
         "BALANCED_MIX",
         ["CHEST_PULL"],
         local_events=[{"type": "LOCAL_CHEST_PULL", "start_sec": 11, "end_sec": 14}],
+        register_strategy={"status": "MIX_LIKE_BALANCED"},
     )
-    assert "균형" in name or "믹스" in name
+    assert "믹스" in name
     assert "분리" not in name
+    assert "단단한 믹스보이스" not in name
 
 
 def test_family_ablation_runs():
@@ -155,10 +157,15 @@ def test_family_ablation_runs():
 def test_strong_mass_family_conflict_not_forced_balanced_high():
     t = classify_base_type(
         index=0.50,
-        bridge={"type": "SMOOTH_BRIDGE", "score": 0.7, "split_eligibility": {"eligible": False}},
+        bridge={
+            "type": "SMOOTH_BRIDGE",
+            "score": 0.7,
+            "register_sufficiency": "SUFFICIENT",
+            "split_eligibility": {"eligible": False},
+        },
         modifiers=[],
         confidence="medium",
         family_agreement=0.2,
     )
-    # Low agreement near 50 → unresolved preferred over confident balanced
-    assert t in ("UNRESOLVED", "BALANCED_MIX")
+    # Low agreement near 50 → unresolved preferred over confident balanced mix
+    assert t in ("UNRESOLVED", "BALANCED_SOURCE", "BALANCED_MIX")

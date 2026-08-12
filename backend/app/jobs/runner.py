@@ -106,6 +106,12 @@ class JobRunner:
         disk_existed = path.exists()
         if disk_existed:
             shutil.rmtree(path, ignore_errors=True)
+        try:
+            from ..db.analysis_repo import soft_delete_analysis
+
+            soft_delete_analysis(analysis_id)
+        except Exception:
+            pass
         return existed or disk_existed
 
     def resolve_preview_path(self, analysis_id: str) -> Optional[Path]:
@@ -147,6 +153,27 @@ class JobRunner:
                 return
             if analysis_id in self._jobs:
                 self._jobs[analysis_id].update(kwargs)
+        status = kwargs.get("status")
+        if status in ("analyzing", "completed", "failed", "queued"):
+            self._sync_db_status(analysis_id, **kwargs)
+
+    def _sync_db_status(self, analysis_id: str, **kwargs: Any) -> None:
+        try:
+            from ..db.analysis_repo import update_analysis_status
+
+            update_analysis_status(
+                analysis_id,
+                status=str(kwargs.get("status") or "analyzing"),
+                stage=kwargs.get("stage"),
+                progress=kwargs.get("progress") if isinstance(kwargs.get("progress"), int) else None,
+                error_message=kwargs.get("error"),
+                error_code=kwargs.get("error_code"),
+                public_summary=kwargs.get("public_summary"),
+                preview_storage_key=kwargs.get("preview_storage_key"),
+                result_storage_key=kwargs.get("result_storage_key"),
+            )
+        except Exception:
+            pass
 
     def _run(
         self,
@@ -207,12 +234,29 @@ class JobRunner:
                 "result": pub,
                 "analysis_status": result.get("analysis_status", "completed"),
                 "feedback_status": result.get("feedback_status", "skipped"),
+                "analysis_mode": analysis_mode,
+                "input_mode": input_mode,
             }
             status_path.write_text(
                 json.dumps(payload, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
-            self._update(**payload)
+            preview_key = f"{analysis_id}/preview.wav" if (self.runtime_dir / analysis_id / "preview.wav").exists() else None
+            result_key = f"{analysis_id}/public_result.json"
+            vt = pub.get("vocal_type_teaser") or pub.get("vocal_type_profile")
+            self._update(
+                analysis_id,
+                status="completed",
+                stage="done",
+                progress=100,
+                error=None,
+                result=pub,
+                analysis_status=result.get("analysis_status", "completed"),
+                feedback_status=result.get("feedback_status", "skipped"),
+                public_summary={"vocal_type": vt} if vt else None,
+                preview_storage_key=preview_key,
+                result_storage_key=result_key,
+            )
         except Exception as exc:  # noqa: BLE001
             if self._is_deleted(analysis_id):
                 return
@@ -256,6 +300,44 @@ class JobRunner:
                         "progress": 100,
                     }
                 data.setdefault("analysis_id", analysis_id)
+                # Restore mode fields lost on older job_status.json / process restart
+                if not data.get("analysis_mode") or not data.get("input_mode"):
+                    meta_path = self.runtime_dir / analysis_id / "analysis_meta.json"
+                    if meta_path.exists():
+                        try:
+                            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                            if isinstance(meta, dict):
+                                data.setdefault("analysis_mode", meta.get("analysis_mode"))
+                                data.setdefault("input_mode", meta.get("input_mode"))
+                        except (json.JSONDecodeError, OSError):
+                            pass
+                # Restart recovery: in-flight jobs cannot continue after process death
+                if str(data.get("status") or "").lower() in ("queued", "analyzing"):
+                    data["status"] = "failed"
+                    data["stage"] = "interrupted_restart"
+                    data["error"] = data.get("error") or "INTERRUPTED_RESTART"
+                    data["error_code"] = "INTERRUPTED_RESTART"
+                    data["progress"] = 100
+                    try:
+                        path.write_text(
+                            json.dumps(data, ensure_ascii=False, indent=2),
+                            encoding="utf-8",
+                        )
+                    except OSError:
+                        pass
+                    self._sync_db_status(
+                        analysis_id,
+                        status="failed",
+                        stage="interrupted_restart",
+                        progress=100,
+                        error="INTERRUPTED_RESTART",
+                        error_code="INTERRUPTED_RESTART",
+                    )
+                if "progress" in data and data["progress"] is not None:
+                    try:
+                        data["progress"] = max(0, min(100, int(float(data["progress"]))))
+                    except (TypeError, ValueError):
+                        data["progress"] = None
                 return data
             except (json.JSONDecodeError, OSError):
                 return {
@@ -276,7 +358,7 @@ class JobRunner:
                     "error": "corrupted public_result.json",
                     "progress": 100,
                 }
-            return {
+            out = {
                 "analysis_id": analysis_id,
                 "status": "completed",
                 "stage": "done",
@@ -285,5 +367,17 @@ class JobRunner:
                 "result": data,
                 "analysis_status": data.get("analysis_status"),
                 "feedback_status": data.get("feedback_status"),
+                "analysis_mode": data.get("analysis_mode"),
+                "input_mode": data.get("input_mode"),
             }
+            meta_path = self.runtime_dir / analysis_id / "analysis_meta.json"
+            if meta_path.exists():
+                try:
+                    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                    if isinstance(meta, dict):
+                        out.setdefault("analysis_mode", meta.get("analysis_mode"))
+                        out.setdefault("input_mode", meta.get("input_mode"))
+                except (json.JSONDecodeError, OSError):
+                    pass
+            return out
         return None

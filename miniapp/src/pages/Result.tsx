@@ -11,6 +11,11 @@ import {
 import VocalTypeHero from '../components/report/VocalTypeHero';
 import VocalProfile from '../components/report/VocalProfile';
 import PremiumProductCard from '../components/ui/PremiumProductCard';
+import {
+  classifyDiagnosticOffer,
+  diagnosticOfferBullets,
+  pickDiagnosticOffer,
+} from '../lib/diagnosticOffer';
 import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '../lib/reportPresentation';
 
 export default function Result() {
@@ -124,6 +129,11 @@ export default function Result() {
   const diagUnlocked = !!access.diagnostic_unlocked;
   const sessionId = access.diagnostic_session_id || null;
 
+  const diagOffer = pickDiagnosticOffer(data);
+  const diagDecision = classifyDiagnosticOffer(diagOffer);
+  const needsDiagnostic = diagDecision === 'required';
+  const diagBullets = diagnosticOfferBullets(diagOffer);
+
   const vocalType =
     data.vocal_type_teaser
     || data.vocal_type_profile
@@ -165,7 +175,7 @@ export default function Result() {
 
       {!score.available ? (
         <section className="section">
-          <h2 className="type-title" style={{ fontSize: '1.35rem' }}>정확한 분석이 어려운 녹음</h2>
+          <h2 className="type-title" style={{ fontSize: '1.35rem' }}>이번 녹음은 안정적으로 분석하기 어려워요</h2>
           <p className="lead">{data.quality?.user_message}</p>
           <Link className="btn" to="/record">다시 녹음하기</Link>
         </section>
@@ -210,20 +220,20 @@ export default function Result() {
             <div className="upsell-stack">
               {songUnlocked ? (
                 <PremiumProductCard
-                  badge="UNLOCKED"
+                  badge="이용 가능"
                   title="상세 리포트"
-                  description="발성 프로필 · 관찰 특징 · 들어볼 구간을 더 자세히 확인해요."
-                  bullets={['상세 발성 프로필', '관찰된 특징', '비교해서 들어볼 구간']}
+                  description="이미 분석된 노래를 더 자세히 살펴봅니다."
+                  bullets={['5축 발성 프로필', '추가 관찰 특징', '직접 들어볼 주요 구간']}
                   ctaLabel="상세 리포트 보기"
                   to={`/result/${id}/detail`}
                 />
               ) : (
                 <PremiumProductCard
-                  badge="PREMIUM"
+                  badge="상세 분석"
                   title="상세 리포트"
-                  description="발성 타입 외에 더 자세한 발성 프로필과 관찰 특징을 확인합니다."
+                  description="이미 분석된 노래를 더 자세히 살펴봅니다."
                   priceLabel={songPrice}
-                  bullets={['상세 발성 프로필', '관찰된 특징', '비교해서 들어볼 구간']}
+                  bullets={['5축 발성 프로필', '추가 관찰 특징', '직접 들어볼 주요 구간']}
                   ctaLabel={`상세 리포트 보기 · ${songPrice}`}
                   onClick={buySongDetail}
                   busy={busyDetail}
@@ -232,31 +242,35 @@ export default function Result() {
 
               {diagUnlocked && sessionId ? (
                 <PremiumProductCard
-                  badge="UNLOCKED"
-                  featured
+                  badge="이용 가능"
+                  featured={needsDiagnostic}
                   title="정밀 발성 진단"
                   description="추가 녹음으로 확인한 정밀 진단 결과를 볼 수 있어요."
-                  bullets={['불확실 항목 정밀 확인', '짧은 표준 과제']}
+                  bullets={diagBullets.length ? diagBullets : ['정밀 진단 결과 열람']}
                   ctaLabel="정밀 진단 보기"
                   to={`/diagnostic/${sessionId}/report`}
                 />
               ) : (
                 <PremiumProductCard
-                  badge="가장 정확한 분석"
-                  featured
+                  badge="가장 정밀한 분석"
+                  featured={needsDiagnostic}
                   title="정밀 발성 진단"
-                  description="추가 녹음으로 불확실한 항목을 더 정확하게 확인합니다."
+                  description="현재 노래와 짧은 추가 녹음을 함께 분석해 발성 특성을 더 정밀하게 확인해요."
                   priceLabel={diagPrice}
-                  bullets={[
-                    '노래만으로 알기 어려운 항목만 추가 확인',
-                    '필요한 짧은 과제만 진행',
-                    diagOfferKey === 'diagnostic_upgrade'
-                      ? '상세 리포트 보유 시 업그레이드'
-                      : '상세 리포트 포함',
-                  ]}
+                  bullets={
+                    diagBullets.length
+                      ? diagBullets
+                      : [
+                          '몇 가지 짧은 추가 녹음',
+                          '고민이 있으면 고민 중심, 없으면 전체 발성 특성',
+                          diagOfferKey === 'diagnostic_upgrade'
+                            ? '상세 리포트 보유 시 업그레이드'
+                            : '상세 리포트 포함',
+                        ]
+                  }
                   ctaLabel={`정밀 진단 시작 · ${diagPrice}`}
                   to={`/premium?analysis=${id || ''}&product=${diagOfferKey}`}
-                  footer="더 비싼 상품이 아니라, 더 정확한 검사를 위한 단계예요."
+                  footer="상세 리포트는 이 노래만의 분석이에요. 정밀 진단은 추가 녹음이 포함됩니다."
                 />
               )}
             </div>

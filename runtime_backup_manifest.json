@@ -1,0 +1,327 @@
+{
+  "runtime": "C:\\VocalAgent\\runtime",
+  "analyses": [
+    {
+      "analysis_id": "02ca15a9e9a542cf99c19dfd6c9d1fe2",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "0547c7e124584191b7db3f126479425e",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "063a76707a2a41dbbeb6dd893fa911bc",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "0ff873201e0f4ce8adeb1f176d39cb16",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "1183bbb7c8554599badbb4ab69e7ba23",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "159287050227400a8d1d05395b6b70c6",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "2321ae4482414bd4ad33796695d1f1ee",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "336e27a3d2af432aaecb554c46dbcc90",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "3e0967793492445f93726105feeb5367",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "3e877c0cdda646c99b39f70cc793e0c7",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "4e0e246c95a84c118bff34b1bb4d5229",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "5476ce7e755246dc9ee2464149e2af5a",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "558284c7538d4eb18bad4561566075a0",
+      "job_status": true,
+      "public_result": false,
+      "analysis_json": false,
+      "preview": false,
+      "meta": false
+    },
+    {
+      "analysis_id": "56d38088aeba4c2a87b4cd8f43b8a1fa",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "5f423fdb91574d9b9df7dbeee9b18f0f",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "659812e75e2e430ab10d7a1281f5c61f",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "6e6e9d0ff8254113b1470ddcb80e7f92",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "710de50454944abd987af384cc206b9b",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "74cd88f992874f16bceed5a5bd2e6666",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "7c3a33653e914fe48547bad5da143456",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "7e467a88f8c845aa9b8587afd4fc90ee",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "8d528a74ae9e4061b381a68a86305d3b",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "8d5a87bf67a04919a8e39245a47de599",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "8e2e7777899a4460a14f6020b7760c0a",
+      "job_status": true,
+      "public_result": false,
+      "analysis_json": false,
+      "preview": false,
+      "meta": true
+    },
+    {
+      "analysis_id": "90e2afb43ad94444bda31ab92c12a320",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "9dff792efb0e44f59e4dd49882ed4ef2",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "a6ac3d8b58204b599fe8640d8b188850",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "b21de938a0f740938eb644aa8844feb8",
+      "job_status": true,
+      "public_result": false,
+      "analysis_json": false,
+      "preview": false,
+      "meta": false
+    },
+    {
+      "analysis_id": "b270b55178ef458aafa18abe76918cb2",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "b74dcfd3bddf49d0aced602c8a79a217",
+      "job_status": true,
+      "public_result": false,
+      "analysis_json": false,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "c33e338ba1a04e7aa158fcc35215f5c0",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "d179e0c200d54c6b88096a258603186e",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "d4512ffe264e4af6a02edb2f2a22ebdf",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "dcdba92fb67a4a87ab7f0669a037cdd3",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "df7a1ad4579944e989512bcc0272ea17",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "e0e6361733b34633a1cd095d9d0b020e",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "e7d6b8168bc64bed95f5a7cf2f27c204",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": true
+    },
+    {
+      "analysis_id": "f3e2f575643749f39bb9fb6ae03d90a8",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    },
+    {
+      "analysis_id": "fb2ba05301074662b9786e00e70625bc",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": true
+    },
+    {
+      "analysis_id": "fce31e25965045ea8778700dad4b31cc",
+      "job_status": true,
+      "public_result": true,
+      "analysis_json": true,
+      "preview": true,
+      "meta": false
+    }
+  ],
+  "entitlements_present": true,
+  "entitlements_bytes": 13060
+}

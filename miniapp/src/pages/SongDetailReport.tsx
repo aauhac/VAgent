@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  getPreviewUrl,
+  getAnalysisAccess,
   getProducts,
   getSongDetailedReport,
   patchHistory,
@@ -10,16 +10,12 @@ import { formatSecRange, useIsDebug } from '../lib/reportPresentation';
 import VocalTypeHero from '../components/report/VocalTypeHero';
 import MainDiagnosis from '../components/report/MainDiagnosis';
 import VocalProfile from '../components/report/VocalProfile';
+import HighNoteFunctionSection from '../components/report/HighNoteFunctionSection';
+import TimbreProfileSection from '../components/report/TimbreProfileSection';
 import AudioCompare from '../components/report/AudioCompare';
 import MoreDetails from '../components/report/MoreDetails';
 import DiagnosticCTA from '../components/report/DiagnosticCTA';
-import StickyAudioPlayer from '../components/report/StickyAudioPlayer';
-
-function seekTo(audio: HTMLAudioElement | null, sec?: number | null) {
-  if (!audio || sec == null || Number.isNaN(Number(sec))) return;
-  audio.currentTime = Math.max(0, Number(sec));
-  void audio.play();
-}
+import ReportAudioPlayer, { type ClipRange } from '../components/report/ReportAudioPlayer';
 
 export default function SongDetailReport() {
   const { id } = useParams();
@@ -28,11 +24,12 @@ export default function SongDetailReport() {
   const [error, setError] = useState<string | null>(null);
   const [diagPrice, setDiagPrice] = useState('—');
   const [diagProduct, setDiagProduct] = useState('diagnostic_upgrade');
-  const [playerLabel, setPlayerLabel] = useState<string | null>(null);
+  const [clip, setClip] = useState<ClipRange | null>(null);
+  const [accessState, setAccessState] = useState<{
+    diagnostic_unlocked?: boolean;
+    diagnostic_session_id?: string | null;
+  }>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const blobUrl = useMemo(() => sessionStorage.getItem('vocalfb_last_blob'), []);
-  const previewUrl = id ? getPreviewUrl(id) : '';
-  const audioSrc = blobUrl || previewUrl;
 
   useEffect(() => {
     if (!id) return;
@@ -49,6 +46,7 @@ export default function SongDetailReport() {
           vocalType: vt?.display_name || vt?.headline || undefined,
           filename: sessionStorage.getItem('vocalfb_last_filename') || undefined,
         });
+        if (r.access) setAccessState(r.access);
       })
       .catch((e) => setError(e.message));
     getProducts(id)
@@ -57,6 +55,15 @@ export default function SongDetailReport() {
         setDiagProduct(offer);
         setDiagPrice(cat.products?.[offer]?.display_amount || '—');
       })
+      .catch(() => undefined);
+    getAnalysisAccess(id)
+      .then((a) =>
+        setAccessState((prev) => ({
+          ...prev,
+          diagnostic_unlocked: a.diagnostic_unlocked,
+          diagnostic_session_id: a.diagnostic_session_id,
+        })),
+      )
       .catch(() => undefined);
   }, [id]);
 
@@ -101,26 +108,46 @@ export default function SongDetailReport() {
   const criteriaMatrix = report.criteria_matrix || vf.criteria_matrix || [];
   const candidateComparison = decision.candidate_comparison || [];
   const vocalType = report.vocal_type_profile || vf.vocal_type_profile;
-  const access = report.access || {};
+  const effortAssessment =
+    report.effort_assessment
+    || vf.effort_assessment
+    || (Array.isArray(dims)
+      ? dims.find((d: any) => d?.dimension_id === 'vocal_effort_strain')?.effort_assessment
+      : (dims as any)?.vocal_effort_strain?.effort_assessment);
 
   function playEpisode(ev: any) {
-    const raw = Number(ev?.original_start_sec ?? ev?.start_sec);
-    if (Number.isNaN(raw)) return;
-    const range = formatSecRange(
-      ev?.original_start_sec ?? ev?.start_sec,
-      ev?.original_end_sec ?? ev?.end_sec,
-    );
-    setPlayerLabel(range ? `선택한 구간 · ${range}` : '선택한 구간');
-    seekTo(audioRef.current, Math.max(0, raw - 0.7));
+    const start = Number(ev?.original_start_sec ?? ev?.start_sec);
+    const endRaw = ev?.original_end_sec ?? ev?.end_sec;
+    const end = endRaw != null ? Number(endRaw) : null;
+    if (Number.isNaN(start)) return;
+    const range = formatSecRange(start, end ?? undefined);
+    setClip({
+      start_sec: start,
+      end_sec: end,
+      label: range ? `선택한 구간 · ${range}` : '선택한 구간',
+    });
+  }
+
+  function playFullRecording() {
+    setClip({ start_sec: 0, end_sec: null, label: '원본 녹음' });
   }
 
   return (
-    <main style={{ paddingBottom: playerLabel ? 28 : 12 }}>
+    <main style={{ paddingBottom: clip ? 28 : 12 }}>
       <Link className="muted" to={`/result/${id}`}>‹ 무료 결과</Link>
       <p className="page-kicker" style={{ marginTop: 14 }}>상세 리포트</p>
       <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 0, marginBottom: 0 }}>
         더 자세히 살펴보기
       </h1>
+      <p className="muted body-text" style={{ marginTop: 6 }}>
+        현재 노래를 더 자세히 분석한 결과예요. 추가 녹음은 없어요.
+      </p>
+
+      <div className="card" style={{ marginTop: 12, marginBottom: 12 }}>
+        <button type="button" className="btn secondary" onClick={playFullRecording}>
+          원본 녹음 듣기
+        </button>
+      </div>
 
       <VocalTypeHero profile={vocalType} />
 
@@ -129,9 +156,15 @@ export default function SongDetailReport() {
         coreSpan={coreSpan}
         onPlay={playEpisode}
         showAudio
+        effortAssessment={effortAssessment}
       />
 
       <VocalProfile dimensions={dims} criteriaMatrix={criteriaMatrix} />
+
+      <HighNoteFunctionSection
+        profile={report.high_note_function_profile || vf.high_note_function_profile}
+      />
+      <TimbreProfileSection profile={report.timbre_profile || vf.timbre_profile} />
 
       <AudioCompare
         featureClip={coreSpan || null}
@@ -155,8 +188,8 @@ export default function SongDetailReport() {
         analysisId={id}
         priceLabel={diagPrice}
         productId={diagProduct}
-        unlocked={!!access.diagnostic_unlocked}
-        sessionId={access.diagnostic_session_id}
+        unlocked={!!accessState.diagnostic_unlocked}
+        sessionId={accessState.diagnostic_session_id}
         diagnosticOffer={
           report.diagnostic_offer ||
           report.vocal_function_profile?.diagnostic_offer ||
@@ -164,12 +197,14 @@ export default function SongDetailReport() {
         }
       />
 
-      <StickyAudioPlayer
-        src={audioSrc}
-        label={playerLabel}
-        audioRef={audioRef as RefObject<HTMLAudioElement>}
-        active={!!playerLabel}
-      />
+      {id ? (
+        <ReportAudioPlayer
+          analysisId={id}
+          audioRef={audioRef as RefObject<HTMLAudioElement>}
+          clip={clip}
+          onClipClear={() => setClip(null)}
+        />
+      ) : null}
     </main>
   );
 }

@@ -438,6 +438,11 @@ def compute_vocal_function_profile(
     contact_effort_plane = compute_contact_effort_plane(segments, baseline, episodes)
 
     from audio_analyzer.vocal_function.criteria_matrix import build_criteria_matrix
+    from audio_analyzer.vocal_function.profiles import (
+        build_high_note_function_profile,
+        build_timbre_profile_v211,
+        partition_pitch_regions,
+    )
 
     criteria_matrix = build_criteria_matrix(
         dimensions=dimensions,
@@ -445,10 +450,50 @@ def compute_vocal_function_profile(
         episodes=episodes,
     )
 
+    mid_segs, high_segs, _pitch_ctx = partition_pitch_regions(segments)
+    high_note_function_profile = build_high_note_function_profile(
+        segments=segments,
+        dimensions=dimensions,
+        baseline=baseline,
+        episodes=episodes,
+        input_mode=input_mode,
+        functional_quality=functional_quality,
+    )
+    timbre_profile = build_timbre_profile_v211(
+        segments=segments,
+        mid_segments=mid_segs,
+        high_segments=high_segs,
+        input_mode=input_mode,
+        functional_quality=functional_quality,
+    )
+
+    from audio_analyzer.vocal_function.derived import (
+        build_effort_assessment,
+        check_effort_report_consistency,
+        effort_display_bundle,
+    )
+
+    effort_assessment = build_effort_assessment(
+        effort,
+        episodes=episodes,
+        high_note_profile=high_note_function_profile,
+        valid_segment_count=len(valid),
+    )
+    # Attach canonical assessment to effort dimension (shared SoT)
+    effort["effort_assessment"] = effort_assessment
+    effort["display"] = effort_display_bundle(effort_assessment)
+    # Presentation continuum for profile axis (explicit display_position)
+    effort["display_continuum_0_to_1"] = effort_assessment.get("display_continuum")
+    if effort.get("summary") in ("안정", "중간", "일부 증가", "반복적인 과도 증가"):
+        effort["summary"] = effort_assessment.get("label") or effort.get("summary")
+
     profile_partial = {
         "dimensions": dimensions,
         "contact_effort_plane": contact_effort_plane,
         "criteria_matrix": criteria_matrix,
+        "high_note_function_profile": high_note_function_profile,
+        "timbre_profile": timbre_profile,
+        "effort_assessment": effort_assessment,
     }
     coaching_decision = build_coaching_decision(
         profile=profile_partial,
@@ -492,12 +537,23 @@ def compute_vocal_function_profile(
         report={
             "criteria_matrix": criteria_matrix,
             "dimensions": dimensions,
+            "effort_assessment": effort_assessment,
         },
+    )
+    effort_consistency = check_effort_report_consistency(
+        assessment=effort_assessment,
+        coaching_decision=coaching_decision,
+        dimensions=dimensions,
     )
     vocal_type_profile.setdefault("warnings", [])
     for issue in _cons.get("issues") or []:
         if issue.get("severity") == "ERROR":
             vocal_type_profile["warnings"].append(f"CONSISTENCY_{issue['id'].upper()}")
+    for issue in effort_consistency:
+        if issue.get("severity") in ("ERROR", "WARN"):
+            tag = f"EFFORT_CONSISTENCY_{issue['id'].upper()}"
+            if tag not in vocal_type_profile["warnings"]:
+                vocal_type_profile["warnings"].append(tag)
 
     headlines = [coaching_decision.get("headline")] if coaching_decision.get("headline") else []
     if vocal_type_profile.get("display_name") and vocal_type_profile.get("type_id") != "UNRESOLVED":
@@ -556,6 +612,8 @@ def compute_vocal_function_profile(
         "input_mode": input_mode,
         "breathiness_coverage": leakage.get("breathiness_coverage"),
         "roughness_coverage": regularity.get("roughness_coverage"),
+        "effort_assessment": effort_assessment,
+        "effort_consistency_issues": effort_consistency,
         # Full segment list for offline paired audits (stripped from public report)
         "segments": segments,
     }
@@ -573,6 +631,8 @@ def compute_vocal_function_profile(
         "measurement_mode": cfg.MEASUREMENT_MODE,
         "headline": [h for h in headlines[:5] if h],
         "dimensions": dimensions,
+        "high_note_function_profile": high_note_function_profile,
+        "timbre_profile": timbre_profile,
         "high_note_events": [
             {
                 "start_sec": e["start_sec"],
@@ -598,6 +658,11 @@ def compute_vocal_function_profile(
         "coaching_decision": coaching_decision,
         "contact_effort_plane": contact_effort_plane,
         "criteria_matrix": criteria_matrix,
+        "effort_assessment": effort_assessment,
+        "effort_consistency_audit": {
+            "ok": not any(i.get("severity") == "WARN" for i in effort_consistency),
+            "issues": effort_consistency,
+        },
         "vocal_type_profile": vocal_type_profile,
         "personal_baseline": baseline,
         "style_goal": style_goal,

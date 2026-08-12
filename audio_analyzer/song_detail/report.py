@@ -29,7 +29,7 @@ from audio_analyzer.vocal_quality.report import build_vocal_quality_public
 from audio_analyzer.vocal_function.report import build_vocal_function_public
 
 
-SONG_DETAIL_REPORT_VERSION = "vocal-coach-report-v2.10"
+SONG_DETAIL_REPORT_VERSION = "vocal-coach-report-v2.13"
 
 _FORBIDDEN_KEYS = (
     "physiology_assessments",
@@ -163,6 +163,35 @@ def build_song_detailed_report(
     # Quality layer (v1) kept as secondary observations
     vq_raw = analysis.get("vocal_quality_profile") or {}
     vocal_quality = build_vocal_quality_public(vq_raw)
+    # VF v2.9 roughness authority: do not surface VQ rough_like when VF rejected all hits
+    vf_reg = ((vf_raw.get("dimensions") or {}).get("phonation_regularity") or {})
+    vf_cov = vf_reg.get("roughness_coverage") or (vf_raw.get("scientific_debug") or {}).get(
+        "roughness_coverage"
+    ) or {}
+    if int(vf_cov.get("positive") or 0) == 0 and (vf_reg.get("status") or "").upper() in (
+        "STABLE",
+        "LOW",
+        "",
+    ):
+        dims_list = []
+        for d in vocal_quality.get("dimensions") or []:
+            if d.get("dimension_id") == "rough_like" and (d.get("status") or "").upper() not in (
+                "LOW",
+                "UNKNOWN",
+            ):
+                dims_list.append(
+                    {
+                        **d,
+                        "status": "LOW",
+                        "status_label": "낮음",
+                        "summary": "거칠고 불규칙한 음질 경향은 뚜렷하지 않았어요.",
+                        "prevalence_label": "관찰되지 않음",
+                        "authority_note": "vocal_function_roughness_authority",
+                    }
+                )
+            else:
+                dims_list.append(d)
+        vocal_quality = {**vocal_quality, "dimensions": dims_list}
 
     decision = vocal_function.get("coaching_decision") or {}
     has_primary = bool(decision.get("primary_bottleneck"))
@@ -288,6 +317,9 @@ def build_song_detailed_report(
         "vocal_type_profile": vocal_function.get("vocal_type_profile")
         or analysis.get("vocal_type_profile")
         or {"available": False},
+        "high_note_function_profile": vocal_function.get("high_note_function_profile")
+        or {"available": False},
+        "timbre_profile": vocal_function.get("timbre_profile") or {"available": False},
         "high_note_events": vocal_function.get("high_note_events") or [],
         "coaching": vocal_function.get("coaching") or {},
         "additional_measurements": (vocal_function.get("coaching") or {}).get(

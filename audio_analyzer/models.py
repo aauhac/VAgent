@@ -86,7 +86,16 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
         parts.append("자세한 발성 상태 프로필은 노래 상세 리포트에서 확인할 수 있어요.")
         short_summary = " ".join(parts)
     else:
-        short_summary = quality.get("user_message") or "정확한 분석이 어려운 녹음이에요."
+        short_summary = quality.get("user_message") or "이번 녹음은 안정적으로 분석하기 어려워요."
+
+    diagnostic_offer = None
+    try:
+        from audio_analyzer.diagnostic.planner import plan_from_song_analysis
+
+        plan = plan_from_song_analysis({"vocal_function_profile": vf_profile})
+        diagnostic_offer = plan.get("diagnostic_offer")
+    except Exception:
+        diagnostic_offer = None
 
     return {
         "analysis_version": result.get("analysis_version", ANALYSIS_VERSION),
@@ -145,7 +154,8 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
         "premium_cta": {
             "title": "정밀 발성 진단",
             "body": (
-                "추가 Diagnostic Task로 발성 패턴을 더 정밀하게 분석할 수 있어요. "
+                "필요한 항목만 짧은 추가 녹음으로 "
+                "더 정밀하게 확인할 수 있어요. "
                 "노래 상세 리포트는 별도 상품입니다."
             ),
         },
@@ -159,10 +169,11 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
         "diagnostic_cta": {
             "title": "내 발성 자체를 더 정밀하게 알고 싶나요?",
             "body": (
-                "아/이 지속음·사이렌·강약 변화 Task로 "
-                "기본 발성 패턴을 표준 과제에서 다시 확인할 수 있어요."
+                "노래만으로 구분하기 어려운 항목을 "
+                "짧은 추가 녹음으로 다시 확인할 수 있어요."
             ),
         },
+        "diagnostic_offer": diagnostic_offer,
         "disclaimer": (
             "이 결과는 녹음된 음성의 음향적 특성을 바탕으로 "
             "발성 패턴을 분석한 발성 분석 참고 정보입니다. "

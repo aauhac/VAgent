@@ -122,15 +122,55 @@ def check_dynamic_swell_compliance(
     }
 
 
+def check_high_note_sustain_compliance(
+    y: np.ndarray,
+    sr: int,
+    *,
+    pitch: dict[str, Any] | None = None,
+    song_median_f0_hz: float | None = None,
+) -> dict[str, Any]:
+    """Sustain compliance + optional elevation vs song mid F0."""
+    base = check_sustain_compliance(y, sr, pitch=pitch)
+    reasons = list(base.get("reasons") or [])
+    f0s = []
+    for fr in (pitch or {}).get("frame_f0") or []:
+        f = fr.get("f0_hz")
+        if f is not None and float(f) > 0:
+            f0s.append(float(f))
+    med = float(np.median(f0s)) if len(f0s) >= 5 else None
+    elevated = None
+    if med is not None and song_median_f0_hz and song_median_f0_hz > 0:
+        # ≥1.5 semitones above song median
+        elevated = med >= float(song_median_f0_hz) * (2.0 ** (1.5 / 12.0))
+        if not elevated:
+            reasons.append("pitch_not_elevated_vs_song_mid")
+    ok = bool(base.get("ok")) and (elevated is not False)
+    return {
+        **base,
+        "task_family": "high_note_sustain",
+        "ok": ok,
+        "median_f0_hz": None if med is None else round(med, 2),
+        "pitch_elevated_vs_song": elevated,
+        "reasons": reasons,
+        # Task completion alone never resolves — evidence path must also pass
+        "completion_alone_insufficient": True,
+    }
+
+
 def check_task_compliance(
     task_id: str,
     y: np.ndarray,
     sr: int,
     *,
     pitch: dict[str, Any] | None = None,
+    song_median_f0_hz: float | None = None,
 ) -> dict[str, Any]:
     if task_id in ("sustain_a", "sustain_i"):
         return check_sustain_compliance(y, sr, pitch=pitch)
+    if task_id == "high_note_sustain_a":
+        return check_high_note_sustain_compliance(
+            y, sr, pitch=pitch, song_median_f0_hz=song_median_f0_hz
+        )
     if task_id == "siren":
         return check_siren_compliance(y, sr, pitch=pitch)
     if task_id == "dynamic_swell":

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { loadUnlockedSessions } from '../api/client';
 
 function BrandMark() {
   return (
@@ -15,77 +14,73 @@ type Tab = 'record' | 'upload';
 
 export default function Home() {
   const nav = useNavigate();
-  const sessions = loadUnlockedSessions();
   const [tab, setTab] = useState<Tab>('record');
 
   return (
     <main>
       <BrandMark />
 
-      <section style={{ marginTop: 20, marginBottom: 8 }}>
+      <section className="home-hero">
         <p className="page-kicker">보컬 진단</p>
         <h1 className="brand">
           내 목소리는 지금
           <br />
           어떻게 쓰이고 있을까?
         </h1>
-        <p className="lead" style={{ marginBottom: 20 }}>
-          노래 녹음 한 개로 발성 타입과 두드러진 특징을 분석합니다.
+        <p className="lead home-hero-lead">
+          노래 한 구절로 발성 타입과 두드러진 특징을 확인해보세요.
         </p>
-        <div className="cta-row">
-          <button type="button" className="btn" onClick={() => nav('/record')}>
-            바로 녹음하기
-          </button>
-          <button type="button" className="btn secondary" onClick={() => nav('/upload')}>
-            파일 업로드하기
-          </button>
-        </div>
+        <p className="home-hero-meta">한 구절이면 충분해요 · 무료로 시작</p>
       </section>
 
-      <div className="segmented" role="tablist" aria-label="입력 방식">
-        <button
-          type="button"
-          role="tab"
-          className={tab === 'record' ? 'is-active' : ''}
-          aria-selected={tab === 'record'}
-          onClick={() => setTab('record')}
-        >
-          녹음하기
-        </button>
-        <button
-          type="button"
-          role="tab"
-          className={tab === 'upload' ? 'is-active' : ''}
-          aria-selected={tab === 'upload'}
-          onClick={() => setTab('upload')}
-        >
-          파일 업로드
-        </button>
-      </div>
+      <div className="panel home-input-card">
+        <h2 className="section-title" style={{ marginTop: 0 }}>분석할 음원을 준비해주세요</h2>
 
-      <div className="panel" style={{ marginTop: 0 }}>
+        <div className="segmented" role="tablist" aria-label="입력 방식">
+          <button
+            type="button"
+            role="tab"
+            className={tab === 'record' ? 'is-active' : ''}
+            aria-selected={tab === 'record'}
+            onClick={() => setTab('record')}
+          >
+            녹음하기
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className={tab === 'upload' ? 'is-active' : ''}
+            aria-selected={tab === 'upload'}
+            onClick={() => setTab('upload')}
+          >
+            파일 업로드
+          </button>
+        </div>
+
         {tab === 'record' ? (
           <>
-            <h2 className="section-title" style={{ marginTop: 0 }}>짧게 불러보세요</h2>
+            <h3 className="home-panel-title">직접 한 구절 불러주세요</h3>
+            <p className="home-panel-desc">15~60초 정도가 가장 좋아요.</p>
             <ul className="record-idle-tips">
-              <li>권장 길이 15~60초 · 한 구절 정도가 좋아요</li>
-              <li>기본은 무반주(순수 보컬) 분석이에요</li>
-              <li>반주가 있다면 녹음 화면에서 체크해 주세요</li>
+              <li>한 구절 정도가 좋아요</li>
+              <li>조용한 환경을 권장해요</li>
+              <li>반주가 있어도 분석할 수 있어요</li>
             </ul>
             <button type="button" className="btn" style={{ width: '100%' }} onClick={() => nav('/record')}>
-              녹음 시작하기
+              녹음 시작
             </button>
           </>
         ) : (
           <>
-            <h2 className="section-title" style={{ marginTop: 0 }}>파일을 올려보세요</h2>
+            <h3 className="home-panel-title">이미 녹음한 노래가 있나요?</h3>
+            <p className="home-panel-desc">파일을 선택한 뒤 미리 들어보고 분석할 수 있어요.</p>
             <ul className="record-idle-tips">
-              <li>m4a / mp3 / wav 등 지원</li>
-              <li>올린 뒤 미리듣기로 확인한 다음 분석해요</li>
-              <li>반주가 있다면 업로드 화면에서 체크해 주세요</li>
+              <li>m4a · mp3 · wav 등 지원</li>
+              <li>15~60초 정도를 권장해요</li>
+              <li>반주가 있어도 분석할 수 있어요</li>
             </ul>
             <button type="button" className="btn" style={{ width: '100%' }} onClick={() => nav('/upload')}>
-              파일 선택하기
+              파일 선택
             </button>
           </>
         )}
@@ -97,26 +92,26 @@ export default function Home() {
           <div className="tier-card is-free">
             <p className="tier-label">FREE</p>
             <h3 className="tier-title">무료 보컬 리포트</h3>
-            <p className="tier-body">발성 타입 · 두드러진 특징 · 핵심 프로필을 바로 확인해요.</p>
+            <p className="tier-body">발성 타입 · Head/Chest · 핵심 특징</p>
           </div>
           <div className="tier-card is-premium">
             <p className="tier-label">PREMIUM</p>
             <h3 className="tier-title">상세 리포트</h3>
-            <p className="tier-body">더 자세한 발성 프로필과 관찰 특징, 들어볼 구간을 확인해요.</p>
+            <p className="tier-body">5축 발성 프로필 · 추가 관찰 · 주요 구간</p>
           </div>
           <div className="tier-card is-premium">
-            <p className="tier-label">PRECISE</p>
+            <p className="tier-label">PRECISION</p>
             <h3 className="tier-title">정밀 발성 진단</h3>
-            <p className="tier-body">추가 녹음으로 불확실한 항목만 더 정확하게 확인해요.</p>
+            <p className="tier-body">노래만으로 알기 어려운 항목을 추가 녹음으로 확인</p>
           </div>
         </div>
       </section>
 
       <div className="trust-note">
-        <h3>정밀 진단은 ‘더 비싼 결과’가 아니에요</h3>
+        <h3>노래만으로 부족한 부분은 한 번 더 확인해요</h3>
         <p>
-          노래 한 곡만으로는 확정하기 어려운 항목이 있을 때,
-          필요한 짧은 과제만 추가 녹음해 정확도를 높이는 검사예요.
+          이미 충분히 분석된 항목은 다시 측정하지 않습니다.
+          필요한 항목만 짧은 추가 녹음으로 확인해요.
         </p>
       </div>
 
@@ -125,23 +120,6 @@ export default function Home() {
           이전 결과 보기
         </Link>
       </div>
-
-      {sessions.length > 0 && (
-        <section className="section">
-          <h3 className="section-title" style={{ fontSize: '1.05rem' }}>정밀 진단 기록</h3>
-          {sessions.slice(0, 5).map((sid) => (
-            <Link
-              key={sid}
-              to={`/diagnostic/${sid}/report`}
-              className="detail-row"
-              style={{ textDecoration: 'none' }}
-            >
-              <span style={{ fontWeight: 600 }}>세션 {sid.slice(0, 8)}…</span>
-              <span className="meta">보기 ›</span>
-            </Link>
-          ))}
-        </section>
-      )}
 
       <p className="footer-note">음향 기반 발성 분석 서비스 · 의료 진단이 아닙니다</p>
     </main>

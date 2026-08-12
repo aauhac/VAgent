@@ -63,6 +63,7 @@ def test_free_detailed_report_402(client):
         "/v1/analyses",
         files={"file": ("t.wav", _wav(), "audio/wav")},
         data={"separate": "false", "include_feedback": "false"},
+        headers=headers,
     ).json()["analysis_id"]
     _wait_done(c, aid)
     locked = c.get(f"/v1/analyses/{aid}/detailed-report", headers=headers)
@@ -77,6 +78,7 @@ def test_mock_song_detail_unlock_and_report(client):
         "/v1/analyses",
         files={"file": ("t.wav", _wav(), "audio/wav")},
         data={"separate": "false"},
+        headers=headers,
     ).json()["analysis_id"]
     _wait_done(c, aid)
     unlock = c.post(f"/v1/analyses/{aid}/mock-unlock-detail", headers=headers)
@@ -108,6 +110,7 @@ def test_song_detail_does_not_grant_diagnostic(client):
     aid = c.post(
         "/v1/analyses",
         files={"file": ("t.wav", _wav(), "audio/wav")},
+        headers=headers,
     ).json()["analysis_id"]
     _wait_done(c, aid)
     c.post(f"/v1/analyses/{aid}/mock-unlock-detail", headers=headers)
@@ -133,6 +136,7 @@ def test_diagnostic_full_includes_song_detail(client):
     aid = c.post(
         "/v1/analyses",
         files={"file": ("t.wav", _wav(), "audio/wav")},
+        headers=headers,
     ).json()["analysis_id"]
     _wait_done(c, aid)
     sid = c.post(
@@ -166,12 +170,12 @@ def test_diagnostic_full_includes_song_detail(client):
 def test_analysis_a_unlock_not_b(client):
     c, _, _, _ = client
     headers = {"X-User-Id": "u1"}
-    a1 = c.post("/v1/analyses", files={"file": ("a.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
-    a2 = c.post("/v1/analyses", files={"file": ("b.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
+    a1 = c.post(
+        "/v1/analyses", files={"file": ("a.wav", _wav(), "audio/wav")}, headers=headers
+    ).json()["analysis_id"]
+    a2 = c.post(
+        "/v1/analyses", files={"file": ("b.wav", _wav(), "audio/wav")}, headers=headers
+    ).json()["analysis_id"]
     _wait_done(c, a1)
     _wait_done(c, a2)
     c.post(f"/v1/analyses/{a1}/mock-unlock-detail", headers=headers)
@@ -182,9 +186,9 @@ def test_analysis_a_unlock_not_b(client):
 def test_diagnostic_upgrade_keeps_song_detail(client):
     c, _, _, _ = client
     headers = {"X-User-Id": "u1"}
-    aid = c.post("/v1/analyses", files={"file": ("t.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
+    aid = c.post(
+        "/v1/analyses", files={"file": ("t.wav", _wav(), "audio/wav")}, headers=headers
+    ).json()["analysis_id"]
     _wait_done(c, aid)
     c.post(f"/v1/analyses/{aid}/mock-unlock-detail", headers=headers)
     offers = c.get(f"/v1/products?analysis_id={aid}", headers=headers).json()
@@ -206,9 +210,9 @@ def test_diagnostic_upgrade_keeps_song_detail(client):
 def test_free_api_no_detail_leak(client):
     c, _, _, _ = client
     headers = {"X-User-Id": "u1"}
-    aid = c.post("/v1/analyses", files={"file": ("t.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
+    aid = c.post(
+        "/v1/analyses", files={"file": ("t.wav", _wav(), "audio/wav")}, headers=headers
+    ).json()["analysis_id"]
     job = _wait_done(c, aid)
     result = job["result"] or {}
     assert "timeline" not in result
@@ -231,9 +235,9 @@ def test_mock_disabled_in_production(client, monkeypatch):
     c, _, _, _ = client
     monkeypatch.setenv("VAGENT_ENV", "production")
     headers = {"X-User-Id": "u1"}
-    aid = c.post("/v1/analyses", files={"file": ("t.wav", _wav(), "audio/wav")}).json()[
-        "analysis_id"
-    ]
+    aid = c.post(
+        "/v1/analyses", files={"file": ("t.wav", _wav(), "audio/wav")}, headers=headers
+    ).json()["analysis_id"]
     _wait_done(c, aid)
     assert c.post(f"/v1/analyses/{aid}/mock-unlock-detail", headers=headers).status_code == 403
     sid = c.post("/v1/diagnostic-sessions", headers=headers).json()["session_id"]

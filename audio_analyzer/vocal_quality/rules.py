@@ -113,8 +113,8 @@ def fuse_pressed(segments: list[dict[str, Any]], breathy_hits: int) -> dict[str,
             hits,
             0.0,
             summary=(
-                "숨 섞임 경향과 압착 경향 증거가 함께 나타나 이번 녹음에서는 "
-                "압착된 음질을 확정하지 않았어요."
+                "숨 섞임 경향과 단단한 음질 경향 증거가 함께 나타나 이번 녹음에서는 "
+                "단단하고 강한 음질을 확정하지 않았어요."
             ),
             meaning="상충하는 음질 단서가 있어 보수적으로 보류했어요.",
             cannot="목 근육 긴장이나 후두 상태를 측정한 것은 아닙니다.",
@@ -145,10 +145,10 @@ def fuse_pressed(segments: list[dict[str, Any]], breathy_hits: int) -> dict[str,
         fam_med,
         summary=_pressed_summary(status, prev, len(hits), len(valid)),
         meaning=(
-            "일부 구간에서 소리가 단단하고 압축되어 들릴 수 있는 "
+            "일부 구간에서 단단하고 강한 음질과 일치할 수 있는 "
             "음향 패턴이 관찰됐어요."
             if status in ("MODERATE", "HIGH", "INTERMITTENT")
-            else "압착된 음질 경향은 뚜렷하지 않았어요."
+            else "단단하고 강한 음질 경향은 뚜렷하지 않았어요."
         ),
         cannot="실제 목 근육 긴장이나 후두 상태를 측정한 것은 아닙니다.",
         practice=[],
@@ -433,11 +433,11 @@ def _breathy_summary(status, prev, n_hit, n_valid):
 
 def _pressed_summary(status, prev, n_hit, n_valid):
     if status == "UNKNOWN":
-        return "이번 녹음에서는 압착된 음질 경향을 신뢰도 있게 판단하지 못했어요."
+        return "이번 녹음에서는 단단하고 강한 음질 경향을 신뢰도 있게 판단하지 못했어요."
     if status == "AMBIGUOUS":
-        return "상충하는 단서로 압착된 음질 경향을 확정하지 않았어요."
+        return "상충하는 단서로 단단하고 강한 음질 경향을 확정하지 않았어요."
     if status == "LOW":
-        return "압착된 음질 경향은 뚜렷하지 않았어요."
+        return "단단하고 강한 음질 경향은 뚜렷하지 않았어요."
     return (
         f"{cfg.PREVALENCE_LABELS.get(prev, prev)} — "
         f"{n_hit}/{n_valid}개 강한 음 구간에서 고역 배음·에너지와 "

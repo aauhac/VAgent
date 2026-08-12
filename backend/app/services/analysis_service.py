@@ -19,7 +19,9 @@ SUPPORTED_EXT = {".mp3", ".wav", ".m4a", ".flac", ".ogg", ".aac", ".webm", ".mp4
 
 class AnalysisService:
     def __init__(self) -> None:
-        self.runtime_dir = Path(os.environ.get("RUNTIME_DIR", "runtime"))
+        from ..config import get_runtime_dir
+
+        self.runtime_dir = get_runtime_dir()
         self.runtime_dir.mkdir(parents=True, exist_ok=True)
         self.max_upload_mb = float(os.environ.get("MAX_UPLOAD_MB", "30"))
         self.runner = JobRunner(self.runtime_dir)
@@ -32,6 +34,7 @@ class AnalysisService:
         include_feedback: bool = False,
         analysis_mode: str = "QUICK",
         input_mode: str = "AUTO",
+        user_id: str = "anon",
     ) -> str:
         filename = file.filename or "upload.bin"
         ext = Path(filename).suffix.lower()
@@ -64,6 +67,34 @@ class AnalysisService:
                     raise ValueError(f"file too large (max {self.max_upload_mb} MB)")
                 out.write(chunk)
 
+        try:
+            from .history_service import write_analysis_meta
+
+            write_analysis_meta(
+                analysis_id,
+                user_id=user_id or "anon",
+                filename=filename,
+                analysis_mode=mode,
+                input_mode=in_mode,
+                separate=separate,
+                runtime_dir=self.runtime_dir,
+            )
+        except Exception:
+            # Metadata write must not block enqueue
+            pass
+
+        try:
+            self._maybe_persist_db_row(
+                analysis_id=analysis_id,
+                user_id=user_id or "anon",
+                filename=filename,
+                mode=mode,
+                in_mode=in_mode,
+                separate=separate,
+            )
+        except Exception:
+            pass
+
         self.runner.submit(
             analysis_id=analysis_id,
             audio_path=str(dest),
@@ -73,6 +104,43 @@ class AnalysisService:
             input_mode=in_mode,
         )
         return analysis_id
+
+    def _maybe_persist_db_row(
+        self,
+        *,
+        analysis_id: str,
+        user_id: str,
+        filename: str,
+        mode: str,
+        in_mode: str,
+        separate: bool,
+    ) -> None:
+        from ..config import database_url
+
+        if not database_url():
+            return
+        from ..db.models import Analysis
+        from ..db.session import session_scope
+        from ..db.users import get_or_create_user
+
+        with session_scope() as session:
+            user = get_or_create_user(session, provider="DEV", subject=user_id)
+            if session.get(Analysis, analysis_id):
+                return
+            session.add(
+                Analysis(
+                    id=analysis_id,
+                    user_id=user.id,
+                    status="queued",
+                    stage="queued",
+                    progress=0,
+                    analysis_mode=mode,
+                    input_mode=in_mode,
+                    separate=separate,
+                    original_filename=filename,
+                    audio_storage_key=f"{analysis_id}/upload{Path(filename).suffix.lower()}",
+                )
+            )
 
     def get_job(self, analysis_id: str) -> Optional[dict[str, Any]]:
         if not validate_analysis_id(analysis_id):

@@ -86,6 +86,7 @@ def test_contact_register_effort_minimal_set():
 
 
 def test_all_resolved_zero_tasks():
+    """Song-only provisional planner may return 0; precision protocol must not."""
     matrix = [
         _row(d, suf="SUFFICIENT", conf="high", finding="NOT_PROMINENT", req_s=2)
         for d in (
@@ -99,9 +100,16 @@ def test_all_resolved_zero_tasks():
             "respiratory_phonatory_coordination",
         )
     ]
-    plan = select_diagnostic_tasks(build_uncertainty_profile(criteria_matrix=matrix))
+    profile = build_uncertainty_profile(criteria_matrix=matrix)
+    plan = select_diagnostic_tasks(profile)
     assert plan["selected_tasks"] == []
     assert plan["unresolved_dimensions"] == []
+
+    from audio_analyzer.diagnostic.planner import plan_precision_protocol
+
+    precision = plan_precision_protocol(profile, diagnostic_mode="GENERAL_DISCOVERY")
+    assert len(precision["selected_tasks"]) >= 1
+    assert "sustain_a" in precision["core_tasks"] or "sustain_a" in precision["selected_tasks"]
 
 
 def test_unsupported_recommended_task_not_rendered():

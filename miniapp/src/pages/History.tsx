@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  getAnalysisAccess,
-  loadHistory,
+  getServerHistory,
   loadUnlockedSessions,
+  removeHistory,
 } from '../api/client';
 
 type Row = {
@@ -15,6 +15,9 @@ type Row = {
   songDetailUnlocked?: boolean;
   vocalType?: string;
   filename?: string;
+  missing?: boolean;
+  interrupted?: boolean;
+  status?: string;
 };
 
 function formatDate(iso: string) {
@@ -26,26 +29,37 @@ function formatDate(iso: string) {
 }
 
 export default function History() {
-  const [items, setItems] = useState<Row[]>(() => loadHistory());
+  const [items, setItems] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
   const sessions = loadUnlockedSessions();
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const next: Row[] = [];
-      for (const h of loadHistory()) {
-        try {
-          const access = await getAnalysisAccess(h.id);
-          next.push({
-            ...h,
-            songDetailUnlocked: !!access.song_detail_unlocked,
-            sessionId: access.diagnostic_session_id || h.sessionId,
-          });
-        } catch {
-          next.push(h);
-        }
+      setLoading(true);
+      try {
+        const server = await getServerHistory(50);
+        if (cancelled) return;
+        const rows: Row[] = (server.items || []).map((it) => ({
+          id: it.analysis_id,
+          at: it.created_at || '',
+          filename: it.filename || undefined,
+          vocalType: it.vocal_type || undefined,
+          songDetailUnlocked: !!it.song_detail_unlocked,
+          sessionId: it.diagnostic_session_id || undefined,
+          status: it.status,
+          missing: it.status === 'missing' || !!it.artifact_missing,
+          interrupted: it.error_code === 'INTERRUPTED_RESTART' || it.status === 'failed' && it.error_code === 'INTERRUPTED_RESTART',
+        }));
+        setItems(rows);
+      } catch {
+        // Server history is SoT — do not pollute with localStorage on failure in production builds.
+        // Dev-only: show empty rather than merging legacy local history into server view.
+        if (cancelled) return;
+        setItems([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      if (!cancelled) setItems(next);
     })();
     return () => {
       cancelled = true;
@@ -59,9 +73,47 @@ export default function History() {
 
       <section className="section">
         <h3 className="section-title" style={{ fontSize: '1.1rem' }}>노래 분석</h3>
-        {items.length === 0 && <p className="muted">아직 기록이 없어요.</p>}
+        {loading && <p className="muted">불러오는 중…</p>}
+        {!loading && items.length === 0 && <p className="muted">아직 기록이 없어요.</p>}
         {items.map((h) => {
           const title = h.vocalType || h.label || '발성 분석';
+          if (h.interrupted) {
+            return (
+              <div key={h.id} style={{ marginBottom: 18 }}>
+                <p className="muted" style={{ margin: '0 0 4px', fontSize: '0.85rem' }}>
+                  {h.at ? formatDate(h.at) : ''}
+                </p>
+                <p style={{ margin: '0 0 4px', fontWeight: 700 }}>분석이 중단됐어요</p>
+                <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
+                  서버 재시작으로 분석이 끝까지 가지 못했어요. 다시 녹음·업로드해 주세요.
+                </p>
+              </div>
+            );
+          }
+          if (h.missing) {
+            return (
+              <div key={h.id} style={{ marginBottom: 18 }}>
+                <p className="muted" style={{ margin: '0 0 4px', fontSize: '0.85rem' }}>
+                  {h.at ? formatDate(h.at) : ''}
+                </p>
+                <p style={{ margin: '0 0 4px', fontWeight: 700 }}>결과를 찾을 수 없음</p>
+                <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
+                  서버에 없는 기록이에요. 로컬 목록에서 정리할 수 있어요.
+                </p>
+                <button
+                  type="button"
+                  className="btn ghost"
+                  style={{ marginTop: 8 }}
+                  onClick={() => {
+                    removeHistory(h.id);
+                    setItems((prev) => prev.filter((x) => x.id !== h.id));
+                  }}
+                >
+                  목록에서 제거
+                </button>
+              </div>
+            );
+          }
           return (
             <div key={h.id} style={{ marginBottom: 18 }}>
               <Link
@@ -69,7 +121,7 @@ export default function History() {
                 style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}
               >
                 <p className="muted" style={{ margin: '0 0 4px', fontSize: '0.85rem' }}>
-                  {formatDate(h.at)}
+                  {h.at ? formatDate(h.at) : ''}
                 </p>
                 <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: '1.05rem', wordBreak: 'keep-all' }}>
                   {title}
@@ -97,8 +149,11 @@ export default function History() {
       </section>
 
       <section className="section" style={{ borderBottom: 0 }}>
-        <h3 className="section-title" style={{ fontSize: '1.1rem' }}>정밀 발성 진단</h3>
-        {sessions.length === 0 && <p className="muted">해제된 진단이 없어요.</p>}
+        <h3 className="section-title" style={{ fontSize: '1.1rem' }}>연결된 정밀 진단</h3>
+        <p className="muted" style={{ marginTop: -4, marginBottom: 8, fontSize: '0.85rem' }}>
+          노래 분석과 따로 저장된 세션이 있을 때만 여기에 표시돼요.
+        </p>
+        {sessions.length === 0 && <p className="muted">연결된 추가 세션이 없어요.</p>}
         {sessions.map((sid) => (
           <Link
             key={sid}

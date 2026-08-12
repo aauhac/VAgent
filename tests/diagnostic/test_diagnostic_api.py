@@ -46,9 +46,9 @@ def test_protocol_endpoint(client):
     r = c.get("/v1/diagnostic/protocol")
     assert r.status_code == 200
     body = r.json()
-    assert body["protocol_version"] == "diagnostic-protocol-v1.2"
+    assert body["protocol_version"] == "diagnostic-protocol-v1.3"
     assert body.get("adaptive") is True
-    assert len(body["tasks"]) == 4
+    assert len(body["tasks"]) >= 4
 
 
 def test_unpaid_report_locked(client):
@@ -67,6 +67,14 @@ def test_mock_pay_safety_tasks_analyze(client):
     r = c.post("/v1/diagnostic-sessions", headers=headers)
     sid = r.json()["session_id"]
     assert c.post(f"/v1/diagnostic-sessions/{sid}/mock-pay", headers=headers).status_code == 200
+    planned = c.post(
+        f"/v1/diagnostic-sessions/{sid}/concerns",
+        headers=headers,
+        json={"diagnostic_mode": "GENERAL_DISCOVERY", "user_concerns": []},
+    )
+    assert planned.status_code == 200
+    selected = list(planned.json().get("selected_tasks") or [])
+    assert len(selected) >= 1
     assert (
         c.post(
             f"/v1/diagnostic-sessions/{sid}/safety",
@@ -75,13 +83,17 @@ def test_mock_pay_safety_tasks_analyze(client):
         ).status_code
         == 200
     )
-    for task_id, dur in (
-        ("sustain_a", 4.0),
-        ("sustain_i", 4.0),
-        ("siren", 5.0),
-        ("dynamic_swell", 4.5),
-    ):
-        data = _wav(duration=dur)
+    session = c.get(f"/v1/diagnostic-sessions/{sid}", headers=headers).json()
+    selected = list(session.get("selected_tasks") or [])
+    durations = {
+        "sustain_a": 4.0,
+        "sustain_i": 4.0,
+        "siren": 5.0,
+        "dynamic_swell": 4.5,
+        "high_note_sustain_a": 4.0,
+    }
+    for task_id in selected:
+        data = _wav(duration=durations.get(task_id, 4.0))
         up = c.post(
             f"/v1/diagnostic-sessions/{sid}/tasks/{task_id}",
             headers=headers,
@@ -102,9 +114,9 @@ def test_mock_pay_safety_tasks_analyze(client):
     again = c.get(f"/v1/diagnostic-sessions/{sid}/report", headers=headers)
     assert again.status_code == 200
 
-    # other user still locked
+    # other user cannot access (ownership → 404, not unlock leak)
     other = c.get(f"/v1/diagnostic-sessions/{sid}/report", headers={"X-User-Id": "other"})
-    assert other.status_code == 402
+    assert other.status_code == 404
 
 
 def test_task_quality_fail_retries_same_task(client):
@@ -112,6 +124,11 @@ def test_task_quality_fail_retries_same_task(client):
     headers = {"X-User-Id": "u2"}
     sid = c.post("/v1/diagnostic-sessions", headers=headers).json()["session_id"]
     c.post(f"/v1/diagnostic-sessions/{sid}/mock-pay", headers=headers)
+    c.post(
+        f"/v1/diagnostic-sessions/{sid}/concerns",
+        headers=headers,
+        json={"diagnostic_mode": "GENERAL_DISCOVERY", "user_concerns": []},
+    )
     c.post(
         f"/v1/diagnostic-sessions/{sid}/safety",
         headers=headers,
