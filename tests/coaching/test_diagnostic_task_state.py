@@ -67,6 +67,62 @@ def test_adaptive_progress_two_tasks():
 def test_zero_tasks_progress():
     assert task_progress_label([], "sustain_a") == "0 / 0"
 
+
+def test_task_page_empty_is_not_loading():
+    """Mirror of miniapp classifyTaskPageState — empty ≠ loading."""
+    def classify(*, loading, error, session_loaded, protocol_loaded, selected, diag_status, task_id, has_meta):
+        if loading:
+            return "loading"
+        if error:
+            return "error"
+        if not session_loaded or not protocol_loaded:
+            return "loading"
+        if diag_status == "SAFETY_LIMITED" and not selected:
+            return "safety-limited"
+        if not selected:
+            return "loaded-empty"
+        if not has_meta:
+            return "loaded-missing-task"
+        return "loaded-with-tasks"
+
+    assert (
+        classify(
+            loading=False,
+            error=None,
+            session_loaded=True,
+            protocol_loaded=True,
+            selected=[],
+            diag_status="NORMAL",
+            task_id="sustain_a",
+            has_meta=False,
+        )
+        == "loaded-empty"
+    )
+    assert (
+        classify(
+            loading=False,
+            error="boom",
+            session_loaded=True,
+            protocol_loaded=True,
+            selected=["sustain_a"],
+            diag_status="NORMAL",
+            task_id="sustain_a",
+            has_meta=True,
+        )
+        == "error"
+    )
+
+
+def test_task_page_api_error_is_not_infinite_loading():
+    def classify(loading, error):
+        if loading:
+            return "loading"
+        if error:
+            return "error"
+        return "loaded"
+
+    assert classify(False, "SESSION_NOT_FOUND") == "error"
+
 def test_retry_after_quality_fail():
     st = after_quality_fail({"busy": True, "recording": True, "seconds": 5, "msg": "retry"})
     assert st["busy"] is False

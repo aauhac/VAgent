@@ -26,6 +26,8 @@ def isolated(tmp_path, monkeypatch):
     runtime.mkdir()
     monkeypatch.setenv("RUNTIME_DIR", str(runtime))
     monkeypatch.setenv("VAGENT_ENV", "development")
+    # File-backed history tests must not hit a developer Postgres SoT
+    monkeypatch.delenv("DATABASE_URL", raising=False)
     get_runtime_dir.cache_clear()
 
     svc = AnalysisService()

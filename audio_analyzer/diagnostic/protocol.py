@@ -66,6 +66,22 @@ TASKS = [
         "observer": "swell",
         "purpose_labels": ["힘 사용", "강약 반응"],
     },
+    {
+        "task_id": "high_note_sustain_a",
+        "order": 5,
+        "title": "높은 음 '아—'",
+        "why": "높은 음에서 힘·숨 섞임·안정이 어떻게 바뀌는지 관찰해요.",
+        "instruction": (
+            "무리하지 않는 범위에서 평소보다 높은 음으로 '아—'를 3~4초 유지해 주세요. "
+            "통증·불편이 있으면 바로 멈추세요."
+        ),
+        "target_sec": 3.5,
+        "min_sec": 2.5,
+        "max_attempts": 2,
+        "observer": "sustained",
+        "purpose_labels": ["고음 힘", "고음 숨 섞임", "고음 안정"],
+        "safety_note": "통증·불편·목소리 이상이 느껴지면 즉시 중단하세요.",
+    },
 ]
 
 SAFETY_QUESTIONS = [
@@ -80,15 +96,49 @@ SAFETY_QUESTIONS = [
 def get_task(task_id: str) -> dict:
     for t in TASKS:
         if t["task_id"] == task_id:
-            return t
-    raise KeyError(task_id)
+            return dict(t)
+    # Registry-backed fallback so planner IDs never silently vanish from task_plan
+    from audio_analyzer.diagnostic.task_registry import TASK_REGISTRY
+
+    meta = TASK_REGISTRY.get(task_id)
+    if not meta:
+        raise KeyError(task_id)
+    return {
+        "task_id": task_id,
+        "order": 99,
+        "title": str(meta.get("title") or task_id),
+        "why": str(meta.get("why") or "추가 녹음으로 발성 특성을 확인해요."),
+        "instruction": str(
+            meta.get("user_prompt")
+            or meta.get("instruction")
+            or "안내된 대로 짧게 녹음해 주세요."
+        ),
+        "target_sec": float(meta.get("target_sec") or 4.0),
+        "min_sec": float(meta.get("min_sec") or 2.5),
+        "max_attempts": int(meta.get("max_attempts") or 2),
+        "observer": str(meta.get("observer") or "sustained"),
+        "purpose_labels": list(meta.get("purpose_labels") or []),
+        "safety_note": meta.get("safety_note"),
+    }
 
 
 def tasks_for_ids(task_ids: list[str]) -> list[dict]:
-    out = []
+    """Resolve UI metadata for planned IDs. Known registry tasks must not be dropped."""
+    out: list[dict] = []
     for tid in task_ids:
         try:
             out.append(get_task(tid))
         except KeyError:
+            # Unknown id — skip but keep others; caller/tests assert catalog coverage
             continue
     return out
+
+
+def unresolved_task_ids(task_ids: list[str]) -> list[str]:
+    missing: list[str] = []
+    for tid in task_ids:
+        try:
+            get_task(tid)
+        except KeyError:
+            missing.append(tid)
+    return missing

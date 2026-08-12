@@ -47,6 +47,22 @@ from ..jobs.runner import validate_analysis_id
 
 _SESSION_ID_RE = re.compile(r"^[a-fA-F0-9]{16,64}$")
 
+
+def _log_plan(session: dict[str, Any], *, persisted: bool) -> None:
+    print(
+        "[DIAGNOSTIC_PLAN]",
+        f"session_id={session.get('session_id')}",
+        f"mode={session.get('diagnostic_mode')}",
+        f"concerns={[c.get('id') for c in (session.get('user_concerns') or [])]}",
+        f"safety={session.get('safety_flags') or []}",
+        f"core_tasks={session.get('core_tasks') or []}",
+        f"adaptive_tasks={session.get('adaptive_tasks') or []}",
+        f"selected_tasks={session.get('selected_tasks') or []}",
+        f"diagnostic_status={session.get('diagnostic_status')}",
+        f"persisted={persisted}",
+        flush=True,
+    )
+
 STATUSES = {
     "CREATED",
     "PAID",
@@ -335,6 +351,7 @@ class DiagnosticSessionService:
         session["current_task_index"] = 0
         session["status"] = "PAID"
         self._save(session)
+        _log_plan(session, persisted=True)
         return self.public_session(session)
 
     def submit_safety(
@@ -401,6 +418,59 @@ class DiagnosticSessionService:
             session["status"] = "TASKS_IN_PROGRESS"
             session["current_task_index"] = 0
         self._save(session)
+        _log_plan(session, persisted=True)
+        return self.public_session(session)
+
+    def ensure_planned_tasks(
+        self,
+        session_id: str,
+        user_id: str = "anon",
+    ) -> dict[str, Any]:
+        """Recover empty NORMAL plans without new payment / new session."""
+        session = self._require_unlocked(session_id, user_id)
+        status = (session.get("status") or "").upper()
+        if status in ("COMPLETED", "ANALYZING"):
+            return self.public_session(session)
+
+        selected = list(session.get("selected_tasks") or [])
+        diag_status = session.get("diagnostic_status") or "NORMAL"
+        if selected:
+            return self.public_session(session)
+        if diag_status == DIAGNOSTIC_STATUS_SAFETY_LIMITED:
+            return self.public_session(session)
+
+        mode = session.get("diagnostic_mode") or normalize_diagnostic_mode(
+            None, session.get("user_concerns") or []
+        )
+        session["diagnostic_mode"] = mode
+        flags = list(session.get("safety_flags") or [])
+        plan = self._build_plan(
+            session.get("source_analysis_id"),
+            user_concerns=session.get("user_concerns") or [],
+            pain_safety_flag=bool(session.get("safety_flag_pain")) or bool(flags),
+            diagnostic_mode=mode,
+            safety_flags=flags,
+            precision=True,
+        )
+        selected = list(plan.get("selected_tasks") or [])
+        session["selected_tasks"] = selected
+        session["core_tasks"] = plan.get("core_tasks") or []
+        session["adaptive_tasks"] = plan.get("adaptive_tasks") or []
+        session["planned_task_count"] = len(selected)
+        session["diagnostic_status"] = plan.get("diagnostic_status") or "NORMAL"
+        session["diagnostic_offer"] = plan.get("diagnostic_offer")
+        session["plan_rationale"] = plan.get("rationale")
+        session["tasks"] = {
+            tid: session.get("tasks", {}).get(tid) or {"attempts": [], "passed": False}
+            for tid in selected
+        }
+        if not selected and session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED:
+            session["status"] = "READY_FOR_ANALYSIS"
+        elif selected:
+            session["status"] = "TASKS_IN_PROGRESS"
+            session["current_task_index"] = 0
+        self._save(session)
+        _log_plan(session, persisted=True)
         return self.public_session(session)
 
     def upload_task(
@@ -418,8 +488,8 @@ class DiagnosticSessionService:
         if selected and task_id not in selected:
             raise ValueError("task not in session plan")
         if task_id not in (session.get("tasks") or {}):
-            # Legacy sessions may lack selected_tasks — allow catalog tasks
-            if task_id not in {t["task_id"] for t in TASKS}:
+            # Legacy sessions may lack selected_tasks — allow catalog/registry tasks
+            if task_id not in TASK_REGISTRY and task_id not in {t["task_id"] for t in TASKS}:
                 raise ValueError("unknown task")
             session.setdefault("tasks", {})[task_id] = {"attempts": [], "passed": False}
         task = get_task(task_id)
@@ -717,7 +787,17 @@ class DiagnosticSessionService:
             }
         selected = list(session.get("selected_tasks") or [])
         idx = int(session.get("current_task_index") or 0)
-        next_task = selected[idx] if idx < len(selected) else None
+        # Resume: first not-yet-passed task in plan order
+        tasks_state = session.get("tasks") or {}
+        next_task = None
+        for i, tid in enumerate(selected):
+            st = tasks_state.get(tid) or {}
+            if not st.get("passed"):
+                next_task = tid
+                idx = i
+                break
+        if next_task is None and idx < len(selected):
+            next_task = selected[idx]
         return {
             "session_id": session["session_id"],
             "user_id": session.get("user_id"),

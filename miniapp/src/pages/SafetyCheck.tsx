@@ -32,8 +32,12 @@ export default function SafetyCheck() {
         nav(`/diagnostic/${sessionId}/task/${first}`);
         return;
       }
-      // SAFETY_LIMITED (or legacy empty) — analyze without controlled recordings
-      if (session?.status === 'READY_FOR_ANALYSIS' || selected.length === 0) {
+      // SAFETY_LIMITED or empty — never leave user on a spinning Task page
+      if (
+        session?.diagnostic_status === 'SAFETY_LIMITED'
+        || session?.status === 'READY_FOR_ANALYSIS'
+        || selected.length === 0
+      ) {
         await analyzeDiagnosticSession(sessionId);
         nav(`/diagnostic/${sessionId}/report`);
         return;

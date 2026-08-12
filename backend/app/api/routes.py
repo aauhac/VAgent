@@ -430,6 +430,24 @@ def submit_safety(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@router.post("/diagnostic-sessions/{session_id}/ensure-plan")
+def ensure_diagnostic_plan(
+    session_id: str,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    """Recover empty NORMAL task plans without creating a new session."""
+    if not validate_session_id(session_id):
+        raise HTTPException(status_code=404, detail="session not found")
+    try:
+        return diag.ensure_planned_tasks(session_id, user_id=_user_id(x_user_id))
+    except PermissionError:
+        raise HTTPException(status_code=402, detail="REPORT_LOCKED") from None
+    except KeyError:
+        raise HTTPException(status_code=404, detail="session not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @router.post("/diagnostic-sessions/{session_id}/tasks/{task_id}")
 async def upload_task(
     session_id: str,

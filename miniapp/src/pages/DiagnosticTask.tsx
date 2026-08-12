@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   analyzeDiagnosticSession,
+  ensureDiagnosticPlan,
   getDiagnosticProtocol,
   getDiagnosticSession,
   uploadDiagnosticTask,
 } from '../api/client';
 import AudioReadyPanel from '../components/ui/AudioReadyPanel';
-
-const FALLBACK_ORDER = ['sustain_a', 'sustain_i', 'siren', 'dynamic_swell'];
+import {
+  classifyTaskPageState,
+  resolveTaskMeta,
+  taskProgressLabel,
+} from '../lib/diagnosticTaskState';
 
 type Phase = 'idle' | 'recording' | 'ready';
 
@@ -17,6 +21,10 @@ export default function DiagnosticTask() {
   const nav = useNavigate();
   const [protocol, setProtocol] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [protocolLoaded, setProtocolLoaded] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [seconds, setSeconds] = useState(0);
   const [levels, setLevels] = useState<number[]>(Array(20).fill(4));
@@ -35,13 +43,83 @@ export default function DiagnosticTask() {
   const stoppingRef = useRef(false);
   const levelSnapRef = useRef<number[]>([]);
 
-  useEffect(() => {
-    getDiagnosticProtocol().then(setProtocol).catch(() => undefined);
-  }, []);
+  async function loadPlan(opts?: { replan?: boolean }) {
+    if (!sessionId) {
+      setLoadError('정밀 진단 세션 정보가 없어요.');
+      setLoading(false);
+      setSessionLoaded(true);
+      setProtocolLoaded(true);
+      return;
+    }
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [proto, sess0] = await Promise.all([
+        getDiagnosticProtocol(),
+        getDiagnosticSession(sessionId),
+      ]);
+      setProtocol(proto);
+      setProtocolLoaded(true);
+
+      let sess = sess0;
+      const selected = sess?.selected_tasks || [];
+      const diagStatus = (sess?.diagnostic_status || '').toUpperCase();
+      if (
+        selected.length === 0
+        && diagStatus !== 'SAFETY_LIMITED'
+        && (opts?.replan || !!sess?.diagnostic_mode)
+      ) {
+        try {
+          sess = await ensureDiagnosticPlan(sessionId);
+        } catch {
+          /* keep sess0; empty handled below */
+        }
+      } else if (opts?.replan) {
+        try {
+          sess = await ensureDiagnosticPlan(sessionId);
+        } catch {
+          /* keep sess0 */
+        }
+      }
+
+      // Resume unfinished task if URL task is already passed / missing
+      const next = sess?.next_task_id;
+      const order: string[] = sess?.selected_tasks || [];
+      if (next && taskId && next !== taskId && order.includes(taskId)) {
+        const st = sess?.tasks?.[taskId];
+        if (st?.passed) {
+          nav(`/diagnostic/${sessionId}/task/${next}`, { replace: true });
+          setSession(sess);
+          setSessionLoaded(true);
+          setLoading(false);
+          return;
+        }
+      }
+      if ((!taskId || !order.includes(taskId)) && next) {
+        nav(`/diagnostic/${sessionId}/task/${next}`, { replace: true });
+      }
+
+      setSession(sess);
+      setSessionLoaded(true);
+      setLoading(false);
+    } catch (e: any) {
+      const code = String(e?.message || '');
+      if (code === 'SESSION_NOT_FOUND') {
+        setLoadError('정밀 진단 세션을 찾지 못했어요.');
+      } else if (code === 'SESSION_FORBIDDEN') {
+        setLoadError('이 정밀 진단에 접근할 수 없어요.');
+      } else {
+        setLoadError('추가 녹음 계획을 불러오지 못했어요. 다시 시도해주세요.');
+      }
+      setSessionLoaded(true);
+      setProtocolLoaded(true);
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    if (!sessionId) return;
-    getDiagnosticSession(sessionId).then(setSession).catch(() => undefined);
+    void loadPlan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, taskId]);
 
   function cleanup() {
@@ -88,15 +166,20 @@ export default function DiagnosticTask() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, taskId]);
 
-  const order: string[] =
-    (session?.selected_tasks && session.selected_tasks.length
-      ? session.selected_tasks
-      : FALLBACK_ORDER) as string[];
-  const task =
-    (session?.task_plan || []).find((t: any) => t.task_id === taskId) ||
-    (protocol?.tasks || []).find((t: any) => t.task_id === taskId);
+  const pageState = classifyTaskPageState({
+    loading,
+    error: loadError,
+    sessionLoaded,
+    protocolLoaded,
+    session,
+    protocol,
+    taskId,
+  });
+
+  const order: string[] = (session?.selected_tasks as string[]) || [];
+  const task = resolveTaskMeta(taskId, session, protocol) as any;
   const idx = order.indexOf(taskId || '');
-  const progressLabel = idx >= 0 ? `${idx + 1} / ${order.length}` : `— / ${order.length}`;
+  const progressLabel = taskProgressLabel(order, taskId || '');
   const purpose = (task?.purpose_labels || []).join(' · ');
   const unresolvedLabels = session?.diagnostic_offer?.unresolved_labels || [];
 
@@ -118,20 +201,16 @@ export default function DiagnosticTask() {
       src.connect(analyser);
       const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
         ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/mp4')
-          ? 'audio/mp4'
-          : undefined;
-      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-      chunksRef.current = [];
-      rec.ondataavailable = (e) => {
-        if (e.data.size) chunksRef.current.push(e.data);
+        : 'audio/webm';
+      const media = new MediaRecorder(stream, { mimeType: mime });
+      mediaRef.current = media;
+      media.ondataavailable = (ev) => {
+        if (ev.data.size) chunksRef.current.push(ev.data);
       };
-      rec.start(200);
-      mediaRef.current = rec;
+      media.start(200);
       setPhase('recording');
-      setBusy(false);
-      setSeconds(0);
       secondsRef.current = 0;
+      setSeconds(0);
       timerRef.current = window.setInterval(() => {
         secondsRef.current += 1;
         setSeconds(secondsRef.current);
@@ -139,63 +218,61 @@ export default function DiagnosticTask() {
       const data = new Uint8Array(analyser.frequencyBinCount);
       const tick = () => {
         analyser.getByteFrequencyData(data);
-        const step = Math.floor(data.length / 20) || 1;
-        const next = Array.from({ length: 20 }, (_, i) =>
-          Math.max(4, Math.round(((data[i * step] || 0) / 255) * 56)),
-        );
-        setLevels(next);
-        levelSnapRef.current = next;
+        const bars = Array.from({ length: 20 }, (_, i) => {
+          const v = data[Math.floor((i / 20) * data.length)] || 0;
+          return Math.max(4, Math.round((v / 255) * 36));
+        });
+        levelSnapRef.current = bars;
+        setLevels(bars);
         rafRef.current = requestAnimationFrame(tick);
       };
-      tick();
-    } catch (e: any) {
-      setPhase('idle');
-      setBusy(false);
+      rafRef.current = requestAnimationFrame(tick);
+    } catch {
+      setMsg('마이크 권한을 확인해 주세요.');
       cleanup();
-      setMsg(e?.message || '마이크 권한을 확인해 주세요.');
     }
   }
 
   async function finishRecording() {
-    const rec = mediaRef.current;
-    if (!rec || !task) return;
-    if (secondsRef.current < task.min_sec) {
-      setMsg(`최소 ${task.min_sec}초 이상 녹음해 주세요.`);
-      return;
-    }
-    const recordedSec = secondsRef.current;
+    if (stoppingRef.current || !mediaRef.current) return;
+    stoppingRef.current = true;
+    setBusy(true);
+    const media = mediaRef.current;
     await new Promise<void>((resolve) => {
-      rec.onstop = () => resolve();
+      media.onstop = () => resolve();
       try {
-        rec.stop();
+        media.stop();
       } catch {
         resolve();
       }
     });
-    const mime = rec.mimeType || 'audio/webm';
-    const ext = mime.includes('mp4') ? 'mp4' : 'webm';
-    const snap = [...levelSnapRef.current];
     cleanup();
-    const blob = new Blob(chunksRef.current, { type: mime });
-    chunksRef.current = [];
+    const blob = new Blob(chunksRef.current, { type: media.mimeType || 'audio/webm' });
     const url = URL.createObjectURL(blob);
     setPreviewUrl(url);
-    setPreviewDuration(recordedSec);
-    setPreviewLevels(snap.length ? snap : levels);
-    setBlobMeta({ blob, ext });
+    setPreviewLevels(levelSnapRef.current.length ? levelSnapRef.current : levels);
+    setPreviewDuration(secondsRef.current);
+    setBlobMeta({ blob, ext: 'webm' });
     setPhase('ready');
-    setMsg(null);
+    setBusy(false);
+    stoppingRef.current = false;
   }
 
   async function submitReady() {
-    if (!blobMeta || !sessionId || !taskId) return;
+    if (!sessionId || !taskId || !blobMeta) return;
     setBusy(true);
     setMsg(null);
     try {
-      const res = await uploadDiagnosticTask(sessionId, taskId, blobMeta.blob, `task.${blobMeta.ext}`);
+      const res = await uploadDiagnosticTask(
+        sessionId,
+        taskId,
+        blobMeta.blob,
+        `task.${blobMeta.ext}`,
+      );
       if (!res.attempt?.passed) {
-        setMsg(res.attempt?.quality?.user_message || '다시 녹음해 주세요.');
+        setMsg(res.attempt?.quality?.user_message || '녹음 품질이 부족해요. 다시 녹음해 주세요.');
         setBusy(false);
+        setPhase('idle');
         return;
       }
       const nextOrder = (res.session?.selected_tasks as string[]) || order;
@@ -226,8 +303,75 @@ export default function DiagnosticTask() {
     setMsg(null);
   }
 
-  if (!task) {
-    return <main><p className="muted">Task 불러오는 중…</p></main>;
+  if (pageState === 'loading') {
+    return (
+      <main>
+        <p className="muted">Task 불러오는 중…</p>
+      </main>
+    );
+  }
+
+  if (pageState === 'error') {
+    return (
+      <main>
+        <h1 className="brand" style={{ fontSize: '1.4rem' }}>정밀 발성 진단</h1>
+        <p className="fail">{loadError}</p>
+        <button className="btn" type="button" onClick={() => void loadPlan({ replan: true })}>
+          다시 시도
+        </button>
+      </main>
+    );
+  }
+
+  if (pageState === 'safety-limited') {
+    return (
+      <main>
+        <h1 className="brand" style={{ fontSize: '1.4rem' }}>안전상 추가 녹음을 진행하지 않아요</h1>
+        <p className="lead">
+          현재 불편감이 있어 강한 고음·큰 소리 검사는 제한했어요.
+          지금까지의 분석으로 리포트를 이어갈 수 있어요.
+        </p>
+        <button
+          className="btn"
+          type="button"
+          disabled={busy}
+          onClick={async () => {
+            if (!sessionId) return;
+            setBusy(true);
+            try {
+              await analyzeDiagnosticSession(sessionId);
+              nav(`/diagnostic/${sessionId}/report`);
+            } catch (e: any) {
+              setLoadError(e?.message || '리포트를 만들지 못했어요.');
+              setBusy(false);
+            }
+          }}
+        >
+          리포트 보기
+        </button>
+      </main>
+    );
+  }
+
+  if (pageState === 'loaded-empty' || pageState === 'loaded-missing-task') {
+    return (
+      <main>
+        <h1 className="brand" style={{ fontSize: '1.4rem' }}>정밀 발성 진단</h1>
+        <p className="fail">
+          {pageState === 'loaded-missing-task'
+            ? '이 추가 녹음 안내를 불러오지 못했어요.'
+            : '추가 녹음 계획을 불러오지 못했어요. 다시 시도해주세요.'}
+        </p>
+        <button className="btn" type="button" onClick={() => void loadPlan({ replan: true })}>
+          다시 불러오기
+        </button>
+        {session?.source_analysis_id ? (
+          <p className="muted" style={{ marginTop: 12 }}>
+            <Link to={`/result/${session.source_analysis_id}/detail`}>상세 리포트로 돌아가기</Link>
+          </p>
+        ) : null}
+      </main>
+    );
   }
 
   return (

@@ -48,7 +48,11 @@ def test_protocol_endpoint(client):
     body = r.json()
     assert body["protocol_version"] == "diagnostic-protocol-v1.3"
     assert body.get("adaptive") is True
-    assert len(body["tasks"]) >= 4
+    assert len(body["tasks"]) >= 5
+    ids = {t["task_id"] for t in body["tasks"]}
+    assert "high_note_sustain_a" in ids
+    assert "sustain_a" in ids
+    assert "siren" in ids
 
 
 def test_unpaid_report_locked(client):

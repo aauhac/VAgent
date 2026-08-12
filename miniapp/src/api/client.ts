@@ -191,10 +191,21 @@ export async function submitSafety(sessionId: string, answers: Record<string, bo
   return res.json();
 }
 
+export async function ensureDiagnosticPlan(sessionId: string) {
+  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/ensure-plan`, {
+    method: 'POST',
+    headers: await headers(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function getDiagnosticSession(sessionId: string) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}`, {
     headers: await headers(),
   });
+  if (res.status === 404) throw new Error('SESSION_NOT_FOUND');
+  if (res.status === 403) throw new Error('SESSION_FORBIDDEN');
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
