@@ -84,17 +84,42 @@ def test_precision_normal_flow_never_finishes_with_zero_tasks():
         assert plan["diagnostic_status"] != "SAFETY_LIMITED" or plan["selected_tasks"]
 
 
-def test_precision_safety_limited_can_have_zero_tasks():
+def test_precision_pain_on_phonation_blocks_all_controlled_tasks():
+    """Explicit pain_on_phonation → no controlled phonation (incl. siren)."""
     plan = plan_precision_protocol(
         _resolved_profile(),
         diagnostic_mode="CONCERN_FOCUSED",
-        user_concerns=[{"id": "PAIN_WHILE_SINGING"}],
+        user_concerns=[{"id": "THROAT_EFFORT"}],
         pain_safety_flag=True,
         safety_flags=["pain_on_phonation"],
     )
-    assert plan["diagnostic_status"] == "SAFETY_LIMITED"
     assert plan["selected_tasks"] == []
-    assert plan["planned_task_count"] == 0
+    assert plan["diagnostic_status"] == "SAFETY_LIMITED"
+
+
+def test_precision_discomfort_keeps_safe_tasks_not_wipe_all():
+    """severe_discomfort_after blocks only AGGRESSIVE tasks."""
+    plan = plan_precision_protocol(
+        _resolved_profile(),
+        diagnostic_mode="CONCERN_FOCUSED",
+        user_concerns=[{"id": "VOCAL_FATIGUE"}],
+        pain_safety_flag=True,
+        safety_flags=["severe_discomfort_after"],
+    )
+    assert len(plan["selected_tasks"]) >= 1
+    assert "high_note_sustain_a" not in plan["selected_tasks"]
+    assert "dynamic_swell" not in plan["selected_tasks"]
+    assert plan["diagnostic_status"] == "NORMAL"
+
+
+def test_safety_limited_only_when_no_safe_tasks_remain():
+    from audio_analyzer.diagnostic.concerns import filter_tasks_for_safety
+
+    only_aggressive = ["high_note_sustain_a", "dynamic_swell"]
+    filtered = filter_tasks_for_safety(
+        only_aggressive, pain_flag=True, safety_flags=["pain_on_phonation"]
+    )
+    assert filtered == []
 
 
 def test_song_only_sufficiency_does_not_skip_precision_recording():

@@ -16,6 +16,10 @@ MIN_HIGH_DURATION_SEC = 0.45
 MIN_VOICED_RATIO = 0.35
 MAX_DROPOUT = 0.55
 MAX_OCTAVE_JUMP = 0.25
+# Relative high uses +1.5 st above median — span must at least support that contrast.
+# Not sample-tuned: mirrors thr_rel construction in partition_pitch_regions.
+MIN_SPAN_SEMITONES_FOR_HIGH_COMPARE = 1.5
+HIGH_RELATIVE_SEMITONES = 1.5
 
 
 def _obs(seg: dict[str, Any]) -> dict[str, Any]:
@@ -94,10 +98,87 @@ def _mean(vals: list[float]) -> Optional[float]:
     return float(np.mean(np.asarray(vals, dtype=float)))
 
 
+def _candidate_row(seg: dict[str, Any], *, accepted: bool, rejection_reason: Optional[str]) -> dict[str, Any]:
+    obs = _obs(seg)
+    ve = seg.get("vocal_evidence") or {}
+    art = obs.get("f0_tracker_artifact") or {}
+    return {
+        "start_sec": seg.get("start_sec"),
+        "end_sec": seg.get("end_sec"),
+        "duration_sec": round(_seg_dur(seg), 3),
+        "f0": _f0(seg),
+        "voiced_ratio": float(seg.get("voiced_ratio") or obs.get("voiced_ratio") or 0),
+        "dropout_ratio": float(obs.get("f0_dropout_ratio") or 0),
+        "octave_jump_ratio": float(obs.get("f0_octave_jump_ratio") or 0),
+        "tracker_suspect": bool(art.get("suspect")),
+        "vocal_specific": bool(ve.get("vocal_specific", True)),
+        "accompaniment_match": float(ve.get("accompaniment_match") or 0),
+        "accepted": accepted,
+        "rejection_reason": rejection_reason,
+    }
+
+
+def assess_pitch_range_sufficiency(
+    *,
+    f0s: list[float],
+    high_threshold_hz: Optional[float],
+) -> dict[str, Any]:
+    """STEP 1: can this recording support mid↔high relative comparison?"""
+    if len(f0s) < 3:
+        return {
+            "status": "UNRELIABLE",
+            "usable_span_semitones": None,
+            "usable_min_f0_hz": None,
+            "usable_max_f0_hz": None,
+            "distribution": {},
+            "reason": "INSUFFICIENT_USABLE_F0",
+        }
+    arr = np.asarray(f0s, dtype=float)
+    usable_min = float(np.min(arr))
+    usable_max = float(np.max(arr))
+    span = _span_semitones(usable_min, usable_max)
+    dist = {
+        "p35": round(float(np.percentile(arr, 35)), 2),
+        "p50": round(float(np.percentile(arr, 50)), 2),
+        "p65": round(float(np.percentile(arr, 65)), 2),
+        "p75": round(float(np.percentile(arr, 75)), 2),
+        "p90": round(float(np.percentile(arr, 90)), 2),
+    }
+    thr_outside = (
+        high_threshold_hz is not None
+        and usable_max > 0
+        and float(high_threshold_hz) > float(usable_max) + 1e-6
+    )
+    span_too_narrow = span is None or float(span) < float(MIN_SPAN_SEMITONES_FOR_HIGH_COMPARE)
+    if thr_outside or span_too_narrow:
+        return {
+            "status": "INSUFFICIENT",
+            "usable_span_semitones": span,
+            "usable_min_f0_hz": round(usable_min, 2),
+            "usable_max_f0_hz": round(usable_max, 2),
+            "distribution": dist,
+            "reason": "INSUFFICIENT_PITCH_RANGE",
+            "threshold_outside_observed_support": bool(thr_outside),
+        }
+    return {
+        "status": "SUFFICIENT",
+        "usable_span_semitones": span,
+        "usable_min_f0_hz": round(usable_min, 2),
+        "usable_max_f0_hz": round(usable_max, 2),
+        "distribution": dist,
+        "reason": None,
+        "threshold_outside_observed_support": False,
+    }
+
+
 def partition_pitch_regions(
     segments: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
-    """Relative mid vs high regions from within-recording F0 distribution."""
+    """Relative mid vs high regions from within-recording F0 distribution.
+
+    STEP 1 — pitch range sufficiency (mid↔high contrast possible?)
+    STEP 2 — only then form upper-range candidates (never clamp thr into max).
+    """
     usable = [s for s in segments if _reliable_pitch_seg(s)]
     f0s = [_f0(s) for s in usable]
     f0s = [f for f in f0s if f is not None]
@@ -109,6 +190,17 @@ def partition_pitch_regions(
         "highest_reliable_f0_hz": None,
         "range_span_semitones": None,
         "n_usable_segments": len(usable),
+        "n_total_segments": len(segments),
+        "n_reliable_pitch_segments": len(usable),
+        "candidate_table": [],
+        "pitch_range_sufficiency": {
+            "status": "UNRELIABLE",
+            "usable_span_semitones": None,
+            "usable_min_f0_hz": None,
+            "usable_max_f0_hz": None,
+            "distribution": {},
+            "reason": "INSUFFICIENT_USABLE_F0",
+        },
     }
     if len(f0s) < 3:
         return [], [], context
@@ -118,64 +210,88 @@ def partition_pitch_regions(
     p75 = float(np.percentile(arr, 75))
     p90 = float(np.percentile(arr, 90))
     observed_max = float(np.max(arr))
-    # High region: at/above the greater of p75 and 1.5 semitone above median
-    thr_rel = p50 * (2.0 ** (1.5 / 12.0))
+    observed_min = float(np.min(arr))
+    # High region: at/above the greater of p75 and HIGH_RELATIVE_SEMITONES above median
+    thr_rel = p50 * (2.0 ** (HIGH_RELATIVE_SEMITONES / 12.0))
     high_thr = max(p75, thr_rel)
+    # NEVER clamp high_thr into observed_max — that invents a high region.
+
+    sufficiency = assess_pitch_range_sufficiency(f0s=f0s, high_threshold_hz=high_thr)
+    context["pitch_range_sufficiency"] = sufficiency
+    context.update(
+        {
+            "median_f0_hz": round(p50, 2),
+            "p35_f0_hz": round(float(np.percentile(arr, 35)), 2),
+            "p65_f0_hz": round(float(np.percentile(arr, 65)), 2),
+            "p75_f0_hz": round(p75, 2),
+            "p90_f0_hz": round(p90, 2),
+            "highest_observed_f0_hz": round(observed_max, 2),
+            "range_span_semitones": sufficiency.get("usable_span_semitones")
+            or _span_semitones(observed_min, observed_max),
+            "high_threshold_hz": round(high_thr, 2),
+            "n_high_segments": 0,
+            "n_reliable_high_segments": 0,
+            "n_mid_segments": 0,
+            "highest_reliable_f0_hz": None,
+        }
+    )
+
+    if sufficiency.get("status") != "SUFFICIENT":
+        # Range problem — not "user cannot sing high"
+        context["partition_gate"] = "RANGE_INSUFFICIENT"
+        return [], [], context
+
     # Mid / comfort: around median band (p35–p65), excluding high
     mid_lo = float(np.percentile(arr, 35))
     mid_hi = float(np.percentile(arr, 65))
 
     high: list[dict[str, Any]] = []
     mid: list[dict[str, Any]] = []
+    candidate_table: list[dict[str, Any]] = []
     for s in usable:
         f0 = _f0(s)
         if f0 is None:
             continue
         if f0 >= high_thr:
-            high.append(s)
+            # Upper-range candidate — apply reliability gates with traceable reasons
+            reason = None
+            if _seg_dur(s) < MIN_HIGH_DURATION_SEC:
+                reason = "DURATION"
+            elif float(_obs(s).get("f0_dropout_ratio") or 1) > 0.45:
+                reason = "DROPOUT"
+            elif _tracker_bad(s):
+                reason = "TRACKER_ARTIFACT"
+            if reason is None:
+                high.append(s)
+                candidate_table.append(_candidate_row(s, accepted=True, rejection_reason=None))
+            else:
+                candidate_table.append(_candidate_row(s, accepted=False, rejection_reason=reason))
         elif mid_lo <= f0 <= mid_hi:
             mid.append(s)
 
-    # Reliable high: require duration / continuity-ish filters
-    reliable_high = [
-        s
-        for s in high
-        if _seg_dur(s) >= MIN_HIGH_DURATION_SEC and float(_obs(s).get("f0_dropout_ratio") or 1) <= 0.45
-    ]
-    # Reject single-frame spike dominance: need coverage
+    reliable_high = list(high)  # already duration/dropout filtered above
     reliable_f0s = [_f0(s) for s in reliable_high]
     reliable_f0s = [f for f in reliable_f0s if f is not None]
-    # Also reject isolated max that exceeds p90 by > 3 st unless sustained
     if reliable_f0s:
         hi_rel = float(np.max(reliable_f0s))
     else:
         hi_rel = None
-        # Fallback: p90 of usable if we have enough high candidates with milder gate
         soft = [_f0(s) for s in high if not _tracker_bad(s)]
         soft = [f for f in soft if f is not None]
         if len(soft) >= MIN_HIGH_SEGMENTS:
             hi_rel = float(np.percentile(soft, 90))
 
-    # Spike rejection: if observed max >> reliable by >4 st, keep distinction
-    if hi_rel is not None and observed_max > hi_rel * (2.0 ** (4.0 / 12.0)):
-        # keep both fields different intentionally
-        pass
-
     context.update(
         {
-            "median_f0_hz": round(p50, 2),
-            "p75_f0_hz": round(p75, 2),
-            "p90_f0_hz": round(p90, 2),
-            "highest_observed_f0_hz": round(observed_max, 2),
             "highest_reliable_f0_hz": round(hi_rel, 2) if hi_rel is not None else None,
-            "range_span_semitones": _span_semitones(float(np.min(arr)), hi_rel or observed_max),
-            "high_threshold_hz": round(high_thr, 2),
             "n_high_segments": len(high),
             "n_reliable_high_segments": len(reliable_high),
             "n_mid_segments": len(mid),
+            "candidate_table": candidate_table,
+            "partition_gate": "UPPER_REGION_BUILT",
         }
     )
-    return mid, high if reliable_high else high, context
+    return mid, high, context
 
 
 def _region_metric(segs: list[dict[str, Any]], key: str) -> Optional[float]:
@@ -282,16 +398,94 @@ def build_high_note_function_profile(
 
     mid, high, pitch_context = partition_pitch_regions(segments)
     n_high = int(pitch_context.get("n_reliable_high_segments") or pitch_context.get("n_high_segments") or 0)
+    n_high_raw = int(pitch_context.get("n_high_segments") or 0)
+    n_mid = int(pitch_context.get("n_mid_segments") or 0)
+    sufficiency = pitch_context.get("pitch_range_sufficiency") or {}
+    range_status = str(sufficiency.get("status") or "").upper()
+
     if n_high < MIN_HIGH_SEGMENTS or pitch_context.get("highest_reliable_f0_hz") is None:
+        # Classify why — never invent high-note axis values; never imply absolute inability
+        if range_status in ("INSUFFICIENT", "UNRELIABLE") or sufficiency.get(
+            "threshold_outside_observed_support"
+        ):
+            reject = "INSUFFICIENT_PITCH_RANGE"
+            # Alias for older reports / tests
+            reject_alias = "RELATIVE_HIGH_PARTITION"
+            reason_copy = (
+                "이번 노래에서는 중간 음역과 높은 음역을 "
+                "안정적으로 비교할 만큼 음역 변화가 충분하지 않았어요."
+            )
+        elif n_mid < 1 and n_high_raw >= 1:
+            reject = "INSUFFICIENT_MID_REFERENCE"
+            reject_alias = reject
+            reason_copy = (
+                "높은 음 구간은 일부 확인됐지만, "
+                "비교 기준이 되는 중간 음역 구간이 충분하지 않았어요."
+            )
+        elif n_high_raw == 0:
+            reject = "NO_RELIABLE_HIGH_REGION"
+            reject_alias = "NO_HIGH_CANDIDATES"
+            reason_copy = (
+                "이번 녹음에서는 비교에 쓸 수 있는 높은 음 구간을 "
+                "안정적으로 나누지 못했어요."
+            )
+        elif n_high > 0:
+            reject = "INSUFFICIENT_HIGH_COVERAGE"
+            reject_alias = "INSUFFICIENT_RELIABLE_HIGH_DURATION"
+            reason_copy = (
+                "높은 음 구간은 확인됐지만, "
+                "비교에 사용할 수 있는 구간이 충분하지 않았어요."
+            )
+        else:
+            reject = "INSUFFICIENT_HIGH_COVERAGE"
+            reject_alias = "INSUFFICIENT_HIGH_NOTE_COVERAGE"
+            reason_copy = (
+                "높은 음 구간은 확인됐지만, "
+                "비교에 사용할 수 있는 구간이 충분하지 않았어요."
+            )
+
+        if mixed and reject not in ("INSUFFICIENT_PITCH_RANGE",):
+            # Contamination can compound coverage failure; keep primary reason, note limitation
+            pass
+
+        # PARTIAL: at least one reliable high segment — expose observed high F0 only (no invented axes)
+        partial_axes: dict[str, Any] = {}
+        availability = "UNAVAILABLE"
+        if (
+            n_high >= 1
+            and pitch_context.get("highest_reliable_f0_hz") is not None
+            and reject != "INSUFFICIENT_PITCH_RANGE"
+        ):
+            availability = "PARTIAL"
+            reason_copy = "고음 구간에서 일부 특징은 확인됐어요."
+            partial_axes = {
+                "observed_high_pitch": {
+                    "status": "OBSERVED",
+                    "summary": (
+                        "이번 녹음에서 신뢰 가능하게 확인된 최고 음높이 "
+                        f"{round(float(pitch_context['highest_reliable_f0_hz']))} Hz"
+                    ),
+                    "confidence_label": "low",
+                }
+            }
+        pitch_context = {
+            **pitch_context,
+            "rejection_class": reject,
+            "rejection_class_alias": reject_alias,
+            "availability_level": availability,
+        }
         return {
-            "available": False,
-            "reason": "INSUFFICIENT_HIGH_NOTE_COVERAGE",
+            "available": availability == "PARTIAL",
+            "availability": availability,
+            "reason": reject,
+            "reason_alias": reject_alias,
+            "reason_user": reason_copy,
             "pitch_context": pitch_context,
-            "axes": {},
-            "summary": [],
+            "axes": partial_axes,
+            "summary": [reason_copy] if availability == "PARTIAL" else [],
             "confidence_label": "low",
             "limitations": [
-                "이번 녹음에서는 고음 구간이 충분하지 않아 고음 수행 프로필은 표시하지 않았어요."
+                "고음 구간 비교는 동일 녹음 내부 상대 비교이며 절대 음역 능력이 아니에요.",
             ],
         }
 
@@ -648,7 +842,10 @@ def build_high_note_function_profile(
     summary = _compose_summaries(axes)
     return {
         "available": True,
-        "pitch_context": pitch_context,
+        "availability": "FULL",
+        "reason": None,
+        "reason_user": None,
+        "pitch_context": {**pitch_context, "availability_level": "FULL"},
         "axes": axes,
         "summary": summary,
         "confidence_label": conf,

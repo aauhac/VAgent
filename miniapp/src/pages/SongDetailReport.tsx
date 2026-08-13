@@ -108,6 +108,15 @@ export default function SongDetailReport() {
   const criteriaMatrix = report.criteria_matrix || vf.criteria_matrix || [];
   const candidateComparison = decision.candidate_comparison || [];
   const vocalType = report.vocal_type_profile || vf.vocal_type_profile;
+  const vocalStyle = report.vocal_style_profile || vf.vocal_style_profile;
+  const canonicalRegister =
+    vocalStyle?.canonical_register
+    || vocalType?.canonical_register
+    || vocalType?.register_strategy;
+  const canonicalAcoustic =
+    report.canonical_acoustic_axes
+    || vocalStyle?.canonical_acoustic_axes
+    || vf.canonical_acoustic_axes;
   const effortAssessment =
     report.effort_assessment
     || vf.effort_assessment
@@ -149,7 +158,7 @@ export default function SongDetailReport() {
         </button>
       </div>
 
-      <VocalTypeHero profile={vocalType} />
+      <VocalTypeHero profile={vocalType} styleProfile={vocalStyle} />
 
       <MainDiagnosis
         primary={primary}
@@ -159,7 +168,12 @@ export default function SongDetailReport() {
         effortAssessment={effortAssessment}
       />
 
-      <VocalProfile dimensions={dims} criteriaMatrix={criteriaMatrix} />
+      <VocalProfile
+        dimensions={dims}
+        criteriaMatrix={criteriaMatrix}
+        canonicalRegister={canonicalRegister}
+        canonicalAcoustic={canonicalAcoustic}
+      />
 
       <HighNoteFunctionSection
         profile={report.high_note_function_profile || vf.high_note_function_profile}

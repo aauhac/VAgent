@@ -78,7 +78,7 @@ def compute_source_params(
             "gci": gci_info,
         }
 
-    dflow = np.diff(g, prepend=g[0])
+    dflow = np.diff(g, prepend=g[0]) * float(sr)
     gci = np.asarray(gci_info["gci_samples"], dtype=int)
     cycles = _cycle_params(g, dflow, gci, sr)
     if len(cycles) < 2:

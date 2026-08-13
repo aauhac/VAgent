@@ -307,22 +307,38 @@ def build_controlled_contrasts(
 
 
 def extract_timbre_snapshot(song_profile: dict[str, Any]) -> dict[str, Any]:
-    vf = song_profile.get("vocal_function_profile") or song_profile
-    tp = vf.get("timbre_profile") or {}
-    axes = tp.get("axes") or {}
-    snap: dict[str, Any] = {"available": bool(tp.get("available")), "axes": {}}
-    for name in ("brightness", "presence", "airiness", "texture", "harmonic_concentration", "timbre_consistency"):
-        ax = axes.get(name) or {}
-        if not ax:
+    """Timbre axes from canonical song evidence (shared with coaching)."""
+    from .song_evidence import get_canonical_snapshot
+
+    snap = get_canonical_snapshot(song_profile)
+    timbre = snap.get("timbre") or {}
+    axes: dict[str, Any] = {}
+    for name in (
+        "brightness",
+        "presence",
+        "airiness",
+        "texture",
+        "harmonic_concentration",
+        "consistency",
+    ):
+        val = timbre.get(name)
+        if val is None and isinstance(timbre.get("axes"), dict):
+            val = (timbre.get("axes") or {}).get(name)
+        if val is None:
             continue
-        snap["axes"][name] = {
-            "status": ax.get("status"),
-            "continuum": ax.get("continuum"),
-            "confidence_label": ax.get("confidence_label"),
-        }
-    if not snap["axes"] and tp.get("summary"):
-        snap["summary"] = tp.get("summary")
-    return snap
+        if isinstance(val, dict):
+            axes[name] = val
+        else:
+            axes[name] = {"continuum": float(val), "status": None}
+    return {
+        "available": bool(timbre.get("available") or axes),
+        "axes": axes,
+        "summary": (snap.get("vocal_function_profile") or {}).get("timbre_profile", {}).get("summary")
+        if snap.get("vocal_function_profile")
+        else None,
+        "canonical": snap,
+        "source": timbre.get("source"),
+    }
 
 
 def _empty_eval(concern_id: str, status: str, **kwargs: Any) -> dict[str, Any]:
@@ -330,6 +346,7 @@ def _empty_eval(concern_id: str, status: str, **kwargs: Any) -> dict[str, Any]:
         "concern": concern_id,
         "concern_id": concern_id,
         "status": status,
+        "evidence_level": kwargs.get("evidence_level"),
         "support": kwargs.get("support") or [],
         "against": kwargs.get("against") or [],
         "missing": kwargs.get("missing") or [],
@@ -343,6 +360,7 @@ def _empty_eval(concern_id: str, status: str, **kwargs: Any) -> dict[str, Any]:
         "unresolved_reason": kwargs.get("unresolved_reason"),
         "note": kwargs.get("note"),
         "answer_hint": kwargs.get("answer_hint"),
+        "interpretation": kwargs.get("interpretation") or kwargs.get("answer_hint"),
     }
 
 
@@ -377,6 +395,11 @@ def evaluate_concern(
     fused = task_evidence or {}
     profiles = fused.get("task_profiles") or build_task_profiles(task_results or [])
     contrasts = fused.get("controlled_contrasts") or build_controlled_contrasts(profiles)
+    skipped = set(
+        (fused.get("task_evidence") or {}).get("user_skipped_tasks")
+        or fused.get("user_skipped_tasks")
+        or []
+    )
     timbre = extract_timbre_snapshot(song_profile)
     song_effort = _song_effort_level(song_profile)
 
@@ -386,6 +409,7 @@ def evaluate_concern(
             profiles=profiles,
             contrasts=contrasts,
             concern_id=concern_id,
+            user_skipped_tasks=skipped,
         )
     if concern_id in ("THROAT_EFFORT", "LOUD_VOICE_DIFFICULT", "VOCAL_FATIGUE"):
         return _resolve_general_effort(
@@ -393,11 +417,14 @@ def evaluate_concern(
             song_effort=song_effort,
             profiles=profiles,
             contrasts=contrasts,
+            user_skipped_tasks=skipped,
         )
     if concern_id in ("HIGH_NOTE_CANNOT_REACH", "HIGH_NOTE_FLIPS", "REGISTER_CONNECTION_DIFFICULT"):
-        return _resolve_registerish(concern_id, profiles, contrasts, song_profile)
+        return _resolve_registerish(
+            concern_id, profiles, contrasts, song_profile, user_skipped_tasks=skipped
+        )
     if concern_id == "HIGH_NOTE_UNSTABLE":
-        return _resolve_high_note_stability(profiles, contrasts)
+        return _resolve_high_note_stability(profiles, contrasts, user_skipped_tasks=skipped)
     if concern_id in (
         "TIMBRE_DISSATISFIED",
         "VOICE_TOO_DARK_MUFFLED",
@@ -424,7 +451,9 @@ def _resolve_high_note_effort(
     profiles: dict[str, dict[str, Any]],
     contrasts: dict[str, Any],
     concern_id: str,
+    user_skipped_tasks: Optional[set[str]] = None,
 ) -> dict[str, Any]:
+    skipped = user_skipped_tasks or set()
     base = profiles.get("sustain_a") or {}
     high = profiles.get("high_note_sustain_a") or {}
     contrast = (contrasts.get("baseline_vs_high") or {}).get("dimensions") or {}
@@ -434,6 +463,27 @@ def _resolve_high_note_effort(
     against: list[str] = []
     missing: list[str] = []
     causes: list[str] = []
+
+    if "high_note_sustain_a" in skipped and not high:
+        hint = (
+            "기존 노래에서는 힘 관련 변화가 일부 관찰됐지만, "
+            "높은 음을 별도로 확인하는 추가 과제를 건너뛰어 "
+            "고음 자체에서 힘이 증가하는지는 구분하지 않았어요."
+            if song_effort == "HIGH"
+            else "추가 고음 과제를 진행하지 않아 이 항목은 현재 노래에서 확인된 범위까지만 안내해요."
+        )
+        status = "PARTIALLY_SUPPORTED" if song_effort == "HIGH" else "UNRESOLVED"
+        return _empty_eval(
+            concern_id,
+            status,
+            support=["song_effort_high"] if song_effort == "HIGH" else [],
+            missing=["high_note_sustain_a"],
+            unresolved_reason="USER_SKIPPED_RELEVANT_TASK",
+            song_evidence_used=[f"song_effort_{song_effort}"],
+            task_ids_used=used,
+            confidence_label="low",
+            answer_hint=hint,
+        )
 
     if not high:
         missing.append("high_note_sustain_a")
@@ -564,12 +614,14 @@ def _resolve_general_effort(
     song_effort: str,
     profiles: dict[str, dict[str, Any]],
     contrasts: dict[str, Any],
+    user_skipped_tasks: Optional[set[str]] = None,
 ) -> dict[str, Any]:
     high_eval = _resolve_high_note_effort(
         song_effort=song_effort,
         profiles=profiles,
         contrasts=contrasts,
         concern_id="HIGH_NOTE_TOO_EFFORTFUL",
+        user_skipped_tasks=user_skipped_tasks,
     )
     # Prefer controlled contrast when available
     if high_eval["status"] in ("CONFIRMED", "PARTIALLY_SUPPORTED", "CONTEXT_DEPENDENT"):
@@ -584,12 +636,15 @@ def _resolve_general_effort(
     if song_effort == "HIGH":
         return _empty_eval(
             concern_id,
-            "CONFIRMED",
+            "PARTIALLY_SUPPORTED",
             support=["song_effort_high"],
             song_evidence_used=["effort_assessment"],
+            evidence_level="SONG_SUPPORTED",
             confidence_label="medium",
             candidate_causes=["GENERAL_EXCESS_EFFORT"],
-            answer_hint="이번 노래 분석에서 힘 증가 패턴이 확인됐어요.",
+            answer_hint=(
+                "이번 노래에서는 일부 구간에서 힘 사용이 증가하는 발성 경향이 보여요."
+            ),
         )
     if song_effort == "LOW":
         # Song low + no controlled confirmation → not supported (concern ≠ truth)
@@ -620,7 +675,17 @@ def _resolve_general_effort(
 def _resolve_high_note_stability(
     profiles: dict[str, dict[str, Any]],
     contrasts: dict[str, Any],
+    user_skipped_tasks: Optional[set[str]] = None,
 ) -> dict[str, Any]:
+    skipped = user_skipped_tasks or set()
+    if "high_note_sustain_a" in skipped and "high_note_sustain_a" not in profiles:
+        return _empty_eval(
+            "HIGH_NOTE_UNSTABLE",
+            "UNRESOLVED",
+            unresolved_reason="USER_SKIPPED_RELEVANT_TASK",
+            missing=["high_note_sustain_a"],
+            answer_hint="고음 안정성 확인 과제를 건너뛰어 이 항목은 현재 노래에서 확인된 범위까지만 안내해요.",
+        )
     contrast = ((contrasts.get("baseline_vs_high") or {}).get("dimensions") or {}).get("stability") or {}
     used = [t for t in ("sustain_a", "high_note_sustain_a") if t in profiles]
     if not contrast.get("available"):
@@ -656,7 +721,17 @@ def _resolve_registerish(
     profiles: dict[str, dict[str, Any]],
     contrasts: dict[str, Any],
     song_profile: dict[str, Any],
+    user_skipped_tasks: Optional[set[str]] = None,
 ) -> dict[str, Any]:
+    skipped = user_skipped_tasks or set()
+    if "siren" in skipped and "siren" not in profiles:
+        return _empty_eval(
+            concern_id,
+            "UNRESOLVED",
+            unresolved_reason="USER_SKIPPED_RELEVANT_TASK",
+            missing=["siren"],
+            answer_hint="성구 연결 확인 과제를 건너뛰어 이 항목은 현재 노래에서 확인된 범위까지만 안내해요.",
+        )
     siren = profiles.get("siren") or {}
     reg = ((contrasts.get("siren_transition") or {}).get("dimensions") or {}).get("register") or {}
     vt = (song_profile.get("vocal_function_profile") or {}).get("vocal_type_profile") or {}
@@ -680,6 +755,7 @@ def _resolve_registerish(
                     profiles=profiles,
                     contrasts=contrasts,
                     concern_id="HIGH_NOTE_TOO_EFFORTFUL",
+                    user_skipped_tasks=skipped,
                 )
                 if effort["status"] in ("CONFIRMED", "PARTIALLY_SUPPORTED"):
                     out = dict(effort)
@@ -858,9 +934,10 @@ def _resolve_timbre(
                 "UNRESOLVED",
                 unresolved_reason="INSUFFICIENT_TIMBRE_FAMILIES",
                 missing=["timbre_axes"],
-                answer_hint="음색 관련 지표가 부족해 어떤 특징이 두드러지는지 설명하기 어려웠어요.",
+                evidence_level="INSUFFICIENT",
+                answer_hint="이번 분석에서 음색 특징을 설명할 수 있는 근거가 충분하지 않았어요.",
             )
-        hint = "현재 음색에서 가장 두드러진 특징은 " + ", ".join(bits[:3]) + "입니다."
+        hint = "이번 노래의 음색은 " + ", ".join(bits[:3]) + "으로 보여요."
         if not song_timbre_ok and proxies.get("sources"):
             hint += " (노래 음색 축이 부족해 표준 과제 음향 특징으로 보완했어요.)"
         return _empty_eval(
@@ -869,6 +946,7 @@ def _resolve_timbre(
             support=support or list(proxies.get("sources") or ["task_timbre_proxy"]),
             task_ids_used=used_tasks,
             song_evidence_used=["timbre_profile"] if song_timbre_ok else [],
+            evidence_level="SONG_SUPPORTED" if song_timbre_ok else "SONG_INFERRED",
             confidence_label="medium" if (song_timbre_ok and len(support) >= 2) else "low",
             answer_hint=hint,
         )
@@ -880,7 +958,11 @@ def _resolve_timbre(
                 "UNRESOLVED",
                 unresolved_reason="INSUFFICIENT_TIMBRE_FAMILIES",
                 missing=["brightness", "presence", "airiness"],
-                answer_hint="밝기·중역 존재감·숨 섞임 지표가 부족해 답답한 인상의 원인을 좁히지 못했어요.",
+                answer_hint=(
+                    "이번 분석에서 답답한 인상을 설명할 수 있는 "
+                    "밝기·중역 존재감·숨 섞임 근거가 충분하지 않았어요."
+                ),
+                evidence_level="INSUFFICIENT",
             )
         if presence is not None and presence <= 0.42:
             support.append(f"low_presence={presence:.2f}")
@@ -901,7 +983,9 @@ def _resolve_timbre(
         elif firm_low_air and not dark_support:
             against.append(f"low_airiness_alone={airiness:.2f}")
         if len(dark_support) >= 2 or (len(dark_support) >= 1 and firm_low_air and not against):
-            status = "CONFIRMED" if len(dark_support) >= 2 else "PARTIALLY_SUPPORTED"
+            # Song-only: never CONTROLLED_CONFIRMED language; keep PARTIAL unless tasks present
+            has_task = any((profiles.get(t) or {}).get("valid") for t in profiles)
+            status = "CONFIRMED" if (has_task and len(dark_support) >= 2) else "PARTIALLY_SUPPORTED"
         elif against and not dark_support:
             status = "NOT_SUPPORTED_IN_THIS_RECORDING"
         elif dark_support and against:
@@ -915,28 +999,35 @@ def _resolve_timbre(
             )
         hint = None
         if status in ("CONFIRMED", "PARTIALLY_SUPPORTED") and dark_support:
+            bits = []
+            if bright is not None and bright <= 0.42:
+                bits.append("밝기")
+            if presence is not None and presence <= 0.42:
+                bits.append("중역 존재감")
             hint = (
-                "밝기는 "
-                + ("낮은 편이고 " if bright is not None and bright <= 0.42 else "보통이지만 ")
-                + ("중역 존재감이 낮고, " if presence is not None and presence <= 0.42 else "")
-                + (
-                    "숨이 많이 섞이지 않는 단단한 음질이 나타나 답답하게 느껴질 수 있는 패턴이 일부 확인됐습니다."
-                    if firm_low_air
-                    else "답답하게 느껴질 수 있는 음색 특징이 일부 확인됐습니다."
-                )
+                "이번 노래에서는 일부 구간에서 "
+                + ("와 ".join(bits) if bits else "음색 특징")
+                + "이 낮아지는 경향이 있어, 답답하게 느껴지는 인상과 관련된 것으로 보여요."
             )
+            if firm_low_air:
+                hint += " 숨 섞임은 많지 않은 편이에요."
         elif status == "NOT_SUPPORTED_IN_THIS_RECORDING":
             hint = (
-                "표준 과제에서는 스펙트럼이 밝은 편으로 나타나 "
-                "답답·어두운 인상과 일치하는 패턴이 뚜렷하지 않았어요."
-                if any("brightness_ok" in a for a in against)
-                else "이번 녹음에서는 밝기·중역 존재감이 크게 낮아 답답한 인상과 일치하는 패턴이 뚜렷하지 않았어요."
+                "전체적으로 어둡거나 막힌 음색으로 보이지는 않아요. "
+                "이번 노래에서는 밝기와 중역 존재감이 비교적 유지되는 편입니다."
             )
         else:
             hint = (
-                "노래 음색 축이 부족하고, 숨 섞임이 적다는 것만으로는 "
-                "답답한 인상의 원인을 하나로 좁히기 어려웠어요."
+                "이번 분석에서 답답한 인상의 원인을 하나로 좁힐 수 있는 "
+                "근거가 충분하지 않았어요."
             )
+        el = (
+            "CONTROLLED_CONFIRMED"
+            if status == "CONFIRMED"
+            else "SONG_SUPPORTED"
+            if status in ("PARTIALLY_SUPPORTED", "NOT_SUPPORTED_IN_THIS_RECORDING")
+            else "INSUFFICIENT"
+        )
         return _empty_eval(
             concern_id,
             status,
@@ -946,6 +1037,7 @@ def _resolve_timbre(
             candidate_causes=causes,
             task_ids_used=used_tasks,
             song_evidence_used=["timbre_profile"] if song_timbre_ok else list(proxies.get("sources") or []),
+            evidence_level=el,
             confidence_label="medium" if len(dark_support) >= 2 else "low",
             answer_hint=hint,
             unresolved_reason=None
@@ -960,8 +1052,12 @@ def _resolve_timbre(
         if presence is not None and presence <= 0.42:
             support.append(f"low_presence={presence:.2f}")
             causes.append("LOW_PRESENCE")
+        from .song_evidence import get_canonical_snapshot
+
+        c_snap = (get_canonical_snapshot(song_profile).get("contact") or {})
         contact = ((profiles.get("sustain_a") or {}).get("dimensions") or {}).get("contact") or {}
-        if str(contact.get("status") or "").upper() in ("LIGHT", "LIGHT_LEANING"):
+        cst = str(c_snap.get("status") or contact.get("status") or "").upper()
+        if cst in ("LIGHT", "LIGHT_LEANING"):
             support.append("light_contact")
             causes.append("LIGHT_CONTACT")
         if not support:
@@ -971,23 +1067,51 @@ def _resolve_timbre(
                 against=["thin_cues_absent"],
                 missing=[] if axes else ["timbre_axes"],
                 unresolved_reason=None if axes else "INSUFFICIENT_TIMBRE_FAMILIES",
+                evidence_level="SONG_SUPPORTED" if axes else "INSUFFICIENT",
                 answer_hint=(
-                    "숨 섞임·중역 존재감만으로는 얇은 인상과 일치하는 패턴이 뚜렷하지 않았어요."
+                    "이번 노래에서는 얇게 들리는 인상과 직접 일치하는 "
+                    "음향 패턴은 강하지 않았어요. 기본적으로는 비교적 선명한 쪽의 음색으로 보여요."
                     if axes
-                    else "얇은 인상과 관련된 음색 지표가 부족했어요."
+                    else "이번 분석에서 얇은 인상을 설명할 수 있는 근거가 충분하지 않았어요."
                 ),
             )
+        families = len(causes)
+        if "HIGH_AIRINESS" in causes and "LOW_PRESENCE" in causes:
+            hint = (
+                "이번 노래에서는 숨 섞임이 많고 중역 존재감이 낮아지는 특징이 함께 나타나, "
+                "소리가 얇게 느껴지는 데 영향을 주는 것으로 보여요."
+            )
+            el = "SONG_SUPPORTED"
+        elif "LOW_PRESENCE" in causes and "HIGH_AIRINESS" not in causes:
+            air_note = (
+                "숨이 많이 섞여서 얇게 들리는 유형이라기보다, "
+                if airiness is not None and airiness <= 0.4
+                else ""
+            )
+            contact_note = "가벼운 음질과 " if "LIGHT_CONTACT" in causes else ""
+            hint = (
+                f"이번 노래에서는 {air_note}{contact_note}"
+                "상대적으로 낮은 중역 존재감이 얇은 인상과 관련된 것으로 보여요."
+            )
+            el = "SONG_SUPPORTED" if families >= 2 else "SONG_INFERRED"
+        elif "HIGH_AIRINESS" in causes:
+            hint = (
+                "이번 노래에서는 숨 섞임이 늘어나는 경향이 있어 "
+                "얇게 느껴지는 인상과 관련될 가능성이 있어 보여요."
+            )
+            el = "SONG_INFERRED" if families < 2 else "SONG_SUPPORTED"
+        else:
+            hint = "이번 노래에서 확인된 음색·접촉 특징이 얇은 인상과 일부 관련된 것으로 보여요."
+            el = "SONG_INFERRED"
         return _empty_eval(
             concern_id,
-            "PARTIALLY_SUPPORTED" if len(support) == 1 else "CONFIRMED",
+            "PARTIALLY_SUPPORTED",
             support=support,
             candidate_causes=causes,
             task_ids_used=used_tasks,
-            song_evidence_used=["timbre_profile"],
-            answer_hint="얇은 인상에는 "
-            + ("숨 섞임 증가와 " if "HIGH_AIRINESS" in causes else "")
-            + ("낮은 중역 존재감이 " if "LOW_PRESENCE" in causes else "")
-            + "관련돼 보입니다.",
+            song_evidence_used=["timbre_profile"] if song_timbre_ok else ["canonical_song_evidence"],
+            evidence_level=el,
+            answer_hint=hint,
         )
 
     if concern_id == "VOICE_TOO_BREATHY":

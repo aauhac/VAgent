@@ -186,7 +186,7 @@ def free_public_result(result: dict[str, Any]) -> dict[str, Any]:
 
 
 def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]:
-    """Additive free-tier vocal type card (no criteria / timeline)."""
+    """Additive free-tier vocal type/style card (no criteria / timeline)."""
     from audio_analyzer.coach_profile import build_vocal_type_public
 
     vf = vf_profile or {}
@@ -194,20 +194,50 @@ def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]
     if not isinstance(raw, dict):
         raw = {}
     pub = build_vocal_type_public(raw)
+    style = vf.get("vocal_style_profile") if isinstance(vf, dict) else None
+    if not isinstance(style, dict):
+        style = pub.get("vocal_style_profile") or {}
     hc = pub.get("head_chest") or {}
+    sb = pub.get("source_balance") or {}
+    balance_class = str(sb.get("balance_class") or "").upper()
+    show_raw = sb.get("show_ratio")
+    if show_raw is None:
+        show_raw = hc.get("show_ratio")
+    if show_raw is None:
+        show_raw = balance_class not in ("CONFLICTED", "UNRESOLVED", "UNKNOWN")
+    show_ratio = bool(show_raw) and hc.get("available") is not False and balance_class != "CONFLICTED"
+    display_name = (
+        (style.get("display_name") if isinstance(style, dict) else None)
+        or pub.get("display_name")
+    )
+    description = (
+        (style.get("description") if isinstance(style, dict) else None)
+        or pub.get("description")
+    )
     return {
-        "available": bool(pub.get("available")),
-        "display_name": pub.get("display_name"),
-        "description": pub.get("description"),
+        "available": bool(pub.get("available") or (isinstance(style, dict) and style.get("available"))),
+        "display_name": display_name,
+        "description": description,
         "confidence": pub.get("confidence"),
         "confidence_label": pub.get("confidence_label"),
+        "style_id": style.get("style_id") if isinstance(style, dict) else None,
         "head_chest": {
-            "available": hc.get("available"),
-            "chest_ratio": hc.get("chest_ratio"),
-            "head_ratio": hc.get("head_ratio"),
-            "broad_label": hc.get("broad_label"),
+            "available": bool(show_ratio and hc.get("available")),
+            "chest_ratio": hc.get("chest_ratio") if show_ratio else None,
+            "head_ratio": hc.get("head_ratio") if show_ratio else None,
+            "broad_label": hc.get("broad_label") or sb.get("label"),
+            "show_ratio": show_ratio,
         },
-        "key_traits": (pub.get("key_traits") or [])[:2],
+        "source_balance": {
+            "balance_class": sb.get("balance_class"),
+            "label": sb.get("label"),
+            "show_ratio": show_ratio,
+            "chest_percent": sb.get("chest_percent") if show_ratio else None,
+            "head_percent": sb.get("head_percent") if show_ratio else None,
+        },
+        "key_traits": (style.get("primary_traits") if isinstance(style, dict) else None)
+        or (pub.get("key_traits") or [])[:2],
+        "vocal_style_profile": style if isinstance(style, dict) else None,
     }
 
 

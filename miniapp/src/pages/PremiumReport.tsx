@@ -1,11 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { getDiagnosticReport } from '../api/client';
+import { getDiagnosticReport, getDiagnosticSession, analyzeDiagnosticSession } from '../api/client';
 import VocalProfile from '../components/report/VocalProfile';
 import {
   buildDiagnosticHeroText,
   buildTaskResultSummary,
   formatAnalysisConfidence,
+  mapEvidenceTokenForUser,
   sanitizeDisclaimer,
   scrubUserText,
   translateDiagnosticAxis,
@@ -46,12 +47,52 @@ export default function PremiumReport() {
 
   useEffect(() => {
     if (!sessionId) return;
-    getDiagnosticReport(sessionId, { debug: showDebug })
-      .then((r) => {
-        if (r.error === 'REPORT_LOCKED') setError('REPORT_LOCKED');
-        else setReport(r);
-      })
-      .catch((e) => setError(e.message));
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    async function load(attempt = 0) {
+      try {
+        const r = await getDiagnosticReport(sessionId!, { debug: showDebug });
+        if (cancelled) return;
+        if (r.error === 'REPORT_LOCKED') {
+          setError('REPORT_LOCKED');
+          return;
+        }
+        if (r.error === 'REPORT_GENERATING') {
+          setError(null);
+          setReport(null);
+          // Ensure analysis is kicked if still READY
+          if (attempt === 0) {
+            try {
+              const sess = await getDiagnosticSession(sessionId!);
+              if (String(sess?.status || '').toUpperCase() === 'READY_FOR_ANALYSIS') {
+                await analyzeDiagnosticSession(sessionId!);
+              }
+            } catch {
+              /* keep polling */
+            }
+          }
+          timer = setTimeout(() => void load(attempt + 1), 900);
+          return;
+        }
+        setReport(r);
+      } catch (e: any) {
+        if (cancelled) return;
+        const msg = String(e?.message || '');
+        if (msg.includes('report not ready') || msg.includes('REPORT_GENERATING')) {
+          setError(null);
+          timer = setTimeout(() => void load(attempt + 1), 900);
+          return;
+        }
+        setError(msg || '리포트를 불러오지 못했어요.');
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [sessionId, showDebug]);
 
   if (error === 'REPORT_LOCKED') {
@@ -63,11 +104,20 @@ export default function PremiumReport() {
       </main>
     );
   }
-  if (error) return <main><p className="fail">{error}</p></main>;
+  if (error) {
+    return (
+      <main>
+        <p className="fail">{error}</p>
+        <Link className="btn secondary" to={`/diagnostic/${sessionId}/report`} style={{ marginTop: 12 }}>
+          다시 시도
+        </Link>
+      </main>
+    );
+  }
   if (!report) {
     return (
       <main>
-        <p className="muted">리포트 불러오는 중…</p>
+        <p className="muted">결과를 분석하고 있어요…</p>
         <div className="skeleton" style={{ height: 28, width: '50%' }} />
         <div className="skeleton" style={{ height: 100 }} />
       </main>
@@ -90,6 +140,7 @@ export default function PremiumReport() {
     || sections.B_auxiliary?.items
     || [];
   const vocalType = report.vocal_type_profile || report.baseline_vocal_type;
+  const vocalStyle = report.vocal_style_profile || vocalType?.vocal_style_profile;
   const topFindings = reliable.slice(0, 3).map(translateDiagnosticFinding);
   const profileAxes = reliable
     .map(translateDiagnosticAxis)
@@ -97,13 +148,49 @@ export default function PremiumReport() {
   const taskSummary = buildTaskResultSummary(
     reliable,
     uncertain,
-    report.selected_tasks || report.final_diagnostic_profile?.task_evidence?.selected_tasks || [],
+    report.completed_tasks
+      || report.final_diagnostic_profile?.task_evidence?.completed_tasks
+      || report.final_diagnostic_profile?.task_evidence?.task_ids_present
+      || [],
+    report.final_diagnostic_profile?.task_profiles || report.personalized_qa?.coaching?.task_profiles,
   );
   const hero = buildDiagnosticHeroText(reliable);
-  const hc = vocalType?.head_chest;
   const pqa = report.personalized_qa || {};
-  const improvements = report.improvement_priorities || pqa.improvement_priorities || [];
+  const coaching = report.coaching || pqa.coaching || {};
+  const strengths = coaching.strengths || [];
+  const practices =
+    coaching.practice_directions
+    || report.improvement_priorities
+    || pqa.improvement_priorities
+    || [];
+  const improvements = practices;
   const safetyNote = report.safety_note || summary.safety_note;
+
+  function evidenceLines(qa: {
+    user_facing_support?: string[];
+    user_facing_against?: string[];
+    user_facing_missing?: string[];
+    support?: string[];
+    against?: string[];
+    missing?: string[];
+  }) {
+    if (showDebug) {
+      return {
+        support: qa.support || [],
+        against: qa.against || [],
+        missing: qa.missing || [],
+      };
+    }
+    const mapList = (raw?: string[], pref?: string[]) => {
+      if (pref && pref.length) return pref;
+      return (raw || []).map(mapEvidenceTokenForUser).filter(Boolean) as string[];
+    };
+    return {
+      support: mapList(qa.support, qa.user_facing_support),
+      against: mapList(qa.against, qa.user_facing_against),
+      missing: mapList(qa.missing, qa.user_facing_missing),
+    };
+  }
 
   return (
     <main>
@@ -118,8 +205,63 @@ export default function PremiumReport() {
         </p>
       ) : null}
       <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 12 }}>
-        정밀 발성 진단
+        {scrubUserText(report.report_title || (report.evidence_mode === 'CONCERN_ONLY' ? '고민 중심 분석' : '정밀 발성 진단'))}
       </h1>
+      {report.report_subtitle ? (
+        <p className="muted body-text" style={{ marginTop: 8, lineHeight: 1.45 }}>
+          {scrubUserText(report.report_subtitle)}
+        </p>
+      ) : report.evidence_mode === 'PARTIAL_PRECISION' ? (
+        <p className="muted body-text" style={{ marginTop: 8, lineHeight: 1.45 }}>
+          일부 추가 과제를 건너뛰어 확인 가능한 범위 안에서 분석했어요.
+        </p>
+      ) : report.evidence_mode === 'CONCERN_ONLY' ? (
+        <p className="muted body-text" style={{ marginTop: 8, lineHeight: 1.45 }}>
+          기존 노래에서 확인된 발성 특징을 바탕으로 선택한 고민을 분석했어요.
+        </p>
+      ) : null}
+      {coaching.headline ? (
+        <p className="body-text" style={{ marginTop: 8, lineHeight: 1.5 }}>
+          {scrubUserText(coaching.headline)}
+        </p>
+      ) : null}
+
+      {(report.song_key_features || pqa.song_key_features || []).length > 0 && (
+        <section className="section">
+          <h3 className="section-title">이번 노래에서 보이는 핵심 특징</h3>
+          <ul className="body-text" style={{ paddingLeft: 18, margin: 0 }}>
+            {(report.song_key_features || pqa.song_key_features).slice(0, 3).map((f: string) => (
+              <li key={f} style={{ marginBottom: 6 }}>{scrubUserText(f)}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {strengths.length > 0 && (
+        <section className="section">
+          <h3 className="section-title">현재 잘하고 있는 점</h3>
+          <ul className="body-text" style={{ paddingLeft: 18, margin: 0 }}>
+            {strengths.slice(0, 3).map((s: any) => (
+              <li key={s.id || s.title} style={{ marginBottom: 8 }}>
+                {scrubUserText(s.description || s.title)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(coaching.focus_areas || []).length > 0 && (
+        <section className="section">
+          <h3 className="section-title">보완하면 좋은 점</h3>
+          <ul className="body-text" style={{ paddingLeft: 18, margin: 0 }}>
+            {(coaching.focus_areas as any[]).slice(0, 3).map((f) => (
+              <li key={f.id || f.title} style={{ marginBottom: 8 }}>
+                {scrubUserText(f.description || f.title)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {pqa.show_qa_section !== false && (pqa.questions?.length > 0 || pqa.question) ? (
         <section className="section">
@@ -128,32 +270,46 @@ export default function PremiumReport() {
             ? (pqa.questions as Array<{
                 question: string;
                 answer: string;
+                takeaway?: string;
+                coaching_mode?: string;
+                practice_direction?: any;
                 support?: string[];
                 against?: string[];
                 missing?: string[];
-              }>).map((qa, i) => (
-                <div key={`${qa.question}-${i}`} style={{ marginBottom: 18 }}>
-                  <p className="body-text" style={{ fontWeight: 600 }}>
-                    Q{i + 1}. {qa.question}
-                  </p>
-                  <p className="body-text" style={{ marginTop: 8, lineHeight: 1.55 }}>
-                    A. {scrubUserText(qa.answer || '')}
-                  </p>
-                  {((qa.support || []).length > 0 || (qa.against || []).length > 0 || (qa.missing || []).length > 0) && (
-                    <ul className="body-text muted" style={{ marginTop: 8, paddingLeft: 18, fontSize: '0.9rem' }}>
-                      {(qa.support || []).slice(0, 3).map((s) => (
-                        <li key={`s-${s}`}>✓ {scrubUserText(s)}</li>
-                      ))}
-                      {(qa.against || []).slice(0, 2).map((s) => (
-                        <li key={`a-${s}`}>○ {scrubUserText(s)}</li>
-                      ))}
-                      {(qa.missing || []).slice(0, 2).map((s) => (
-                        <li key={`m-${s}`}>? {scrubUserText(s)}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))
+                user_facing_support?: string[];
+                user_facing_against?: string[];
+                user_facing_missing?: string[];
+              }>).map((qa, i) => {
+                const ev = evidenceLines(qa);
+                return (
+                  <div key={`${qa.question}-${i}`} style={{ marginBottom: 20 }}>
+                    <p className="body-text" style={{ fontWeight: 600 }}>
+                      Q{i + 1}. {qa.question}
+                    </p>
+                    <p className="body-text" style={{ marginTop: 8, lineHeight: 1.55 }}>
+                      A. {scrubUserText(qa.answer || '')}
+                    </p>
+                    {qa.takeaway ? (
+                      <p className="body-text muted" style={{ marginTop: 8, lineHeight: 1.5 }}>
+                        {scrubUserText(qa.takeaway)}
+                      </p>
+                    ) : null}
+                    {showDebug && (ev.support.length > 0 || ev.against.length > 0 || ev.missing.length > 0) && (
+                      <ul className="body-text muted" style={{ marginTop: 8, paddingLeft: 18, fontSize: '0.85rem' }}>
+                        {ev.support.slice(0, 3).map((s) => (
+                          <li key={`s-${s}`}>✓ {scrubUserText(s)}</li>
+                        ))}
+                        {ev.against.slice(0, 2).map((s) => (
+                          <li key={`a-${s}`}>○ {scrubUserText(s)}</li>
+                        ))}
+                        {ev.missing.slice(0, 2).map((s) => (
+                          <li key={`m-${s}`}>? {scrubUserText(s)}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })
             : (
               <>
                 <p className="body-text" style={{ fontWeight: 600 }}>Q. {pqa.question}</p>
@@ -162,16 +318,19 @@ export default function PremiumReport() {
                 </p>
               </>
             )}
-          {(pqa.evidence || []).length > 0 && (
+          {(pqa.evidence || coaching.evidence_families || []).length > 0 && (
             <>
-              <p className="eyebrow" style={{ marginTop: 14 }}>확인된 근거</p>
+              <p className="eyebrow" style={{ marginTop: 14 }}>이번 판단에 사용한 근거</p>
               <ul className="body-text" style={{ paddingLeft: 18 }}>
-                {(pqa.evidence as Array<{ source: string; text: string }>).map((ev) => (
-                  <li key={`${ev.source}-${ev.text}`}>
-                    {ev.source === 'CONTROLLED_TASK_CONFIRMED' ? '✓' : '·'}{' '}
-                    {scrubUserText(ev.text)}
-                  </li>
-                ))}
+                {(coaching.evidence_families || []).length > 0
+                  ? (coaching.evidence_families as string[]).map((t) => (
+                      <li key={t}>✓ {scrubUserText(t)}</li>
+                    ))
+                  : (pqa.evidence as Array<{ source: string; text: string }>).map((ev) => (
+                      <li key={`${ev.source}-${ev.text}`}>
+                        ✓ {scrubUserText(ev.text)}
+                      </li>
+                    ))}
               </ul>
             </>
           )}
@@ -198,20 +357,33 @@ export default function PremiumReport() {
 
       {improvements.length > 0 && (
         <section className="section">
-          <h3 className="section-title">개선 우선순위</h3>
-          {improvements.map((g: any, i: number) => (
-            <div key={g.goal_id || i} style={{ marginBottom: 14 }}>
+          <h3 className="section-title">맞춤 연습 방향</h3>
+          {improvements.slice(0, 3).map((g: any, i: number) => (
+            <div key={g.practice_id || g.goal_id || i} style={{ marginBottom: 16 }}>
               <p style={{ margin: 0, fontWeight: 700 }}>
-                {i + 1}. {g.title}
+                {i + 1}. [{g.mode_label || (g.mode === 'MAINTAIN' ? '유지' : g.mode === 'CORRECT' ? '교정' : '연습')}]{' '}
+                {scrubUserText(g.title)}
               </p>
-              {g.principle ? (
-                <p className="body-text muted" style={{ margin: '6px 0 0' }}>{scrubUserText(g.principle)}</p>
-              ) : null}
-              {(g.suggested_focus || []).map((f: string) => (
-                <p key={f} className="body-text" style={{ margin: '4px 0 0', fontSize: '0.92rem' }}>
-                  · {scrubUserText(f)}
+              {(g.instruction || g.principle) ? (
+                <p className="body-text muted" style={{ margin: '6px 0 0', lineHeight: 1.5 }}>
+                  {scrubUserText(g.instruction || g.principle)}
                 </p>
-              ))}
+              ) : null}
+              {(g.success_cues || g.suggested_focus || []).length > 0 && (
+                <>
+                  <p className="eyebrow" style={{ marginTop: 8 }}>잘 되고 있다는 신호</p>
+                  <ul className="body-text" style={{ paddingLeft: 18, margin: 0 }}>
+                    {(g.success_cues || g.suggested_focus || []).slice(0, 3).map((f: string) => (
+                      <li key={f}>{scrubUserText(f)}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {(g.avoid || []).length > 0 && (
+                <p className="body-text muted" style={{ marginTop: 6, fontSize: '0.92rem' }}>
+                  피하기 · {(g.avoid as string[]).map(scrubUserText).join(' / ')}
+                </p>
+              )}
               {g.safety_note ? <p className="warn" style={{ marginTop: 6 }}>{scrubUserText(g.safety_note)}</p> : null}
             </div>
           ))}
@@ -219,18 +391,50 @@ export default function PremiumReport() {
       )}
 
       <section className="section">
-        {vocalType?.available && vocalType?.display_name ? (
+        {(vocalStyle?.display_name || vocalType?.available) ? (
           <>
-            <p className="eyebrow">기본 발성 성향</p>
-            <h2 className="type-title">{vocalType.display_name}</h2>
-            {hc?.available && hc.chest_ratio != null && (
-              <p className="body-text" style={{ marginTop: 8 }}>
-                흉성 {hc.chest_ratio}% · 두성 {hc.head_ratio}%
+            <p className="eyebrow">내 발성 스타일</p>
+            <h2 className="type-title">
+              {vocalStyle?.display_name || vocalType?.display_name}
+            </h2>
+            {vocalStyle?.description ? (
+              <p className="body-text" style={{ marginTop: 8, lineHeight: 1.5 }}>
+                {scrubUserText(vocalStyle.description)}
               </p>
-            )}
-            {vocalType?.register_strategy?.title ? (
+            ) : null}
+            {(vocalStyle?.primary_traits || []).length > 0 ? (
+              <ul className="body-text" style={{ paddingLeft: 18, marginTop: 10 }}>
+                {(vocalStyle.primary_traits as Array<{ label: string; value: string }>).slice(0, 3).map((t) => (
+                  <li key={`${t.label}-${t.value}`}>{t.label} · {t.value}</li>
+                ))}
+              </ul>
+            ) : null}
+            {(() => {
+              const sb = vocalStyle?.source_balance_presentation || vocalType?.source_balance || {};
+              const hc = vocalType?.head_chest || {};
+              const show =
+                (sb.show_ratio ?? hc.show_ratio ?? true)
+                && sb.balance_class !== 'CONFLICTED'
+                && (sb.chest_percent ?? hc.chest_ratio) != null;
+              return (
+                <div style={{ marginTop: 12 }}>
+                  <p className="eyebrow">흉성·두성 관련 음향 성향</p>
+                  {show ? (
+                    <p className="body-text" style={{ marginTop: 6 }}>
+                      흉성 쪽 {sb.chest_percent ?? hc.chest_ratio} · 두성 쪽 {sb.head_percent ?? hc.head_ratio}
+                    </p>
+                  ) : (
+                    <p className="body-text muted" style={{ marginTop: 6 }}>
+                      {sb.label
+                        || '여러 음향 특징이 서로 다른 방향으로 나타났어요.'}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+            {(vocalStyle?.canonical_register?.title || vocalType?.register_strategy?.title) ? (
               <p className="body-text muted" style={{ marginTop: 10 }}>
-                성구 연결 · {vocalType.register_strategy.title}
+                성구 연결 · {vocalStyle?.canonical_register?.title || vocalType?.register_strategy?.title}
               </p>
             ) : null}
           </>
@@ -295,6 +499,41 @@ export default function PremiumReport() {
 
       <section className="section">
         <h3 className="section-title">더 자세히</h3>
+
+        {(report.user_skipped_task_count > 0
+          || report.evidence_mode === 'CONCERN_ONLY'
+          || report.evidence_mode === 'PARTIAL_PRECISION'
+          || report.evidence_mode_label) && (
+          <AccordionRow title="분석 범위">
+            <p className="body-text muted" style={{ marginTop: 0, lineHeight: 1.5 }}>
+              {scrubUserText(
+                report.evidence_mode_label
+                || (report.evidence_mode === 'CONCERN_ONLY'
+                  ? '기존 노래에서 확인된 발성 특징을 바탕으로 선택한 고민을 분석했어요.'
+                  : report.evidence_mode === 'PARTIAL_PRECISION'
+                    ? '노래와 완료한 추가 발성 과제를 함께 분석했어요.'
+                    : '노래와 추가 발성 과제를 함께 분석했어요.'),
+              )}
+            </p>
+            {(report.completed_task_count != null || report.user_skipped_task_count != null) && (
+              <p className="muted" style={{ fontSize: '0.9rem' }}>
+                노래 분석 사용함
+                {report.evidence_mode === 'CONCERN_ONLY'
+                  ? ' · 추가 발성 과제 진행하지 않음'
+                  : (
+                    <>
+                      {report.completed_task_count != null
+                        ? ` · 추가 발성 과제 ${report.completed_task_count}개 완료`
+                        : ''}
+                      {report.user_skipped_task_count
+                        ? ` · ${report.user_skipped_task_count}개 건너뜀`
+                        : ''}
+                    </>
+                  )}
+              </p>
+            )}
+          </AccordionRow>
+        )}
 
         {supporting.length > 0 && (
           <AccordionRow title="추가로 관찰된 특징" meta={`${supporting.length}개`}>

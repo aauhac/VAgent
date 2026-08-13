@@ -322,6 +322,8 @@ def build_vocal_function_public(profile: dict[str, Any]) -> dict[str, Any]:
             "발성 좋고 나쁨이 아닙니다."
         ),
         "vocal_type_profile": _public_vocal_type(profile.get("vocal_type_profile")),
+        "vocal_style_profile": _public_vocal_style(profile.get("vocal_style_profile")),
+        "canonical_acoustic_axes": profile.get("canonical_acoustic_axes"),
         "high_note_function_profile": _public_derived_profile(
             profile.get("high_note_function_profile")
         ),
@@ -398,6 +400,50 @@ def _public_vocal_type(profile: Any) -> dict[str, Any]:
     from audio_analyzer.coach_profile import build_vocal_type_public
 
     return build_vocal_type_public(profile if isinstance(profile, dict) else None)
+
+
+def _public_vocal_style(profile: Any) -> dict[str, Any]:
+    if not isinstance(profile, dict) or not profile.get("available", True):
+        return {
+            "available": False,
+            "version": "vocal-style-v1.0",
+            "style_id": "UNRESOLVED",
+            "display_name": "이번 노래에서 확인된 발성 특징",
+        }
+    axes = profile.get("axes") or {}
+    public_axes = {}
+    for k, v in axes.items():
+        if not isinstance(v, dict):
+            continue
+        public_axes[k] = {
+            "value": v.get("value"),
+            "status": v.get("status"),
+            "confidence": v.get("confidence"),
+            "available": v.get("available"),
+            "display": v.get("display"),
+            "title": v.get("title"),
+            "description": v.get("description"),
+            "show_ratio": v.get("show_ratio"),
+            "chest_percent": v.get("chest_percent"),
+            "head_percent": v.get("head_percent"),
+            "label": v.get("label"),
+        }
+    return {
+        "available": True,
+        "version": profile.get("version") or "vocal-style-v1.0",
+        "style_id": profile.get("style_id"),
+        "style_mode": profile.get("style_mode"),
+        "display_name": profile.get("display_name"),
+        "description": profile.get("description"),
+        "primary_traits": profile.get("primary_traits") or [],
+        "axes": public_axes,
+        "canonical_acoustic_axes": profile.get("canonical_acoustic_axes"),
+        "confidence_label": profile.get("confidence_label"),
+        "evidence_summary": profile.get("evidence_summary") or [],
+        "canonical_register": profile.get("canonical_register"),
+        "register_strategy_public": profile.get("register_strategy_public"),
+        "source_balance_presentation": profile.get("source_balance_presentation"),
+    }
 
 
 def _public_bottleneck(b: Any) -> Any:

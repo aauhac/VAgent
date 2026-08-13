@@ -1,0 +1,14 @@
+﻿.\.venv\Scripts\python.exe : Traceback (most recent call last):
+위치 C:\Users\uhaki\AppData\Local\Temp\ps-script-af727857-7f8e-4594-bcbe-59dfb9a3ebc0.ps1:116 문자:19
++ ... VocalAgent; .\.venv\Scripts\python.exe _audit_v23_session.py 2>&1 | O ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\VocalAgent\_audit_v23_session.py", line 97, in <module>
+    main()
+    ~~~~^^
+  File "C:\VocalAgent\_audit_v23_session.py", line 92, in main
+    print(json.dumps(out, ensure_ascii=False, indent=2, default=str)[:4000])
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'cp949' codec can't encode character '\u2014' in position 491: illegal multibyte sequence

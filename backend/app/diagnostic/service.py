@@ -30,6 +30,25 @@ from audio_analyzer.diagnostic import (
     tasks_for_ids,
 )
 from audio_analyzer.diagnostic.concerns import normalize_diagnostic_mode
+from audio_analyzer.diagnostic.evidence_mode import (
+    EVIDENCE_MODE_CONCERN_ONLY,
+    EVIDENCE_MODE_FULL,
+    EVIDENCE_MODE_PARTIAL,
+    EVIDENCE_MODE_COVERAGE_COPY,
+    SKIP_REASON_USER_CHOICE,
+    all_selected_terminal,
+    derive_evidence_mode,
+    is_task_terminal,
+    is_user_skipped,
+    list_completed_tasks,
+    list_safety_blocked_tasks,
+    list_user_skipped_tasks,
+    mark_task_user_skipped,
+    report_subtitle_for_mode,
+    report_title_for_mode,
+    sync_skip_provenance,
+    valid_controlled_task_count,
+)
 from audio_analyzer.diagnostic.task_registry import (
     DIAGNOSTIC_MODE_CONCERN,
     DIAGNOSTIC_MODE_GENERAL,
@@ -67,6 +86,7 @@ STATUSES = {
     "CREATED",
     "PAID",
     "SAFETY_CHECK",
+    "RECORDING_CHOICE",
     "TASKS_IN_PROGRESS",
     "READY_FOR_ANALYSIS",
     "ANALYZING",
@@ -138,15 +158,63 @@ class DiagnosticSessionService:
             pass
 
     def _load_song_payload(self, source_analysis_id: Optional[str]) -> Optional[dict[str, Any]]:
+        """Load song analysis for diagnostic evidence.
+
+        Prefer analysis.json (full vocal_function_profile). public_result.json is a
+        teaser-only free payload and must not silently wipe VF evidence.
+        """
         if not source_analysis_id:
             return None
-        for name in ("public_result.json", "analysis.json"):
+        analysis: Optional[dict[str, Any]] = None
+        public: Optional[dict[str, Any]] = None
+        for name in ("analysis.json", "public_result.json"):
             p = self.runtime_dir / source_analysis_id / name
-            if p.exists():
-                try:
-                    return json.loads(p.read_text(encoding="utf-8"))
-                except Exception:
-                    continue
+            if not p.exists():
+                continue
+            try:
+                data = json.loads(p.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if name == "analysis.json":
+                analysis = data
+            else:
+                public = data
+        if analysis and public:
+            merged = dict(public)
+            # Always prefer full VF from analysis when public lacks it
+            avf = analysis.get("vocal_function_profile")
+            pvf = merged.get("vocal_function_profile")
+            if avf and (not pvf or not isinstance(pvf, dict) or not pvf):
+                merged["vocal_function_profile"] = avf
+            elif avf and isinstance(pvf, dict):
+                # Fill missing nested profiles without inventing
+                for key in (
+                    "timbre_profile",
+                    "effort_assessment",
+                    "dimensions",
+                    "vocal_type_profile",
+                    "vocal_style_profile",
+                    "high_note_function_profile",
+                    "criteria_matrix",
+                    "contact_effort_plane",
+                    "coaching_decision",
+                ):
+                    if key in avf and key not in pvf:
+                        pvf[key] = avf[key]
+                merged["vocal_function_profile"] = pvf
+            # Keep analysis-only top-level VF path for extractors
+            if not merged.get("vocal_function_profile") and avf:
+                merged["vocal_function_profile"] = avf
+            merged["_song_evidence_source"] = "analysis.json+public_result.json"
+            return merged
+        if analysis:
+            analysis = dict(analysis)
+            analysis["_song_evidence_source"] = "analysis.json"
+            return analysis
+        if public:
+            public = dict(public)
+            public["_song_evidence_source"] = "public_result.json"
+            return public
         return None
 
     def _build_plan(
@@ -349,7 +417,8 @@ class DiagnosticSessionService:
         session["planner_version"] = plan.get("planner_version") or session.get("planner_version")
         session["tasks"] = {tid: {"attempts": [], "passed": False} for tid in selected}
         session["current_task_index"] = 0
-        session["status"] = "PAID"
+        # Plan is ready, but execution starts only after safety + recording choice
+        session["status"] = "SAFETY_CHECK"
         self._save(session)
         _log_plan(session, persisted=True)
         return self.public_session(session)
@@ -361,7 +430,17 @@ class DiagnosticSessionService:
         user_id: str = "anon",
     ) -> dict[str, Any]:
         session = self._require_unlocked(session_id, user_id)
-        if session["status"] not in ("PAID", "SAFETY_CHECK"):
+        status = (session.get("status") or "").upper()
+        # Idempotent / stale-UI recovery: already past safety
+        if status in (
+            "RECORDING_CHOICE",
+            "TASKS_IN_PROGRESS",
+            "READY_FOR_ANALYSIS",
+            "ANALYZING",
+            "COMPLETED",
+        ):
+            return self.public_session(session)
+        if status not in ("PAID", "SAFETY_CHECK"):
             raise ValueError("invalid status for safety check")
         flags = [qid for qid, val in answers.items() if val]
         session["safety_answers"] = answers
@@ -412,13 +491,56 @@ class DiagnosticSessionService:
                 session["core_tasks"] = selected
                 session["tasks"] = {tid: {"attempts": [], "passed": False} for tid in selected}
                 session["planned_task_count"] = len(selected)
-                session["status"] = "TASKS_IN_PROGRESS"
+                session["status"] = "RECORDING_CHOICE"
                 session["current_task_index"] = 0
         else:
-            session["status"] = "TASKS_IN_PROGRESS"
+            # User chooses FULL / PARTIAL / CONCERN_ONLY next — do not start tasks yet
+            session["status"] = "RECORDING_CHOICE"
             session["current_task_index"] = 0
         self._save(session)
         _log_plan(session, persisted=True)
+        try:
+            print(
+                "[DIAG_FLOW]",
+                f"session={session_id}",
+                "action=submit_safety",
+                f"after={session.get('status')}",
+                f"diagnostic_status={session.get('diagnostic_status')}",
+                f"selected={session.get('selected_tasks') or []}",
+                f"safety_flags={session.get('safety_flags') or []}",
+            )
+        except Exception:
+            pass
+        return self.public_session(session)
+
+    def start_controlled_recordings(
+        self,
+        session_id: str,
+        user_id: str = "anon",
+    ) -> dict[str, Any]:
+        """RECORDING_CHOICE → TASKS_IN_PROGRESS (explicit user choice)."""
+        session = self._require_unlocked(session_id, user_id)
+        status = (session.get("status") or "").upper()
+        if status == "TASKS_IN_PROGRESS":
+            return self.public_session(session)
+        if status in ("READY_FOR_ANALYSIS", "ANALYZING", "COMPLETED"):
+            return self.public_session(session)
+        if status not in ("RECORDING_CHOICE", "PAID", "SAFETY_CHECK"):
+            raise ValueError("invalid status for starting controlled recordings")
+        selected = list(session.get("selected_tasks") or [])
+        if not selected:
+            self.ensure_planned_tasks(session_id, user_id=user_id)
+            session = self._require_unlocked(session_id, user_id)
+            selected = list(session.get("selected_tasks") or [])
+        if not selected:
+            if session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED:
+                session["status"] = "READY_FOR_ANALYSIS"
+                self._save(session)
+                return self.public_session(session)
+            raise ValueError("no planned tasks to start")
+        session["status"] = "TASKS_IN_PROGRESS"
+        session["current_task_index"] = 0
+        self._save(session)
         return self.public_session(session)
 
     def ensure_planned_tasks(
@@ -467,8 +589,19 @@ class DiagnosticSessionService:
         if not selected and session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED:
             session["status"] = "READY_FOR_ANALYSIS"
         elif selected:
-            session["status"] = "TASKS_IN_PROGRESS"
-            session["current_task_index"] = 0
+            # Never jump from safety/recording-choice straight into task execution
+            cur = (session.get("status") or "").upper()
+            if cur in ("TASKS_IN_PROGRESS",):
+                session["status"] = "TASKS_IN_PROGRESS"
+                session["current_task_index"] = session.get("current_task_index") or 0
+            elif cur in ("READY_FOR_ANALYSIS", "ANALYZING", "COMPLETED", "RECORDING_CHOICE"):
+                pass
+            elif cur in ("SAFETY_CHECK", "PAID", "CREATED"):
+                # Keep pre-recording statuses; plan only
+                pass
+            else:
+                session["status"] = "RECORDING_CHOICE"
+                session["current_task_index"] = 0
         self._save(session)
         _log_plan(session, persisted=True)
         return self.public_session(session)
@@ -583,7 +716,7 @@ class DiagnosticSessionService:
 
         required = plan_ids
         if required and all(
-            (session["tasks"].get(tid) or {}).get("passed") for tid in required
+            is_task_terminal((session["tasks"].get(tid) or {})) for tid in required
         ):
             session["status"] = "READY_FOR_ANALYSIS"
         elif not required:
@@ -591,6 +724,7 @@ class DiagnosticSessionService:
         else:
             session["status"] = "TASKS_IN_PROGRESS"
 
+        sync_skip_provenance(session)
         self._save(session)
         try:
             from ..db.diagnostic_repo import insert_task_attempt
@@ -618,6 +752,83 @@ class DiagnosticSessionService:
             "retry_allowed": (not attempt_rec["passed"])
             and len(state["attempts"]) < task["max_attempts"],
         }
+
+    def skip_task(
+        self,
+        session_id: str,
+        task_id: str,
+        user_id: str = "anon",
+        *,
+        reason: str = SKIP_REASON_USER_CHOICE,
+    ) -> dict[str, Any]:
+        """Mark one planned task as USER_SKIPPED — never invents task_results."""
+        del reason  # canonical USER_CHOICE only for now
+        session = self._require_unlocked(session_id, user_id)
+        if session["status"] not in ("TASKS_IN_PROGRESS", "READY_FOR_ANALYSIS"):
+            raise ValueError("tasks not in progress")
+        selected = list(session.get("selected_tasks") or [])
+        if selected and task_id not in selected:
+            raise ValueError("task not in session plan")
+        session.setdefault("tasks", {})
+        if task_id not in session["tasks"]:
+            session["tasks"][task_id] = {"attempts": [], "passed": False}
+        st = session["tasks"][task_id]
+        if st.get("passed"):
+            raise ValueError("task already passed")
+        if is_user_skipped(st):
+            sync_skip_provenance(session)
+            self._save(session)
+            return self.public_session(session)
+
+        session["tasks"][task_id] = mark_task_user_skipped(st)
+        session["task_results"] = [
+            r for r in (session.get("task_results") or []) if r.get("task_id") != task_id
+        ]
+        if task_id in selected:
+            session["current_task_index"] = min(selected.index(task_id) + 1, len(selected))
+        if all_selected_terminal(session):
+            session["status"] = "READY_FOR_ANALYSIS"
+        else:
+            session["status"] = "TASKS_IN_PROGRESS"
+        sync_skip_provenance(session)
+        self._save(session)
+        return self.public_session(session)
+
+    def skip_controlled_recordings(
+        self,
+        session_id: str,
+        user_id: str = "anon",
+        *,
+        remaining_only: bool = True,
+    ) -> dict[str, Any]:
+        """USER_SKIP remaining/all planned tasks. Preserves selected_tasks plan."""
+        session = self._require_unlocked(session_id, user_id)
+        if session["status"] not in (
+            "RECORDING_CHOICE",
+            "TASKS_IN_PROGRESS",
+            "READY_FOR_ANALYSIS",
+        ):
+            raise ValueError("cannot skip controlled recordings in current status")
+
+        selected = list(session.get("selected_tasks") or [])
+        session.setdefault("tasks", {})
+        for tid in selected:
+            st = session["tasks"].get(tid) or {"attempts": [], "passed": False}
+            if remaining_only and is_task_terminal(st):
+                session["tasks"][tid] = st
+                continue
+            if st.get("passed"):
+                continue
+            session["tasks"][tid] = mark_task_user_skipped(st)
+            session["task_results"] = [
+                r for r in (session.get("task_results") or []) if r.get("task_id") != tid
+            ]
+
+        session["current_task_index"] = len(selected)
+        session["status"] = "READY_FOR_ANALYSIS"
+        sync_skip_provenance(session)
+        self._save(session)
+        return self.public_session(session)
 
     def analyze(self, session_id: str, user_id: str = "anon") -> dict[str, Any]:
         session = self._require_unlocked(session_id, user_id)
@@ -648,36 +859,60 @@ class DiagnosticSessionService:
                 include_scientific_debug=True,  # stored server-side for developer mode
             )
             # Adaptive fusion (song + task), additive schema
-            vf = {}
-            if song_payload:
-                vf = (
-                    song_payload.get("vocal_function_profile")
-                    or (song_payload.get("report") or {}).get("vocal_function_profile")
-                    or {}
-                )
+            from audio_analyzer.diagnostic.song_evidence import (
+                extract_vocal_function_profile,
+                wrap_song_profile_with_snapshot,
+            )
+
+            vf, vf_path = extract_vocal_function_profile(song_payload)
+            song_wrapped = wrap_song_profile_with_snapshot(song_payload or {"vocal_function_profile": vf})
             final_dx = build_final_diagnostic_profile(
                 song_profile=vf,
                 task_results=session.get("task_results") or [],
                 plan={
                     "unresolved_dimensions": session.get("unresolved_dimensions") or [],
                     "selected_tasks": session.get("selected_tasks") or [],
+                    "user_skipped_tasks": list_user_skipped_tasks(session),
+                    "completed_tasks": list_completed_tasks(session),
+                    "safety_blocked_tasks": list_safety_blocked_tasks(session),
                 },
             )
+            if song_wrapped.get("canonical_song_evidence"):
+                final_dx["canonical_song_evidence"] = song_wrapped["canonical_song_evidence"]
+                final_dx["song_evidence_source_path"] = vf_path
+            sync_skip_provenance(session)
+            evidence_mode = session.get("evidence_mode") or derive_evidence_mode(session)
             concerns = session.get("user_concerns") or []
             personalized = build_personalized_qa(
                 user_concerns=concerns,
-                song_profile={"vocal_function_profile": vf} if vf else {},
+                song_profile=song_wrapped,
                 task_results=session.get("task_results") or [],
                 fused_profile=final_dx,
                 diagnostic_mode=session.get("diagnostic_mode"),
             )
             session["final_diagnostic_profile"] = final_dx
+            session["evidence_mode"] = evidence_mode
             report["protocol_version"] = session.get("protocol_version") or VOCAL_DIAGNOSTIC_PROTOCOL_VERSION
             report["planner_version"] = session.get("planner_version") or PLANNER_VERSION
             report["selected_tasks"] = session.get("selected_tasks") or []
+            report["completed_tasks"] = session.get("completed_tasks") or []
+            report["user_skipped_tasks"] = session.get("user_skipped_tasks") or []
+            report["safety_blocked_tasks"] = session.get("safety_blocked_tasks") or []
             report["core_tasks"] = session.get("core_tasks") or []
             report["adaptive_tasks"] = session.get("adaptive_tasks") or []
-            report["planned_task_count"] = session.get("planned_task_count")
+            report["planned_task_count"] = session.get("planned_task_count") or len(
+                session.get("selected_tasks") or []
+            )
+            report["completed_task_count"] = len(report["completed_tasks"])
+            report["user_skipped_task_count"] = len(report["user_skipped_tasks"])
+            report["safety_blocked_task_count"] = len(report["safety_blocked_tasks"])
+            report["valid_task_count"] = session.get("valid_task_count") or valid_controlled_task_count(
+                session
+            )
+            report["evidence_mode"] = evidence_mode
+            report["evidence_mode_label"] = EVIDENCE_MODE_COVERAGE_COPY.get(evidence_mode)
+            report["report_title"] = report_title_for_mode(evidence_mode)
+            report["report_subtitle"] = report_subtitle_for_mode(evidence_mode)
             report["unresolved_dimensions"] = session.get("unresolved_dimensions") or []
             report["source_analysis_id"] = session.get("source_analysis_id")
             report["diagnostic_mode"] = session.get("diagnostic_mode")
@@ -686,7 +921,25 @@ class DiagnosticSessionService:
             report["user_concerns"] = concerns
             report["personalized_qa"] = personalized
             report["improvement_priorities"] = personalized.get("improvement_priorities") or []
+            report["coaching"] = personalized.get("coaching") or {}
             report["discovered_features"] = personalized.get("discovered_features") or []
+            snap = song_wrapped.get("canonical_song_evidence") or {}
+            report["song_key_features"] = snap.get("key_features") or personalized.get("song_key_features") or []
+            report["canonical_song_evidence"] = {
+                "source_path": snap.get("source_path"),
+                "availability": snap.get("availability"),
+                "key_features": snap.get("key_features") or [],
+            }
+            # Surface song vocal style/type on premium report when available
+            song_vf = song_wrapped.get("vocal_function_profile") or vf or {}
+            if isinstance(song_vf, dict):
+                if song_vf.get("vocal_style_profile"):
+                    report["vocal_style_profile"] = song_vf.get("vocal_style_profile")
+                if song_vf.get("vocal_type_profile"):
+                    report["vocal_type_profile"] = song_vf.get("vocal_type_profile")
+                    report["baseline_vocal_type"] = song_vf.get("vocal_type_profile")
+            if personalized.get("coaching"):
+                report["coaching_version"] = personalized["coaching"].get("coaching_version")
             if session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED or session.get("safety_flag_pain") or has_pain_safety_flag(concerns):
                 report["safety_note"] = (
                     "통증이나 지속적인 불편감은 음향 분석만으로 원인을 판단할 수 없어요. "
@@ -729,8 +982,23 @@ class DiagnosticSessionService:
             }
         path = self._dir(session_id) / "premium_report.json"
         if not path.exists():
-            if session.get("status") == "READY_FOR_ANALYSIS":
+            status = session.get("status")
+            if status == "READY_FOR_ANALYSIS":
                 return self.analyze(session_id, user_id)
+            if status == "ANALYZING":
+                return {
+                    "error": "REPORT_GENERATING",
+                    "status": "ANALYZING",
+                    "message": "결과를 분석하고 있어요…",
+                    "session_id": session_id,
+                }
+            if status == "FAILED":
+                return {
+                    "error": "REPORT_FAILED",
+                    "status": "FAILED",
+                    "message": session.get("error") or "분석에 실패했어요.",
+                    "session_id": session_id,
+                }
             raise FileNotFoundError("report not ready")
         report = json.loads(path.read_text(encoding="utf-8"))
         if include_scientific_debug:
@@ -776,10 +1044,14 @@ class DiagnosticSessionService:
 
     def public_session(self, session: dict[str, Any]) -> dict[str, Any]:
         """No filesystem paths."""
+        sync_skip_provenance(session)
         tasks_pub = {}
         for tid, st in (session.get("tasks") or {}).items():
             tasks_pub[tid] = {
                 "passed": st.get("passed"),
+                "skipped": bool(st.get("skipped")),
+                "skip_reason": st.get("skip_reason"),
+                "safety_blocked": bool(st.get("safety_blocked")),
                 "attempt_count": len(st.get("attempts") or []),
                 "last_quality": (st.get("attempts") or [{}])[-1].get("quality")
                 if st.get("attempts")
@@ -787,17 +1059,14 @@ class DiagnosticSessionService:
             }
         selected = list(session.get("selected_tasks") or [])
         idx = int(session.get("current_task_index") or 0)
-        # Resume: first not-yet-passed task in plan order
         tasks_state = session.get("tasks") or {}
         next_task = None
         for i, tid in enumerate(selected):
             st = tasks_state.get(tid) or {}
-            if not st.get("passed"):
+            if not is_task_terminal(st):
                 next_task = tid
                 idx = i
                 break
-        if next_task is None and idx < len(selected):
-            next_task = selected[idx]
         return {
             "session_id": session["session_id"],
             "user_id": session.get("user_id"),
@@ -809,6 +1078,11 @@ class DiagnosticSessionService:
             "safety_flags": session.get("safety_flags") or [],
             "tasks": tasks_pub,
             "selected_tasks": selected,
+            "completed_tasks": session.get("completed_tasks") or [],
+            "user_skipped_tasks": session.get("user_skipped_tasks") or [],
+            "safety_blocked_tasks": session.get("safety_blocked_tasks") or [],
+            "valid_task_count": session.get("valid_task_count") or 0,
+            "evidence_mode": session.get("evidence_mode") or derive_evidence_mode(session),
             "unresolved_dimensions": session.get("unresolved_dimensions") or [],
             "current_task_index": idx,
             "next_task_id": next_task,

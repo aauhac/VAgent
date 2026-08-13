@@ -222,6 +222,35 @@ export async function uploadDiagnosticTask(sessionId: string, taskId: string, fi
   return res.json();
 }
 
+export async function skipDiagnosticTask(sessionId: string, taskId: string) {
+  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/tasks/${taskId}/skip`, {
+    method: 'POST',
+    headers: await headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ reason: 'USER_CHOICE' }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function startControlledRecordings(sessionId: string) {
+  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/start-controlled-recordings`, {
+    method: 'POST',
+    headers: await headers(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function skipControlledRecordings(sessionId: string, opts?: { remainingOnly?: boolean }) {
+  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/skip-controlled-recordings`, {
+    method: 'POST',
+    headers: await headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ remaining_only: opts?.remainingOnly !== false }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function analyzeDiagnosticSession(sessionId: string) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/analyze`, {
     method: 'POST',
@@ -238,8 +267,37 @@ export async function getDiagnosticReport(sessionId: string, opts?: { debug?: bo
   if (res.status === 402) {
     return { error: 'REPORT_LOCKED' };
   }
+  if (res.status === 202) {
+    const body = await res.json().catch(() => ({}));
+    return { error: 'REPORT_GENERATING', ...(body || {}) };
+  }
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+
+/** Poll session until COMPLETED (or FAILED), optionally triggering analyze when READY. */
+export async function waitForDiagnosticCompletion(
+  sessionId: string,
+  opts?: { triggerAnalyze?: boolean; maxMs?: number },
+) {
+  const maxMs = opts?.maxMs ?? 120_000;
+  const start = Date.now();
+  let triggered = false;
+  while (Date.now() - start < maxMs) {
+    const sess = await getDiagnosticSession(sessionId);
+    const status = String(sess?.status || '').toUpperCase();
+    if (status === 'COMPLETED') return sess;
+    if (status === 'FAILED') {
+      throw new Error(sess?.error || '분석에 실패했어요.');
+    }
+    if (status === 'READY_FOR_ANALYSIS' && opts?.triggerAnalyze !== false && !triggered) {
+      triggered = true;
+      await analyzeDiagnosticSession(sessionId);
+      continue;
+    }
+    await new Promise((r) => setTimeout(r, 700));
+  }
+  throw new Error('결과 분석이 지연되고 있어요. 잠시 후 다시 열어주세요.');
 }
 
 export function saveHistory(entry: {

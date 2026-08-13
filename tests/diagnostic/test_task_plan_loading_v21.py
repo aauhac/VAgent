@@ -46,7 +46,7 @@ def test_concern_focused_planner_never_returns_zero_normal_tasks():
     assert len(plan["selected_tasks"]) >= 1
 
 
-def test_safety_limited_can_return_zero_tasks():
+def test_safety_pain_on_phonation_zero_tasks():
     profile = build_uncertainty_profile(criteria_matrix=[])
     plan = plan_precision_protocol(
         profile,
@@ -55,8 +55,22 @@ def test_safety_limited_can_return_zero_tasks():
         pain_safety_flag=True,
         safety_flags=["pain_on_phonation"],
     )
-    assert plan["diagnostic_status"] == "SAFETY_LIMITED"
     assert plan["selected_tasks"] == []
+    assert plan["diagnostic_status"] == "SAFETY_LIMITED"
+
+
+def test_safety_discomfort_keeps_safe_tasks():
+    profile = build_uncertainty_profile(criteria_matrix=[])
+    plan = plan_precision_protocol(
+        profile,
+        diagnostic_mode="CONCERN_FOCUSED",
+        user_concerns=[{"id": "VOCAL_FATIGUE"}],
+        pain_safety_flag=True,
+        safety_flags=["severe_discomfort_after"],
+    )
+    assert len(plan["selected_tasks"]) >= 1
+    assert "high_note_sustain_a" not in plan["selected_tasks"]
+    assert plan["diagnostic_status"] == "NORMAL"
 
 
 def test_task_ids_exist_in_protocol():

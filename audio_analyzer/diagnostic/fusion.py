@@ -200,11 +200,17 @@ def fuse_song_and_task_evidence(
     task_results: Optional[list[dict[str, Any]]] = None,
     unresolved_before: Optional[list[str]] = None,
     selected_tasks: Optional[list[str]] = None,
+    user_skipped_tasks: Optional[list[str]] = None,
+    completed_tasks: Optional[list[str]] = None,
+    safety_blocked_tasks: Optional[list[str]] = None,
 ) -> dict[str, Any]:
     song_profile = song_profile or {}
     task_results = task_results or []
     unresolved_before = list(unresolved_before or [])
     selected_tasks = list(selected_tasks or [])
+    user_skipped_tasks = list(user_skipped_tasks or [])
+    completed_tasks = list(completed_tasks or [])
+    safety_blocked_tasks = list(safety_blocked_tasks or [])
 
     dims = song_profile.get("dimensions") or {}
     song_snaps = {
@@ -369,6 +375,10 @@ def fuse_song_and_task_evidence(
             "selected_tasks": selected_tasks,
             "task_ids_present": [tr.get("task_id") for tr in task_results if tr.get("task_id")],
             "invalid_tasks": invalid_tasks,
+            "user_skipped_tasks": user_skipped_tasks,
+            "completed_tasks": completed_tasks
+            or [tr.get("task_id") for tr in task_results if tr.get("task_id")],
+            "safety_blocked_tasks": safety_blocked_tasks,
             "expected_coverage": expected_coverage,
             "actual_coverage": actual_coverage,
         },
@@ -398,8 +408,24 @@ def build_final_diagnostic_profile(
         task_results=task_results,
         unresolved_before=plan.get("unresolved_dimensions") or [],
         selected_tasks=plan.get("selected_tasks") or [],
+        user_skipped_tasks=plan.get("user_skipped_tasks") or [],
+        completed_tasks=plan.get("completed_tasks") or [],
+        safety_blocked_tasks=plan.get("safety_blocked_tasks") or [],
     )
     planned = list(plan.get("selected_tasks") or [])
+    skipped = list(plan.get("user_skipped_tasks") or [])
+    completed = list(plan.get("completed_tasks") or [])
+    present = list((fused.get("task_evidence") or {}).get("task_ids_present") or [])
+    # Prefer completed list; fall back to present task results
+    has_valid = bool(completed or present)
+    if skipped and has_valid:
+        evidence_mode = "PARTIAL_PRECISION"
+    elif not has_valid and (skipped or planned):
+        evidence_mode = "CONCERN_ONLY"
+    elif not has_valid and not planned:
+        evidence_mode = "FULL_PRECISION"  # legacy song-only / empty plan
+    else:
+        evidence_mode = "FULL_PRECISION"
     measured = []
     for tr in task_results or []:
         measured.extend(tr.get("actual_coverage") or [])
@@ -414,8 +440,10 @@ def build_final_diagnostic_profile(
     ]
     fused["planned"] = planned
     fused["measured"] = measured
+    fused["evidence_mode"] = evidence_mode
+    headline = "고민 중심 분석" if evidence_mode == "CONCERN_ONLY" else "정밀 발성 진단"
     fused["user_summary"] = {
-        "headline": "정밀 발성 진단",
+        "headline": headline,
         "planned_line": (
             f"확인하려고 녹음한 과제: {', '.join(planned)}" if planned else "추가 표준 녹음 없음"
         ),

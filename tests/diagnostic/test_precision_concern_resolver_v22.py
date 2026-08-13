@@ -242,7 +242,9 @@ def test_dark_muffled_low_presence_supports_concern():
         }
     }
     ev = evaluate_concern("VOICE_TOO_DARK_MUFFLED", song_profile=song)
-    assert ev["status"] == "CONFIRMED"
+    # Song-only evidence → soft PARTIAL (not CONTROLLED_CONFIRMED)
+    assert ev["status"] == "PARTIALLY_SUPPORTED"
+    assert ev.get("evidence_level") == "SONG_SUPPORTED"
 
 
 def test_dark_muffled_normal_presence_can_not_support():

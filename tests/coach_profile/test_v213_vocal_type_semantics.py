@@ -79,7 +79,7 @@ def test_balanced_without_transition_evidence_is_unresolved():
     )
     assert s["status"] == "UNRESOLVED"
     assert s["mix_evidence"] == "INSUFFICIENT"
-    assert classify_source_balance(0.50)["balance_class"] == "BALANCED"
+    assert classify_source_balance(0.50)["balance_class"] == "BALANCED_ACOUSTIC"
 
 
 def test_balanced_with_transition_disruption_is_not_mix():
@@ -220,11 +220,11 @@ def test_compound_firm_mix_title_removed():
 
 
 def test_source_balance_and_register_strategy_render_separately():
-    bal = classify_source_balance(0.48)
+    bal = classify_source_balance(0.48, family_agreement=0.8, directionality=0.05)
     reg = classify_register_strategy(
         index=0.48, bridge=_bridge_insufficient(), confidence="medium"
     )
-    assert bal["balance_class"] == "BALANCED"
+    assert bal["balance_class"] == "BALANCED_ACOUSTIC"
     assert reg["status"] == "UNRESOLVED"
     title = compose_display_name(
         "BALANCED_SOURCE",
@@ -232,7 +232,8 @@ def test_source_balance_and_register_strategy_render_separately():
         source_balance=bal,
         register_strategy=reg,
     )
-    assert title == "흉성·두성 균형형"
+    assert "균형" in title
+    assert "균형형" not in title or "음향" in title
     assert "믹스" not in title
     assert "힘" not in title
 

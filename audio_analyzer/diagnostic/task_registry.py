@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-REPORT_VERSION = "diagnostic-report-v2.2"
+REPORT_VERSION = "diagnostic-report-v2.5"
 PLANNER_VERSION = "adaptive-dx-planner-v1.3"
 PROTOCOL_VERSION = "diagnostic-protocol-v1.3"
 

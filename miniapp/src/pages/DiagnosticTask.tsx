@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
-  analyzeDiagnosticSession,
   ensureDiagnosticPlan,
   getDiagnosticProtocol,
   getDiagnosticSession,
+  skipControlledRecordings,
+  skipDiagnosticTask,
   uploadDiagnosticTask,
+  waitForDiagnosticCompletion,
 } from '../api/client';
 import AudioReadyPanel from '../components/ui/AudioReadyPanel';
 import {
@@ -34,6 +36,8 @@ export default function DiagnosticTask() {
   const [blobMeta, setBlobMeta] = useState<{ blob: Blob; ext: string } | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmSkip, setConfirmSkip] = useState(false);
+  const [confirmSkipRest, setConfirmSkipRest] = useState(false);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
@@ -82,12 +86,26 @@ export default function DiagnosticTask() {
         }
       }
 
-      // Resume unfinished task if URL task is already passed / missing
+      // Resume unfinished task if URL task is already passed/skipped / missing
       const next = sess?.next_task_id;
       const order: string[] = sess?.selected_tasks || [];
+      if (sess?.status === 'READY_FOR_ANALYSIS' && !next) {
+        setBusy(true);
+        try {
+          await waitForDiagnosticCompletion(sessionId, { triggerAnalyze: true });
+          nav(`/diagnostic/${sessionId}/report`, { replace: true });
+        } catch (e: any) {
+          setLoadError(e?.message || '결과 분석에 실패했어요.');
+          setBusy(false);
+        }
+        setSession(sess);
+        setSessionLoaded(true);
+        setLoading(false);
+        return;
+      }
       if (next && taskId && next !== taskId && order.includes(taskId)) {
         const st = sess?.tasks?.[taskId];
-        if (st?.passed) {
+        if (st?.passed || st?.skipped || st?.safety_blocked) {
           nav(`/diagnostic/${sessionId}/task/${next}`, { replace: true });
           setSession(sess);
           setSessionLoaded(true);
@@ -97,6 +115,16 @@ export default function DiagnosticTask() {
       }
       if ((!taskId || !order.includes(taskId)) && next) {
         nav(`/diagnostic/${sessionId}/task/${next}`, { replace: true });
+      }
+      if ((!taskId || !order.includes(taskId)) && !next && sess?.status === 'READY_FOR_ANALYSIS') {
+        setBusy(true);
+        try {
+          await waitForDiagnosticCompletion(sessionId, { triggerAnalyze: true });
+          nav(`/diagnostic/${sessionId}/report`, { replace: true });
+        } catch (e: any) {
+          setLoadError(e?.message || '결과 분석에 실패했어요.');
+          setBusy(false);
+        }
       }
 
       setSession(sess);
@@ -276,15 +304,17 @@ export default function DiagnosticTask() {
         return;
       }
       const nextOrder = (res.session?.selected_tasks as string[]) || order;
-      const curIdx = nextOrder.indexOf(taskId);
-      const nextId = curIdx >= 0 ? nextOrder[curIdx + 1] : undefined;
+      const nextId = res.session?.next_task_id || (() => {
+        const curIdx = nextOrder.indexOf(taskId);
+        return curIdx >= 0 ? nextOrder[curIdx + 1] : undefined;
+      })();
       setBusy(false);
       if (nextId) {
         nav(`/diagnostic/${sessionId}/task/${nextId}`);
       } else {
         setMsg('분석 중…');
         setBusy(true);
-        await analyzeDiagnosticSession(sessionId);
+        await waitForDiagnosticCompletion(sessionId!, { triggerAnalyze: true });
         setBusy(false);
         nav(`/diagnostic/${sessionId}/report`);
       }
@@ -301,6 +331,49 @@ export default function DiagnosticTask() {
     setPreviewDuration(null);
     setPhase('idle');
     setMsg(null);
+  }
+
+  async function goAfterSkip(sess: any) {
+    const next = sess?.next_task_id;
+    if (next) {
+      nav(`/diagnostic/${sessionId}/task/${next}`);
+      return;
+    }
+    setMsg('분석 중…');
+    setBusy(true);
+    await waitForDiagnosticCompletion(sessionId!, { triggerAnalyze: true });
+    setBusy(false);
+    nav(`/diagnostic/${sessionId}/report`);
+  }
+
+  async function onSkipThisTask() {
+    if (!sessionId || !taskId) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const sess = await skipDiagnosticTask(sessionId, taskId);
+      setConfirmSkip(false);
+      await goAfterSkip(sess);
+    } catch (e: any) {
+      setMsg(e?.message || '건너뛰기에 실패했어요.');
+      setBusy(false);
+    }
+  }
+
+  async function onSkipRemaining() {
+    if (!sessionId) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      await skipControlledRecordings(sessionId, { remainingOnly: true });
+      setConfirmSkipRest(false);
+      setMsg('분석 중…');
+      await waitForDiagnosticCompletion(sessionId, { triggerAnalyze: true });
+      nav(`/diagnostic/${sessionId}/report`);
+    } catch (e: any) {
+      setMsg(e?.message || '결과로 이어가지 못했어요.');
+      setBusy(false);
+    }
   }
 
   if (pageState === 'loading') {
@@ -339,7 +412,7 @@ export default function DiagnosticTask() {
             if (!sessionId) return;
             setBusy(true);
             try {
-              await analyzeDiagnosticSession(sessionId);
+              await waitForDiagnosticCompletion(sessionId, { triggerAnalyze: true });
               nav(`/diagnostic/${sessionId}/report`);
             } catch (e: any) {
               setLoadError(e?.message || '리포트를 만들지 못했어요.');
@@ -390,9 +463,74 @@ export default function DiagnosticTask() {
         <p className="muted">잘하려고 하지 않아도 됩니다. 평소처럼 편하게 수행하면 됩니다.</p>
 
         {phase === 'idle' && (
-          <button className="btn" style={{ width: '100%', marginTop: 12 }} onClick={start} disabled={busy}>
-            녹음 시작
-          </button>
+          <>
+            <button className="btn" style={{ width: '100%', marginTop: 12 }} onClick={start} disabled={busy}>
+              녹음 시작
+            </button>
+            {!confirmSkip ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmSkip(true)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  marginTop: 12,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--muted, #888)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '0.92rem',
+                }}
+              >
+                이 과제 건너뛰기
+              </button>
+            ) : (
+              <div style={{ marginTop: 12 }}>
+                <p className="muted" style={{ fontSize: '0.9rem', lineHeight: 1.45 }}>
+                  이 과제를 건너뛰면 관련 항목의 판단 근거가 줄어들 수 있어요.
+                </p>
+                <button className="btn" type="button" disabled={busy} onClick={() => setConfirmSkip(false)} style={{ width: '100%', marginTop: 8 }}>
+                  계속 녹음하기
+                </button>
+                <button className="btn secondary" type="button" disabled={busy} onClick={() => void onSkipThisTask()} style={{ width: '100%', marginTop: 8 }}>
+                  이 과제 건너뛰기
+                </button>
+              </div>
+            )}
+            {!confirmSkipRest ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setConfirmSkipRest(true)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  marginTop: 10,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--muted, #aaa)',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
+                남은 과제 없이 결과 보기
+              </button>
+            ) : (
+              <div style={{ marginTop: 10 }}>
+                <p className="muted" style={{ fontSize: '0.88rem' }}>
+                  남은 과제를 건너뛰고 지금까지의 결과로 분석할까요?
+                </p>
+                <button className="btn secondary" type="button" disabled={busy} onClick={() => void onSkipRemaining()} style={{ width: '100%', marginTop: 8 }}>
+                  남은 과제 없이 계속
+                </button>
+                <button type="button" disabled={busy} onClick={() => setConfirmSkipRest(false)} style={{ width: '100%', marginTop: 6, background: 'transparent', border: 'none', color: 'var(--muted)', textDecoration: 'underline' }}>
+                  취소
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {phase === 'recording' && (

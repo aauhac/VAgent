@@ -24,22 +24,39 @@ function statusLabel(axis: any): string {
 
 export default function HighNoteFunctionSection({ profile }: Props) {
   if (!profile) return null;
-  if (!profile.available) {
-    const reason = (profile.limitations || [])[0]
-      || '이번 녹음에서는 고음 구간이 충분하지 않아 고음 수행 프로필은 표시하지 않았어요.';
+
+  const availability = String(profile.availability || (profile.available ? 'FULL' : 'UNAVAILABLE')).toUpperCase();
+  const ctx = profile.pitch_context || {};
+  const reasonUser =
+    profile.reason_user
+    || (availability === 'UNAVAILABLE'
+      ? '이번 녹음에서는 고음 구간이 충분하지 않아 고음 수행 프로필은 표시하지 않았어요.'
+      : null);
+
+  if (!profile.available && availability === 'UNAVAILABLE') {
+    const obs = ctx.highest_observed_f0_hz;
+    const thr = ctx.high_threshold_hz;
     return (
       <section className="section">
         <h3 className="section-title">고음 수행</h3>
-        <p className="body-text muted">{reason}</p>
+        <p className="body-text muted">{reasonUser}</p>
+        {obs != null && thr != null && String(profile.reason || '').includes('PITCH_RANGE') ? (
+          <p className="body-text muted" style={{ marginTop: 8, fontSize: '0.9rem' }}>
+            이번 녹음 기준 음역 폭이 좁아 고음 구간 비교를 만들지 않았어요.
+          </p>
+        ) : obs != null && thr != null ? (
+          <p className="body-text muted" style={{ marginTop: 8, fontSize: '0.9rem' }}>
+            관찰 최고 {Math.round(Number(obs))} Hz · 이 녹음 고음 문턱 {Math.round(Number(thr))} Hz
+          </p>
+        ) : null}
       </section>
     );
   }
 
-  const ctx = profile.pitch_context || {};
   const axes = profile.axes || {};
   const rows = [
     { key: 'high_note_stability', label: '고음 안정성' },
-    { key: 'transition_continuity', label: '성구 연결' },
+    { key: 'transition_continuity', label: '고음 구간 연결' },
     { key: 'high_note_effort_cost', label: '고음에서 힘 증가' },
     { key: 'high_note_breathiness_shift', label: '고음 숨 섞임 변화' },
     { key: 'high_note_regularity_cost', label: '고음 규칙성' },
@@ -52,9 +69,12 @@ export default function HighNoteFunctionSection({ profile }: Props) {
   return (
     <section className="section">
       <h3 className="section-title">고음 수행</h3>
+      {availability === 'PARTIAL' && reasonUser ? (
+        <p className="body-text muted">{reasonUser}</p>
+      ) : null}
       {reliable != null ? (
         <p className="body-text">
-          도달 가능한 고음(신뢰)
+          이번 녹음에서 신뢰 가능하게 확인된 최고 음높이
           {' '}
           <strong style={{ fontWeight: 600 }}>{Math.round(Number(reliable))} Hz</strong>
           {observed != null && Number(observed) > Number(reliable) * 1.05 ? (
@@ -62,18 +82,20 @@ export default function HighNoteFunctionSection({ profile }: Props) {
           ) : null}
         </p>
       ) : null}
-      <div className="card" style={{ display: 'grid', gap: 10 }}>
-        {rows.map((r) => {
-          const ax = axes[r.key];
-          if (!ax) return null;
-          return (
-            <div key={r.key} className="detail-row" style={{ cursor: 'default' }}>
-              <span className="detail-label">{r.label}</span>
-              <span className="detail-meta">{statusLabel(ax)}</span>
-            </div>
-          );
-        })}
-      </div>
+      {Object.keys(axes).length > 0 ? (
+        <div className="card" style={{ display: 'grid', gap: 10 }}>
+          {rows.map((r) => {
+            const ax = axes[r.key];
+            if (!ax) return null;
+            return (
+              <div key={r.key} className="detail-row" style={{ cursor: 'default' }}>
+                <span className="detail-label">{r.label}</span>
+                <span className="detail-meta">{statusLabel(ax)}</span>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
       {(profile.summary || []).slice(0, 2).map((s: string) => (
         <p key={s} className="body-text muted">{s}</p>
       ))}

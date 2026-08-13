@@ -649,9 +649,12 @@ function estimateResonance(d: any): { value: number; display: string } | null {
 export function buildVocalAxes(
   dimsInput: any,
   criteriaMatrix: any[] = [],
+  canonicalRegister?: { status?: string; profile_label?: string; title?: string } | null,
+  canonicalAcoustic?: { axes?: Record<string, any> } | null,
 ): DisplayAxis[] {
   const byId = indexDims(dimsInput);
   const crit = indexCriteria(criteriaMatrix);
+  const cAxes = canonicalAcoustic?.axes || {};
 
   function pack(
     id: string,
@@ -664,7 +667,6 @@ export function buildVocalAxes(
     if (!dim || dim.hidden) return null;
     if (!estimate || estimate.value == null) return null;
     const conf = getDisplayConfidence(dim, crit[dim.dimension_id]);
-    // Low confidence still displays when estimate exists (v1.2)
     return {
       id,
       label,
@@ -680,11 +682,48 @@ export function buildVocalAxes(
     };
   }
 
+  function fromCanonical(
+    key: string,
+    fallback: { value: number; display: string } | null,
+  ): { value: number; display: string } | null {
+    const ax = cAxes[key];
+    if (!ax || ax.available === false || ax.continuum == null) return fallback;
+    return {
+      value: Number(ax.continuum),
+      display: String(ax.display || ax.status || fallback?.display || ''),
+    };
+  }
+
+  let registerEstimate = estimateRegister(byId.register_configuration);
+  if (canonicalRegister?.status || canonicalRegister?.profile_label) {
+    const st = String(canonicalRegister.status || '').toUpperCase();
+    const value =
+      st === 'CONNECTED' ? 0.78
+        : st === 'PARTIAL' ? 0.55
+          : st === 'DISRUPTED' ? 0.32
+            : st === 'CONFLICTED' ? 0.5
+              : 0.5;
+    registerEstimate = {
+      value,
+      display:
+        canonicalRegister.profile_label
+        || canonicalRegister.title
+        || getDimensionLabel('register', value, st),
+    };
+  }
+
+  const contactEst = fromCanonical('contact', estimateContact(byId.glottal_contact_profile));
+  const breathEst = fromCanonical(
+    'functional_breathiness',
+    fromCanonical('breathiness', estimateBreath(byId.air_leakage_breathiness)),
+  );
+  const effortEst = fromCanonical('effort', estimateEffort(byId.vocal_effort_strain));
+
   const axes: Array<DisplayAxis | null> = [
-    pack('contact', '접촉감', '가벼움', '단단함', byId.glottal_contact_profile, estimateContact(byId.glottal_contact_profile)),
-    pack('breath', '숨 섞임', '적음', '많음', byId.air_leakage_breathiness, estimateBreath(byId.air_leakage_breathiness)),
-    pack('effort', '힘', '편안', '밀어붙임', byId.vocal_effort_strain, estimateEffort(byId.vocal_effort_strain)),
-    pack('register', '성구 연결', '분리', '자연스러움', byId.register_configuration, estimateRegister(byId.register_configuration)),
+    pack('contact', '접촉감', '가벼움', '단단함', byId.glottal_contact_profile, contactEst),
+    pack('breath', '숨 섞임', '적음', '많음', byId.air_leakage_breathiness, breathEst),
+    pack('effort', '힘', '편안', '밀어붙임', byId.vocal_effort_strain, effortEst),
+    pack('register', '성구 연결', '분리', '자연스러움', byId.register_configuration, registerEstimate),
     pack('resonance', '공명 존재감', '낮음', '높음', byId.resonance_formant_strategy, estimateResonance(byId.resonance_formant_strategy)),
   ];
 
@@ -919,10 +958,110 @@ const TASK_LABEL: Record<string, string> = {
   high_note_sustain_a: "높은 음 '아—'",
 };
 
+const DIM_LABEL: Record<string, string> = {
+  effort: '힘 사용',
+  stability: '발성 안정성',
+  contact: '접촉감',
+  breathiness: '숨 섞임',
+  resonance: '음색·공명',
+  register: '성구 연결',
+  dynamic_response: '강약 반응',
+};
+
+const STATUS_VALUE: Record<string, string> = {
+  LOW: '편안한 편',
+  HIGH: '높은 편',
+  INCREASED: '증가',
+  MID: '중간',
+  LIGHT: '가벼운 편',
+  LIGHT_LEANING: '가벼운 편',
+  FIRM: '단단한 편',
+  FIRM_LEANING: '단단한 편',
+  STEADY: '유지됨',
+  STABLE: '유지됨',
+  UNSTABLE: '흔들림',
+  CONNECTED: '연결됨',
+  DISRUPTED: '단절',
+  BRIGHT: '밝은 편',
+  DARK: '어두운 편',
+  RESPONSIVE: '반응 있음',
+  INSUFFICIENT: '확인 제한',
+  AVAILABLE: '측정됨',
+  OBSERVED: '관찰됨',
+};
+
+function rowsFromTaskProfile(profile: any): Array<{ label: string; value: string }> {
+  const dims = profile?.dimensions || {};
+  const rows: Array<{ label: string; value: string }> = [];
+  const order = ['effort', 'stability', 'contact', 'breathiness', 'resonance', 'register', 'dynamic_response'];
+  for (const dim of order) {
+    const ev = dims[dim];
+    if (!ev || !ev.available) continue;
+    const st = String(ev.status || '').toUpperCase();
+    if (!st || st === 'INSUFFICIENT') continue;
+    rows.push({
+      label: DIM_LABEL[dim] || dim,
+      value: STATUS_VALUE[st] || st.toLowerCase(),
+    });
+    if (rows.length >= 3) break;
+  }
+  return rows;
+}
+
+/** Hide unknown internal evidence codes from production UI. */
+export function mapEvidenceTokenForUser(token: string): string | null {
+  const s = String(token || '').trim();
+  if (!s) return null;
+  const known: Record<string, string> = {
+    baseline_and_high_both_low: '편한 음과 높은 음 모두 힘 증가가 낮게 나타남',
+    high_note_stability_maintained: '고음에서도 안정성이 유지됨',
+    breathiness_increase_not_primary: '숨 섞임 증가는 크지 않음',
+    song_effort_high_but_controlled_low: '노래에서는 힘 증가가 보였지만 표준 과제에서는 낮음',
+    thin_cues_absent: '얇은 인상과 일치하는 패턴이 뚜렷하지 않음',
+    light_contact: '접촉감이 가벼운 편',
+    task_resonance: '표준 과제의 공명·스펙트럼 특성',
+    task_breathiness: '표준 과제의 숨 섞임 특성',
+    task_contact: '표준 과제의 접촉감 특성',
+    task_timbre_proxy: '표준 과제에서 확인된 음색 특성',
+  };
+  if (known[s]) return known[s];
+  if (s.startsWith('brightness=')) {
+    const v = Number(s.split('=')[1]);
+    if (v >= 0.58) return '밝은 음색 경향';
+    if (v <= 0.42) return '어두운 음색 경향';
+    return '밝기는 보통';
+  }
+  if (s.startsWith('presence=')) {
+    const v = Number(s.split('=')[1]);
+    if (v >= 0.58) return '중역 존재감이 유지됨';
+    if (v <= 0.42) return '중역 존재감이 낮은 편';
+    return '중역 존재감은 보통';
+  }
+  if (s.startsWith('airiness=')) {
+    const v = Number(s.split('=')[1]);
+    if (v <= 0.4) return '숨 섞임이 적은 편';
+    if (v >= 0.55) return '숨 섞임이 있는 편';
+    return '숨 섞임은 보통';
+  }
+  if (s.startsWith('presence_ok=')) return '중역 존재감이 유지됨';
+  if (s.startsWith('brightness_ok=')) return '밝은 음색 경향이 유지됨';
+  if (s.startsWith('low_presence=')) return '중역 존재감이 낮은 편';
+  if (s.startsWith('low_brightness=')) return '밝기가 낮은 편';
+  if (s.startsWith('low_airiness')) return '숨 섞임이 적은 편';
+  if (s.startsWith('effort_delta_')) return '편한 음 대비 고음에서 힘 관련 패턴 변화';
+  if (s.startsWith('baseline_') && s.includes('_to_high_')) return '편한 음과 고음의 힘 패턴 비교';
+  if (s.startsWith('song_effort_')) return '노래 분석의 힘 관련 패턴';
+  // Hangul text is already user-facing
+  if (/[가-힣]/.test(s)) return s;
+  // Hide unknown internal codes
+  return null;
+}
+
 export function buildTaskResultSummary(
   reliable: any[],
   uncertain: any[] = [],
   selectedTasks: string[] = [],
+  taskProfiles?: Record<string, any> | null,
 ): Array<{
   task: string;
   rows: Array<{ label: string; value: string }>;
@@ -934,6 +1073,14 @@ export function buildTaskResultSummary(
     dynamic_swell: [],
     high_note_sustain_a: [],
   };
+
+  // Prefer normalized task_profiles from fusion
+  if (taskProfiles && typeof taskProfiles === 'object') {
+    for (const tid of Object.keys(taskProfiles)) {
+      const rows = rowsFromTaskProfile(taskProfiles[tid]);
+      if (rows.length) byTask[tid] = rows;
+    }
+  }
 
   function addFromFinding(m: any) {
     const f = translateDiagnosticFinding(m);
@@ -954,6 +1101,8 @@ export function buildTaskResultSummary(
     for (const t of targets) {
       if (!byTask[t]) byTask[t] = [];
       if (byTask[t].some((r) => r.label === f.title)) continue;
+      // Don't overwrite richer profile rows with finding stubs
+      if (byTask[t].length >= 2) continue;
       byTask[t].push({ label: f.title, value: f.tone || '보통' });
     }
   }
@@ -961,21 +1110,25 @@ export function buildTaskResultSummary(
   for (const m of reliable) addFromFinding(m);
   for (const m of uncertain || []) addFromFinding(m);
 
-  // Ensure planned tasks appear even if finding tags missed them
   for (const tid of selectedTasks) {
     if (!byTask[tid]) byTask[tid] = [];
-    if (!byTask[tid].length) {
-      byTask[tid].push({ label: '과제 완료', value: '반영됨' });
+    // Only stub when the task was actually completed (selectedTasks = completed list)
+    // Never invent rows for skipped tasks — callers must pass completed_tasks only.
+    if (!byTask[tid].length && taskProfiles?.[tid]?.valid) {
+      byTask[tid].push({
+        label: '표시 가능 항목',
+        value: '이번 과제에서는 확실히 표시할 수 있는 항목이 적었어요.',
+      });
     }
   }
 
-  const order = selectedTasks.length
-    ? selectedTasks
-    : Object.keys(byTask);
+  const order = selectedTasks.length ? selectedTasks : Object.keys(byTask);
   const out: Array<{ task: string; rows: Array<{ label: string; value: string }> }> = [];
   for (const tid of order) {
     const rows = byTask[tid] || [];
     if (!rows.length) continue;
+    // When an explicit completed list is provided, never show tasks outside it
+    if (selectedTasks.length && !selectedTasks.includes(tid)) continue;
     out.push({ task: TASK_LABEL[tid] || tid, rows: rows.slice(0, 3) });
   }
   return out;

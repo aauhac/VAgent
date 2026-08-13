@@ -102,7 +102,29 @@ def test_concern_does_not_force_unnecessary_task_on_resolved_song():
     assert isinstance(plan.get("selected_tasks"), list)
 
 
-def test_pain_flag_blocks_aggressive_high_note_task():
+def test_pain_on_phonation_blocks_all_controlled_phonation():
+    selected = filter_tasks_for_safety(
+        ["siren", "dynamic_swell", "high_note_sustain_a", "sustain_a"],
+        pain_flag=True,
+        safety_flags=["pain_on_phonation"],
+    )
+    assert selected == []
+
+
+def test_discomfort_flag_blocks_aggressive_high_note_task():
+    selected = filter_tasks_for_safety(
+        ["siren", "dynamic_swell", "high_note_sustain_a", "sustain_a"],
+        pain_flag=True,
+        safety_flags=["severe_discomfort_after"],
+    )
+    assert "dynamic_swell" not in selected
+    assert "high_note_sustain_a" not in selected
+    assert "siren" in selected
+    assert "sustain_a" in selected
+
+
+def test_pain_flag_without_checkbox_blocks_aggressive_only():
+    """Legacy pain_flag / concern pain without safety checkbox → discomfort tier."""
     selected = filter_tasks_for_safety(
         ["siren", "dynamic_swell", "high_note_sustain_a", "sustain_a"],
         pain_flag=True,

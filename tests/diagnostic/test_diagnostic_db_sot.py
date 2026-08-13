@@ -92,6 +92,13 @@ def test_diagnostic_attempt_persists_db(diag_client):
         headers=h,
         json={"answers": {"pain_on_phonation": False}},
     )
+    assert (
+        client.post(
+            f"/v1/diagnostic-sessions/{sid}/start-controlled-recordings",
+            headers=h,
+        ).status_code
+        == 200
+    )
     # pick first selected task from session
     sess = client.get(f"/v1/diagnostic-sessions/{sid}", headers=h).json()
     tasks = sess.get("selected_tasks") or []

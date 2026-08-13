@@ -158,7 +158,7 @@ def test_concern_submit_routes_to_safety():
     assert out.status_code == 200
     body = out.json()
     assert body["user_concerns"]
-    assert body["status"] == "PAID"
+    assert body["status"] == "SAFETY_CHECK"
     # FE next: /diagnostic/{sid}/safety
 
 
@@ -192,8 +192,15 @@ def test_zero_selected_tasks_routes_to_report_not_home():
     )
     assert safety.status_code == 200
     sess = safety.json()
-    assert sess["status"] == "TASKS_IN_PROGRESS"
+    assert sess["status"] == "RECORDING_CHOICE"
     assert len(sess["selected_tasks"]) >= 1
+    started = c.post(
+        f"/v1/diagnostic-sessions/{sid}/start-controlled-recordings",
+        headers=h,
+    )
+    assert started.status_code == 200
+    sess = started.json()
+    assert sess["status"] == "TASKS_IN_PROGRESS"
     assert sess.get("next_task_id") or sess["selected_tasks"][0]
 
 

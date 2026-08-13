@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "api": "http://127.0.0.1:8002",
+    "web": "http://127.0.0.1:5173",
+    "backend_verified": true
+  },
+  "normal": {
+    "pass": false,
+    "trace": {
+      "label": "NORMAL",
+      "session_id": "401d77fb158544f9bb3c8715f5695415",
+      "went_home": false,
+      "api": "http://127.0.0.1:8002",
+      "web": "http://127.0.0.1:5173",
+      "safety_http": 200,
+      "route_after_safety": "/diagnostic/401d77fb158544f9bb3c8715f5695415/recordings",
+      "safety_status": "RECORDING_CHOICE",
+      "selected": [
+        "sustain_a",
+        "siren",
+        "dynamic_swell"
+      ],
+      "route_after_start": "/diagnostic/401d77fb158544f9bb3c8715f5695415/task/sustain_a",
+      "task_visible": false,
+      "v1_calls": [
+        "GET /v1/diagnostic-sessions/401d77fb158544f9bb3c8715f5695415",
+        "POST /v1/diagnostic-sessions/401d77fb158544f9bb3c8715f5695415/safety",
+        "POST /v1/diagnostic-sessions/401d77fb158544f9bb3c8715f5695415/start-controlled-recordings",
+        "GET /v1/diagnostic/protocol"
+      ]
+    }
+  },
+  "pain": {
+    "pass": true,
+    "trace": {
+      "label": "PAIN",
+      "session_id": "855106819e824cb5b647919cba3aba78",
+      "went_home": false,
+      "api": "http://127.0.0.1:8002",
+      "web": "http://127.0.0.1:5173",
+      "safety_status": "READY_FOR_ANALYSIS",
+      "selected": [],
+      "diagnostic_status": "SAFETY_LIMITED",
+      "route_after_safety": "/diagnostic/855106819e824cb5b647919cba3aba78/report",
+      "route_final": "/diagnostic/855106819e824cb5b647919cba3aba78/report",
+      "v1_calls": [
+        "GET /v1/diagnostic-sessions/855106819e824cb5b647919cba3aba78",
+        "POST /v1/diagnostic-sessions/855106819e824cb5b647919cba3aba78/safety",
+        "POST /v1/diagnostic-sessions/855106819e824cb5b647919cba3aba78/analyze",
+        "GET /v1/diagnostic-sessions/855106819e824cb5b647919cba3aba78/report"
+      ]
+    }
+  },
+  "skip": {
+    "pass": true,
+    "trace": {
+      "label": "SKIP_ALL",
+      "session_id": "514e9cb2090e4ae7971435b6cf859633",
+      "went_home": false,
+      "route": "/diagnostic/514e9cb2090e4ae7971435b6cf859633/report"
+    }
+  },
+  "partial": {
+    "pass": false,
+    "trace": {
+      "label": "PARTIAL",
+      "session_id": "9794b5ceaddf434d9fcec7115a9be1ea",
+      "went_home": false,
+      "api": "http://127.0.0.1:8002",
+      "web": "http://127.0.0.1:5173",
+      "task1": "sustain_a",
+      "task2": "siren",
+      "task1_route": "/diagnostic/9794b5ceaddf434d9fcec7115a9be1ea/task/sustain_a",
+      "after_upload": "/diagnostic/9794b5ceaddf434d9fcec7115a9be1ea/task/siren",
+      "report_route": "/diagnostic/9794b5ceaddf434d9fcec7115a9be1ea/report",
+      "evidence_mode": "PARTIAL_PRECISION",
+      "user_skipped": [
+        "siren",
+        "dynamic_swell"
+      ],
+      "completed": [
+        "sustain_a"
+      ],
+      "task_results": [],
+      "report_evidence_mode": "PARTIAL_PRECISION",
+      "report_status": 200,
+      "partial_copy": false,
+      "v1_calls": [
+        "GET /v1/diagnostic-sessions/9794b5ceaddf434d9fcec7115a9be1ea",
+        "POST /v1/diagnostic-sessions/9794b5ceaddf434d9fcec7115a9be1ea/safety",
+        "POST /v1/diagnostic-sessions/9794b5ceaddf434d9fcec7115a9be1ea/start-controlled-recordings",
+        "GET /v1/diagnostic/protocol",
+        "POST /v1/diagnostic-sessions/9794b5ceaddf434d9fcec7115a9be1ea/tasks/sustain_a",
+        "POST /v1/diagnostic-sessions/9794b5ceaddf434d9fcec7115a9be1ea/skip-controlled-recordings",
+        "POST /v1/diagnostic-sessions/9794b5ceaddf434d9fcec7115a9be1ea/analyze",
+        "GET /v1/diagnostic-sessions/9794b5ceaddf434d9fcec7115a9be1ea/report"
+      ]
+    }
+  }
+}

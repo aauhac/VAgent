@@ -448,6 +448,68 @@ def ensure_diagnostic_plan(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@router.post("/diagnostic-sessions/{session_id}/tasks/{task_id}/skip")
+def skip_diagnostic_task(
+    session_id: str,
+    task_id: str,
+    payload: dict | None = None,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    if not validate_session_id(session_id):
+        raise HTTPException(status_code=404, detail="session not found")
+    reason = (payload or {}).get("reason") or "USER_CHOICE"
+    try:
+        return diag.skip_task(
+            session_id, task_id, user_id=_user_id(x_user_id), reason=reason
+        )
+    except PermissionError:
+        raise HTTPException(status_code=402, detail="REPORT_LOCKED") from None
+    except KeyError:
+        raise HTTPException(status_code=404, detail="not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/diagnostic-sessions/{session_id}/start-controlled-recordings")
+def start_controlled_recordings(
+    session_id: str,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    if not validate_session_id(session_id):
+        raise HTTPException(status_code=404, detail="session not found")
+    try:
+        return diag.start_controlled_recordings(session_id, user_id=_user_id(x_user_id))
+    except PermissionError:
+        raise HTTPException(status_code=402, detail="REPORT_LOCKED") from None
+    except KeyError:
+        raise HTTPException(status_code=404, detail="session not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/diagnostic-sessions/{session_id}/skip-controlled-recordings")
+def skip_controlled_recordings(
+    session_id: str,
+    payload: dict | None = None,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    if not validate_session_id(session_id):
+        raise HTTPException(status_code=404, detail="session not found")
+    remaining_only = True if payload is None else bool((payload or {}).get("remaining_only", True))
+    try:
+        return diag.skip_controlled_recordings(
+            session_id,
+            user_id=_user_id(x_user_id),
+            remaining_only=remaining_only,
+        )
+    except PermissionError:
+        raise HTTPException(status_code=402, detail="REPORT_LOCKED") from None
+    except KeyError:
+        raise HTTPException(status_code=404, detail="session not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @router.post("/diagnostic-sessions/{session_id}/tasks/{task_id}")
 async def upload_task(
     session_id: str,
@@ -527,4 +589,10 @@ def get_report(
         raise HTTPException(status_code=404, detail="report not ready") from None
     if report.get("error") == "REPORT_LOCKED":
         raise HTTPException(status_code=402, detail="REPORT_LOCKED")
+    if report.get("error") == "REPORT_GENERATING":
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(status_code=202, content=report)
+    if report.get("error") == "REPORT_FAILED":
+        raise HTTPException(status_code=409, detail=report.get("message") or "REPORT_FAILED")
     return report

@@ -317,6 +317,11 @@ def build_song_detailed_report(
         "vocal_type_profile": vocal_function.get("vocal_type_profile")
         or analysis.get("vocal_type_profile")
         or {"available": False},
+        "vocal_style_profile": vocal_function.get("vocal_style_profile")
+        or analysis.get("vocal_style_profile")
+        or {"available": False},
+        "canonical_acoustic_axes": vocal_function.get("canonical_acoustic_axes")
+        or analysis.get("canonical_acoustic_axes"),
         "high_note_function_profile": vocal_function.get("high_note_function_profile")
         or {"available": False},
         "timbre_profile": vocal_function.get("timbre_profile") or {"available": False},

@@ -85,10 +85,10 @@ TASKS = [
 ]
 
 SAFETY_QUESTIONS = [
-    {"id": "pain_on_phonation", "label": "발성 시 통증"},
+    {"id": "pain_on_phonation", "label": "소리를 낼 때 통증이 있어요"},
+    {"id": "severe_discomfort_after", "label": "발성 후 심한 불편감·피로감이 있어요"},
     {"id": "sudden_voice_change", "label": "갑자기 생긴 뚜렷한 음성 변화"},
     {"id": "persistent_severe_hoarseness", "label": "오랫동안 지속되는 심한 쉰 목소리"},
-    {"id": "severe_discomfort_after", "label": "발성 후 심한 불편감"},
     {"id": "breathing_difficulty", "label": "호흡이 어려운 증상"},
 ]
 

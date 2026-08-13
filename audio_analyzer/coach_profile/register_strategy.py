@@ -14,8 +14,12 @@ from . import config as cfg
 SOURCE_BALANCE = (
     "UNKNOWN",
     "CHEST_DOMINANT",
-    "BALANCED",
+    "CHEST_LEANING",
+    "BALANCED_ACOUSTIC",
+    "HEAD_LEANING",
     "HEAD_DOMINANT",
+    "CONFLICTED",
+    "BALANCED",  # legacy alias
 )
 
 REGISTER_STRATEGY = (
@@ -40,44 +44,76 @@ STRATEGY_TO_TYPE_ID = {
 }
 
 
-def classify_source_balance(index: Optional[float]) -> dict[str, Any]:
+def classify_source_balance(
+    index: Optional[float],
+    *,
+    family_agreement: Optional[float] = None,
+    directionality: Optional[float] = None,
+) -> dict[str, Any]:
+    """Classify chest/head acoustic proxy balance — never Mix, never register time usage.
+
+    BALANCED_ACOUSTIC: mid index with consistent families.
+    CONFLICTED: mid index with low family agreement (opposing family votes).
+    """
     if index is None:
         return {
             "balance_class": "UNKNOWN",
-            "label": "발성 성향 판단 보류",
+            "label": "흉성·두성 관련 음향 성향을 판단하기 어려워요",
             "confidence_label": "low",
+            "show_ratio": False,
         }
+
+    agree = float(family_agreement) if family_agreement is not None else 1.0
+    direc = float(directionality) if directionality is not None else 1.0
+    mid = cfg.MIX_LOW <= index <= cfg.MIX_HIGH
+    near_half = 0.45 <= index <= 0.55
+
+    if mid and (agree < 0.45 or (near_half and agree < 0.55 and direc < 0.2)):
+        return {
+            "balance_class": "CONFLICTED",
+            "label": "흉성·두성 관련 음향 특징이 서로 다른 방향으로 나타났어요",
+            "confidence_label": "low",
+            "show_ratio": False,
+            "family_agreement": round(agree, 3),
+            "directionality": round(direc, 3),
+        }
+
     if index <= cfg.CHEST_DOMINANT_MAX:
         return {
             "balance_class": "CHEST_DOMINANT",
-            "label": "흉성 쪽 성향이 더 강한 편",
+            "label": "흉성 쪽 음향 성향이 더 강한 편",
             "confidence_label": "medium",
+            "show_ratio": True,
         }
     if index >= cfg.HEAD_DOMINANT_MIN:
         return {
             "balance_class": "HEAD_DOMINANT",
-            "label": "두성 쪽 성향이 더 강한 편",
+            "label": "두성 쪽 음향 성향이 더 강한 편",
             "confidence_label": "medium",
+            "show_ratio": True,
         }
-    # Mid band — balanced tendency (NOT mix)
     if index < cfg.CHEST_LEAN_MAX:
         return {
-            "balance_class": "CHEST_DOMINANT",
-            "label": "흉성 쪽 성향이 다소 강한 편",
+            "balance_class": "CHEST_LEANING",
+            "label": "흉성 쪽 음향 성향이 다소 강한 편",
             "confidence_label": "medium",
             "lean": "chest",
+            "show_ratio": True,
         }
     if index > cfg.HEAD_LEAN_MIN:
         return {
-            "balance_class": "HEAD_DOMINANT",
-            "label": "두성 쪽 성향이 다소 강한 편",
+            "balance_class": "HEAD_LEANING",
+            "label": "두성 쪽 음향 성향이 다소 강한 편",
             "confidence_label": "medium",
             "lean": "head",
+            "show_ratio": True,
         }
     return {
-        "balance_class": "BALANCED",
-        "label": "흉성·두성 균형형",
-        "confidence_label": "medium",
+        "balance_class": "BALANCED_ACOUSTIC",
+        "label": "흉성·두성 관련 음향 성향이 비교적 균형에 가까운 편",
+        "confidence_label": "medium" if agree >= 0.55 else "low",
+        "show_ratio": agree >= 0.5,
+        "family_agreement": round(agree, 3),
     }
 
 

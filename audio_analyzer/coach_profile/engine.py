@@ -113,7 +113,11 @@ def compute_vocal_type_profile(
         float(cov.get("mid") or 0) + float(cov.get("high") or 0) >= 0.05
         or n_ok >= cfg.MIN_SEGMENTS_FOR_RATIO
     )
-    source_balance = classify_source_balance(index_for_type)
+    source_balance = classify_source_balance(
+        index_for_type,
+        family_agreement=agree,
+        directionality=global_ratio_dir,
+    )
     register_strategy = classify_register_strategy(
         index=index_for_type,
         bridge=bridge,
@@ -158,7 +162,12 @@ def compute_vocal_type_profile(
             "balance_class": "UNKNOWN",
             "label": "발성 성향 판단 보류",
             "confidence_label": "low",
+            "show_ratio": False,
         }
+
+    show_ratio = bool(source_balance.get("show_ratio", True)) and bool(ratios.get("available"))
+    if source_balance.get("balance_class") in ("CONFLICTED", "UNRESOLVED", "UNKNOWN"):
+        show_ratio = False
 
     display_name = compose_display_name(
         base_type,
@@ -232,12 +241,15 @@ def compute_vocal_type_profile(
         "confidence": conf,
         "confidence_label": {"high": "높음", "medium": "중간", "low": "낮음"}.get(conf, conf),
         "source_balance": {
-            "chest_percent": ratios.get("chest_ratio"),
-            "head_percent": ratios.get("head_ratio"),
+            "chest_percent": ratios.get("chest_ratio") if show_ratio else None,
+            "head_percent": ratios.get("head_ratio") if show_ratio else None,
             "balance_class": source_balance.get("balance_class"),
             "label": source_balance.get("label"),
             "confidence_label": source_balance.get("confidence_label") or conf,
             "index": ratios.get("index") if ratios.get("available") else index,
+            "show_ratio": show_ratio,
+            "family_agreement": source_balance.get("family_agreement", agree),
+            "directionality": source_balance.get("directionality", global_ratio_dir),
         },
         "register_strategy": {
             "status": register_strategy.get("status"),
@@ -250,10 +262,11 @@ def compute_vocal_type_profile(
             "evidence": register_strategy.get("evidence"),
         },
         "head_chest": {
-            "chest_ratio": ratios.get("chest_ratio"),
-            "head_ratio": ratios.get("head_ratio"),
+            "chest_ratio": ratios.get("chest_ratio") if show_ratio else None,
+            "head_ratio": ratios.get("head_ratio") if show_ratio else None,
             "index": ratios.get("index") if ratios.get("available") else index,
-            "available": bool(ratios.get("available")),
+            "available": bool(ratios.get("available")) and show_ratio,
+            "show_ratio": show_ratio,
             "broad_label": ratios.get("broad_label") or source_balance.get("label"),
             "evidence_mass": stats.get("total_evidence_mass"),
             "global_ratio_directionality": stats.get("global_ratio_directionality"),
@@ -433,14 +446,17 @@ def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]
             "balance_class": sb.get("balance_class"),
             "label": sb.get("label"),
             "confidence_label": sb.get("confidence_label"),
+            "show_ratio": sb.get("show_ratio", hc.get("show_ratio")),
         },
         "register_strategy": {
             "status": rs.get("status"),
+            "canonical_status": rs.get("canonical_status"),
             "mix_evidence": rs.get("mix_evidence"),
             "continuity": rs.get("continuity"),
             "confidence_label": rs.get("confidence_label"),
             "title": rs.get("title"),
             "description": rs.get("description"),
+            "profile_label": rs.get("profile_label"),
         },
         "head_chest": {
             "available": hc.get("available"),
@@ -448,7 +464,10 @@ def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]
             "head_ratio": hc.get("head_ratio"),
             "index": hc.get("index"),
             "broad_label": hc.get("broad_label"),
+            "show_ratio": hc.get("show_ratio", sb.get("show_ratio")),
         },
+        "canonical_register": profile.get("canonical_register"),
+        "vocal_style_profile": profile.get("vocal_style_profile"),
         "bridge": {
             "type": (profile.get("bridge") or {}).get("type"),
             "score": (profile.get("bridge") or {}).get("score"),

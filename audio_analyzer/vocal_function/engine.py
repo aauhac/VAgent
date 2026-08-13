@@ -540,6 +540,28 @@ def compute_vocal_function_profile(
             "effort_assessment": effort_assessment,
         },
     )
+
+    from audio_analyzer.vocal_style import build_vocal_style_profile
+
+    vocal_style_profile = build_vocal_style_profile(
+        vocal_type_profile=vocal_type_profile,
+        dimensions=dimensions,
+        effort_assessment=effort_assessment,
+        timbre_profile=timbre_profile,
+        mode="SONG_DETAIL",
+    )
+    # Canonical register overwrites diverging register_strategy UI fields
+    patched_rs = vocal_style_profile.pop("_patched_register_strategy", None)
+    if patched_rs:
+        vocal_type_profile["register_strategy"] = patched_rs
+    vocal_type_profile["canonical_register"] = vocal_style_profile.get("canonical_register")
+    vocal_type_profile["vocal_style_profile"] = {
+        "version": vocal_style_profile.get("version"),
+        "style_id": vocal_style_profile.get("style_id"),
+        "display_name": vocal_style_profile.get("display_name"),
+    }
+    canonical_acoustic_axes = vocal_style_profile.get("canonical_acoustic_axes")
+
     effort_consistency = check_effort_report_consistency(
         assessment=effort_assessment,
         coaching_decision=coaching_decision,
@@ -556,7 +578,10 @@ def compute_vocal_function_profile(
                 vocal_type_profile["warnings"].append(tag)
 
     headlines = [coaching_decision.get("headline")] if coaching_decision.get("headline") else []
-    if vocal_type_profile.get("display_name") and vocal_type_profile.get("type_id") != "UNRESOLVED":
+    style_name = vocal_style_profile.get("display_name")
+    if style_name and vocal_style_profile.get("style_id") != "UNRESOLVED":
+        headlines.insert(0, style_name)
+    elif vocal_type_profile.get("display_name") and vocal_type_profile.get("type_id") != "UNRESOLVED":
         headlines.insert(0, vocal_type_profile.get("display_name"))
     for d in dimensions.values():
         if d.get("hidden") or d.get("confidence_label") == "low":
@@ -664,6 +689,8 @@ def compute_vocal_function_profile(
             "issues": effort_consistency,
         },
         "vocal_type_profile": vocal_type_profile,
+        "vocal_style_profile": vocal_style_profile,
+        "canonical_acoustic_axes": canonical_acoustic_axes,
         "personal_baseline": baseline,
         "style_goal": style_goal,
         "technique_goal": technique_goal,

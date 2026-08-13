@@ -265,41 +265,32 @@ def build_timbre_profile_v211(
 ) -> dict[str, Any]:
     segs = [s for s in segments if _vocal_ok(s)]
     mixed = (input_mode or "").upper() == "MIXED" or functional_quality == "LIMITED"
-    limitations = [
-        "음색은 스타일 목표가 달라 좋고 나쁨으로 평가하지 않아요.",
-        "녹음 환경과 마이크 특성에 따라 음색 분석은 일부 달라질 수 있어요.",
-    ]
+    disclaimer = "음색은 스타일 목표가 달라 좋고 나쁨으로 평가하지 않아요."
+    env_note = "녹음 환경과 마이크 특성에 따라 음색 분석은 일부 달라질 수 있어요."
+    limitations = [disclaimer, env_note]
     if mixed:
         limitations.append("반주 영향이 있을 수 있어 음색 신뢰도를 제한했어요.")
 
-    # Contamination: many non-vocal-specific → unavailable
+    # Contamination: many non-vocal-specific → unavailable or partial
     total = len(segments) or 1
     vocal_n = len(segs)
     if vocal_n < 3:
         return {
             "available": False,
+            "availability": "UNAVAILABLE",
             "reason": "INSUFFICIENT_VOCAL_SEGMENTS",
+            "reason_user": "음색을 비교할 수 있는 보컬 구간이 충분하지 않았어요.",
             "axes": {},
             "summary": [],
             "confidence_label": "low",
-            "limitations": limitations
-            + ["보컬로 확인된 구간이 부족해 음색 프로필을 만들지 않았어요."],
-            "descriptive_only": True,
-            "what_it_is_not": "좋은 음색 / 음색 점수가 아닙니다.",
-        }
-    if mixed and (vocal_n / total) < 0.35:
-        return {
-            "available": False,
-            "reason": "MIXED_CONTAMINATION",
-            "axes": {},
-            "summary": [],
-            "confidence_label": "low",
-            "limitations": limitations
-            + ["반주 오염 가능성이 커 음색 프로필을 제공하지 않았어요."],
+            "limitations": limitations,
+            "n_vocal_segments": vocal_n,
+            "n_total_segments": len(segments),
             "descriptive_only": True,
             "what_it_is_not": "좋은 음색 / 음색 점수가 아닙니다.",
         }
 
+    contamination = mixed and (vocal_n / total) < 0.35
     bright, bright_meta = _brightness_score(segs)
     presence, presence_meta = _presence_score(segs)
     airiness, air_meta = _airiness_score(segs)
@@ -308,7 +299,7 @@ def build_timbre_profile_v211(
     consistency, cons_meta = _consistency_score(segs)
 
     conf = "medium"
-    if mixed:
+    if mixed or contamination:
         conf = "low"
     elif bright_meta.get("families", 0) >= 3 and vocal_n >= 6:
         conf = "high"
@@ -322,6 +313,7 @@ def build_timbre_profile_v211(
             "left_label": left,
             "right_label": right,
             "confidence_label": conf if value is not None else "low",
+            "available": value is not None,
             "provenance": meta,
         }
 
@@ -333,7 +325,25 @@ def build_timbre_profile_v211(
         "harmonic_concentration": pack("harmonic", harmonic, "분산", "집중", harm_meta),
         "timbre_consistency": pack("consistency", consistency, "변화 큼", "일관됨", cons_meta),
     }
+    available_axes = [k for k, v in axes.items() if v.get("available")]
 
+    if contamination and len(available_axes) < 2:
+        return {
+            "available": False,
+            "availability": "UNAVAILABLE",
+            "reason": "MIXED_CONTAMINATION",
+            "reason_user": "반주 영향이 큰 구간이 많아 음색 특성을 안정적으로 분리하지 못했어요.",
+            "axes": {},
+            "summary": [],
+            "confidence_label": "low",
+            "limitations": limitations,
+            "n_vocal_segments": vocal_n,
+            "n_total_segments": len(segments),
+            "descriptive_only": True,
+            "what_it_is_not": "좋은 음색 / 음색 점수가 아닙니다.",
+        }
+
+    availability = "PARTIAL" if contamination or len(available_axes) < 4 else "FULL"
     # mid → high timbre change
     high_note_timbre_change = None
     if mid_segments and high_segments and len(mid_segments) >= 1 and len(high_segments) >= 2:
@@ -352,7 +362,7 @@ def build_timbre_profile_v211(
     if presence is not None:
         summary.append(f"존재감: {_axis_label('presence', presence)}")
     if airiness is not None and airiness >= 0.55:
-        summary.append("숨이 섞이는 편으로 보여요.")
+        summary.append("음색의 공기감이 있는 편으로 보여요.")
     if high_note_timbre_change:
         b = high_note_timbre_change.get("brightness_shift")
         p = high_note_timbre_change.get("presence_shift")
@@ -363,11 +373,20 @@ def build_timbre_profile_v211(
 
     return {
         "available": True,
+        "availability": availability,
+        "reason": "MIXED_CONTAMINATION" if contamination else None,
+        "reason_user": (
+            "반주 영향이 큰 구간이 있어 확인 가능한 음색 축만 표시해요."
+            if availability == "PARTIAL"
+            else None
+        ),
         "axes": axes,
         "high_note_timbre_change": high_note_timbre_change,
         "summary": summary[:3],
         "confidence_label": conf,
         "limitations": limitations,
+        "n_vocal_segments": vocal_n,
+        "n_total_segments": len(segments),
         "descriptive_only": True,
         "what_it_is_not": "좋은 음색 / 음색 점수 / 절대 품질 평가가 아닙니다.",
     }

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-COACH_PROFILE_VERSION = "vocal-type-v1.3"
-CALIBRATION_STATUS = "semantic_calibration_v1_3"
+COACH_PROFILE_VERSION = "vocal-type-v1.4"
+CALIBRATION_STATUS = "semantic_calibration_v1_4_naq_time_derivative"
 
 # Soft directional cues — relative to local baseline
 NAQ_CHEST_DELTA = -0.02
@@ -71,7 +71,7 @@ TYPE_DISPLAY = {
     "CHEST_DOMINANT": "흉성 쪽 성향이 더 강한 편",
     "CHEST_DOMINANT_MIX": "흉성 중심의 믹스 성향",
     "BALANCED_MIX": "흉성·두성을 연결하는 믹스 성향",
-    "BALANCED_SOURCE": "흉성·두성 균형형",
+    "BALANCED_SOURCE": "흉성·두성 관련 음향 성향이 비교적 균형에 가까운 편",
     "HEAD_DOMINANT_MIX": "두성 중심의 믹스 성향",
     "HEAD_DOMINANT": "두성 쪽 성향이 더 강한 편",
     "LIGHT_HEAD_FALSETTO_LIKE": "가벼운 두성 중심 발성",

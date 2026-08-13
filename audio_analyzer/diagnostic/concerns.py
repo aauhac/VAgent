@@ -21,6 +21,27 @@ PAIN_CONCERN_IDS = frozenset(
 
 AGGRESSIVE_TASKS_WHEN_PAIN = frozenset({"dynamic_swell", "high_note_sustain_a"})
 
+# Safety checkbox severity (not anatomical diagnosis)
+# LEVEL 2 — actual pain / unsafe to phonate → block ALL controlled phonation
+PAIN_LIMITED_SAFETY_FLAGS = frozenset(
+    {
+        "pain_on_phonation",
+        "breathing_difficulty",
+        "sudden_voice_change",
+        "persistent_severe_hoarseness",
+    }
+)
+# LEVEL 1 — discomfort / fatigue burden → block aggressive tasks only
+DISCOMFORT_SAFETY_FLAGS = frozenset(
+    {
+        "severe_discomfort_after",
+    }
+)
+
+SAFETY_SEVERITY_NONE = "NONE"
+SAFETY_SEVERITY_DISCOMFORT = "DISCOMFORT"
+SAFETY_SEVERITY_PAIN = "PAIN_LIMITED"
+
 CONCERN_CATALOG: dict[str, dict[str, str]] = {
     "HIGH_NOTE_CANNOT_REACH": {"label": "고음이 잘 안 올라가요", "category": "high_note"},
     "HIGH_NOTE_TOO_EFFORTFUL": {"label": "고음은 나오는데 너무 힘들어요", "category": "high_note"},
@@ -192,16 +213,38 @@ def concern_dimension_boost(concerns: list[dict[str, Any]]) -> dict[str, float]:
     return boost
 
 
+def classify_safety_severity(
+    safety_flags: list[str] | None = None,
+    *,
+    pain_flag: bool = False,
+) -> str:
+    """Map safety answers → NONE | DISCOMFORT | PAIN_LIMITED (gating only)."""
+    flags = [str(f) for f in (safety_flags or []) if f]
+    if any(f in PAIN_LIMITED_SAFETY_FLAGS for f in flags):
+        return SAFETY_SEVERITY_PAIN
+    if any(f in DISCOMFORT_SAFETY_FLAGS for f in flags):
+        return SAFETY_SEVERITY_DISCOMFORT
+    # Concern-level pain without checkbox: discomfort tier (aggressive only).
+    # Explicit pain_on_phonation is the hard phonation stop.
+    if pain_flag and not flags:
+        return SAFETY_SEVERITY_DISCOMFORT
+    return SAFETY_SEVERITY_NONE
+
+
 def filter_tasks_for_safety(
     selected: list[str],
     *,
     pain_flag: bool,
     safety_flags: list[str] | None = None,
 ) -> list[str]:
-    if not pain_flag and not safety_flags:
-        return selected
-    blocked = set(AGGRESSIVE_TASKS_WHEN_PAIN)
-    return [t for t in selected if t not in blocked]
+    severity = classify_safety_severity(safety_flags, pain_flag=pain_flag)
+    if severity == SAFETY_SEVERITY_PAIN:
+        # Actual phonation pain / serious safety → no controlled phonation tasks
+        return []
+    if severity == SAFETY_SEVERITY_DISCOMFORT:
+        blocked = set(AGGRESSIVE_TASKS_WHEN_PAIN)
+        return [t for t in selected if t not in blocked]
+    return selected
 
 
 def normalize_diagnostic_mode(
@@ -319,30 +362,56 @@ def build_general_discovery_summary(
     if not features:
         features.append("이번 검사에서는 크게 두드러지는 제한 요소가 확인되지 않았어요.")
 
-    priorities = build_improvement_guidance(
-        song_profile=song_profile,
-        evaluations=[],
-        pain_flag=False,
-    )
+    from audio_analyzer.diagnostic.coaching import build_precision_coaching_plan
+
     bottleneck = _infer_bottleneck(song_profile)
-    if bottleneck in ("", "UNRESOLVED", None):
-        priorities = [
+    coaching = build_precision_coaching_plan(
+        user_concerns=[],
+        concern_evaluations=[],
+        song_profile=song_profile,
+        fused_profile={},
+        task_results=task_results,
+        diagnostic_mode=DIAGNOSTIC_MODE_GENERAL,
+    )
+    # General mode: strengths from song features → maintain practices
+    if not coaching.get("practice_directions"):
+        coaching["practice_directions"] = [
             {
-                "goal_id": "MAINTAIN_STRENGTHS",
+                "practice_id": "MAINTAIN_STRENGTHS",
+                "mode": "MAINTAIN",
+                "mode_label": "유지",
                 "title": "현재 잘 유지되고 있는 특징 지키기",
-                "principle": "크게 두드러지는 제한이 없을 때는 무리한 교정 대신 안정적인 패턴을 유지해요.",
-                "suggested_focus": ["편안한 강도에서 현재 발성 패턴 관찰"],
+                "goal": "크게 두드러지는 제한이 없을 때 안정적인 패턴 유지",
+                "instruction": "편안한 강도로 짧은 지속음을 유지하며, 소리를 과하게 밀지 마세요.",
+                "success_cues": ["불편감 없이 짧은 구간 유지", "음량을 갑자기 키우지 않음"],
+                "avoid": ["제한이 없는데도 강한 고음·큰 소리로 밀어붙이기"],
+                "related_concerns": [],
+                "evidence_basis": ["general_discovery"],
                 "safety_note": None,
             }
         ]
+        coaching["improvement_priorities"] = [
+            {
+                "goal_id": "MAINTAIN_STRENGTHS",
+                "title": "현재 잘 유지되고 있는 특징 지키기",
+                "principle": "편안한 강도로 짧은 지속음을 유지하며, 소리를 과하게 밀지 마세요.",
+                "suggested_focus": ["불편감 없이 짧은 구간 유지"],
+                "safety_note": None,
+                "mode": "MAINTAIN",
+                "mode_label": "유지",
+            }
+        ]
+    if coaching.get("strengths"):
+        features = [s["description"] for s in coaching["strengths"]] + features
 
     return {
         "mode": DIAGNOSTIC_MODE_GENERAL,
         "title": "정밀 진단에서 확인된 핵심 특징",
-        "features": features,
+        "features": features[:6],
         "questions": [],
         "answer_summary": " · ".join(features[:3]),
-        "improvement_priorities": priorities,
+        "improvement_priorities": coaching.get("improvement_priorities") or [],
+        "coaching": coaching,
         "main_bottleneck": bottleneck,
         "evidence": [
             {"source": "AUDIO_OBSERVED", "text": "노래 분석"},
@@ -384,6 +453,7 @@ def build_personalized_qa(
             "secondary_factors": _secondary_factors(song_profile),
             "not_supported": [],
             "improvement_priorities": summary["improvement_priorities"],
+            "coaching": summary.get("coaching"),
             "confidence_label": "medium",
             "show_qa_section": False,
         }
@@ -423,6 +493,7 @@ def build_personalized_qa(
                 "question": q,
                 "answer": a,
                 "status": ev["status"],
+                "evidence_level": ev.get("evidence_level"),
                 "support": ev.get("support") or [],
                 "against": ev.get("against") or [],
                 "missing": ev.get("missing") or [],
@@ -455,6 +526,10 @@ def build_personalized_qa(
     evidence.append({"source": "AUDIO_OBSERVED", "text": "노래 분석 evidence"})
 
     from audio_analyzer.diagnostic.concern_resolver import infer_precision_bottleneck
+    from audio_analyzer.diagnostic.coaching import (
+        attach_coaching_to_questions,
+        build_precision_coaching_plan,
+    )
 
     bn_info = infer_precision_bottleneck(
         song_profile=song_profile,
@@ -462,27 +537,86 @@ def build_personalized_qa(
         concern_evaluations=evaluations,
         controlled_contrasts=(task_evidence or {}).get("controlled_contrasts"),
     )
-    priorities = build_improvement_guidance(
+    coaching = build_precision_coaching_plan(
+        user_concerns=concerns,
+        concern_evaluations=evaluations,
         song_profile=song_profile,
-        evaluations=evaluations,
-        pain_flag=has_pain_safety_flag(concerns),
-        precision_bottleneck=bn_info.get("bottleneck"),
         fused_profile=task_evidence,
+        task_results=task_results,
+        diagnostic_mode=mode,
     )
+    questions = attach_coaching_to_questions(questions, coaching)
+    # Prefer coaching practices; pain always uses SAFETY_FIRST guidance
+    if has_pain_safety_flag(concerns):
+        priorities = build_improvement_guidance(
+            song_profile=song_profile,
+            evaluations=evaluations,
+            pain_flag=True,
+            precision_bottleneck=bn_info.get("bottleneck"),
+            fused_profile=task_evidence,
+        )
+        # Keep coaching payload but force safety practice first
+        coaching = dict(coaching)
+        coaching["practice_directions"] = [
+            {
+                "practice_id": "SAFETY_FIRST",
+                "mode": "SAFETY",
+                "mode_label": "안전",
+                "title": priorities[0]["title"] if priorities else "불편할 때는 강한 고음·큰 소리 피하기",
+                "goal": priorities[0].get("principle") if priorities else "",
+                "instruction": priorities[0].get("principle") if priorities else "",
+                "success_cues": (priorities[0].get("suggested_focus") or []) if priorities else [],
+                "avoid": ["통증 상태에서의 강한 고음 반복"],
+                "related_concerns": [c["id"] for c in concerns if c["id"] in (
+                    "PAIN_WHILE_SINGING", "PAIN_AFTER_SINGING", "SPEAKING_DISCOMFORT", "PERSISTENT_HOARSENESS"
+                )],
+                "evidence_basis": ["safety"],
+                "safety_note": priorities[0].get("safety_note") if priorities else None,
+            }
+        ]
+        coaching["improvement_priorities"] = priorities
+        coaching["headline"] = "지금은 무리한 연습보다 안전이 우선이에요."
+    else:
+        priorities = coaching.get("improvement_priorities") or build_improvement_guidance(
+            song_profile=song_profile,
+            evaluations=evaluations,
+            pain_flag=False,
+            precision_bottleneck=bn_info.get("bottleneck"),
+            fused_profile=task_evidence,
+        )
+    # User-facing evidence families (no "evidence" English / raw tokens)
+    evidence_ui = [
+        {"source": "FAMILY", "text": t}
+        for t in (coaching.get("evidence_families") or [])
+    ]
+    if not evidence_ui:
+        evidence_ui = [
+            {"source": "FAMILY", "text": e.get("text")}
+            for e in evidence
+            if e.get("text") and "evidence" not in str(e.get("text")).lower()
+        ]
+
+    from audio_analyzer.diagnostic.song_evidence import get_canonical_snapshot
+
+    song_feats = list(get_canonical_snapshot(song_profile).get("key_features") or [])
 
     qa = {
         "mode": DIAGNOSTIC_MODE_CONCERN,
         "question": questions[0]["question"] if questions else None,
         "questions": questions,
-        "answer_summary": questions[0]["answer"] if questions else "",
+        "answer_summary": (questions[0].get("takeaway") or questions[0]["answer"])
+        if questions
+        else "",
         "concern_evaluations": evaluations,
         "concern_user_lines": answer_parts,
-        "evidence": evidence,
+        "evidence": evidence_ui,
+        "song_key_features": song_feats,
         "main_bottleneck": bn_info.get("bottleneck") or "UNRESOLVED",
         "bottleneck_source": bn_info.get("source"),
         "secondary_factors": _secondary_factors(song_profile),
         "not_supported": not_supported,
         "improvement_priorities": priorities,
+        "coaching": coaching,
         "confidence_label": "medium",
         "show_qa_section": True,
         "controlled_contrasts": (task_evidence or {}).get("controlled_contrasts"),

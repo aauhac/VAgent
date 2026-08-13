@@ -452,25 +452,20 @@ def plan_precision_protocol(
     merged = list(dict.fromkeys([*core, *adaptive]))
     merged = sorted(merged, key=lambda t: order.index(t) if t in order else 99)
 
-    # Safety filter
+    # Safety filter — PAIN_LIMITED blocks all controlled phonation;
+    # DISCOMFORT blocks only policy-defined aggressive tasks.
     filtered = filter_tasks_for_safety(merged, pain_flag=pain, safety_flags=safety_flags)
     status = DIAGNOSTIC_STATUS_NORMAL
 
-    # Acute phonation pain / breathing difficulty → do not force any controlled recording
-    severe_safety = {"pain_on_phonation", "breathing_difficulty"}
-    if any(f in severe_safety for f in safety_flags) or (
-        pain and not filtered and pain_safety_flag
-    ):
-        if any(f in severe_safety for f in safety_flags):
-            filtered = []
-            status = DIAGNOSTIC_STATUS_SAFETY_LIMITED
-        elif pain and not filtered:
-            status = DIAGNOSTIC_STATUS_SAFETY_LIMITED
+    from .concerns import SAFETY_SEVERITY_PAIN, classify_safety_severity
 
-    if pain and not filtered:
+    severity = classify_safety_severity(safety_flags, pain_flag=pain)
+    if not filtered and severity == SAFETY_SEVERITY_PAIN:
+        status = DIAGNOSTIC_STATUS_SAFETY_LIMITED
+    elif pain and not filtered:
         status = DIAGNOSTIC_STATUS_SAFETY_LIMITED
     elif not filtered:
-        # Normal invariant: never finish with zero controlled tasks
+        # Normal invariant: never finish with zero controlled tasks when safety allows
         filtered = list(PRECISION_CORE_FALLBACK)
         core = list(PRECISION_CORE_FALLBACK)
         adaptive = []

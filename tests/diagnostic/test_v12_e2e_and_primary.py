@@ -96,8 +96,8 @@ def _wav(duration=4.0, freq=220.0, sr=22050) -> bytes:
     return buf.getvalue()
 
 
-def test_e2e_safety_limited_zero_task_flow(client):
-    """Only SAFETY_LIMITED may finish Precision with zero controlled recordings."""
+def test_e2e_pain_to_safety_limited_no_recording(client):
+    """pain_on_phonation → SAFETY_LIMITED, zero controlled tasks, not Home."""
     c, diag, runtime = client
     headers = {"X-User-Id": "demo-user"}
     r = c.post("/v1/diagnostic-sessions", headers=headers)
@@ -123,8 +123,7 @@ def test_e2e_safety_limited_zero_task_flow(client):
     body = safety.json()
     assert body["status"] == "READY_FOR_ANALYSIS"
     assert body["selected_tasks"] == []
-    assert body.get("diagnostic_status") == "SAFETY_LIMITED"
-    assert c.post(f"/v1/diagnostic-sessions/{sid}/analyze", headers=headers).status_code == 200
+    assert body["diagnostic_status"] == "SAFETY_LIMITED"
 
 
 def test_e2e_normal_flow_never_zero_tasks(client):
@@ -147,8 +146,14 @@ def test_e2e_normal_flow_never_zero_tasks(client):
     )
     assert safety.status_code == 200
     body = safety.json()
-    assert body["status"] == "TASKS_IN_PROGRESS"
+    assert body["status"] == "RECORDING_CHOICE"
     assert len(body["selected_tasks"]) >= 1
+    started = c.post(
+        f"/v1/diagnostic-sessions/{sid}/start-controlled-recordings",
+        headers=headers,
+    )
+    assert started.status_code == 200
+    assert started.json()["status"] == "TASKS_IN_PROGRESS"
 
 
 def test_e2e_one_task_siren_flow(client):
@@ -170,6 +175,13 @@ def test_e2e_one_task_siren_flow(client):
             f"/v1/diagnostic-sessions/{sid}/safety",
             headers=headers,
             json={"answers": {}},
+        ).status_code
+        == 200
+    )
+    assert (
+        c.post(
+            f"/v1/diagnostic-sessions/{sid}/start-controlled-recordings",
+            headers=headers,
         ).status_code
         == 200
     )

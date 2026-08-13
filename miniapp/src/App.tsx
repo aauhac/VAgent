@@ -10,8 +10,10 @@ import History from './pages/History';
 import PremiumUnlock from './pages/PremiumUnlock';
 import ConcernIntake from './pages/ConcernIntake';
 import SafetyCheck from './pages/SafetyCheck';
+import DiagnosticRecordingIntro from './pages/DiagnosticRecordingIntro';
 import DiagnosticTask from './pages/DiagnosticTask';
 import PremiumReport from './pages/PremiumReport';
+import DiagnosticResume from './pages/DiagnosticResume';
 
 export default function App() {
   return (
@@ -28,8 +30,12 @@ export default function App() {
         <Route path="/premium" element={<PremiumUnlock />} />
         <Route path="/diagnostic/:sessionId/concerns" element={<ConcernIntake />} />
         <Route path="/diagnostic/:sessionId/safety" element={<SafetyCheck />} />
+        <Route path="/diagnostic/:sessionId/recordings" element={<DiagnosticRecordingIntro />} />
         <Route path="/diagnostic/:sessionId/task/:taskId" element={<DiagnosticTask />} />
         <Route path="/diagnostic/:sessionId/report" element={<PremiumReport />} />
+        {/* Keep any diagnostic session URL in-flow — never dump to Home */}
+        <Route path="/diagnostic/:sessionId/*" element={<DiagnosticResume />} />
+        <Route path="/diagnostic/:sessionId" element={<DiagnosticResume />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

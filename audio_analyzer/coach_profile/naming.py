@@ -79,7 +79,7 @@ def compose_display_name(
     if base_type in ("CHEST_DOMINANT_MIX", "BALANCED_MIX", "HEAD_DOMINANT_MIX"):
         return cfg.TYPE_DISPLAY.get(base_type, cfg.TYPE_DISPLAY["UNRESOLVED"])
 
-    return cfg.TYPE_DISPLAY.get(base_type, cfg.TYPE_DISPLAY.get("BALANCED_SOURCE", "흉성·두성 균형형"))
+    return cfg.TYPE_DISPLAY.get(base_type, cfg.TYPE_DISPLAY.get("BALANCED_SOURCE", "흉성·두성 관련 음향 성향"))
 
 
 def one_line_description(
@@ -115,19 +115,23 @@ def one_line_description(
     if chest is not None and head is not None:
         bal = source_balance or classify_source_balance(head_chest.get("index"))
         bclass = (bal.get("balance_class") or "").upper()
-        if bclass == "BALANCED":
+        if bal.get("show_ratio") is False or bclass == "CONFLICTED":
             return (
-                "흉성과 두성 쪽 발성 특성이 비슷한 비중으로 나타났어요."
+                "흉성·두성 관련 음향 특징이 서로 다른 방향으로 나타났어요."
             )
-        if bclass == "CHEST_DOMINANT":
-            return f"전체적으로 흉성 쪽 발성 성향(약 {chest}%)이 우세하게 나타나요."
-        if bclass == "HEAD_DOMINANT":
-            return f"전체적으로 두성 쪽 발성 성향(약 {head}%)이 우세하게 나타나요."
+        if bclass in ("BALANCED", "BALANCED_ACOUSTIC"):
+            return (
+                "흉성·두성 관련 음향 성향이 비교적 비슷한 비중으로 나타났어요."
+            )
+        if bclass in ("CHEST_DOMINANT", "CHEST_LEANING"):
+            return f"전체적으로 흉성 쪽 음향 성향(약 {chest}%)이 우세하게 나타나요."
+        if bclass in ("HEAD_DOMINANT", "HEAD_LEANING"):
+            return f"전체적으로 두성 쪽 음향 성향(약 {head}%)이 우세하게 나타나요."
 
     if base_type in ("UNRESOLVED", "BALANCED_SOURCE") or chest is None:
         if chest is not None and head is not None:
             return (
-                "흉성과 두성 쪽 발성 특성이 비슷한 비중으로 나타났어요."
+                "흉성·두성 관련 음향 성향이 비교적 비슷한 비중으로 나타났어요."
             )
         return "이번 녹음에서는 발성 성향을 충분히 구분하지 못했어요."
 

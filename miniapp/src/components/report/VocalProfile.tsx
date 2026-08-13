@@ -8,6 +8,8 @@ type Props = {
   title?: string;
   axes?: DisplayAxis[];
   showConfidence?: boolean;
+  canonicalRegister?: { status?: string; profile_label?: string; title?: string } | null;
+  canonicalAcoustic?: { axes?: Record<string, any> } | null;
 };
 
 export default function VocalProfile({
@@ -16,8 +18,10 @@ export default function VocalProfile({
   title = '내 발성 프로필',
   axes: axesProp,
   showConfidence = true,
+  canonicalRegister,
+  canonicalAcoustic,
 }: Props) {
-  const axes = axesProp || buildVocalAxes(dimensions, criteriaMatrix);
+  const axes = axesProp || buildVocalAxes(dimensions, criteriaMatrix, canonicalRegister, canonicalAcoustic);
 
   return (
     <section className="section">

@@ -87,6 +87,13 @@ def test_mock_pay_safety_tasks_analyze(client):
         ).status_code
         == 200
     )
+    assert (
+        c.post(
+            f"/v1/diagnostic-sessions/{sid}/start-controlled-recordings",
+            headers=headers,
+        ).status_code
+        == 200
+    )
     session = c.get(f"/v1/diagnostic-sessions/{sid}", headers=headers).json()
     selected = list(session.get("selected_tasks") or [])
     durations = {
@@ -137,6 +144,13 @@ def test_task_quality_fail_retries_same_task(client):
         f"/v1/diagnostic-sessions/{sid}/safety",
         headers=headers,
         json={"answers": {}},
+    )
+    assert (
+        c.post(
+            f"/v1/diagnostic-sessions/{sid}/start-controlled-recordings",
+            headers=headers,
+        ).status_code
+        == 200
     )
     short = _wav(duration=0.4)
     fail = c.post(
