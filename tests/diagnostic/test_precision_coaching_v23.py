@@ -128,7 +128,9 @@ def test_unresolved_does_not_claim_strength_without_evidence():
     blob = " ".join(s["description"] for s in strengths)
     assert "잘하고" not in blob
     coach = build_concern_coaching(ev, fused_profile=fused)
-    assert coach["coaching_mode"] == "PRESERVE_ONLY"
+    assert coach["coaching_mode"] in ("GUIDE", "PRESERVE_ONLY")
+    # May attach safe guidance practice, but must not invent "you're doing well" strength
+    assert "잘하고" not in str(coach.get("takeaway") or "")
     assert coach.get("practice_direction") is None or "잘하고" not in str(coach)
 
 

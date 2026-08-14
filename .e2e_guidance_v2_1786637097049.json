@@ -1,0 +1,44 @@
+{
+  "pass": true,
+  "sid": "35a3ccd7154843a0ab81fc05dac97431",
+  "api": "http://127.0.0.1:8002",
+  "web": "http://127.0.0.1:5173",
+  "evidence_mode": "CONCERN_ONLY",
+  "skipped": [
+    "sustain_a",
+    "sustain_i",
+    "siren",
+    "dynamic_swell",
+    "high_note_sustain_a"
+  ],
+  "ui_has_unknown": false,
+  "checks": [
+    {
+      "concern_id": "HIGH_NOTE_CANNOT_REACH",
+      "guidance_level": "SAFE_GENERAL_GUIDANCE",
+      "primary_focus": "REGISTER_CONNECTION",
+      "has_arrow": true,
+      "bad_final": false,
+      "skip_leads": false,
+      "answer_preview": "이번 노래만으로 고음이 어려운 원인을 하나로 좁히기는 어려워요. 다만 고음을 연습할 때는 음량을 먼저 키우지 않고, 편안한 중음에서 높은 음까지 작은 강도로 연결하는 연습부터 시작하는 것이 좋아요.\n\n→ 지금은 작은 강도로 중음→고음 연결하기: 편안한 중음에서 시작해 립트릴·빨대 발성 또는 가벼운 '우—'로 천천히 위로 연결하세요. 끊기는 지점에서 더 세게 밀지 말고, 연결이 유지되는 범위까지만 반복한 뒤 조금씩 높여보세요. 끊기는 음을 세게 밀어서 통과하기는 피하세요.\n\n(추가 성구 과제를 진행"
+    },
+    {
+      "concern_id": "HIGH_NOTE_TOO_EFFORTFUL",
+      "guidance_level": "SAFE_GENERAL_GUIDANCE",
+      "primary_focus": "MAINTAIN",
+      "has_arrow": true,
+      "bad_final": false,
+      "skip_leads": false,
+      "answer_preview": "이번 노래에서는 과도한 힘 증가가 주된 제한으로 강하게 보이지는 않았어요. 따라서 고음을 더 편하게 만들 때 힘을 빼는 것만 반복하기보다, 작은 강도로 성구 연결이 유지되는지부터 확인하는 방향이 더 적합해 보여요.\n\n→ 지금은 편안한 힘 패턴 유지하며 범위 넓히기: 세게 힘을 빼려 하기보다, 현재 편한 강도를 유지한 채 한두 음씩 범위를 천천히 넓혀보세요. 힘을 빼는 것에만 집착해 연결을 끊기는 피하세요.\n\n(추가 고음 과제를 진행하지 않아 이 해석은 현재 노래 기준입니다.)"
+    },
+    {
+      "concern_id": "HIGH_NOTE_FLIPS",
+      "guidance_level": "SAFE_GENERAL_GUIDANCE",
+      "primary_focus": "REGISTER_CONNECTION",
+      "has_arrow": true,
+      "bad_final": false,
+      "skip_leads": false,
+      "answer_preview": "이번 노래만으로 뒤집힘의 원인을 하나로 좁히기는 어려워요. 다만 지금은 작은 강도의 립트릴이나 빨대 발성으로 중음에서 높은 음까지 끊기지 않게 연결하는 연습부터 시작하는 것이 좋아요.\n\n→ 지금은 작은 강도로 중음→고음 연결하기: 편안한 중음에서 시작해 립트릴·빨대 발성 또는 가벼운 '우—'로 천천히 위로 연결하세요. 끊기는 지점에서 더 세게 밀지 말고, 연결이 유지되는 범위까지만 반복한 뒤 조금씩 높여보세요. 끊기는 음을 세게 밀어서 통과하기는 피하세요.\n\n(추가 성구 과제를 진행하지 않아 이 "
+    }
+  ]
+}

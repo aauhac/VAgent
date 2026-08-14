@@ -115,7 +115,13 @@ def test_skipped_high_note_does_not_confirm_high_note_effort():
     song = {"vocal_function_profile": {"effort_assessment": {"severity": "LOW"}}}
     ev = evaluate_concern("HIGH_NOTE_TOO_EFFORTFUL", song_profile=song, task_evidence=fused)
     assert ev["status"] != "CONFIRMED"
-    assert ev.get("unresolved_reason") == "USER_SKIPPED_RELEVANT_TASK"
+    assert ev.get("controlled_confirmation") == "NOT_AVAILABLE_USER_SKIPPED" or ev.get(
+        "unresolved_reason"
+    ) == "USER_SKIPPED_RELEVANT_TASK"
+    # Skip must not leave a useless "모르겠어요" final answer
+    hint = str(ev.get("answer_hint") or "")
+    assert "현재 노래에서 확인된 범위까지만 안내해요" not in hint
+    assert "→" in hint or "연습" in hint or "방향" in hint
 
 
 def test_skipped_high_note_does_not_create_high_note_strength():

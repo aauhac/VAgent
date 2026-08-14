@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-COACHING_VERSION = "precision-coaching-v1.1"
+COACHING_VERSION = "precision-coaching-v1.2"
 
 # Canonical coaching modes
 MODE_CORRECT = "CORRECT"
@@ -18,6 +18,7 @@ MODE_REFINE = "REFINE"
 MODE_MAINTAIN = "MAINTAIN"
 MODE_TRANSFER = "TRANSFER"
 MODE_PRESERVE_ONLY = "PRESERVE_ONLY"
+MODE_GUIDE = "GUIDE"
 MODE_SAFETY = "SAFETY"
 
 _MODE_LABEL = {
@@ -26,6 +27,7 @@ _MODE_LABEL = {
     MODE_MAINTAIN: "유지",
     MODE_TRANSFER: "전이",
     MODE_PRESERVE_ONLY: "유지",
+    MODE_GUIDE: "안내",
     MODE_SAFETY: "안전",
 }
 
@@ -138,23 +140,27 @@ def coaching_mode_for_status(
 ) -> str:
     ev = evaluation or {}
     st = str(status or "").upper()
-    if st == "SAFETY_ONLY":
+    gl = str(ev.get("guidance_level") or "").upper()
+    if st == "SAFETY_ONLY" or gl == "SAFETY_ONLY":
         return MODE_SAFETY
     if st == "CONFIRMED":
         return MODE_CORRECT
     if st == "PARTIALLY_SUPPORTED":
-        return MODE_REFINE
+        return MODE_REFINE if gl != "SONG_DIRECT" else MODE_GUIDE
     if st == "CONTEXT_DEPENDENT":
         return MODE_TRANSFER
     if st in ("NOT_SUPPORTED_IN_THIS_RECORDING", "NOT_SUPPORTED"):
-        # Require positive contrary evidence (against / contrast available)
         against = ev.get("against") or []
         contrast = ev.get("contrast_evidence") or []
         support = ev.get("support") or []
         if against or contrast or support:
             return MODE_MAINTAIN
+        if ev.get("practice") or gl == "SAFE_GENERAL_GUIDANCE":
+            return MODE_GUIDE
         return MODE_PRESERVE_ONLY
-    return MODE_PRESERVE_ONLY
+    if gl in ("SONG_DIRECT", "SONG_COMPOSITE", "SAFE_GENERAL_GUIDANCE") or ev.get("practice"):
+        return MODE_GUIDE
+    return MODE_GUIDE  # never silence non-safety concerns
 
 
 def _profiles(fused: dict[str, Any]) -> dict[str, Any]:
@@ -420,6 +426,23 @@ def build_concern_coaching(
     what_improve = ""
     practice: Optional[dict[str, Any]] = None
 
+    # Prefer practice already attached by functional hypothesis
+    hyp_practice = evaluation.get("practice")
+    if isinstance(hyp_practice, dict) and hyp_practice.get("instruction"):
+        practice = {
+            "practice_id": hyp_practice.get("practice_id"),
+            "mode": mode,
+            "mode_label": _MODE_LABEL.get(mode, mode),
+            "title": hyp_practice.get("title"),
+            "goal": hyp_practice.get("goal"),
+            "instruction": hyp_practice.get("instruction"),
+            "success_cues": list(hyp_practice.get("success_cues") or [])[:3],
+            "avoid": list(hyp_practice.get("avoid") or [])[:2],
+            "related_concerns": [cid],
+            "evidence_basis": list(evaluation.get("song_evidence_used") or ["song_evidence"]),
+            "safety_note": None,
+        }
+
     if mode == MODE_SAFETY:
         takeaway = "불편한 상태에서는 강한 고음·큰 소리 반복보다 휴식이 우선이에요."
         practice = _practice(
@@ -526,8 +549,10 @@ def build_concern_coaching(
                 evidence=["baseline_vs_high.effort"],
             )
         else:
-            takeaway = "이번 녹음만으로는 고음 힘 패턴을 충분히 확정하기 어려워요."
-            # No invented strength practice
+            takeaway = (
+                "원인을 하나로 좁히기는 어렵지만, "
+                "지금은 작은 강도로 고음을 연결하는 연습부터 시도하는 것이 좋아요."
+            )
 
     elif cid in ("THROAT_EFFORT", "LOUD_VOICE_DIFFICULT", "VOCAL_FATIGUE", "AFTER_SINGING_FATIGUE"):
         if mode == MODE_MAINTAIN:
@@ -775,11 +800,43 @@ def build_concern_coaching(
                 evidence=["timbre.presence"],
             )
 
-    elif mode == MODE_PRESERVE_ONLY:
-        takeaway = "이번 녹음만으로는 이 질문에 대한 연습 방향을 충분히 좁히기 어려워요."
-        # intentionally no invented practice strength
+    elif mode in (MODE_PRESERVE_ONLY, MODE_GUIDE) and practice is None:
+        # Always-actionable: use hypothesis answer / safe practice — never end on silence
+        takeaway = str(
+            evaluation.get("answer_hint")
+            or evaluation.get("interpretation")
+            or "원인을 하나로 확정할 수는 없지만, 지금은 작은 강도로 연결을 만드는 연습부터 시도하는 것이 좋아요."
+        )
+        if "좁히기 어려워요" in takeaway and "→" not in takeaway:
+            takeaway = (
+                "원인을 하나로 확정할 수는 없지만, "
+                "현재는 작은 강도로 연결을 만드는 연습부터 시도하는 것이 좋아요."
+            )
+        from audio_analyzer.diagnostic.practice_library import practice_for_focus
 
-    # Fallback for other concerns with clear modes
+        focus = str(evaluation.get("primary_focus") or "REGISTER_CONNECTION")
+        hp = practice_for_focus(focus)
+        practice = _practice(
+            practice_id=str(hp.get("practice_id") or "REGISTER_GLIDE_LIGHT"),
+            mode=MODE_GUIDE,
+            title=str(hp.get("title") or "작은 강도로 연결하기"),
+            goal=str(hp.get("goal") or ""),
+            instruction=str(hp.get("instruction") or ""),
+            success_cues=list(hp.get("success_cues") or []),
+            avoid=list(hp.get("avoid") or []),
+            related=[cid],
+            evidence=["song_evidence_guidance"],
+        )
+        mode = MODE_GUIDE
+    elif mode == MODE_PRESERVE_ONLY:
+        takeaway = str(
+            evaluation.get("answer_hint")
+            or "원인을 하나로 확정할 수는 없지만, 지금은 작은 강도로 연결을 만드는 연습부터 시도하는 것이 좋아요."
+        )
+
+    # If we already have hyp practice + answer, set takeaway from answer_hint
+    if not takeaway and evaluation.get("answer_hint"):
+        takeaway = str(evaluation.get("answer_hint"))
     if practice is None and mode == MODE_CORRECT:
         takeaway = takeaway or "이번 검사에서 확인된 제한을 중심으로 보완하는 방향이 좋아요."
         what_improve = what_improve or "확인된 발성 제한"

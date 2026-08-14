@@ -494,11 +494,15 @@ def build_personalized_qa(
                 "answer": a,
                 "status": ev["status"],
                 "evidence_level": ev.get("evidence_level"),
+                "guidance_level": ev.get("guidance_level"),
+                "primary_focus": ev.get("primary_focus"),
+                "practice": ev.get("practice"),
                 "support": ev.get("support") or [],
                 "against": ev.get("against") or [],
                 "missing": ev.get("missing") or [],
                 "unresolved_reason": ev.get("unresolved_reason"),
                 "candidate_causes": ev.get("candidate_causes") or [],
+                "controlled_confirmation": ev.get("controlled_confirmation"),
             }
         )
         answer_parts.append(a)
@@ -597,6 +601,7 @@ def build_personalized_qa(
         ]
 
     from audio_analyzer.diagnostic.song_evidence import get_canonical_snapshot
+    from audio_analyzer.diagnostic.functional_hypothesis import CONCERN_GUIDANCE_VERSION
 
     song_feats = list(get_canonical_snapshot(song_profile).get("key_features") or [])
 
@@ -604,6 +609,7 @@ def build_personalized_qa(
         "mode": DIAGNOSTIC_MODE_CONCERN,
         "question": questions[0]["question"] if questions else None,
         "questions": questions,
+        "concern_guidance_version": CONCERN_GUIDANCE_VERSION,
         "answer_summary": (questions[0].get("takeaway") or questions[0]["answer"])
         if questions
         else "",

@@ -361,6 +361,9 @@ def _empty_eval(concern_id: str, status: str, **kwargs: Any) -> dict[str, Any]:
         "note": kwargs.get("note"),
         "answer_hint": kwargs.get("answer_hint"),
         "interpretation": kwargs.get("interpretation") or kwargs.get("answer_hint"),
+        "controlled_confirmation": kwargs.get("controlled_confirmation"),
+        "guidance_level": kwargs.get("guidance_level"),
+        "primary_focus": kwargs.get("primary_focus"),
     }
 
 
@@ -384,13 +387,15 @@ def evaluate_concern(
 ) -> dict[str, Any]:
     """Full provenance concern evaluation using song + controlled contrasts."""
     from .concerns import PAIN_CONCERN_IDS
+    from .functional_hypothesis import ensure_actionable_guidance
 
     if concern_id in PAIN_CONCERN_IDS:
-        return _empty_eval(
+        ev = _empty_eval(
             concern_id,
             "SAFETY_ONLY",
             note="통증·불편은 음향 분석만으로 원인을 판단할 수 없어요.",
         )
+        return ensure_actionable_guidance(ev, song_profile=song_profile)
 
     fused = task_evidence or {}
     profiles = fused.get("task_profiles") or build_task_profiles(task_results or [])
@@ -404,28 +409,32 @@ def evaluate_concern(
     song_effort = _song_effort_level(song_profile)
 
     if concern_id == "HIGH_NOTE_TOO_EFFORTFUL":
-        return _resolve_high_note_effort(
+        ev = _resolve_high_note_effort(
             song_effort=song_effort,
             profiles=profiles,
             contrasts=contrasts,
             concern_id=concern_id,
             user_skipped_tasks=skipped,
+            song_profile=song_profile,
         )
-    if concern_id in ("THROAT_EFFORT", "LOUD_VOICE_DIFFICULT", "VOCAL_FATIGUE"):
-        return _resolve_general_effort(
+    elif concern_id in ("THROAT_EFFORT", "LOUD_VOICE_DIFFICULT", "VOCAL_FATIGUE"):
+        ev = _resolve_general_effort(
             concern_id=concern_id,
             song_effort=song_effort,
             profiles=profiles,
             contrasts=contrasts,
             user_skipped_tasks=skipped,
+            song_profile=song_profile,
         )
-    if concern_id in ("HIGH_NOTE_CANNOT_REACH", "HIGH_NOTE_FLIPS", "REGISTER_CONNECTION_DIFFICULT"):
-        return _resolve_registerish(
+    elif concern_id in ("HIGH_NOTE_CANNOT_REACH", "HIGH_NOTE_FLIPS", "REGISTER_CONNECTION_DIFFICULT"):
+        ev = _resolve_registerish(
             concern_id, profiles, contrasts, song_profile, user_skipped_tasks=skipped
         )
-    if concern_id == "HIGH_NOTE_UNSTABLE":
-        return _resolve_high_note_stability(profiles, contrasts, user_skipped_tasks=skipped)
-    if concern_id in (
+    elif concern_id == "HIGH_NOTE_UNSTABLE":
+        ev = _resolve_high_note_stability(
+            profiles, contrasts, user_skipped_tasks=skipped, song_profile=song_profile
+        )
+    elif concern_id in (
         "TIMBRE_DISSATISFIED",
         "VOICE_TOO_DARK_MUFFLED",
         "VOICE_TOO_THIN",
@@ -434,14 +443,19 @@ def evaluate_concern(
         "VOICE_ROUGH",
         "VOICE_TOO_NASAL_PERCEPT",
         "TIMBRE_CHANGES_HIGH",
+        "HIGH_NOTE_THINS",
     ):
-        return _resolve_timbre(concern_id, timbre, profiles, contrasts, song_profile)
+        ev = _resolve_timbre(concern_id, timbre, profiles, contrasts, song_profile)
+    else:
+        ev = _empty_eval(
+            concern_id,
+            "UNRESOLVED",
+            unresolved_reason="NO_RELEVANT_TASK_EVIDENCE",
+            missing=["dedicated_resolver"],
+        )
 
-    return _empty_eval(
-        concern_id,
-        "UNRESOLVED",
-        unresolved_reason="NO_RELEVANT_TASK_EVIDENCE",
-        missing=["dedicated_resolver"],
+    return ensure_actionable_guidance(
+        ev, song_profile=song_profile, user_skipped_tasks=skipped
     )
 
 
@@ -452,6 +466,7 @@ def _resolve_high_note_effort(
     contrasts: dict[str, Any],
     concern_id: str,
     user_skipped_tasks: Optional[set[str]] = None,
+    song_profile: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     skipped = user_skipped_tasks or set()
     base = profiles.get("sustain_a") or {}
@@ -464,25 +479,19 @@ def _resolve_high_note_effort(
     missing: list[str] = []
     causes: list[str] = []
 
+    # Skip = no controlled confirmation — do NOT terminate; song guidance fills in later
     if "high_note_sustain_a" in skipped and not high:
-        hint = (
-            "기존 노래에서는 힘 관련 변화가 일부 관찰됐지만, "
-            "높은 음을 별도로 확인하는 추가 과제를 건너뛰어 "
-            "고음 자체에서 힘이 증가하는지는 구분하지 않았어요."
-            if song_effort == "HIGH"
-            else "추가 고음 과제를 진행하지 않아 이 항목은 현재 노래에서 확인된 범위까지만 안내해요."
-        )
-        status = "PARTIALLY_SUPPORTED" if song_effort == "HIGH" else "UNRESOLVED"
         return _empty_eval(
             concern_id,
-            status,
+            "UNRESOLVED",
             support=["song_effort_high"] if song_effort == "HIGH" else [],
             missing=["high_note_sustain_a"],
             unresolved_reason="USER_SKIPPED_RELEVANT_TASK",
+            controlled_confirmation="NOT_AVAILABLE_USER_SKIPPED",
             song_evidence_used=[f"song_effort_{song_effort}"],
             task_ids_used=used,
             confidence_label="low",
-            answer_hint=hint,
+            answer_hint=None,
         )
 
     if not high:
@@ -615,6 +624,7 @@ def _resolve_general_effort(
     profiles: dict[str, dict[str, Any]],
     contrasts: dict[str, Any],
     user_skipped_tasks: Optional[set[str]] = None,
+    song_profile: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     high_eval = _resolve_high_note_effort(
         song_effort=song_effort,
@@ -622,6 +632,7 @@ def _resolve_general_effort(
         contrasts=contrasts,
         concern_id="HIGH_NOTE_TOO_EFFORTFUL",
         user_skipped_tasks=user_skipped_tasks,
+        song_profile=song_profile,
     )
     # Prefer controlled contrast when available
     if high_eval["status"] in ("CONFIRMED", "PARTIALLY_SUPPORTED", "CONTEXT_DEPENDENT"):
@@ -676,6 +687,7 @@ def _resolve_high_note_stability(
     profiles: dict[str, dict[str, Any]],
     contrasts: dict[str, Any],
     user_skipped_tasks: Optional[set[str]] = None,
+    song_profile: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     skipped = user_skipped_tasks or set()
     if "high_note_sustain_a" in skipped and "high_note_sustain_a" not in profiles:
@@ -683,8 +695,9 @@ def _resolve_high_note_stability(
             "HIGH_NOTE_UNSTABLE",
             "UNRESOLVED",
             unresolved_reason="USER_SKIPPED_RELEVANT_TASK",
+            controlled_confirmation="NOT_AVAILABLE_USER_SKIPPED",
             missing=["high_note_sustain_a"],
-            answer_hint="고음 안정성 확인 과제를 건너뛰어 이 항목은 현재 노래에서 확인된 범위까지만 안내해요.",
+            answer_hint=None,
         )
     contrast = ((contrasts.get("baseline_vs_high") or {}).get("dimensions") or {}).get("stability") or {}
     used = [t for t in ("sustain_a", "high_note_sustain_a") if t in profiles]
@@ -724,19 +737,18 @@ def _resolve_registerish(
     user_skipped_tasks: Optional[set[str]] = None,
 ) -> dict[str, Any]:
     skipped = user_skipped_tasks or set()
-    if "siren" in skipped and "siren" not in profiles:
-        return _empty_eval(
-            concern_id,
-            "UNRESOLVED",
-            unresolved_reason="USER_SKIPPED_RELEVANT_TASK",
-            missing=["siren"],
-            answer_hint="성구 연결 확인 과제를 건너뛰어 이 항목은 현재 노래에서 확인된 범위까지만 안내해요.",
-        )
     siren = profiles.get("siren") or {}
+    # Skip siren ≠ stop reasoning — fall through to song register evidence
+    siren_skipped = "siren" in skipped and "siren" not in profiles
     reg = ((contrasts.get("siren_transition") or {}).get("dimensions") or {}).get("register") or {}
     vt = (song_profile.get("vocal_function_profile") or {}).get("vocal_type_profile") or {}
-    song_unresolved = (vt.get("register_strategy") or {}).get("status") == "UNRESOLVED"
-    if siren.get("valid") and reg:
+    song_reg = str((vt.get("register_strategy") or {}).get("status") or "").upper()
+    canon = (vt.get("canonical_register") or {})
+    if not song_reg and canon.get("status"):
+        song_reg = str(canon.get("status") or "").upper()
+    song_unresolved = song_reg in ("", "UNRESOLVED", "UNKNOWN", "INSUFFICIENT")
+
+    if siren.get("valid") and reg and not siren_skipped:
         st = str(reg.get("status") or "").upper()
         if st in ("DISRUPTED", "UNSTABLE", "INSUFFICIENT"):
             return _empty_eval(
@@ -756,6 +768,7 @@ def _resolve_registerish(
                     contrasts=contrasts,
                     concern_id="HIGH_NOTE_TOO_EFFORTFUL",
                     user_skipped_tasks=skipped,
+                    song_profile=song_profile,
                 )
                 if effort["status"] in ("CONFIRMED", "PARTIALLY_SUPPORTED"):
                     out = dict(effort)
@@ -774,19 +787,46 @@ def _resolve_registerish(
                 task_ids_used=["siren"],
                 answer_hint="사이렌에서는 연결이 비교적 연속적으로 보였어요.",
             )
+
+    # Song register direct / partial — actionable via ensure_actionable_guidance
+    if song_reg in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS", "PARTIAL", "MIXED"):
+        return _empty_eval(
+            concern_id,
+            "PARTIALLY_SUPPORTED",
+            support=[f"song_register_{song_reg}"],
+            song_evidence_used=["register_strategy"],
+            evidence_level="SONG_SUPPORTED",
+            confidence_label="medium",
+            candidate_causes=["REGISTER_TRANSITION_DISRUPTION"],
+            controlled_confirmation=(
+                "NOT_AVAILABLE_USER_SKIPPED" if siren_skipped else None
+            ),
+            unresolved_reason="USER_SKIPPED_RELEVANT_TASK" if siren_skipped else None,
+            missing=["siren"] if siren_skipped else [],
+            answer_hint=None,
+        )
+
     if song_unresolved:
         return _empty_eval(
             concern_id,
             "UNRESOLVED",
             unresolved_reason="REGISTER_INSUFFICIENT",
+            controlled_confirmation=(
+                "NOT_AVAILABLE_USER_SKIPPED" if siren_skipped else None
+            ),
             song_evidence_used=["register_strategy"],
-            answer_hint="성구 전환 자체는 이번 녹음에서 충분히 관찰되지 않아 전환 문제가 원인이라고 단정하기는 어렵습니다.",
+            missing=["siren"] if siren_skipped else [],
+            answer_hint=None,
         )
     return _empty_eval(
         concern_id,
         "UNRESOLVED",
         unresolved_reason="NO_RELEVANT_TASK_EVIDENCE",
+        controlled_confirmation=(
+            "NOT_AVAILABLE_USER_SKIPPED" if siren_skipped else None
+        ),
         missing=["siren_or_register"],
+        answer_hint=None,
     )
 
 
