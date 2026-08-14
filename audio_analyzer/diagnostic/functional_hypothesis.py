@@ -101,11 +101,15 @@ def _scope_note_for_skip(skipped: set[str], concern_id: str) -> Optional[str]:
     return None
 
 
-def _attach_practice(hyp: dict[str, Any]) -> dict[str, Any]:
-    focus = str(hyp.get("primary_focus") or "REGISTER_CONNECTION")
-    practice = practice_for_focus(focus)
+def _attach_practice(hyp: dict[str, Any], *, category: str = "") -> dict[str, Any]:
+    if hyp.get("practice_required") is False:
+        hyp["practice"] = None
+        hyp["practice_id"] = None
+        return hyp
+    focus = str(hyp.get("primary_focus") or "MAINTAIN")
+    practice = practice_for_focus(focus, category=category)
     hyp["practice"] = practice
-    hyp["practice_id"] = practice.get("practice_id")
+    hyp["practice_id"] = (practice or {}).get("practice_id")
     return hyp
 
 
@@ -117,6 +121,42 @@ def build_functional_hypothesis(
     user_skipped_tasks: Optional[set[str]] = None,
 ) -> dict[str, Any]:
     """Build actionable guidance from canonical song evidence (never invent anatomy)."""
+    from audio_analyzer.diagnostic.concern_reasoning import reason_about_concern
+    from audio_analyzer.diagnostic.question_semantics import semantics_for
+
+    # Dynamic QA v3 path — structured multi-axis reasoning by concern_id
+    reasoned = reason_about_concern(
+        concern_id,
+        song_profile=song_profile,
+        evaluation=evaluation,
+        user_skipped_tasks=user_skipped_tasks,
+    )
+    if not reasoned.get("defer_to_legacy"):
+        # Map structured reasoning into hyp shape used by compose_user_answer
+        hyp = {
+            "concern_id": concern_id,
+            "question_type": reasoned.get("question_type"),
+            "guidance_level": reasoned.get("guidance_level"),
+            "primary_focus": reasoned.get("primary_focus"),
+            "secondary_factors": reasoned.get("secondary_factors") or [],
+            "interpretation": reasoned.get("interpretation"),
+            "evidence": reasoned.get("evidence") or [],
+            "contra_evidence": reasoned.get("contra_evidence") or [],
+            "confidence_label": reasoned.get("confidence_label") or "medium",
+            "causal_certainty": reasoned.get("causal_certainty"),
+            "scope_note": reasoned.get("scope_note"),
+            "practice_required": reasoned.get("practice_required", True),
+            "primary_explanation": reasoned.get("primary_explanation"),
+            "supporting_explanations": reasoned.get("supporting_explanations") or [],
+            "less_likely_explanations": reasoned.get("less_likely_explanations") or [],
+            "uncertain_factors": reasoned.get("uncertain_factors") or [],
+            "evidence_used": reasoned.get("evidence_used") or [],
+            "practice": reasoned.get("practice"),
+            "practice_id": reasoned.get("practice_id"),
+        }
+        return hyp
+
+    # Legacy high-note / remaining paths below
     snap = get_canonical_snapshot(song_profile)
     skipped = set(user_skipped_tasks or [])
     ev = evaluation or {}
@@ -126,6 +166,8 @@ def build_functional_hypothesis(
     presence_low = _presence_low(snap)
     stab = _stability_ok(snap)
     breath = str((snap.get("breathiness") or {}).get("level") or "UNKNOWN").upper()
+    sem = semantics_for(concern_id)
+    category = str(sem.get("category") or "")
 
     secondary: list[str] = []
     evidence: list[str] = []
@@ -149,7 +191,7 @@ def build_functional_hypothesis(
             "causal_certainty": "SAFETY_GATE",
             "scope_note": None,
         }
-        return _attach_practice(hyp)
+        return _attach_practice(hyp, category="safety")
 
     # Controlled already confirmed — keep tone, still ensure practice
     st = str(ev.get("status") or "").upper()
@@ -178,7 +220,7 @@ def build_functional_hypothesis(
             hyp["primary_focus"] = "EFFORT"
         elif any("STABILITY" in str(c) for c in causes):
             hyp["primary_focus"] = "STABILITY"
-        return _attach_practice(hyp)
+        return _attach_practice(hyp, category=category)
 
     # ========== High-note cannot reach ==========
     if concern_id == "HIGH_NOTE_CANNOT_REACH":
@@ -201,7 +243,7 @@ def build_functional_hypothesis(
             }
             if effort in ("HIGH", "MODERATE"):
                 hyp["secondary_factors"] = ["EFFORT"]
-            return _attach_practice(hyp)
+            return _attach_practice(hyp, category=category)
 
         if register == "PARTIAL" and (effort in ("HIGH", "MODERATE") or contact == "FIRM"):
             bits = ["음역이 올라갈 때 연결이 충분히 이어지지 않는 구간이 있고"]
@@ -244,7 +286,7 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp)
+            return _attach_practice(hyp, category=category)
 
         if register == "PARTIAL":
             hyp = {
@@ -263,7 +305,7 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp)
+            return _attach_practice(hyp, category=category)
 
         if effort in ("HIGH", "MODERATE"):
             hyp = {
@@ -283,7 +325,7 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp)
+            return _attach_practice(hyp, category=category)
 
         hyp = {
             "concern_id": concern_id,
@@ -301,93 +343,16 @@ def build_functional_hypothesis(
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
         }
-        return _attach_practice(hyp)
+        return _attach_practice(hyp, category=category)
 
-    # ========== High-note too effortful ==========
-    if concern_id == "HIGH_NOTE_TOO_EFFORTFUL":
-        if effort in ("HIGH", "MODERATE"):
-            contact_bit = ""
-            secondary = []
-            if contact == "FIRM":
-                contact_bit = "단단한 접촉 특성도 함께 보여요. "
-                secondary = ["CONTACT"]
-                evidence.append("song_contact_firm")
-            interpretation = (
-                "추가 고음 과제를 하지 않아 고음에서 힘이 얼마나 더 증가하는지는 비교하지 못했어요. "
-                if "high_note_sustain_a" in skipped
-                else ""
-            )
-            interpretation += (
-                f"다만 이번 노래 자체에서는 힘 사용이 큰 구간이 나타나고, {contact_bit}"
-                if contact_bit
-                else "다만 이번 노래 자체에서는 힘 사용이 큰 구간이 나타나요. "
-            )
-            interpretation += (
-                "높은 음을 낼 때 소리를 더 강하게 유지하는 방식이 부담을 키우는 쪽으로 보입니다."
-            )
-            hyp = {
-                "concern_id": concern_id,
-                "guidance_level": GUIDANCE_SONG_COMPOSITE if secondary else GUIDANCE_SONG_DIRECT,
-                "primary_focus": "EFFORT",
-                "secondary_factors": secondary,
-                "interpretation": interpretation,
-                "evidence": ["song_effort_elevated", *evidence],
-                "contra_evidence": [],
-                "confidence_label": "medium",
-                "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
-                "scope_note": scope,
-            }
-            return _attach_practice(hyp)
-
-        if effort == "LOW":
-            hyp = {
-                "concern_id": concern_id,
-                "guidance_level": GUIDANCE_SAFE_GENERAL
-                if register not in ("DISRUPTED", "PARTIAL")
-                else GUIDANCE_SONG_COMPOSITE,
-                "primary_focus": "REGISTER_CONNECTION"
-                if register in ("DISRUPTED", "PARTIAL")
-                else "MAINTAIN",
-                "secondary_factors": [],
-                "interpretation": (
-                    "이번 노래에서는 과도한 힘 증가가 주된 제한으로 강하게 보이지는 않았어요. "
-                    "따라서 고음을 더 편하게 만들 때 힘을 빼는 것만 반복하기보다, "
-                    "작은 강도로 성구 연결이 유지되는지부터 확인하는 방향이 더 적합해 보여요."
-                ),
-                "evidence": ["song_effort_low"],
-                "contra_evidence": ["song_effort_low"],
-                "confidence_label": "medium",
-                "causal_certainty": "CONTRA_TO_CONCERN",
-                "scope_note": scope,
-            }
-            return _attach_practice(hyp)
-
-        hyp = {
-            "concern_id": concern_id,
-            "guidance_level": GUIDANCE_SAFE_GENERAL,
-            "primary_focus": "EFFORT",
-            "secondary_factors": [],
-            "interpretation": (
-                "이번 노래만으로 고음에서 힘이 얼마나 더 커지는지 하나로 좁히기는 어려워요. "
-                "다만 연습할 때는 음량을 먼저 키우지 않고, "
-                "조금 높은 음을 작은 강도로 짧게 유지하는 것부터 시작하는 것이 좋아요."
-            ),
-            "evidence": [],
-            "contra_evidence": [],
-            "confidence_label": "low",
-            "causal_certainty": "GUIDANCE_ONLY",
-            "scope_note": scope,
-        }
-        return _attach_practice(hyp)
-
-    # ========== Flips / register ==========
-    if concern_id in ("HIGH_NOTE_FLIPS", "REGISTER_CONNECTION_DIFFICULT"):
+    # ========== High-note flips ==========
+    if concern_id == "HIGH_NOTE_FLIPS":
         if register == "DISRUPTED":
             hyp = {
                 "concern_id": concern_id,
                 "guidance_level": GUIDANCE_SONG_DIRECT,
                 "primary_focus": "REGISTER_CONNECTION",
-                "secondary_factors": ["PRESENCE"] if presence_low else [],
+                "secondary_factors": [],
                 "interpretation": (
                     "이번 노래에서는 음역이 올라가는 구간에서 발성 연결이 갑자기 달라지는 패턴이 보여요. "
                     "느끼신 '뒤집힘'은 현재 분석에서 확인된 성구 연결 변화와 어느 정도 일치합니다."
@@ -400,11 +365,11 @@ def build_functional_hypothesis(
             }
             if presence_low:
                 hyp["interpretation"] += (
-                    " 중역 존재감도 낮아지는 편이라, 전환 구간에서 음색이나 소리 존재감이 "
+                    " 중역 존재감도 낮은 편이라, 전환 구간에서 음색이나 소리 존재감이 "
                     "함께 달라질 수 있어 보여요."
                 )
-            return _attach_practice(hyp)
-
+                hyp["secondary_factors"] = ["PRESENCE"]
+            return _attach_practice(hyp, category=category)
         if register == "PARTIAL":
             hyp = {
                 "concern_id": concern_id,
@@ -416,6 +381,11 @@ def build_functional_hypothesis(
                     "일부 구간에서만 안정적으로 이어져요. "
                     "따라서 뒤집힘은 전환 구간의 연결이 아직 일정하지 않은 점과 "
                     "관련되어 있을 가능성이 있어 보여요."
+                    + (
+                        " 중역 존재감도 낮은 편이라 전환에서 소리 존재감이 함께 달라질 수 있어 보여요."
+                        if presence_low
+                        else ""
+                    )
                 ),
                 "evidence": ["song_register_partial"],
                 "contra_evidence": [],
@@ -423,13 +393,7 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            if presence_low:
-                hyp["interpretation"] += (
-                    " 중역 존재감도 낮은 편이라 전환에서 소리 존재감이 함께 달라질 수 있어 보여요."
-                )
-            return _attach_practice(hyp)
-
-        # Presence alone must NOT be primary cause
+            return _attach_practice(hyp, category=category)
         hyp = {
             "concern_id": concern_id,
             "guidance_level": GUIDANCE_SAFE_GENERAL,
@@ -440,15 +404,14 @@ def build_functional_hypothesis(
                 "다만 지금은 작은 강도의 립트릴이나 빨대 발성으로 "
                 "중음에서 높은 음까지 끊기지 않게 연결하는 연습부터 시작하는 것이 좋아요."
             ),
-            "evidence": ["presence_supporting_only"] if presence_low else [],
+            "evidence": [],
             "contra_evidence": [],
             "confidence_label": "low",
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
         }
-        return _attach_practice(hyp)
+        return _attach_practice(hyp, category=category)
 
-    # ========== Unstable ==========
     if concern_id == "HIGH_NOTE_UNSTABLE":
         if stab is False:
             hyp = {
@@ -457,174 +420,24 @@ def build_functional_hypothesis(
                 "primary_focus": "STABILITY",
                 "secondary_factors": [],
                 "interpretation": (
-                    "이번 노래에서는 발성 안정성이 떨어지는 구간이 관찰됐어요. "
-                    "짧은 구간을 안정적으로 유지한 뒤 범위를 넓히는 방향이 좋아요."
+                    "이번 노래에서는 고음·지속 구간에서 안정성이 떨어지는 패턴이 보여요. "
+                    "짧은 안정 구간을 유지한 뒤 범위를 넓히는 연습이 적합해 보여요."
                 ),
-                "evidence": ["song_stability_reduced"],
+                "evidence": ["song_stability"],
                 "contra_evidence": [],
                 "confidence_label": "medium",
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp)
+            return _attach_practice(hyp, category=category)
         hyp = {
             "concern_id": concern_id,
             "guidance_level": GUIDANCE_SAFE_GENERAL,
             "primary_focus": "STABILITY",
             "secondary_factors": [],
             "interpretation": (
-                "이번 노래만으로 고음 흔들림의 원인을 확정하기는 어려워요. "
-                "다만 짧은 안정 구간을 유지한 뒤 한 음씩 위로 옮기는 연습부터 시작하는 것이 좋아요."
-            ),
-            "evidence": [],
-            "contra_evidence": ["song_stability_ok"] if stab else [],
-            "confidence_label": "low",
-            "causal_certainty": "GUIDANCE_ONLY",
-            "scope_note": scope,
-        }
-        return _attach_practice(hyp)
-
-    # ========== Throat / fatigue effort ==========
-    if concern_id in ("THROAT_EFFORT", "LOUD_VOICE_DIFFICULT", "VOCAL_FATIGUE", "AFTER_SINGING_FATIGUE"):
-        if effort in ("HIGH", "MODERATE") or contact == "FIRM":
-            parts = []
-            if effort in ("HIGH", "MODERATE"):
-                parts.append("힘 사용")
-            if contact == "FIRM":
-                parts.append("단단한 접촉 특성")
-            joined = "과 ".join(parts) if parts else "힘 관련 특성"
-            hyp = {
-                "concern_id": concern_id,
-                "guidance_level": GUIDANCE_SONG_COMPOSITE if len(parts) >= 2 else GUIDANCE_SONG_DIRECT,
-                "primary_focus": "EFFORT",
-                "secondary_factors": ["CONTACT"] if contact == "FIRM" and "힘" in joined else [],
-                "interpretation": (
-                    f"이번 노래에서는 {joined}이 함께 나타나는 구간이 보여요. "
-                    "작은 강도로 짧게 유지하며 음량을 고정하는 연습부터 시작하는 것이 좋아요."
-                ),
-                "evidence": [f"song_effort_{effort}", f"song_contact_{contact}"],
-                "contra_evidence": [],
-                "confidence_label": "medium",
-                "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
-                "scope_note": scope,
-            }
-            return _attach_practice(hyp)
-        hyp = {
-            "concern_id": concern_id,
-            "guidance_level": GUIDANCE_SAFE_GENERAL,
-            "primary_focus": "MAINTAIN" if effort == "LOW" else "EFFORT",
-            "secondary_factors": [],
-            "interpretation": (
-                "체감상 힘을 느끼셨지만, 이번 노래에서는 과도한 힘 증가가 "
-                "주된 제한으로 강하게 보이지는 않았어요. "
-                "현재 편안한 패턴을 유지하며 범위를 천천히 넓히는 것이 좋아요."
-                if effort == "LOW"
-                else (
-                    "이번 노래만으로 힘 관련 원인을 하나로 좁히기는 어려워요. "
-                    "다만 작은 강도로 짧게 유지하는 연습부터 시작하는 것이 좋아요."
-                )
-            ),
-            "evidence": ["song_effort_low"] if effort == "LOW" else [],
-            "contra_evidence": ["song_effort_low"] if effort == "LOW" else [],
-            "confidence_label": "medium" if effort == "LOW" else "low",
-            "causal_certainty": "CONTRA_TO_CONCERN" if effort == "LOW" else "GUIDANCE_ONLY",
-            "scope_note": scope,
-        }
-        return _attach_practice(hyp)
-
-    # ========== Thin / muffled / breathy / timbre ==========
-    if concern_id in (
-        "VOICE_TOO_THIN",
-        "HIGH_NOTE_THINS",
-        "VOICE_TOO_DARK_MUFFLED",
-        "VOICE_TOO_BREATHY",
-        "VOICE_TOO_SHARP",
-        "TIMBRE_DISSATISFIED",
-        "VOICE_ROUGH",
-        "TIMBRE_CHANGES_HIGH",
-        "VOICE_TOO_NASAL_PERCEPT",
-    ):
-        timbre = snap.get("timbre") or {}
-        if concern_id in ("VOICE_TOO_THIN", "HIGH_NOTE_THINS"):
-            if presence_low or contact == "LIGHT" or breath == "HIGH":
-                bits = []
-                if breath == "HIGH":
-                    bits.append("숨 섞임")
-                if presence_low:
-                    bits.append("낮은 중역 존재감")
-                if contact == "LIGHT":
-                    bits.append("가벼운 접촉감")
-                if presence_low and contact == "LIGHT" and breath != "HIGH":
-                    interpretation = (
-                        "숨이 많이 섞여서라기보다 가벼운 음질과 낮은 중역 존재감이 "
-                        "얇은 인상에 더 관련된 것으로 보여요."
-                    )
-                else:
-                    interpretation = (
-                        "이번 노래에서는 "
-                        + "·".join(bits)
-                        + " 특성이 함께 보여, 얇게 들리는 인상과 관련될 가능성이 있어 보여요."
-                    )
-                hyp = {
-                    "concern_id": concern_id,
-                    "guidance_level": GUIDANCE_SONG_COMPOSITE,
-                    "primary_focus": "PRESENCE",
-                    "secondary_factors": ["BREATHINESS"] if breath == "HIGH" else [],
-                    "interpretation": interpretation,
-                    "evidence": ["song_timbre"],
-                    "contra_evidence": [],
-                    "confidence_label": "medium",
-                    "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
-                    "scope_note": scope,
-                }
-                return _attach_practice(hyp)
-        if concern_id == "VOICE_TOO_DARK_MUFFLED" and timbre.get("available"):
-            hyp = {
-                "concern_id": concern_id,
-                "guidance_level": GUIDANCE_SONG_DIRECT,
-                "primary_focus": "TIMBRE",
-                "secondary_factors": [],
-                "interpretation": (
-                    "이번 노래에서는 밝기·중역 존재감 쪽에서 "
-                    "다소 어두운·낮은 존재감 경향이 관찰됐어요. "
-                    "음색은 좋고 나쁨이 아니라 관찰된 특징으로 설명합니다."
-                ),
-                "evidence": ["song_timbre"],
-                "contra_evidence": [],
-                "confidence_label": "medium",
-                "causal_certainty": "DESCRIPTIVE",
-                "scope_note": scope,
-            }
-            return _attach_practice(hyp)
-        if concern_id == "TIMBRE_DISSATISFIED":
-            feats = list(snap.get("key_features") or [])[:3]
-            feat_txt = ", ".join(feats) if feats else "확인된 음색 특징"
-            hyp = {
-                "concern_id": concern_id,
-                "guidance_level": GUIDANCE_SONG_DIRECT if feats else GUIDANCE_SAFE_GENERAL,
-                "primary_focus": "TIMBRE",
-                "secondary_factors": [],
-                "interpretation": (
-                    f"이번 노래에서 관찰된 음색 쪽 특징은 다음과 같아요: {feat_txt}. "
-                    "음색은 스타일 목표가 달라 좋고 나쁨으로 평가하지 않아요."
-                ),
-                "evidence": ["song_timbre_descriptive"],
-                "contra_evidence": [],
-                "confidence_label": "medium",
-                "causal_certainty": "DESCRIPTIVE",
-                "scope_note": scope,
-            }
-            return _attach_practice(hyp)
-
-        hyp = {
-            "concern_id": concern_id,
-            "guidance_level": GUIDANCE_SAFE_GENERAL,
-            "primary_focus": "TIMBRE",
-            "secondary_factors": [],
-            "interpretation": (
-                "이번 노래만으로 음색 관련 원인을 하나로 좁히기는 어려워요. "
-                "다만 편안한 강도에서 짧은 지속음을 유지하며 "
-                "소리를 과하게 밀지 않는 연습부터 시작하는 것이 좋아요."
+                "이번 노래만으로 고음 흔들림의 원인을 하나로 좁히기는 어려워요. "
+                "다만 짧은 안정 구간을 유지한 뒤 조금씩 범위를 넓히는 연습부터 시작하는 것이 좋아요."
             ),
             "evidence": [],
             "contra_evidence": [],
@@ -632,33 +445,40 @@ def build_functional_hypothesis(
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
         }
-        return _attach_practice(hyp)
+        return _attach_practice(hyp, category=category)
 
-    # ========== Default ==========
+    # Default category fallback — never force register glide for timbre/effort/control
+    focus = str(sem.get("fallback_focus") or "MAINTAIN")
+    from audio_analyzer.diagnostic.concern_reasoning import _fallback_interpretation
+
+    focus2, interpretation = _fallback_interpretation(category or "other", concern_id)
     hyp = {
         "concern_id": concern_id,
         "guidance_level": GUIDANCE_SAFE_GENERAL,
-        "primary_focus": "REGISTER_CONNECTION",
+        "primary_focus": focus2 or focus,
         "secondary_factors": [],
-        "interpretation": (
-            "이번 노래만으로 원인을 하나로 좁히기는 어려워요. "
-            "다만 지금은 작은 강도로 짧게 유지하며 "
-            "불편감 없이 연결을 만드는 연습부터 시작하는 것이 좋아요."
-        ),
+        "interpretation": interpretation,
         "evidence": [],
         "contra_evidence": [],
         "confidence_label": "low",
         "causal_certainty": "GUIDANCE_ONLY",
         "scope_note": scope,
+        "practice_required": bool(sem.get("practice_required", True)),
     }
-    return _attach_practice(hyp)
+    return _attach_practice(hyp, category=category or "other")
 
+
+# Keep helper symbols used by tests / callers that imported private names via module
 
 def compose_user_answer(hyp: dict[str, Any]) -> str:
     """Primary answer: interpretation (+ optional practice cue). Never end on bad fallback alone."""
     text = str(hyp.get("interpretation") or "").strip()
     practice = hyp.get("practice") or {}
-    if practice.get("instruction") and hyp.get("guidance_level") != GUIDANCE_SAFETY:
+    if (
+        practice.get("instruction")
+        and hyp.get("guidance_level") != GUIDANCE_SAFETY
+        and hyp.get("practice_required") is not False
+    ):
         # Append actionable direction (second beat)
         title = practice.get("title") or "연습"
         tip = practice.get("instruction")
@@ -734,6 +554,8 @@ def ensure_actionable_guidance(
     out["guidance_level"] = hyp["guidance_level"]
     out["primary_focus"] = hyp.get("primary_focus")
     out["secondary_factors"] = hyp.get("secondary_factors") or []
+    out["question_type"] = hyp.get("question_type")
+    out["practice_required"] = hyp.get("practice_required", True)
     out["functional_hypothesis"] = hyp
     out["practice"] = hyp.get("practice")
     out["answer_hint"] = compose_user_answer(hyp)

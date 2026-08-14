@@ -496,7 +496,20 @@ def build_personalized_qa(
                 "evidence_level": ev.get("evidence_level"),
                 "guidance_level": ev.get("guidance_level"),
                 "primary_focus": ev.get("primary_focus"),
+                "question_type": ev.get("question_type")
+                or (ev.get("functional_hypothesis") or {}).get("question_type"),
                 "practice": ev.get("practice"),
+                "primary_explanation": (ev.get("functional_hypothesis") or {}).get(
+                    "primary_explanation"
+                ),
+                "supporting_explanations": (ev.get("functional_hypothesis") or {}).get(
+                    "supporting_explanations"
+                )
+                or [],
+                "less_likely_explanations": (ev.get("functional_hypothesis") or {}).get(
+                    "less_likely_explanations"
+                )
+                or [],
                 "support": ev.get("support") or [],
                 "against": ev.get("against") or [],
                 "missing": ev.get("missing") or [],
@@ -870,6 +883,8 @@ def build_improvement_guidance(
 
 
 def public_concern_catalog() -> dict[str, Any]:
+    from audio_analyzer.diagnostic.timbre_goals import public_target_timbre_catalog
+
     categories = [
         ("high_note", "고음"),
         ("effort", "힘·피로"),
@@ -889,4 +904,5 @@ def public_concern_catalog() -> dict[str, Any]:
         "max_concerns": MAX_CONCERNS,
         "follow_up_options": FOLLOW_UP_OPTIONS,
         "groups": groups,
+        "target_timbre": public_target_timbre_catalog(),
     }

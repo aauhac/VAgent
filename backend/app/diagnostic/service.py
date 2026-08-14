@@ -380,6 +380,7 @@ class DiagnosticSessionService:
         user_id: str = "anon",
         *,
         diagnostic_mode: Optional[str] = None,
+        timbre_goal: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         session = self._require_unlocked(session_id, user_id)
         if session["status"] not in ("PAID", "SAFETY_CHECK"):
@@ -395,6 +396,9 @@ class DiagnosticSessionService:
                 raise ValueError("max 3 concerns allowed")
         session["user_concerns"] = concerns
         session["diagnostic_mode"] = mode
+        from audio_analyzer.diagnostic.timbre_goals import normalize_timbre_goal
+
+        session["timbre_goal"] = normalize_timbre_goal(timbre_goal, concerns=concerns)
         session["safety_flag_pain"] = has_pain_safety_flag(concerns)
         src = session.get("source_analysis_id")
         plan = self._build_plan(
@@ -862,6 +866,7 @@ class DiagnosticSessionService:
             from audio_analyzer.diagnostic.song_evidence import (
                 extract_vocal_function_profile,
                 wrap_song_profile_with_snapshot,
+                snapshot_to_ui_acoustic_axes,
             )
 
             vf, vf_path = extract_vocal_function_profile(song_payload)
@@ -890,6 +895,39 @@ class DiagnosticSessionService:
                 fused_profile=final_dx,
                 diagnostic_mode=session.get("diagnostic_mode"),
             )
+            from audio_analyzer.diagnostic.goal_planner import plan_coaching_goal
+
+            pain = bool(
+                session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED
+                or session.get("safety_flag_pain")
+                or has_pain_safety_flag(concerns)
+            )
+            coaching_goal = plan_coaching_goal(
+                user_concerns=concerns,
+                timbre_goal=session.get("timbre_goal"),
+                concern_evaluations=personalized.get("concern_evaluations") or [],
+                song_profile=song_wrapped,
+                pain=pain,
+            )
+            personalized["coaching_goal"] = coaching_goal
+            # Global practice from goal (1–2); keep maintain separate
+            if coaching_goal.get("practices"):
+                coach = dict(personalized.get("coaching") or {})
+                goal_dirs = []
+                for p in coaching_goal["practices"][:2]:
+                    if not p:
+                        continue
+                    goal_dirs.append(
+                        {
+                            **p,
+                            "mode": coaching_goal.get("mode") or "GUIDE",
+                            "mode_label": "맞춤" if coaching_goal.get("mode") != "STYLE" else "탐색",
+                        }
+                    )
+                coach["practice_directions"] = goal_dirs
+                personalized["coaching"] = coach
+            session["timbre_goal"] = session.get("timbre_goal")
+            session["coaching_goal"] = coaching_goal
             session["final_diagnostic_profile"] = final_dx
             session["evidence_mode"] = evidence_mode
             report["protocol_version"] = session.get("protocol_version") or VOCAL_DIAGNOSTIC_PROTOCOL_VERSION
@@ -919,17 +957,42 @@ class DiagnosticSessionService:
             report["diagnostic_status"] = session.get("diagnostic_status")
             report["final_diagnostic_profile"] = final_dx
             report["user_concerns"] = concerns
+            report["timbre_goal"] = session.get("timbre_goal")
+            report["coaching_goal"] = coaching_goal
             report["personalized_qa"] = personalized
-            report["improvement_priorities"] = personalized.get("improvement_priorities") or []
+            # Prefer goal practices for the main practice section
+            if coaching_goal.get("practices"):
+                report["improvement_priorities"] = coaching_goal["practices"]
+            else:
+                report["improvement_priorities"] = personalized.get("improvement_priorities") or []
             report["coaching"] = personalized.get("coaching") or {}
             report["discovered_features"] = personalized.get("discovered_features") or []
             snap = song_wrapped.get("canonical_song_evidence") or {}
             report["song_key_features"] = snap.get("key_features") or personalized.get("song_key_features") or []
+            ui_axes = snapshot_to_ui_acoustic_axes(snap)
             report["canonical_song_evidence"] = {
                 "source_path": snap.get("source_path"),
                 "availability": snap.get("availability"),
                 "key_features": snap.get("key_features") or [],
+                "register": snap.get("register"),
+                "effort": snap.get("effort"),
+                "contact": snap.get("contact"),
+                "breathiness": snap.get("breathiness"),
+                "timbre": {
+                    "available": (snap.get("timbre") or {}).get("available"),
+                    "presence": (snap.get("timbre") or {}).get("presence"),
+                    "brightness": (snap.get("timbre") or {}).get("brightness"),
+                    "airiness": (snap.get("timbre") or {}).get("airiness"),
+                },
+                "stability": snap.get("stability"),
             }
+            report["canonical_acoustic_axes"] = ui_axes
+            if snap.get("register"):
+                report["canonical_register"] = {
+                    "status": (snap.get("register") or {}).get("status"),
+                    "title": (snap.get("register") or {}).get("description"),
+                    "profile_label": (snap.get("register") or {}).get("description"),
+                }
             # Surface song vocal style/type on premium report when available
             song_vf = song_wrapped.get("vocal_function_profile") or vf or {}
             if isinstance(song_vf, dict):
@@ -1088,6 +1151,7 @@ class DiagnosticSessionService:
             "next_task_id": next_task,
             "diagnostic_offer": session.get("diagnostic_offer"),
             "user_concerns": session.get("user_concerns") or [],
+            "timbre_goal": session.get("timbre_goal"),
             "diagnostic_mode": session.get("diagnostic_mode"),
             "diagnostic_status": session.get("diagnostic_status") or "NORMAL",
             "safety_flag_pain": bool(session.get("safety_flag_pain")),

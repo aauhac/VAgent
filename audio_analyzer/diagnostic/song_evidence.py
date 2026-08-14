@@ -301,6 +301,95 @@ def build_song_evidence_snapshot(
     return snap
 
 
+def snapshot_to_ui_acoustic_axes(snap: Optional[dict[str, Any]]) -> dict[str, Any]:
+    """Canonical-first axes payload for VocalProfile bars. Never invents brightness."""
+    snap = snap or {}
+    axes: dict[str, Any] = {}
+    contact = snap.get("contact") or {}
+    if contact.get("continuum") is not None:
+        axes["contact"] = {
+            "available": True,
+            "continuum": float(contact["continuum"]),
+            "status": contact.get("status"),
+            "display": contact.get("status_label") or contact.get("status"),
+        }
+    effort = snap.get("effort") or {}
+    level = str(effort.get("level") or "").upper()
+    effort_cont = {"LOW": 0.22, "MODERATE": 0.55, "HIGH": 0.82}.get(level)
+    if effort_cont is not None:
+        axes["effort"] = {
+            "available": True,
+            "continuum": effort_cont,
+            "status": level,
+            "display": {"LOW": "낮은 편", "MODERATE": "중간", "HIGH": "높은 편"}.get(level, level),
+        }
+    breath = snap.get("breathiness") or {}
+    if breath.get("airiness_continuum") is not None:
+        packed = {
+            "available": True,
+            "continuum": float(breath["airiness_continuum"]),
+            "status": breath.get("level"),
+            "display": breath.get("status_label") or breath.get("level"),
+        }
+        axes["functional_breathiness"] = packed
+        axes["breathiness"] = packed
+    timbre = snap.get("timbre") or {}
+    presence = timbre.get("presence")
+    if presence is not None:
+        try:
+            pv = float(presence)
+        except (TypeError, ValueError):
+            pv = None
+        if pv is not None:
+            st = "LOW" if pv <= 0.42 else ("HIGH" if pv >= 0.58 else "MID")
+            packed_p = {
+                "available": True,
+                "continuum": pv,
+                "status": st,
+                "display": {"LOW": "낮은 편", "HIGH": "높은 편", "MID": "중간"}.get(st, st),
+            }
+            axes["presence"] = packed_p
+            axes["resonance"] = packed_p
+    brightness = timbre.get("brightness")
+    if brightness is not None:
+        try:
+            bv = float(brightness)
+        except (TypeError, ValueError):
+            bv = None
+        if bv is not None:
+            st = "LOW" if bv <= 0.42 else ("HIGH" if bv >= 0.58 else "MID")
+            axes["brightness"] = {
+                "available": True,
+                "continuum": bv,
+                "status": st,
+                "display": {"LOW": "어두운 편", "HIGH": "밝은 편", "MID": "중간"}.get(st, st),
+            }
+    reg = snap.get("register") or {}
+    rst = str(reg.get("status") or "").upper()
+    if rst and rst not in ("UNKNOWN", "UNRESOLVED", ""):
+        cont = {
+            "CONNECTED": 0.78,
+            "SMOOTH": 0.78,
+            "STABLE": 0.78,
+            "CONTINUOUS": 0.78,
+            "STABLE_LIKE": 0.78,
+            "PARTIAL": 0.55,
+            "INSUFFICIENT": 0.55,
+            "MIXED": 0.55,
+            "DISRUPTED": 0.32,
+            "UNSTABLE": 0.32,
+            "TRANSITION_EVENTS": 0.32,
+            "CONFLICTED": 0.5,
+        }.get(rst, 0.5)
+        axes["register"] = {
+            "available": True,
+            "continuum": cont,
+            "status": rst,
+            "display": reg.get("description") or rst,
+        }
+    return {"axes": axes}
+
+
 def _derive_key_features(snap: dict[str, Any]) -> list[str]:
     feats: list[str] = []
     breath = snap.get("breathiness") or {}

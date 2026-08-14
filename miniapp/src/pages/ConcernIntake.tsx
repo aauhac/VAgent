@@ -9,6 +9,12 @@ import { nextDiagnosticRoute } from '../lib/diagnosticEntry';
 
 type ConcernItem = { id: string; label: string };
 type ConcernGroup = { category_id: string; category_label: string; concerns: ConcernItem[] };
+type TimbreOption = {
+  id: string;
+  label: string;
+  description: string;
+  genre_display?: string;
+};
 
 const FOLLOW_UP_IDS = new Set(['HIGH_NOTE_CANNOT_REACH', 'TIMBRE_DISSATISFIED']);
 
@@ -28,6 +34,12 @@ export default function ConcernIntake() {
   const [loading, setLoading] = useState(true);
   const [sourceAnalysisId, setSourceAnalysisId] = useState<string | null>(null);
   const [plannedHint, setPlannedHint] = useState<string | null>(null);
+  const [step, setStep] = useState<'concerns' | 'timbre'>('concerns');
+  const [timbreOptions, setTimbreOptions] = useState<TimbreOption[]>([]);
+  const [timbreConcernIds, setTimbreConcernIds] = useState<string[]>([]);
+  const [timbrePrompt, setTimbrePrompt] = useState('어떤 음색으로 노래하고 싶나요?');
+  const [timbreHelper, setTimbreHelper] = useState('가장 원하는 느낌 하나를 골라주세요.');
+  const [timbreGoalId, setTimbreGoalId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,7 +62,6 @@ export default function ConcernIntake() {
         }
         setSourceAnalysisId(session.source_analysis_id || null);
 
-        // Resume past concern intake when mode already chosen
         if (session.diagnostic_mode) {
           const next = nextDiagnosticRoute(session);
           if (next && !next.endsWith('/concerns')) {
@@ -67,6 +78,11 @@ export default function ConcernIntake() {
         setGroups(cat.groups || []);
         setMaxConcerns(cat.max_concerns || 3);
         setFollowUpOptions(cat.follow_up_options || {});
+        const tt = cat.target_timbre || {};
+        setTimbreOptions(tt.options || []);
+        setTimbreConcernIds(tt.concern_ids || []);
+        if (tt.prompt) setTimbrePrompt(tt.prompt);
+        if (tt.helper) setTimbreHelper(tt.helper);
         const existing = (session.user_concerns || [])
           .map((c: any) => c?.id)
           .filter(Boolean);
@@ -76,6 +92,8 @@ export default function ConcernIntake() {
         } else if (session.diagnostic_mode === 'GENERAL_DISCOVERY') {
           setGeneralMode(true);
         }
+        const existingGoal = session.timbre_goal?.id;
+        if (existingGoal) setTimbreGoalId(existingGoal);
         setLoading(false);
       } catch {
         if (!cancelled) {
@@ -90,6 +108,14 @@ export default function ConcernIntake() {
     };
   }, [sessionId, nav]);
 
+  function needsTimbreGoal(ids: string[]) {
+    const listed = new Set(timbreConcernIds);
+    if (ids.some((id) => listed.has(id))) return true;
+    return groups.some(
+      (g) => g.category_id === 'timbre' && ids.some((id) => g.concerns.some((c) => c.id === id)),
+    );
+  }
+
   function toggle(id: string) {
     setGeneralMode(false);
     setSelected((prev) => {
@@ -103,14 +129,12 @@ export default function ConcernIntake() {
     setGeneralMode(true);
     setSelected([]);
     setFollowUps({});
+    setTimbreGoalId(null);
+    setStep('concerns');
   }
 
-  async function next() {
+  async function submit(timbreGoal?: { id: string } | null) {
     if (!sessionId) return;
-    if (!generalMode && selected.length === 0) {
-      setError('고민을 선택하거나, 「특별한 고민은 없어요」를 골라 주세요.');
-      return;
-    }
     setBusy(true);
     setError(null);
     try {
@@ -123,7 +147,7 @@ export default function ConcernIntake() {
             priority: i + 1,
             ...(followUps[id] ? { follow_up: followUps[id] } : {}),
           }));
-      const session = await submitConcerns(sessionId, payload, mode);
+      const session = await submitConcerns(sessionId, payload, mode, timbreGoal || null);
       const n = session?.planned_task_count ?? (session?.selected_tasks || []).length;
       if (typeof n === 'number' && n > 0) {
         setPlannedHint(
@@ -137,6 +161,32 @@ export default function ConcernIntake() {
       setError(e?.message || '저장에 실패했어요. 여기서 다시 시도할 수 있어요.');
       setBusy(false);
     }
+  }
+
+  async function next() {
+    if (!sessionId) return;
+    if (!generalMode && selected.length === 0) {
+      setError('고민을 선택하거나, 「특별한 고민은 없어요」를 골라 주세요.');
+      return;
+    }
+    if (generalMode) {
+      await submit(null);
+      return;
+    }
+    if (needsTimbreGoal(selected)) {
+      setError(null);
+      setStep('timbre');
+      return;
+    }
+    await submit(null);
+  }
+
+  async function submitTimbre() {
+    if (!timbreGoalId) {
+      setError('가장 원하는 느낌을 하나 골라 주세요.');
+      return;
+    }
+    await submit({ id: timbreGoalId });
   }
 
   if (loading) {
@@ -157,6 +207,73 @@ export default function ConcernIntake() {
         {sourceAnalysisId ? (
           <Link className="btn" to={`/result/${sourceAnalysisId}/detail`}>상세 리포트로 돌아가기</Link>
         ) : null}
+      </main>
+    );
+  }
+
+  if (step === 'timbre') {
+    return (
+      <main data-testid="timbre-goal-step">
+        {sourceAnalysisId ? (
+          <Link className="muted" to={`/result/${sourceAnalysisId}/detail`}>‹ 상세 리포트</Link>
+        ) : null}
+        <h1 className="brand" style={{ fontSize: '1.6rem' }}>{timbrePrompt}</h1>
+        <p className="lead">{timbreHelper}</p>
+        {timbreOptions.map((opt) => {
+          const selectedOpt = timbreGoalId === opt.id;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              data-testid={`timbre-option-${opt.id}`}
+              className="card"
+              onClick={() => setTimbreGoalId(opt.id)}
+              style={{
+                width: '100%',
+                textAlign: 'left',
+                marginBottom: 10,
+                cursor: 'pointer',
+                border: selectedOpt ? '2px solid var(--accent, #3182F6)' : undefined,
+                background: 'inherit',
+                color: 'inherit',
+              }}
+            >
+              <strong style={{ display: 'block', fontSize: '1.05rem' }}>{opt.label}</strong>
+              <span className="body-text" style={{ display: 'block', marginTop: 6, lineHeight: 1.45 }}>
+                {opt.description}
+              </span>
+              {opt.genre_display ? (
+                <span
+                  className="muted"
+                  style={{ display: 'block', marginTop: 8, fontSize: '0.82rem', fontStyle: 'italic' }}
+                >
+                  {opt.genre_display}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+        <button
+          className="btn"
+          disabled={busy || !timbreGoalId}
+          onClick={() => void submitTimbre()}
+          data-testid="timbre-goal-submit"
+        >
+          {busy ? '저장 중…' : '계속'}
+        </button>
+        <button
+          type="button"
+          className="btn secondary"
+          style={{ marginTop: 10 }}
+          disabled={busy}
+          onClick={() => {
+            setStep('concerns');
+            setError(null);
+          }}
+        >
+          고민 선택으로 돌아가기
+        </button>
+        {error && <p className="fail">{error}</p>}
       </main>
     );
   }
@@ -208,6 +325,7 @@ export default function ConcernIntake() {
               {g.concerns.map((c) => (
                 <label
                   key={c.id}
+                  data-testid={`concern-${c.id}`}
                   style={{ display: 'flex', gap: 10, padding: '8px 0', cursor: 'pointer' }}
                 >
                   <input
@@ -256,7 +374,8 @@ export default function ConcernIntake() {
       <button
         className="btn"
         disabled={busy || (!generalMode && selected.length === 0)}
-        onClick={next}
+        onClick={() => void next()}
+        data-testid="concern-continue"
       >
         {busy ? '저장 중…' : '계속'}
       </button>

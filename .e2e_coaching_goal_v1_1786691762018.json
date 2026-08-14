@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "api": "http://127.0.0.1:8003",
+    "web": "http://127.0.0.1:5173"
+  },
+  "results": {
+    "CASE_A_TIMBRE": {
+      "label": "CASE_A_TIMBRE",
+      "pass": false,
+      "sid": "211cedc40a1a44a0b36293b42550556b",
+      "evidence_mode": "CONCERN_ONLY",
+      "timbre_goal": {
+        "id": "SOFT_SWEET",
+        "label": "부드럽고 감미롭게",
+        "description": "자극적이지 않고 매끄럽고 편안하게 들리는 음색",
+        "source": "USER_SELECTED"
+      },
+      "goal_title": "현재의 편안한 힘 사용은 유지하면서, 밀지 않으면서 소리 존재감이 흐려지지 않도록 하기",
+      "primary_focus": "PRESENCE",
+      "questions": [
+        "TIMBRE_DISSATISFIED",
+        "VOICE_TOO_THIN",
+        "VOICE_TOO_DARK_MUFFLED"
+      ],
+      "genreLabelForbidden": true
+    },
+    "CASE_B_HIGH_NOTE": {
+      "label": "CASE_B_HIGH_NOTE",
+      "pass": false,
+      "sid": "603bdc5006bd4c568769e08906f9ffd4",
+      "questions": [
+        "HIGH_NOTE_CANNOT_REACH",
+        "HIGH_NOTE_TOO_EFFORTFUL",
+        "HIGH_NOTE_FLIPS"
+      ],
+      "goal_title": "현재의 편안한 힘 사용은 유지하면서, 음역이 바뀌어도 소리의 밀도와 연결이 급격하게 달라지지 않도록 하기",
+      "primary_focus": "REGISTER_CONNECTION",
+      "timbreUi": 0
+    },
+    "CASE_C_HIGH_NOTE_TIMBRE": {
+      "label": "CASE_C_HIGH_NOTE_TIMBRE",
+      "pass": false,
+      "sid": "1dabdf60375943d88b891c3e014f9280",
+      "desired": {
+        "type": "TIMBRE",
+        "id": "WARM_FULL",
+        "label": "따뜻하고 풍성하게",
+        "description": "포근하면서 소리의 밀도와 깊이가 느껴지는 음색",
+        "source": "USER_SELECTED"
+      },
+      "primary_focus": "PRESENCE"
+    },
+    "CASE_D_RECOMMEND": {
+      "label": "CASE_D_RECOMMEND",
+      "pass": true,
+      "sid": "ca6418ec62004b4aa61c159ef1e4265f",
+      "stored": {
+        "id": "RECOMMEND_FOR_ME",
+        "label": "잘 모르겠어요",
+        "description": "현재 목소리 특징을 바탕으로 무리 없이 시도할 수 있는 방향을 추천받을게요.",
+        "source": "USER_REQUESTED_RECOMMENDATION"
+      },
+      "recommended": {
+        "type": "TIMBRE",
+        "id": "WARM_FULL",
+        "label": "따뜻하고 풍성하게",
+        "description": "포근하면서 소리의 밀도와 깊이가 느껴지는 음색",
+        "source": "SYSTEM_RECOMMENDED",
+        "recommendation_reason": "힘을 더하지 않으면서 존재감을 탐색하기 좋은 방향"
+      }
+    }
+  },
+  "pass": false
+}

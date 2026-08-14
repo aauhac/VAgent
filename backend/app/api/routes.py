@@ -396,12 +396,14 @@ def submit_concerns(
         raise HTTPException(status_code=404, detail="session not found")
     raw = payload.get("user_concerns") or payload.get("concerns") or []
     mode = payload.get("diagnostic_mode")
+    timbre_goal = payload.get("timbre_goal")
     try:
         return diag.submit_concerns(
             session_id,
             raw,
             user_id=_user_id(x_user_id),
             diagnostic_mode=mode,
+            timbre_goal=timbre_goal,
         )
     except PermissionError:
         raise HTTPException(status_code=402, detail="REPORT_LOCKED") from None

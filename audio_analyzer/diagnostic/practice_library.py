@@ -147,6 +147,97 @@ PRACTICE_LIBRARY: dict[str, dict[str, Any]] = {
         "safe_for": ["SAFETY"],
         "blocked_when": [],
     },
+    "STYLE_DENSE_SOLID": {
+        "practice_id": "STYLE_DENSE_SOLID",
+        "title": "밀도를 밀지 않고 찾아보기",
+        "goal": "음량을 키우지 않으면서 소리 중심이 흐려지지 않는 표현 탐색",
+        "instruction": (
+            "편안한 중음의 짧은 구절에서 음량을 먼저 키우지 않고 "
+            "소리 중심이 흐려지지 않는 표현을 찾아보세요."
+        ),
+        "success_cues": ["음량을 먼저 키우지 않음", "불편감 없음"],
+        "avoid": ["밀도를 위해 세게 밀어붙이기"],
+        "safe_for": ["STYLE", "TIMBRE"],
+        "blocked_when": ["PAIN_LIMITED"],
+    },
+    "STYLE_BRIGHT_CLEAR": {
+        "practice_id": "STYLE_BRIGHT_CLEAR",
+        "title": "선명한 표현을 작게 탐색하기",
+        "goal": "힘을 더하지 않고 또렷한 인상을 짧게 비교",
+        "instruction": (
+            "편안한 중음에서 짧은 모음을 작은 강도로 유지하며 "
+            "소리가 앞으로 또렷하게 들리는 표현을 찾아보세요. 음량부터 키우지 마세요."
+        ),
+        "success_cues": ["작은 강도에서도 또렷함이 유지됨", "힘을 급증시키지 않음"],
+        "avoid": ["선명함을 위해 음량부터 키우기"],
+        "safe_for": ["STYLE", "TIMBRE"],
+        "blocked_when": ["PAIN_LIMITED"],
+    },
+    "STYLE_SOFT_SWEET": {
+        "practice_id": "STYLE_SOFT_SWEET",
+        "title": "부드럽고 감미로운 표현 탐색하기",
+        "goal": "자극 없이 매끄러운 연결 찾기",
+        "instruction": (
+            "편안한 중음의 짧은 구절을 작은~중간 강도로 매끄럽게 이어보고, "
+            "현재보다 편안하고 부드럽게 들리는 표현을 찾아보세요."
+        ),
+        "success_cues": ["연결이 끊기지 않음", "불편감 없음"],
+        "avoid": ["부드럽게 하려고 숨을 과도하게 흘리기"],
+        "safe_for": ["STYLE", "TIMBRE"],
+        "blocked_when": ["PAIN_LIMITED"],
+    },
+    "STYLE_LIGHT_CLEAR": {
+        "practice_id": "STYLE_LIGHT_CLEAR",
+        "title": "맑고 가벼운 표현 탐색하기",
+        "goal": "무겁게 밀지 않으면서 깨끗한 인상을 짧게 비교",
+        "instruction": (
+            "작은 강도로 짧은 구절을 부르며 소리가 무거워지지 않게 유지해 보세요. "
+            "가벼움을 위해 힘을 완전히 빼 연결을 끊지는 마세요."
+        ),
+        "success_cues": ["짧은 구간이 한 흐름으로 이어짐", "음량을 키우지 않음"],
+        "avoid": ["가볍게 하려고 연결을 끊기"],
+        "safe_for": ["STYLE", "TIMBRE"],
+        "blocked_when": ["PAIN_LIMITED"],
+    },
+    "STYLE_WARM_FULL": {
+        "practice_id": "STYLE_WARM_FULL",
+        "title": "따뜻하고 풍성한 표현 탐색하기",
+        "goal": "힘을 더하지 않으면서 밀도와 깊이가 느껴지는 표현 찾기",
+        "instruction": (
+            "편안한 중음에서 짧은 모음을 유지하며 "
+            "소리의 중심이 얇아지지 않는 표현을 찾아보세요. 음량부터 키우지 마세요."
+        ),
+        "success_cues": ["존재감이 갑자기 사라지지 않음", "힘을 급증시키지 않음"],
+        "avoid": ["풍성함을 위해 세게 밀기"],
+        "safe_for": ["STYLE", "TIMBRE"],
+        "blocked_when": ["PAIN_LIMITED"],
+    },
+    "STYLE_AIRY_DELICATE": {
+        "practice_id": "STYLE_AIRY_DELICATE",
+        "title": "섬세한 공기감 표현 탐색하기",
+        "goal": "과도한 숨 흘림 없이 여린 표현 찾기",
+        "instruction": (
+            "작은 강도에서 섬세하게 표현하되 "
+            "숨을 과도하게 흘리거나 불편함이 생기지 않도록 하세요."
+        ),
+        "success_cues": ["짧은 구간에서 불편 없음", "숨이 먼저 다 빠지지 않음"],
+        "avoid": ["공기감을 위해 숨을 과도하게 흘리기"],
+        "safe_for": ["STYLE", "TIMBRE"],
+        "blocked_when": ["PAIN_LIMITED"],
+    },
+    "STYLE_INTENSE_DISTINCT": {
+        "practice_id": "STYLE_INTENSE_DISTINCT",
+        "title": "개성 있는 질감을 작게 탐색하기",
+        "goal": "강렬함을 음량 증가로 대체하지 않기",
+        "instruction": (
+            "짧은 구절을 작은~중간 강도로 부르며 "
+            "질감이 느껴지는 표현을 찾아보세요. 강렬함을 위해 처음부터 세게 밀지 마세요."
+        ),
+        "success_cues": ["짧은 구간 유지", "음량을 먼저 키우지 않음"],
+        "avoid": ["개성을 위해 세게 밀어붙이기"],
+        "safe_for": ["STYLE", "TIMBRE"],
+        "blocked_when": ["PAIN_LIMITED"],
+    },
 }
 
 
@@ -155,10 +246,33 @@ FOCUS_TO_PRACTICE: dict[str, str] = {
     "EFFORT": "REDUCE_HIGH_NOTE_EFFORT",
     "STABILITY": "STABILITY_SHORT_HOLD",
     "PRESENCE": "PRESENCE_WITHOUT_PUSHING",
+    "BRIGHTNESS": "PRESENCE_WITHOUT_PUSHING",
     "BREATHINESS": "BREATHINESS_CONTROL",
+    "AIRINESS": "BREATHINESS_CONTROL",
+    "CONTACT": "MAINTAIN_LOW_EFFORT",
     "TIMBRE": "TIMBRE_PRESERVE",
+    "TEXTURE": "TIMBRE_PRESERVE",
+    "DYNAMICS": "MAINTAIN_LOW_EFFORT",
+    "HIGH_NOTE": "REGISTER_GLIDE_LIGHT",
     "MAINTAIN": "MAINTAIN_LOW_EFFORT",
     "SAFETY": "SAFETY_STOP",
+    "STYLE": "STYLE_SOFT_SWEET",
+    "STYLE_DENSE_SOLID": "STYLE_DENSE_SOLID",
+    "STYLE_BRIGHT_CLEAR": "STYLE_BRIGHT_CLEAR",
+    "STYLE_SOFT_SWEET": "STYLE_SOFT_SWEET",
+    "STYLE_LIGHT_CLEAR": "STYLE_LIGHT_CLEAR",
+    "STYLE_WARM_FULL": "STYLE_WARM_FULL",
+    "STYLE_AIRY_DELICATE": "STYLE_AIRY_DELICATE",
+    "STYLE_INTENSE_DISTINCT": "STYLE_INTENSE_DISTINCT",
+}
+
+CATEGORY_FALLBACK_PRACTICE: dict[str, str] = {
+    "high_note": "REGISTER_GLIDE_LIGHT",
+    "effort": "REDUCE_HIGH_NOTE_EFFORT",
+    "timbre": "TIMBRE_PRESERVE",
+    "control": "STABILITY_SHORT_HOLD",
+    "safety": "SAFETY_STOP",
+    "other": "MAINTAIN_LOW_EFFORT",
 }
 
 
@@ -167,11 +281,32 @@ def get_practice(practice_id: str) -> Optional[dict[str, Any]]:
     return dict(p) if p else None
 
 
-def practice_for_focus(primary_focus: str, *, alternative: bool = False) -> dict[str, Any]:
-    pid = FOCUS_TO_PRACTICE.get(str(primary_focus or "").upper(), "REGISTER_GLIDE_LIGHT")
+def practice_for_focus(
+    primary_focus: str,
+    *,
+    alternative: bool = False,
+    category: str = "",
+) -> Optional[dict[str, Any]]:
+    """Select practice by primary functional focus.
+
+    Unknown focus does NOT fall back to register glide.
+    Missing/unknown with no category → None.
+    """
+    focus = str(primary_focus or "").upper()
+    if not focus or focus in ("UNKNOWN", "UNKNOWN_FOCUS", "NONE"):
+        cat = str(category or "").lower()
+        if cat:
+            pid = CATEGORY_FALLBACK_PRACTICE.get(cat)
+            return dict(get_practice(pid) or {}) if pid else None
+        return None
+    pid = FOCUS_TO_PRACTICE.get(focus)
+    if not pid:
+        pid = CATEGORY_FALLBACK_PRACTICE.get(str(category or "").lower())
+        if not pid:
+            return None
     if alternative and pid == "REGISTER_GLIDE_LIGHT":
         pid = "SOVT_GLIDE"
     elif alternative and pid == "REDUCE_HIGH_NOTE_EFFORT":
         pid = "SOVT_GLIDE"
-    out = get_practice(pid) or get_practice("REGISTER_GLIDE_LIGHT") or {}
-    return dict(out)
+    p = get_practice(pid)
+    return dict(p) if p else None

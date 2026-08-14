@@ -813,21 +813,32 @@ def build_concern_coaching(
                 "현재는 작은 강도로 연결을 만드는 연습부터 시도하는 것이 좋아요."
             )
         from audio_analyzer.diagnostic.practice_library import practice_for_focus
+        from audio_analyzer.diagnostic.question_semantics import semantics_for
 
-        focus = str(evaluation.get("primary_focus") or "REGISTER_CONNECTION")
-        hp = practice_for_focus(focus)
-        practice = _practice(
-            practice_id=str(hp.get("practice_id") or "REGISTER_GLIDE_LIGHT"),
-            mode=MODE_GUIDE,
-            title=str(hp.get("title") or "작은 강도로 연결하기"),
-            goal=str(hp.get("goal") or ""),
-            instruction=str(hp.get("instruction") or ""),
-            success_cues=list(hp.get("success_cues") or []),
-            avoid=list(hp.get("avoid") or []),
-            related=[cid],
-            evidence=["song_evidence_guidance"],
-        )
-        mode = MODE_GUIDE
+        # Descriptive profile may intentionally omit practice
+        if evaluation.get("practice_required") is False or (
+            evaluation.get("practice") is None
+            and str(evaluation.get("question_type") or "") == "DESCRIPTIVE_PROFILE"
+        ):
+            mode = MODE_GUIDE
+            # keep takeaway only — no corrective practice card
+        else:
+            focus = str(evaluation.get("primary_focus") or "MAINTAIN")
+            cat = str(semantics_for(cid).get("category") or "")
+            hp = practice_for_focus(focus, category=cat) or {}
+            if hp:
+                practice = _practice(
+                    practice_id=str(hp.get("practice_id") or "MAINTAIN_LOW_EFFORT"),
+                    mode=MODE_GUIDE,
+                    title=str(hp.get("title") or "편안한 패턴 유지하기"),
+                    goal=str(hp.get("goal") or ""),
+                    instruction=str(hp.get("instruction") or ""),
+                    success_cues=list(hp.get("success_cues") or []),
+                    avoid=list(hp.get("avoid") or []),
+                    related=[cid],
+                    evidence=["song_evidence_guidance"],
+                )
+            mode = MODE_GUIDE
     elif mode == MODE_PRESERVE_ONLY:
         takeaway = str(
             evaluation.get("answer_hint")

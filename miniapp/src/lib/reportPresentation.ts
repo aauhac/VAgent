@@ -664,21 +664,25 @@ export function buildVocalAxes(
     dim: any,
     estimate: { value: number; display: string } | null,
   ): DisplayAxis | null {
-    if (!dim || dim.hidden) return null;
+    if (dim?.hidden) return null;
     if (!estimate || estimate.value == null) return null;
-    const conf = getDisplayConfidence(dim, crit[dim.dimension_id]);
+    const conf = dim ? getDisplayConfidence(dim, crit[dim.dimension_id]) : {
+      confidence_percent: undefined,
+      confidence_label: undefined,
+      confidence_source: 'canonical',
+    };
     return {
       id,
       label,
       left,
       right,
-      value: estimate.value,
-      display: estimate.display,
+      value: estimate.value ?? null,
+      display: estimate.display || '',
       available: true,
-      confidence_percent: conf.confidence_percent,
-      confidence_label: conf.confidence_label,
-      confidence_source: conf.confidence_source,
-      evidence_labels: getEvidenceLabels(crit[dim.dimension_id]),
+      confidence_percent: conf.confidence_percent ?? null,
+      confidence_label: conf.confidence_label || '',
+      confidence_source: conf.confidence_source || 'canonical',
+      evidence_labels: dim ? getEvidenceLabels(crit[dim.dimension_id]) : [],
     };
   }
 
@@ -718,13 +722,17 @@ export function buildVocalAxes(
     fromCanonical('breathiness', estimateBreath(byId.air_leakage_breathiness)),
   );
   const effortEst = fromCanonical('effort', estimateEffort(byId.vocal_effort_strain));
+  const presenceEst = fromCanonical(
+    'presence',
+    fromCanonical('resonance', estimateResonance(byId.resonance_formant_strategy)),
+  );
 
   const axes: Array<DisplayAxis | null> = [
     pack('contact', '접촉감', '가벼움', '단단함', byId.glottal_contact_profile, contactEst),
     pack('breath', '숨 섞임', '적음', '많음', byId.air_leakage_breathiness, breathEst),
     pack('effort', '힘', '편안', '밀어붙임', byId.vocal_effort_strain, effortEst),
     pack('register', '성구 연결', '분리', '자연스러움', byId.register_configuration, registerEstimate),
-    pack('resonance', '공명 존재감', '낮음', '높음', byId.resonance_formant_strategy, estimateResonance(byId.resonance_formant_strategy)),
+    pack('resonance', '공명 존재감', '낮음', '높음', byId.resonance_formant_strategy, presenceEst),
   ];
 
   return axes.filter(Boolean) as DisplayAxis[];
@@ -1059,13 +1067,13 @@ export function mapEvidenceTokenForUser(token: string): string | null {
 
 export function buildTaskResultSummary(
   reliable: any[],
-  uncertain: any[] = [],
-  selectedTasks: string[] = [],
-  taskProfiles?: Record<string, any> | null,
-): Array<{
-  task: string;
-  rows: Array<{ label: string; value: string }>;
-}> {
+  uncertain: any[] | undefined,
+  completedTasks: string[] | undefined,
+  taskProfiles: Record<string, any> | undefined,
+): Array<{ task: string; rows: Array<{ label: string; value: string }> }> {
+  const selectedTasks = (completedTasks || []).filter(Boolean);
+  // Concern-only / zero completed tasks → never invent standard-task results
+  if (!selectedTasks.length) return [];
   const byTask: Record<string, Array<{ label: string; value: string }>> = {
     sustain_a: [],
     sustain_i: [],
@@ -1077,6 +1085,7 @@ export function buildTaskResultSummary(
   // Prefer normalized task_profiles from fusion
   if (taskProfiles && typeof taskProfiles === 'object') {
     for (const tid of Object.keys(taskProfiles)) {
+      if (selectedTasks.length && !selectedTasks.includes(tid)) continue;
       const rows = rowsFromTaskProfile(taskProfiles[tid]);
       if (rows.length) byTask[tid] = rows;
     }
@@ -1085,19 +1094,7 @@ export function buildTaskResultSummary(
   function addFromFinding(m: any) {
     const f = translateDiagnosticFinding(m);
     const tasks: string[] = m.source_tasks || [];
-    const fallback =
-      m.mechanism_id === 'register_transition_coordination'
-        ? ['siren']
-        : m.mechanism_id === 'intensity_phonation_coordination'
-          ? ['dynamic_swell']
-          : m.mechanism_id === 'phonation_contact_pattern'
-            ? ['sustain_i', 'sustain_a']
-            : m.mechanism_id === 'phonation_stability'
-              ? ['sustain_a']
-              : m.mechanism_id === 'high_note_effort' || String(m.dimension_id || '').includes('effort')
-                ? ['high_note_sustain_a', 'sustain_a']
-                : ['sustain_a'];
-    const targets = tasks.length ? tasks : fallback;
+    const targets = tasks.filter((t) => selectedTasks.includes(t));
     for (const t of targets) {
       if (!byTask[t]) byTask[t] = [];
       if (byTask[t].some((r) => r.label === f.title)) continue;

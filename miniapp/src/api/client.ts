@@ -162,6 +162,7 @@ export async function submitConcerns(
   sessionId: string,
   userConcerns: Array<{ id: string; source?: string; priority?: number; follow_up?: string }>,
   diagnosticMode?: 'CONCERN_FOCUSED' | 'GENERAL_DISCOVERY',
+  timbreGoal?: { id: string; source?: string } | null,
 ) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/concerns`, {
     method: 'POST',
@@ -169,6 +170,7 @@ export async function submitConcerns(
     body: JSON.stringify({
       user_concerns: userConcerns,
       diagnostic_mode: diagnosticMode,
+      ...(timbreGoal ? { timbre_goal: timbreGoal } : {}),
     }),
   });
   if (!res.ok) throw new Error(await res.text());

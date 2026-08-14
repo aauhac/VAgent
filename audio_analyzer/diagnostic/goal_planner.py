@@ -1,0 +1,652 @@
+"""Deterministic coaching goal planner (precision-goal-v1.0).
+
+No LLM. Target timbre is a perceptual goal — never a direct acoustic mapping.
+Canonical snapshot is the only current-state source of truth.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Optional
+
+from audio_analyzer.diagnostic.practice_library import practice_for_focus
+from audio_analyzer.diagnostic.question_semantics import semantics_for
+from audio_analyzer.diagnostic.song_evidence import get_canonical_snapshot
+from audio_analyzer.diagnostic.timbre_goals import (
+    HIGH_NOTE_DESIRED_OUTCOMES,
+    option_for,
+)
+
+GOAL_VERSION = "precision-goal-v1.0"
+
+FOCUS_LABELS = {
+    "REGISTER_CONNECTION": "성구 연결",
+    "EFFORT": "힘 사용",
+    "STABILITY": "안정성",
+    "PRESENCE": "중역 존재감",
+    "BRIGHTNESS": "밝기",
+    "BREATHINESS": "숨 섞임",
+    "CONTACT": "접촉감",
+    "TIMBRE": "음색 표현",
+    "DYNAMICS": "강약 조절",
+    "STYLE": "음색 표현 탐색",
+    "SAFETY": "안전",
+    "MAINTAIN": "현재 패턴 유지",
+}
+
+PRESERVE_LABELS = {
+    "LOW_EFFORT": "힘 사용이 낮은 편",
+    "STABILITY": "발성 안정성이 비교적 유지됨",
+    "LOW_BREATHINESS": "숨 섞임이 낮은 편",
+    "CONNECTED_REGISTER": "성구 연결이 비교적 유지됨",
+}
+
+_GUIDANCE_RANK = {
+    "SAFETY_ONLY": 0,
+    "CONTROLLED_CONFIRMED": 1,
+    "SONG_DIRECT": 2,
+    "SONG_COMPOSITE": 3,
+    "SAFE_GENERAL_GUIDANCE": 5,
+}
+
+_STATUS_RANK = {
+    "SAFETY_ONLY": 0,
+    "CONFIRMED": 1,
+    "PARTIALLY_SUPPORTED": 2,
+    "CONTEXT_DEPENDENT": 3,
+    "UNRESOLVED": 5,
+    "NOT_SUPPORTED": 6,
+    "NOT_SUPPORTED_IN_THIS_RECORDING": 6,
+}
+
+
+def _effort(snap: dict[str, Any]) -> str:
+    return str((snap.get("effort") or {}).get("level") or "UNKNOWN").upper()
+
+
+def _contact(snap: dict[str, Any]) -> str:
+    return str((snap.get("contact") or {}).get("status") or "UNKNOWN").upper()
+
+
+def _breath(snap: dict[str, Any]) -> str:
+    return str((snap.get("breathiness") or {}).get("level") or "UNKNOWN").upper()
+
+
+def _reg(snap: dict[str, Any]) -> str:
+    st = str((snap.get("register") or {}).get("status") or "").upper()
+    if st in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS"):
+        return "DISRUPTED"
+    if st in ("PARTIAL", "INSUFFICIENT", "MIXED"):
+        return "PARTIAL"
+    if st in ("CONNECTED", "SMOOTH", "STABLE", "CONTINUOUS", "STABLE_LIKE"):
+        return "CONNECTED"
+    return "UNKNOWN"
+
+
+def _presence_bucket(snap: dict[str, Any]) -> str:
+    p = (snap.get("timbre") or {}).get("presence")
+    try:
+        v = float(p) if p is not None else None
+    except (TypeError, ValueError):
+        v = None
+    if v is None:
+        return "UNAVAILABLE"
+    if v <= 0.42:
+        return "LOW"
+    if v >= 0.58:
+        return "HIGH"
+    return "MID"
+
+
+def _brightness_bucket(snap: dict[str, Any]) -> str:
+    b = (snap.get("timbre") or {}).get("brightness")
+    try:
+        v = float(b) if b is not None else None
+    except (TypeError, ValueError):
+        v = None
+    if v is None:
+        return "UNAVAILABLE"
+    if v <= 0.42:
+        return "LOW"
+    if v >= 0.58:
+        return "HIGH"
+    return "MID"
+
+
+def _stab_ok(snap: dict[str, Any]) -> Optional[bool]:
+    st = str((snap.get("stability") or {}).get("status") or "").upper()
+    if not st or st == "UNKNOWN":
+        return None
+    if st in ("STABLE", "LOW", "NORMAL", "OK_PROXY"):
+        return True
+    if st in ("UNSTABLE", "HIGH", "IRREGULAR"):
+        return False
+    return None
+
+
+def _preserve_factors(snap: dict[str, Any]) -> list[str]:
+    out: list[str] = []
+    if _effort(snap) == "LOW":
+        out.append("LOW_EFFORT")
+    if _stab_ok(snap) is True:
+        out.append("STABILITY")
+    if _breath(snap) == "LOW":
+        out.append("LOW_BREATHINESS")
+    if _reg(snap) == "CONNECTED":
+        out.append("CONNECTED_REGISTER")
+    return out
+
+
+def _eval_rank(ev: dict[str, Any]) -> tuple[int, int, int]:
+    gl = str(ev.get("guidance_level") or "").upper()
+    st = str(ev.get("status") or "").upper()
+    return (
+        _GUIDANCE_RANK.get(gl, 4),
+        _STATUS_RANK.get(st, 4),
+        int(ev.get("_selection_index") or 99),
+    )
+
+
+def recommend_accessible_target(snap: dict[str, Any]) -> dict[str, Any]:
+    """Low-risk style direction that does not fight current strengths.
+
+    Not 'the objectively best timbre'. Never maps genre → acoustics.
+    """
+    known = 0
+    if _effort(snap) not in ("UNKNOWN", ""):
+        known += 1
+    if _contact(snap) not in ("UNKNOWN", ""):
+        known += 1
+    if _reg(snap) not in ("UNKNOWN", ""):
+        known += 1
+    if _presence_bucket(snap) != "UNAVAILABLE":
+        known += 1
+    if _stab_ok(snap) is not None:
+        known += 1
+    weak = known < 2
+    weak_reason = (
+        "한 가지 방향을 추천하기보다는 현재 강점을 유지하며 여러 스타일을 짧게 비교해보는 것이 좋아요."
+    )
+    effort = _effort(snap)
+    contact = _contact(snap)
+    breath = _breath(snap)
+    # Avoid pushing more density when already firm/high effort. Never pick DENSE_SOLID
+    # just because the user wants density, and never pick AIRY when breath is already HIGH.
+    if effort in ("HIGH", "MODERATE") or contact == "FIRM":
+        opt = option_for("SOFT_SWEET") or {}
+        return {
+            "id": "SOFT_SWEET",
+            "label": opt.get("label") or "부드럽고 감미롭게",
+            "source": "SYSTEM_RECOMMENDED",
+            "reason": weak_reason if weak else "현재 힘·접촉을 더 키우지 않고 시도하기 좋은 방향",
+            "weak": weak,
+        }
+    if breath == "HIGH":
+        opt = option_for("SOFT_SWEET") or {}
+        return {
+            "id": "SOFT_SWEET",
+            "label": opt.get("label") or "부드럽고 감미롭게",
+            "source": "SYSTEM_RECOMMENDED",
+            "reason": weak_reason if weak else "숨을 더 늘리기보다 매끄러운 표현부터 시도하기 좋은 방향",
+            "weak": weak,
+        }
+    if _presence_bucket(snap) == "LOW":
+        opt = option_for("WARM_FULL") or {}
+        return {
+            "id": "WARM_FULL",
+            "label": opt.get("label") or "따뜻하고 풍성하게",
+            "source": "SYSTEM_RECOMMENDED",
+            "reason": weak_reason if weak else "힘을 더하지 않으면서 존재감을 탐색하기 좋은 방향",
+            "weak": weak,
+        }
+    opt = option_for("LIGHT_CLEAR") or {}
+    return {
+        "id": "LIGHT_CLEAR",
+        "label": opt.get("label") or "맑고 가볍게",
+        "source": "SYSTEM_RECOMMENDED",
+        "reason": weak_reason if weak else "현재 편안한 패턴을 유지하며 시도하기 좋은 방향",
+        "weak": weak,
+    }
+
+
+def _desired_outcome(
+    concerns: list[dict[str, Any]],
+    timbre_goal: Optional[dict[str, Any]],
+    snap: dict[str, Any],
+) -> dict[str, Any]:
+    if timbre_goal:
+        tid = str(timbre_goal.get("id") or "")
+        if tid == "RECOMMEND_FOR_ME":
+            rec = recommend_accessible_target(snap)
+            opt = option_for(rec["id"]) or {}
+            return {
+                "type": "TIMBRE",
+                "id": rec["id"],
+                "label": rec["label"],
+                "description": opt.get("description") or "",
+                "source": rec["source"],
+                "recommendation_reason": rec.get("reason"),
+            }
+        opt = option_for(tid) or {}
+        return {
+            "type": "TIMBRE",
+            "id": tid,
+            "label": timbre_goal.get("label") or opt.get("label") or tid,
+            "description": opt.get("description") or timbre_goal.get("description") or "",
+            "source": timbre_goal.get("source") or "USER_SELECTED",
+        }
+    for c in concerns:
+        cid = str(c.get("id") or "")
+        if cid in HIGH_NOTE_DESIRED_OUTCOMES:
+            d = HIGH_NOTE_DESIRED_OUTCOMES[cid]
+            return {"type": "HIGH_NOTE", "id": d["id"], "label": d["label"], "source": "CONCERN_DEFAULT"}
+    if concerns:
+        cid = str(concerns[0].get("id") or "")
+        label = str(concerns[0].get("label") or cid)
+        return {"type": "CONCERN", "id": cid, "label": label, "source": "CONCERN_DEFAULT"}
+    return {"type": "GENERAL", "id": "EXPLORE", "label": "현재 발성을 안전하게 탐색", "source": "DEFAULT"}
+
+
+def _has_functional_limitation(evs: list[dict[str, Any]], snap: dict[str, Any]) -> bool:
+    for ev in evs:
+        focus = str(ev.get("primary_focus") or "")
+        if focus in ("MAINTAIN", "TIMBRE", "STYLE", ""):
+            continue
+        gl = str(ev.get("guidance_level") or "")
+        st = str(ev.get("status") or "")
+        if gl == "SAFETY_ONLY" or st == "SAFETY_ONLY":
+            return True
+        if gl in ("CONTROLLED_CONFIRMED", "SONG_DIRECT", "SONG_COMPOSITE"):
+            if st not in ("NOT_SUPPORTED", "NOT_SUPPORTED_IN_THIS_RECORDING"):
+                return True
+        if st in ("CONFIRMED", "PARTIALLY_SUPPORTED"):
+            return True
+    if _reg(snap) == "DISRUPTED":
+        return True
+    if _effort(snap) in ("HIGH", "MODERATE"):
+        return True
+    if _stab_ok(snap) is False:
+        return True
+    return False
+
+
+def _pick_primary_evaluation(
+    evaluations: list[dict[str, Any]],
+    concerns: list[dict[str, Any]],
+) -> Optional[dict[str, Any]]:
+    ranked = sorted(evaluations, key=_eval_rank)
+    for ev in ranked:
+        focus = str(ev.get("primary_focus") or "")
+        gl = str(ev.get("guidance_level") or "")
+        st = str(ev.get("status") or "")
+        if gl == "SAFETY_ONLY" or st == "SAFETY_ONLY":
+            return ev
+        if st in ("NOT_SUPPORTED", "NOT_SUPPORTED_IN_THIS_RECORDING") and gl != "SONG_DIRECT":
+            continue
+        if focus and focus not in ("MAINTAIN",):
+            return ev
+        if gl in ("CONTROLLED_CONFIRMED", "SONG_DIRECT", "SONG_COMPOSITE"):
+            return ev
+    return ranked[0] if ranked else None
+
+
+def _gap_text(desired: dict[str, Any], snap: dict[str, Any], focus: str) -> str:
+    tid = str(desired.get("id") or "")
+    effort = _effort(snap)
+    reg = _reg(snap)
+    pb = _presence_bucket(snap)
+    bits: list[str] = []
+    if effort in ("HIGH", "MODERATE"):
+        bits.append("힘 사용이 큰 구간이 있어 음량부터 키우는 방향은 우선이 아니에요")
+    if reg in ("DISRUPTED", "PARTIAL"):
+        bits.append("음역이 올라갈 때 연결이 일정하지 않은 구간이 있어요")
+    if pb == "LOW":
+        bits.append("중역 존재감이 낮은 편이에요")
+    lead = " ".join(bits) if bits else "현재 확보된 발성 특징을 기준으로"
+    if tid in ("BRIGHT_CLEAR", "WARM_FULL", "DENSE_SOLID") and (effort in ("HIGH", "MODERATE") or reg in ("DISRUPTED", "PARTIAL")):
+        return (
+            f"{lead}. 더 선명하거나 밀도 있는 인상을 만들기 전에, "
+            "음량과 힘을 더 늘리지 않고 전환 중에도 소리 존재감이 유지되는 패턴을 만드는 것이 우선이에요."
+        )
+    if tid == "AIRY_DELICATE" and _breath(snap) == "HIGH":
+        return (
+            "이미 숨 섞임이 큰 편이므로 숨을 더 늘리기보다, "
+            "작은 강도에서 섬세한 표현이 불편 없이 이어지는지부터 확인하는 것이 좋아요."
+        )
+    if tid == "DENSE_SOLID" and _contact(snap) == "FIRM":
+        return (
+            "이미 단단한 접촉 특성이 있으므로 접촉을 더 키우지 않고, "
+            "연결과 소리 존재감을 안정시키는 방향이 좋아요."
+        )
+    if focus == "STYLE":
+        return f"{lead} 큰 기능적 교정보다, 원하는 느낌을 작은 강도로 짧게 탐색하는 것이 적합해 보여요."
+    return f"{lead} 이 부분을 먼저 다루는 것이 원하는 방향에 가까워지는 데 더 적합해 보여요."
+
+
+def _goal_copy(
+    desired: dict[str, Any],
+    focus: str,
+    snap: dict[str, Any],
+    *,
+    style: bool,
+    safety: bool,
+    concerns: Optional[list[dict[str, Any]]] = None,
+) -> tuple[str, str]:
+    if safety:
+        return (
+            "음색 변화보다 불편감이 가라앉는 것이 우선",
+            "통증이나 지속 불편이 있을 때는 강한 고음·큰 소리·음색 탐색 연습을 하지 마세요.",
+        )
+    preserve = _preserve_factors(snap)
+    keep_effort = "LOW_EFFORT" in preserve
+    keep = "현재의 편안한 힘 사용은 유지하면서, " if keep_effort else ""
+    label = desired.get("label") or "원하는 방향"
+    concern_ids = {str(c.get("id") or "") for c in (concerns or [])}
+    if "HIGH_NOTE_THINS" in concern_ids and desired.get("type") == "TIMBRE":
+        title = f"{keep}고음으로 이동할 때도 소리의 밀도와 존재감을 유지하기"
+        desc = "힘을 더 늘리지 않으면서, 음역이 올라갈 때 소리가 갑자기 얇아지지 않게 이어 보세요."
+        return title, desc
+    if style:
+        title = f"{keep}원하는 '{label}' 느낌을 작은 강도로 안전하게 탐색하기"
+        desc = (
+            "억지로 발성 구조를 바꾸기보다, 현재 잘 되는 패턴을 유지한 채 "
+            "목표 음색을 표현하는 방식을 짧게 비교해 보세요."
+        )
+        return title, desc
+    if focus == "REGISTER_CONNECTION":
+        title = f"{keep}음역이 바뀌어도 소리의 밀도와 연결이 급격하게 달라지지 않도록 하기"
+        desc = "전환 구간에서 끊기지 않는 연결을 작은 강도로 만드는 것이 이번 우선 목표예요."
+        return title, desc
+    if focus == "EFFORT":
+        title = "같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기"
+        desc = "높은 음이나 강한 구간에 도달하려고 음량부터 키우지 않는 것이 핵심이에요."
+        return title, desc
+    if focus == "PRESENCE":
+        title = f"{keep}밀지 않으면서 소리 존재감이 흐려지지 않도록 하기"
+        desc = "음량을 키워 가리기보다, 편안한 강도에서 중역 존재감이 유지되는지 확인하세요."
+        return title, desc
+    if focus == "BREATHINESS":
+        title = "숨이 먼저 새지 않게, 짧은 구간에서 표현을 유지하기"
+        desc = "숨을 더 막거나 더 흘리기보다 짧은 지속에서 섞임이 과해지지 않게 하세요."
+        return title, desc
+    if focus == "STABILITY":
+        title = f"{keep}짧은 구간에서 흔들림이 커지지 않게 유지하기"
+        desc = "길게 버티기보다 짧은 안정 구간을 만든 뒤 범위를 넓히세요."
+        return title, desc
+    if focus == "MAINTAIN":
+        title = f"{keep}{label}"
+        desc = (
+            "현재 기능적 문제를 억지로 바꾸기보다 "
+            "목표 느낌을 표현하는 방식을 안전하게 탐색하는 것이 우선이에요."
+        )
+        return title, desc
+    title = f"{keep}원하는 방향에 가까워지도록 지금 가장 관련 있는 패턴부터 확인하기"
+    return title, "현재 분석에서 가장 관련 있어 보이는 제한을 작은 강도로 다루는 것이 우선이에요."
+
+
+def _why_first(focus: str, snap: dict[str, Any], preserve: list[str]) -> str:
+    parts: list[str] = []
+    if "LOW_EFFORT" in preserve:
+        parts.append("힘 사용은 낮은 편이라 더 세게 부르는 것이 현재 우선은 아니에요.")
+    if "LOW_BREATHINESS" in preserve:
+        parts.append("숨 섞임은 낮은 편이라 숨을 더 막는 것이 현재 우선은 아니에요.")
+    if focus == "REGISTER_CONNECTION" and _reg(snap) in ("DISRUPTED", "PARTIAL"):
+        parts.append(
+            "반면 음역이 올라갈 때 연결이 급격하게 달라지는 구간이 있어 "
+            "이 부분을 먼저 안정시키는 것이 더 적합해 보여요."
+        )
+    elif focus == "EFFORT" and _effort(snap) in ("HIGH", "MODERATE"):
+        parts.append("힘 사용이 큰 구간이 있어 이 패턴을 먼저 다루는 것이 좋아요.")
+    elif focus == "PRESENCE" and _presence_bucket(snap) == "LOW":
+        parts.append("중역 존재감이 낮은 편이라 소리 중심이 덜 또렷하게 느껴질 수 있어 보여요.")
+    elif focus == "STYLE":
+        parts.append(
+            "뚜렷한 기능적 제한을 억지로 만들기보다, "
+            "목표 음색을 표현하는 방식을 안전하게 탐색하는 것이 우선이에요."
+        )
+    elif focus == "SAFETY":
+        parts.append("불편감이 있을 때는 연습보다 휴식이 우선이에요.")
+    if not parts:
+        parts.append("현재 분석에서 이 축이 질문·목표와 가장 직접 관련되어 보여요.")
+    return " ".join(parts)
+
+
+def _style_practice_id(target_id: str) -> str:
+    mapping = {
+        "DENSE_SOLID": "STYLE_DENSE_SOLID",
+        "BRIGHT_CLEAR": "STYLE_BRIGHT_CLEAR",
+        "SOFT_SWEET": "STYLE_SOFT_SWEET",
+        "LIGHT_CLEAR": "STYLE_LIGHT_CLEAR",
+        "WARM_FULL": "STYLE_WARM_FULL",
+        "AIRY_DELICATE": "STYLE_AIRY_DELICATE",
+        "INTENSE_DISTINCT": "STYLE_INTENSE_DISTINCT",
+    }
+    return mapping.get(target_id, "STYLE_SOFT_SWEET")
+
+
+def _pack_axis(
+    *,
+    available: bool,
+    status: Any,
+    continuum: Any,
+    confidence: str = "medium",
+    source_scope: str = "SONG",
+) -> dict[str, Any]:
+    return {
+        "available": bool(available),
+        "status": status,
+        "continuum": continuum,
+        "confidence": confidence,
+        "source_scope": source_scope,
+    }
+
+
+def _current_state(snap: dict[str, Any]) -> dict[str, Any]:
+    effort = snap.get("effort") or {}
+    contact = snap.get("contact") or {}
+    breath = snap.get("breathiness") or {}
+    register = snap.get("register") or {}
+    stab = snap.get("stability") or {}
+    timbre = snap.get("timbre") or {}
+    hn = snap.get("high_note") or {}
+    presence = timbre.get("presence")
+    brightness = timbre.get("brightness")
+    airiness = timbre.get("airiness")
+    return {
+        "effort": _pack_axis(
+            available=bool(effort.get("available")),
+            status=effort.get("level") or effort.get("status"),
+            continuum=None,
+        ),
+        "contact": _pack_axis(
+            available=bool(contact.get("available")),
+            status=contact.get("status"),
+            continuum=contact.get("continuum"),
+        ),
+        "functional_breathiness": _pack_axis(
+            available=bool(breath.get("available")),
+            status=breath.get("level") or breath.get("status"),
+            continuum=breath.get("airiness_continuum"),
+        ),
+        "register": _pack_axis(
+            available=bool(register.get("available")),
+            status=register.get("status"),
+            continuum=None,
+        ),
+        "stability": _pack_axis(
+            available=bool(stab.get("available")),
+            status=stab.get("status"),
+            continuum=None,
+        ),
+        "presence": _pack_axis(
+            available=presence is not None,
+            status=_presence_bucket(snap) if presence is not None else "UNAVAILABLE",
+            continuum=presence,
+        ),
+        "brightness": _pack_axis(
+            available=brightness is not None,
+            status=_brightness_bucket(snap) if brightness is not None else "UNAVAILABLE",
+            continuum=brightness,
+        ),
+        "timbre_airiness": _pack_axis(
+            available=airiness is not None,
+            status=None,
+            continuum=airiness,
+        ),
+        "texture": _pack_axis(
+            available=timbre.get("texture") is not None,
+            status=None,
+            continuum=timbre.get("texture"),
+        ),
+        "source_balance": _pack_axis(
+            available=bool((register.get("head_chest") or {})),
+            status=None,
+            continuum=None,
+        ),
+        "high_note": _pack_axis(
+            available=bool(hn.get("available")),
+            status=hn.get("reason"),
+            continuum=None,
+        ),
+        "dynamic_response": _pack_axis(available=False, status="UNAVAILABLE", continuum=None),
+        "vibrato": _pack_axis(available=False, status="UNAVAILABLE", continuum=None),
+    }
+
+
+def plan_coaching_goal(
+    *,
+    user_concerns: list[dict[str, Any]] | None,
+    timbre_goal: dict[str, Any] | None = None,
+    concern_evaluations: list[dict[str, Any]] | None = None,
+    song_profile: dict[str, Any] | None = None,
+    pain: bool = False,
+) -> dict[str, Any]:
+    concerns = list(user_concerns or [])
+    evs = [dict(ev) for ev in (concern_evaluations or [])]
+    for i, ev in enumerate(evs):
+        ev["_selection_index"] = i
+        cid = str(ev.get("concern_id") or ev.get("concern") or "")
+        for j, c in enumerate(concerns):
+            if str(c.get("id") or "") == cid:
+                ev["_selection_index"] = j
+                break
+    snap = get_canonical_snapshot(song_profile)
+    desired = _desired_outcome(concerns, timbre_goal, snap)
+    preserve = _preserve_factors(snap)
+    current = _current_state(snap)
+
+    if pain:
+        practices = [practice_for_focus("SAFETY") or {}]
+        return {
+            "version": GOAL_VERSION,
+            "desired_outcome": desired,
+            "current_state": current,
+            "current_summary": "불편감이 있어 음색·고음 탐색보다 안전이 우선이에요.",
+            "goal_title": "음색 변화보다 불편감이 가라앉는 것이 우선",
+            "goal_description": "강한 고음·큰 소리·적극적인 음색 연습을 중단하고 짧게 쉬세요.",
+            "primary_focus": "SAFETY",
+            "primary_focus_label": FOCUS_LABELS["SAFETY"],
+            "why_this_first": "통증·지속 불편에서는 연습보다 휴식이 우선이에요.",
+            "supporting_factors": [],
+            "preserve_factors": preserve,
+            "preserve_labels": [PRESERVE_LABELS[p] for p in preserve if p in PRESERVE_LABELS],
+            "practice_ids": ["SAFETY_STOP"],
+            "practices": [p for p in practices if p],
+            "mode": "SAFETY",
+            "gap_interpretation": "목표 음색보다 현재 불편감을 줄이는 것이 먼저예요.",
+            "evidence_used": [{"axis": "safety", "status": "FLAGGED", "scope": "USER_REPORTED"}],
+        }
+
+    primary_ev = _pick_primary_evaluation(evs, concerns)
+    functional = _has_functional_limitation(evs, snap)
+    style = bool(desired.get("type") == "TIMBRE") and not functional
+
+    if primary_ev and not style:
+        focus = str(primary_ev.get("primary_focus") or "MAINTAIN")
+        supporting = list(primary_ev.get("secondary_factors") or [])[:2]
+        # DENSE_SOLID must not force firmer contact
+        if desired.get("id") == "DENSE_SOLID" and focus == "CONTACT" and _contact(snap) == "FIRM":
+            focus = "REGISTER_CONNECTION" if _reg(snap) in ("PARTIAL", "DISRUPTED") else "PRESENCE"
+        if desired.get("id") == "AIRY_DELICATE" and focus == "BREATHINESS" and _breath(snap) == "HIGH":
+            focus = "PRESENCE" if _presence_bucket(snap) == "LOW" else "MAINTAIN"
+        if desired.get("id") == "SOFT_SWEET" and focus == "CONTACT" and _contact(snap) == "FIRM":
+            focus = "EFFORT" if _effort(snap) in ("HIGH", "MODERATE") else "PRESENCE"
+        mode = "GUIDE"
+        if str(primary_ev.get("guidance_level")) == "CONTROLLED_CONFIRMED":
+            mode = "CORRECT"
+        elif str(primary_ev.get("status")) == "PARTIALLY_SUPPORTED":
+            mode = "REFINE"
+        if focus == "MAINTAIN" and desired.get("type") == "TIMBRE":
+            style = True
+            focus = "STYLE"
+            mode = "STYLE"
+        elif focus == "MAINTAIN" and not functional:
+            style = bool(desired.get("type") == "TIMBRE")
+            if style:
+                focus = "STYLE"
+                mode = "STYLE"
+    elif style:
+        focus = "STYLE"
+        supporting = []
+        mode = "STYLE"
+        primary_ev = None
+    else:
+        focus = str((primary_ev or {}).get("primary_focus") or "MAINTAIN")
+        supporting = []
+        mode = "GUIDE"
+
+    if style:
+        focus = "STYLE"
+        mode = "STYLE"
+
+    title, desc = _goal_copy(
+        desired, focus, snap, style=style, safety=False, concerns=concerns
+    )
+    gap = _gap_text(desired, snap, focus)
+    why = _why_first(focus, snap, preserve)
+
+    if focus == "STYLE":
+        pid = _style_practice_id(str(desired.get("id") or "SOFT_SWEET"))
+        practice = practice_for_focus(pid, category="timbre") or practice_for_focus("STYLE")
+        pids = [pid]
+    else:
+        cat = str(semantics_for(str((primary_ev or {}).get("concern_id") or "")).get("category") or "")
+        practice = practice_for_focus(focus, category=cat)
+        pids = [practice.get("practice_id")] if practice else []
+        if not practice and desired.get("type") == "TIMBRE":
+            pid = _style_practice_id(str(desired.get("id") or "SOFT_SWEET"))
+            practice = practice_for_focus(pid, category="timbre")
+            pids = [pid] if practice else []
+            focus = "STYLE"
+            mode = "STYLE"
+            title, desc = _goal_copy(
+                desired, focus, snap, style=True, safety=False, concerns=concerns
+            )
+
+    evidence_used = []
+    if primary_ev:
+        for item in (primary_ev.get("functional_hypothesis") or {}).get("evidence_used") or []:
+            evidence_used.append(item)
+        if not evidence_used:
+            for axis in ("effort", "register", "presence", "breathiness"):
+                evidence_used.append({"axis": axis, "status": "USED", "scope": "SONG"})
+
+    return {
+        "version": GOAL_VERSION,
+        "desired_outcome": desired,
+        "current_state": current,
+        "current_summary": gap,
+        "goal_title": title,
+        "goal_description": desc,
+        "primary_focus": focus,
+        "primary_focus_label": FOCUS_LABELS.get(focus, focus),
+        "why_this_first": why,
+        "supporting_factors": supporting,
+        "preserve_factors": preserve,
+        "preserve_labels": [PRESERVE_LABELS[p] for p in preserve if p in PRESERVE_LABELS],
+        "practice_ids": [p for p in pids if p],
+        "practices": [practice] if practice else [],
+        "mode": mode,
+        "gap_interpretation": gap,
+        "evidence_used": evidence_used[:6],
+        "source_concern_id": (primary_ev or {}).get("concern_id") or (primary_ev or {}).get("concern"),
+    }
