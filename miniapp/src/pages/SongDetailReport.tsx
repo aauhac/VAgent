@@ -178,7 +178,7 @@ export default function SongDetailReport() {
       <HighNoteFunctionSection
         profile={report.high_note_function_profile || vf.high_note_function_profile}
       />
-      <TimbreProfileSection profile={report.timbre_profile || vf.timbre_profile} />
+      <TimbreProfileSection profile={report.timbre_profile || vf.timbre_profile} omitPresence />
 
       <AudioCompare
         featureClip={coreSpan || null}

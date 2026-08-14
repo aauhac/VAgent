@@ -30,6 +30,33 @@ MISSING_DATA_MARKERS = (
     "밝기 자체는 충분히 비교되지",
 )
 
+# User-facing A. must not lead with epistemic meta-disclaimers.
+EPISTEMIC_DISCLAIMER_MARKERS = (
+    "직접 확정할 음향 지표는 제한적이에요",
+    "뚜렷한 음향 특징이 강하지 않아요",
+    "한 원인으로 단정하지는 않아요",
+    "특정 원인을 가정하기보다는",
+    "확인하는 방향이 좋아요",
+    "확인하는 방향이 적합해 보여요",
+    "직접 연결되는 특징이 뚜렷하게 잡히지 않았어요",
+    "직접 연결되는 음색 특징이 뚜렷하게 잡히지 않았어요",
+    "힘과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요",
+    "이 고민과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요",
+    "이 고민과 직접 연결되는 음색 특징이 뚜렷하게 잡히지 않았어요",
+    "두 가지 방식으로 짧게 비교",
+    "두 가지 방식으로 비교",
+)
+
+ANSWER_MODE_EVIDENCE = "EVIDENCE_EXPLANATION"
+ANSWER_MODE_EXPERIMENT = "GUIDED_EXPERIMENT"
+
+from audio_analyzer.diagnostic.comparison_guidance import (
+    RESPONSE_EVIDENCE,
+    RESPONSE_EXPERIMENT,
+    build_comparison_protocol,
+    format_comparison_user_block,
+)
+
 BAD_KOREAN_SUFFIX_RE = re.compile(r"(적|높|낮)예요")
 
 _BANNED_DIAGNOSIS = (
@@ -100,7 +127,9 @@ GUIDANCE_BY_FOCUS: dict[str, dict[str, Any]] = {
             "짧은 구절에서 편안한 강도의 표현을 비교하는 방식이 좋아요."
         ),
         "what_to_change": "우선 짧은 구절에서 편안한 강도의 표현을 비교해보세요.",
-        "short_instruction": "같은 구절을 작은 강도로 두 가지 방식으로 짧게 비교해보세요.",
+        "short_instruction": (
+            "같은 구절을 ① 평소대로, ② 작은 강도로 과하게 밀지 않고 짧게 비교해보세요."
+        ),
         "success_cues": ["음량을 먼저 키우지 않음", "불편감 없음"],
         "avoid": ["밝게 하려고 세게 밀기"],
         "practice_id": "PRESENCE_WITHOUT_PUSHING",
@@ -184,12 +213,12 @@ GUIDANCE_BY_FOCUS: dict[str, dict[str, Any]] = {
     },
     "MAINTAIN": {
         "knowledge": (
-            "특정 원인을 가정하기보다는, 같은 구절을 작은 강도에서 "
-            "두 가지 방식으로 짧게 비교하며 더 편안하고 안정적인 쪽을 찾는 것부터 시작할 수 있어요."
+            "같은 구절을 평소 방식과 작은 강도 방식으로 짧게 비교하며 "
+            "더 편안하고 안정적인 쪽을 찾는 것부터 시작할 수 있어요."
         ),
         "what_to_change": "우선 같은 구절을 작은 강도로 짧게 비교해보세요.",
         "short_instruction": (
-            "같은 구절을 작은 강도에서 두 가지 방식으로 짧게 비교하며 "
+            "같은 구절을 ① 평소대로, ② 작은 강도로 과하게 밀지 않고 짧게 비교하며 "
             "더 편안하고 안정적인 쪽을 찾아보세요."
         ),
         "success_cues": ["불편감 없이 짧은 구간 유지", "음량을 갑자기 키우지 않음"],
@@ -384,8 +413,20 @@ def timbre_goal_support_line(timbre_goal: Any, snap: Optional[dict[str, Any]] = 
         noun = str(opt.get("label") or "").strip().rstrip("게")
     if not noun:
         return ""
-    effort = str(((snap or {}).get("effort") or {}).get("level") or "").upper()
-    keep_effort = "현재의 편안한 힘 사용은 유지하면서, " if effort == "LOW" else "음량을 먼저 키우지 않으면서, "
+    effort = (snap or {}).get("effort") or {}
+    effort_level = str(effort.get("level") or "").upper()
+    keep_effort = (
+        "현재의 편안한 힘 사용은 유지하면서, "
+        if (
+            effort_level == "LOW"
+            and bool(effort.get("available"))
+            and (
+                bool(effort.get("reliable_for_preserve"))
+                or str(effort.get("confidence_label") or "").lower() in ("medium", "high")
+            )
+        )
+        else "음량을 먼저 키우지 않으면서, "
+    )
     return (
         f"원하는 {noun} 방향을 위해서는 {keep_effort}"
         "짧은 구절에서 연결이 매끄러운 표현을 먼저 탐색해보는 것이 좋아요."
@@ -421,6 +462,39 @@ def strip_missing_data_phrases(text: str, *, has_related_evidence: bool) -> str:
     return " ".join(kept).strip()
 
 
+def strip_epistemic_disclaimers(text: str) -> str:
+    """Remove user-facing meta-disclaimers. Keep content sentences only."""
+    kept: list[str] = []
+    for sent in _split_sentences(text):
+        if any(m in sent for m in EPISTEMIC_DISCLAIMER_MARKERS):
+            continue
+        if any(m in sent for m in MISSING_DATA_MARKERS):
+            continue
+        kept.append(sent)
+    return " ".join(kept).strip()
+
+
+def comparison_protocol_for(
+    concern_id: Optional[str],
+    *,
+    snap: Optional[dict[str, Any]] = None,
+    primary_focus: Optional[str] = None,
+    timbre_goal: Any = None,
+    evidence_used: Optional[list[Any]] = None,
+) -> dict[str, Any]:
+    return build_comparison_protocol(
+        concern_id,
+        snap=snap,
+        primary_focus=primary_focus,
+        timbre_goal=timbre_goal,
+        evidence_used=evidence_used,
+    )
+
+
+def format_comparison_block(proto: dict[str, Any]) -> str:
+    return format_comparison_user_block(proto)
+
+
 def fix_korean_suffixes(text: str) -> str:
     t = BAD_KOREAN_SUFFIX_RE.sub(lambda m: m.group(1) + "어요", str(text or ""))
     t = t.replace("적예요", "적어요").replace("높예요", "높아요").replace("낮예요", "낮아요")
@@ -432,12 +506,10 @@ def contains_banned_personal_diagnosis(text: str) -> bool:
     return any(b in t for b in _BANNED_DIAGNOSIS)
 
 
-def _zero_evidence_scope_line() -> str:
-    return (
-        "현재 노래에서는 이 고민과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요. "
-        "그래서 특정 원인을 가정하기보다는, 같은 구절을 작은 강도에서 두 가지 방식으로 "
-        "짧게 비교하며 더 편안하고 안정적인 쪽을 찾는 것부터 시작해보세요."
-    )
+def _zero_evidence_scope_line(concern_id: Optional[str] = None) -> str:
+    proto = comparison_protocol_for(concern_id)
+    lead = str(proto.get("lead") or "").strip()
+    return lead or "같은 짧은 구절을 두 방식으로 비교해보세요."
 
 
 def finalize_actionable_qa(
@@ -453,7 +525,9 @@ def finalize_actionable_qa(
 
     focus = str(out.get("primary_focus") or "MAINTAIN")
     qtype = str(out.get("question_type") or "")
+    concern_id = str(out.get("concern_id") or "")
     safety = str(out.get("guidance_level") or "") == "SAFETY_ONLY" or focus == "SAFETY"
+    guidance_level = str(out.get("guidance_level") or "")
 
     observed = observed_facts_from_snapshot(snap)
     evidence_used = list(out.get("evidence_used") or [])
@@ -465,11 +539,15 @@ def finalize_actionable_qa(
     interpretation = fix_korean_suffixes(str(out.get("interpretation") or "").strip())
     if has_related:
         interpretation = strip_missing_data_phrases(interpretation, has_related_evidence=True)
+    if not safety:
+        interpretation = strip_epistemic_disclaimers(interpretation)
+
     if safety:
         g = guidance_for_focus("SAFETY")
     else:
         g = guidance_for_focus(focus, timbre_goal_id=_goal_id(timbre_goal) if qtype == "DESCRIPTIVE_PROFILE" else None)
 
+    # knowledge_support is INTERNAL reasoning only — never appended to public answer.
     knowledge = str(g.get("knowledge") or "").strip()
     what = str(g.get("what_to_change") or "").strip()
     short = str(g.get("short_instruction") or "").strip()
@@ -477,8 +555,32 @@ def finalize_actionable_qa(
     avoid = list(g.get("avoid") or [])
     pid = str(g.get("practice_id") or "")
 
+    proto = (
+        comparison_protocol_for(
+            concern_id,
+            snap=snap,
+            primary_focus=focus,
+            timbre_goal=timbre_goal,
+            evidence_used=evidence_used,
+        )
+        if not safety
+        else {}
+    )
+    if proto.get("what_to_change"):
+        what = str(proto["what_to_change"]).strip() or what
+    if proto.get("avoid"):
+        avoid = list(proto.get("avoid") or avoid)
+
+    answer_mode = ANSWER_MODE_EVIDENCE
     if safety:
-        # Do not attach style / high-note exploration.
+        answer_mode = "SAFETY"
+    elif guidance_level in ("SAFE_GENERAL_GUIDANCE", "GUIDANCE_ONLY", "") and not evidence_used:
+        answer_mode = ANSWER_MODE_EXPERIMENT
+    elif not evidence_used and focus in ("MAINTAIN", "TIMBRE"):
+        answer_mode = ANSWER_MODE_EXPERIMENT
+    # Evidence explanation still carries an explicit comparison for actionability.
+
+    if safety:
         knowledge = GUIDANCE_BY_FOCUS["SAFETY"]["knowledge"]
         what = GUIDANCE_BY_FOCUS["SAFETY"]["what_to_change"]
         short = GUIDANCE_BY_FOCUS["SAFETY"]["short_instruction"]
@@ -492,19 +594,22 @@ def finalize_actionable_qa(
             )
     else:
         if not interpretation:
-            if has_related:
+            if answer_mode == ANSWER_MODE_EXPERIMENT:
+                interpretation = _zero_evidence_scope_line(concern_id)
+            elif has_related:
                 bits = [f["text"] for f in observed[:4]]
-                interpretation = "이번 노래에서는 " + ", ".join(bits) + "이에요." if bits else _zero_evidence_scope_line()
+                interpretation = (
+                    "이번 노래에서는 " + ", ".join(bits) + "이에요."
+                    if bits
+                    else _zero_evidence_scope_line(concern_id)
+                )
             else:
-                interpretation = _zero_evidence_scope_line()
+                interpretation = _zero_evidence_scope_line(concern_id)
         goal_line = ""
         if qtype == "DESCRIPTIVE_PROFILE":
             goal_line = timbre_goal_support_line(timbre_goal, snap)
             if goal_line and goal_line not in interpretation:
                 interpretation = (interpretation.rstrip() + " " + goal_line).strip()
-        if knowledge and knowledge not in interpretation and "따라서 이 사용자의 원인은" not in knowledge:
-            # Keep knowledge as a separate field; do not fold into a personal cause claim.
-            pass
 
     interpretation = fix_korean_suffixes(interpretation)
     if contains_banned_personal_diagnosis(interpretation):
@@ -518,7 +623,6 @@ def finalize_actionable_qa(
         out["practice"] = dict(practice) if practice else None
         out["practice_required"] = True
     elif out.get("practice_required") is False:
-        # Descriptive: keep no full practice card, but still expose short action.
         pass
     elif not practice and pid:
         practice = practice_for_focus(focus) or get_practice(pid)
@@ -530,10 +634,63 @@ def finalize_actionable_qa(
         avoid = list(practice.get("avoid") or avoid)
         pid = str(practice.get("practice_id") or pid)
 
+    if not safety and proto.get("success_condition"):
+        cues = list(
+            dict.fromkeys(
+                [
+                    *(cues or []),
+                    str(proto.get("success_condition")),
+                    "힘 증가 없음",
+                ]
+            )
+        )
+
+    if not safety and proto:
+        a = proto.get("baseline_instruction") or proto.get("A")
+        b = proto.get("variant_instruction") or proto.get("B")
+        short = f"① {a} / ② {b} 를 비교해보세요." if a and b else short
+
+    comparison = None
+    if not safety and proto:
+        comparison = {
+            "comparison_family": proto.get("comparison_family"),
+            "baseline_label": proto.get("baseline_label"),
+            "baseline_instruction": proto.get("baseline_instruction") or proto.get("A"),
+            "variant_label": proto.get("variant_label"),
+            "variant_instruction": proto.get("variant_instruction") or proto.get("B"),
+            "success_condition": proto.get("success_condition") or proto.get("success"),
+            "if_better": proto.get("if_better"),
+            "if_not_better": proto.get("if_not_better"),
+            # Compat
+            "A": proto.get("baseline_instruction") or proto.get("A"),
+            "B": proto.get("variant_instruction") or proto.get("B"),
+            "success": proto.get("success_condition") or proto.get("success"),
+            "lead": proto.get("lead"),
+            "is_generic_fallback": bool(proto.get("is_generic_fallback")),
+        }
+
+    working = "" if safety else str(proto.get("working_direction") or "").strip()
+    # Consensus eligibility: evidence-backed OR concern-specific guided experiment (not bare MAINTAIN)
+    consensus_ok = False
+    if not safety:
+        if evidence_used and focus not in ("", "MAINTAIN", "TIMBRE", "STYLE"):
+            consensus_ok = True
+        elif answer_mode == ANSWER_MODE_EXPERIMENT and concern_id and focus not in ("", "MAINTAIN"):
+            consensus_ok = True
+        elif guidance_level in ("SONG_DIRECT", "SONG_COMPOSITE", "CONTROLLED_CONFIRMED") and focus not in (
+            "",
+            "MAINTAIN",
+            "TIMBRE",
+            "STYLE",
+        ):
+            consensus_ok = True
+
     out["observed"] = [f["text"] for f in observed]
     out["interpretation"] = interpretation
-    out["knowledge_support"] = knowledge if not safety else knowledge
+    out["knowledge_support"] = knowledge  # INTERNAL — do not append to public answer
+    out["knowledge_support_internal"] = True
     out["what_to_change"] = what
+    out["working_direction"] = working
     out["action"] = {
         "practice_id": pid or None,
         "short_instruction": short,
@@ -542,6 +699,11 @@ def finalize_actionable_qa(
     out["avoid"] = avoid
     out["knowledge_scope"] = KNOWLEDGE_SCOPE
     out["answer_summary"] = interpretation
+    out["answer_mode"] = answer_mode
+    out["response_mode"] = answer_mode  # alias for v5 contract
+    out["comparison"] = comparison
+    out["comparison_protocol"] = comparison  # backward-compatible alias
+    out["counts_for_consensus"] = consensus_ok
     if out.get("scope_note") is None:
         out["scope_note"] = None
 
@@ -563,26 +725,40 @@ def _goal_id(timbre_goal: Any) -> Optional[str]:
 
 
 def public_answer_text(hyp: dict[str, Any]) -> str:
-    """User-facing QA body: observed interpretation + optional short next step.
+    """User-facing QA body: working direction text only.
 
+    knowledge_support stays internal.
+    Comparison A/B is exposed via `comparison` for UI (and embedded for API clients).
     Full practice instructions stay in the global practice section.
     """
     text = fix_korean_suffixes(str(hyp.get("interpretation") or "").strip())
+    text = strip_epistemic_disclaimers(text)
     qtype = str(hyp.get("question_type") or "")
     safety = str(hyp.get("guidance_level") or "") == "SAFETY_ONLY"
     what = str(hyp.get("what_to_change") or "").strip()
-    knowledge = str(hyp.get("knowledge_support") or "").strip()
-    if knowledge and knowledge not in text and not safety:
-        if qtype == "DESCRIPTIVE_PROFILE" and ("탐색" in text or "비교" in text):
-            pass
-        else:
-            text = (text + " " + knowledge).strip()
     if safety:
         return text
+
+    proto = hyp.get("comparison") or hyp.get("comparison_protocol")
+    if not isinstance(proto, dict) or not (
+        proto.get("baseline_instruction") or proto.get("A")
+    ):
+        proto = comparison_protocol_for(
+            str(hyp.get("concern_id") or ""),
+            primary_focus=str(hyp.get("primary_focus") or ""),
+            evidence_used=list(hyp.get("evidence_used") or []),
+        )
+
+    block = format_comparison_block(proto)
+    # Embed A/B for API / non-UI consumers; UI may also render structured `comparison`
+    if "①" not in text and block:
+        text = f"{text}\n\n{block}".strip() if text else block
+
     if qtype == "DESCRIPTIVE_PROFILE":
         if what and what not in text:
             text = (text + " " + what).strip()
         return text
-    if what and "→" not in text:
+    # Use "\n\n→ " — plain "→" also appears in labels like "중음→고음"
+    if what and "\n\n→ " not in text and not text.rstrip().endswith(what):
         text = f"{text}\n\n→ {what}"
     return text.strip()

@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "tooltips": {
+    "contact": true,
+    "breath": true,
+    "effort": true,
+    "register": true,
+    "resonance": true
+  },
+  "registerLayout": {
+    "labelNowrap": true,
+    "mobileColumn": true,
+    "descriptionClass": true
+  },
+  "regenerateHidden": true,
+  "presenceDedup": true,
+  "qaGroups": {},
+  "screenshot": null,
+  "error": "VAGENT_E2E_SESSION not set — static checks only"
+}

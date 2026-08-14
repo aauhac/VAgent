@@ -1,7 +1,10 @@
 import SpectrumAxis from './SpectrumAxis';
+import { helpTextForAxis } from '../../lib/axisHelpText';
 
 type Props = {
   profile: any;
+  /** When true, omit presence axis (already shown in VocalProfile). */
+  omitPresence?: boolean;
 };
 
 const REASON_COPY: Record<string, string> = {
@@ -9,7 +12,7 @@ const REASON_COPY: Record<string, string> = {
   MIXED_CONTAMINATION: '반주 영향이 큰 구간이 많아 음색 특성을 안정적으로 분리하지 못했어요.',
 };
 
-export default function TimbreProfileSection({ profile }: Props) {
+export default function TimbreProfileSection({ profile, omitPresence = false }: Props) {
   if (!profile) return null;
 
   const availability = String(profile.availability || (profile.available ? 'FULL' : 'UNAVAILABLE')).toUpperCase();
@@ -36,7 +39,7 @@ export default function TimbreProfileSection({ profile }: Props) {
   const axes = profile.axes || {};
   const order = [
     'brightness',
-    'presence',
+    ...(omitPresence ? [] : ['presence']),
     'airiness',
     'texture',
     'harmonic_concentration',
@@ -44,7 +47,7 @@ export default function TimbreProfileSection({ profile }: Props) {
   ];
   const labels: Record<string, string> = {
     brightness: '밝기',
-    presence: '존재감',
+    presence: '중역 존재감',
     airiness: '음색의 공기감',
     texture: '질감',
     harmonic_concentration: '배음 집중',
@@ -72,6 +75,7 @@ export default function TimbreProfileSection({ profile }: Props) {
             rightLabel={ax.right_label || ''}
             value={Number(ax.continuum)}
             stateLabel={ax.status || ''}
+            helpText={helpTextForAxis(id)}
             confidenceLabel={ax.confidence_label}
             showConfidence={false}
           />

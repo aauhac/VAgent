@@ -345,9 +345,8 @@ def build_functional_hypothesis(
             "primary_focus": "REGISTER_CONNECTION",
             "secondary_factors": [],
             "interpretation": (
-                "현재 노래에서는 고음이 어려운 특징이 뚜렷하게 잡히지 않았어요. "
-                "그래서 특정 원인을 가정하기보다는, 고음을 연습할 때는 음량을 먼저 키우지 않고, "
-                "편안한 중음에서 높은 음까지 작은 강도로 연결하는 연습부터 시작하는 것이 좋아요."
+                "높은 음에 닿으려면 세게 밀기보다, "
+                "편안한 중음에서 작은 강도로 연결하는 쪽을 먼저 비교해보세요."
             ),
             "evidence": [],
             "contra_evidence": [],
@@ -499,12 +498,19 @@ def compose_user_answer(hyp: dict[str, Any]) -> str:
 def _copy_qa_contract(out: dict[str, Any], hyp: dict[str, Any]) -> None:
     out["observed"] = hyp.get("observed") or []
     out["knowledge_support"] = hyp.get("knowledge_support")
+    out["knowledge_support_internal"] = hyp.get("knowledge_support_internal", True)
     out["what_to_change"] = hyp.get("what_to_change")
     out["action"] = hyp.get("action")
     out["success_cues"] = hyp.get("success_cues") or []
     out["avoid"] = hyp.get("avoid") or []
     out["knowledge_scope"] = hyp.get("knowledge_scope")
     out["interpretation"] = hyp.get("interpretation") or out.get("interpretation")
+    out["answer_mode"] = hyp.get("answer_mode")
+    out["response_mode"] = hyp.get("response_mode") or hyp.get("answer_mode")
+    out["working_direction"] = hyp.get("working_direction")
+    out["comparison"] = hyp.get("comparison") or hyp.get("comparison_protocol")
+    out["comparison_protocol"] = out["comparison"]
+    out["counts_for_consensus"] = hyp.get("counts_for_consensus")
     if hyp.get("evidence_used") is not None:
         out["evidence_used"] = hyp.get("evidence_used")
 
@@ -563,7 +569,7 @@ def ensure_actionable_guidance(
         out["practice"] = hyp.get("practice")
         out["functional_hypothesis"] = hyp
         # Ensure practice appended if takeaway-only
-        if "→" not in str(out.get("answer_hint")):
+        if "\n\n→ " not in str(out.get("answer_hint")):
             out["answer_hint"] = compose_user_answer(
                 {**hyp, "interpretation": out["answer_hint"]}
             )

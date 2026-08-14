@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "api": "http://127.0.0.1:8000",
+    "web": "http://127.0.0.1:5173",
+    "session_id": "97e15a93838144cbb3848435754a909c",
+    "analysis_id": "e75a9e8176d3461caefa4ef545472212",
+    "evidence_mode": "CONCERN_ONLY"
+  },
+  "qa_guidance_version": "precision-qa-guided-experiment-v5",
+  "global_goal": {
+    "title": "현재의 편안한 힘 사용은 유지하면서, 음역이 바뀔 때 소리 특성이 더 일정하게 이어지도록 하기",
+    "focus": "REGISTER_CONNECTION",
+    "description": "연결을 안정시킨 뒤 '강렬하고 개성 있게' 느낌을 짧게 탐색하는 것이 좋아요. 전환 구간에서 끊기지 않는 연결을 작은 강도로 먼저 만드세요."
+  },
+  "target": "원하는 음색\n\n강렬하고 개성 있게\n\n질감과 존재감이 뚜렷해 인상이 강하게 남는 음색",
+  "practiceCount": 1,
+  "questions": [
+    {
+      "concern_id": "VOICE_TOO_NASAL_PERCEPT",
+      "question": "왜 콧소리처럼 들릴까요?",
+      "browser_answer": "A. 이번 노래에서는 음역이 바뀔 때 발성 특성이 달라지는 구간이 보여요. 콧소리처럼 느껴지는 구간에서는 소리를 더 세게 바꾸기보다, 같은 짧은 구절을 두 방식으로 비교해보세요.",
+      "browser_a": "① 평소 부르는 방식으로 한 번",
+      "browser_b": "② 조금 작은 강도로 시작해 음역이 바뀌는 구간에서 음량을 키우지 않고 매끄럽게 연결한 한 번",
+      "browser_success": "잘 맞는 방향\n\n두 번째에서 콧소리처럼 느껴지는 인상이 줄고 전환도 덜 갑작스러움 — 두 번째 표현을 유지하는 방향이 좋아요.",
+      "what_to_change": "특정 모음·전환 구간에서 소리가 몰리지 않게 연결하기",
+      "comparison": {
+        "baseline_label": "평소 방식",
+        "baseline_instruction": "평소 부르는 방식으로 한 번",
+        "variant_label": "비교 방식",
+        "variant_instruction": "조금 작은 강도로 시작해 음역이 바뀌는 구간에서 음량을 키우지 않고 매끄럽게 연결한 한 번",
+        "success_condition": "콧소리처럼 느껴지는 인상이 줄고 전환도 덜 갑작스러움",
+        "if_better": "두 번째 표현을 유지하는 방향이 좋아요.",
+        "if_not_better": "차이가 거의 없다면, 다음 녹음에서 해당 모음·구간만 따로 짧게 비교해보세요.",
+        "A": "평소 부르는 방식으로 한 번",
+        "B": "조금 작은 강도로 시작해 음역이 바뀌는 구간에서 음량을 키우지 않고 매끄럽게 연결한 한 번",
+        "success": "콧소리처럼 느껴지는 인상이 줄고 전환도 덜 갑작스러움",
+        "lead": "콧소리처럼 느껴지는 구간에서는 소리를 더 세게 바꾸기보다, 같은 짧은 구절을 두 방식으로 비교해보세요."
+      },
+      "primary_focus": "REGISTER_CONNECTION",
+      "response_mode": "EVIDENCE_EXPLANATION"
+    },
+    {
+      "concern_id": "VOICE_TOO_THIN",
+      "question": "왜 소리가 얇고 모기소리처럼 느껴질까요?",
+      "browser_answer": "A. 숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요. 이번 노래에서는 음역이 올라가는 구간의 연결이 일부만 안정적으로 이어져 특정 구간에서 소리가 가볍게 느껴질 수 있어요. 지금은 음역이 변할 때도 소리 중심이 유지되는 방식을 먼저 찾아보는 게 좋아요.",
+      "browser_a": "① 평소대로 한 번",
+      "browser_b": "② 같은 음량을 유지하면서 숨을 더 섞지 않고, 음이 올라가도 더 크게 만들지 않은 채 연결을 일정하게 유지한 한 번",
+      "browser_success": "잘 맞는 방향\n\n두 번째에서 얇게 느껴지는 인상이 줄고 힘 사용은 늘지 않음 — 그 방향이 현재 발성에 더 잘 맞습니다.",
+      "what_to_change": "음역이 변해도 소리 중심이 갑자기 가벼워지지 않게 하기",
+      "comparison": {
+        "baseline_label": "평소 방식",
+        "baseline_instruction": "평소대로 한 번",
+        "variant_label": "비교 방식",
+        "variant_instruction": "같은 음량을 유지하면서 숨을 더 섞지 않고, 음이 올라가도 더 크게 만들지 않은 채 연결을 일정하게 유지한 한 번",
+        "success_condition": "얇게 느껴지는 인상이 줄고 힘 사용은 늘지 않음",
+        "if_better": "그 방향이 현재 발성에 더 잘 맞습니다.",
+        "if_not_better": "차이가 거의 없다면, 얇게 느껴지는 음역·구간만 따로 짧게 비교해보세요.",
+        "A": "평소대로 한 번",
+        "B": "같은 음량을 유지하면서 숨을 더 섞지 않고, 음이 올라가도 더 크게 만들지 않은 채 연결을 일정하게 유지한 한 번",
+        "success": "얇게 느껴지는 인상이 줄고 힘 사용은 늘지 않음",
+        "lead": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요. 지금은 음역이 변할 때도 소리 중심이 유지되는 방식을 먼저 찾아보는 게 좋아요."
+      },
+      "primary_focus": "REGISTER_CONNECTION",
+      "response_mode": "EVIDENCE_EXPLANATION"
+    },
+    {
+      "concern_id": "TIMBRE_CHANGES_HIGH",
+      "question": "왜 고음에서 음색이 갑자기 달라질까요?",
+      "browser_answer": "A. 이번 노래에서는 음역이 올라갈 때 연결이 일부 구간에서만 안정적으로 이어졌어요. 그래서 고음에서 음색이 갑자기 달라지는 느낌을 줄이려면, 높은 음을 더 세게 만드는 것보다 전환 구간을 더 일정하게 연결하는 것을 먼저 해보는 게 좋아요.",
+      "browser_a": "① 평소대로 중음→위쪽 음역 구절을 한 번",
+      "browser_b": "② 조금 작은 강도로 시작해, 전환 직전부터 음량을 키우지 않고 위쪽 음역까지 부드럽게 이어서 한 번",
+      "browser_success": "잘 맞는 방향\n\n두 번째에서 음색 변화가 덜 갑작스럽고 힘 증가 없음, 연결 끊김 감소 — 그 방식으로 반복하면 됩니다.",
+      "what_to_change": "우선 음역 연결을 다듬는 것이 좋아요.",
+      "comparison": {
+        "baseline_label": "평소 연결",
+        "baseline_instruction": "평소대로 중음→위쪽 음역 구절을 한 번",
+        "variant_label": "비교 연결",
+        "variant_instruction": "조금 작은 강도로 시작해, 전환 직전부터 음량을 키우지 않고 위쪽 음역까지 부드럽게 이어서 한 번",
+        "success_condition": "음색 변화가 덜 갑작스럽고 힘 증가 없음, 연결 끊김 감소",
+        "if_better": "그 방식으로 반복하면 됩니다.",
+        "if_not_better": "차이가 거의 없다면, 전환이 느껴지는 짧은 구간만 따로 비교해보세요.",
+        "A": "평소대로 중음→위쪽 음역 구절을 한 번",
+        "B": "조금 작은 강도로 시작해, 전환 직전부터 음량을 키우지 않고 위쪽 음역까지 부드럽게 이어서 한 번",
+        "success": "음색 변화가 덜 갑작스럽고 힘 증가 없음, 연결 끊김 감소",
+        "lead": "이번 노래에서는 음역이 올라갈 때 연결이 일부 구간에서만 안정적으로 이어졌어요. 그래서 고음에서 음색이 갑자기 달라지는 느낌을 줄이려면, 높은 음을 더 세게 만드는 것보다 전환 구간을 더 일정하게 연결하는 것을 먼저 해보는 게 좋아요."
+      },
+      "primary_focus": "REGISTER_CONNECTION",
+      "response_mode": "EVIDENCE_EXPLANATION"
+    }
+  ],
+  "pass": true
+}

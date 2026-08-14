@@ -15,8 +15,9 @@ from audio_analyzer.diagnostic.timbre_goals import (
     HIGH_NOTE_DESIRED_OUTCOMES,
     option_for,
 )
+from audio_analyzer.diagnostic.coaching_protocol import build_coaching_protocol
 
-GOAL_VERSION = "precision-goal-v1.0"
+GOAL_VERSION = "precision-goal-v1.1"
 
 FOCUS_LABELS = {
     "REGISTER_CONNECTION": "성구 연결",
@@ -125,7 +126,22 @@ def _stab_ok(snap: dict[str, Any]) -> Optional[bool]:
 
 def _preserve_factors(snap: dict[str, Any]) -> list[str]:
     out: list[str] = []
-    if _effort(snap) == "LOW":
+    effort = snap.get("effort") or {}
+    level = str(effort.get("level") or "").upper()
+    conf = str(effort.get("confidence_label") or "").lower()
+    status = str(effort.get("status") or "").upper()
+    # Reliable LOW: available + not UNKNOWN, confidence medium/high or unset (legacy fixtures)
+    reliable_low = bool(effort.get("reliable_for_preserve")) or (
+        level == "LOW"
+        and status not in ("UNKNOWN", "UNAVAILABLE", "AMBIGUOUS")
+        and conf in ("medium", "high", "")
+        and not effort.get("hidden")
+    )
+    # Suspicious conflict: firm + disrupted + low effort → do not claim comfort strength
+    contact = _contact(snap)
+    reg = _reg(snap)
+    suspicious = contact == "FIRM" and reg == "DISRUPTED" and level == "LOW"
+    if reliable_low and not suspicious:
         out.append("LOW_EFFORT")
     if _stab_ok(snap) is True:
         out.append("STABILITY")
@@ -246,6 +262,40 @@ def _desired_outcome(
     return {"type": "GENERAL", "id": "EXPLORE", "label": "현재 발성을 안전하게 탐색", "source": "DEFAULT"}
 
 
+def _majority_actionable_focus(evs: list[dict[str, Any]]) -> Optional[str]:
+    """If 2+ evidence-backed / concern-specific QAs share a focus, promote over STYLE.
+
+    Generic MAINTAIN fallback votes do not count (prevents fake consensus).
+    """
+    from collections import Counter
+
+    counts: Counter[str] = Counter()
+    for ev in evs:
+        focus = str(ev.get("primary_focus") or "").upper()
+        if focus in ("", "MAINTAIN", "TIMBRE", "STYLE", "SAFETY"):
+            continue
+        # Prefer explicit flag; fall back to evidence/guidance heuristics
+        if ev.get("counts_for_consensus") is False:
+            continue
+        if ev.get("counts_for_consensus") is True:
+            counts[focus] += 1
+            continue
+        gl = str(ev.get("guidance_level") or "")
+        mode = str(ev.get("response_mode") or ev.get("answer_mode") or "")
+        has_ev = bool(ev.get("evidence_used") or ev.get("evidence"))
+        if gl in ("CONTROLLED_CONFIRMED", "SONG_DIRECT", "SONG_COMPOSITE") and has_ev:
+            counts[focus] += 1
+        elif mode == "GUIDED_EXPERIMENT" and has_ev:
+            counts[focus] += 1
+        elif mode == "EVIDENCE_EXPLANATION" and has_ev:
+            counts[focus] += 1
+        # else: generic unknown fallback — do not vote
+    if not counts:
+        return None
+    focus, n = counts.most_common(1)[0]
+    return focus if n >= 2 else None
+
+
 def _has_functional_limitation(evs: list[dict[str, Any]], snap: dict[str, Any]) -> bool:
     for ev in evs:
         focus = str(ev.get("primary_focus") or "")
@@ -353,8 +403,14 @@ def _goal_copy(
         )
         return title, desc
     if focus == "REGISTER_CONNECTION":
-        title = f"{keep}음역이 바뀌어도 소리의 밀도와 연결이 급격하게 달라지지 않도록 하기"
-        desc = "전환 구간에서 끊기지 않는 연결을 작은 강도로 만드는 것이 이번 우선 목표예요."
+        title = f"{keep}음역이 바뀔 때 소리 특성이 더 일정하게 이어지도록 하기"
+        if desired.get("type") == "TIMBRE":
+            desc = (
+                f"연결을 안정시킨 뒤 '{label}' 느낌을 짧게 탐색하는 것이 좋아요. "
+                "전환 구간에서 끊기지 않는 연결을 작은 강도로 먼저 만드세요."
+            )
+        else:
+            desc = "전환 구간에서 끊기지 않는 연결을 작은 강도로 만드는 것이 이번 우선 목표예요."
         return title, desc
     if focus == "EFFORT":
         title = "같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기"
@@ -536,6 +592,13 @@ def plan_coaching_goal(
 
     if pain:
         practices = [practice_for_focus("SAFETY") or {}]
+        protocol = build_coaching_protocol(
+            "SAFETY",
+            snap=snap,
+            pain=True,
+            why_this_first="통증·지속 불편에서는 연습보다 휴식이 우선이에요.",
+            preserve_factors=preserve,
+        )
         return {
             "version": GOAL_VERSION,
             "desired_outcome": desired,
@@ -554,10 +617,18 @@ def plan_coaching_goal(
             "mode": "SAFETY",
             "gap_interpretation": "목표 음색보다 현재 불편감을 줄이는 것이 먼저예요.",
             "evidence_used": [{"axis": "safety", "status": "FLAGGED", "scope": "USER_REPORTED"}],
+            "coaching_protocol": protocol,
         }
 
     primary_ev = _pick_primary_evaluation(evs, concerns)
     functional = _has_functional_limitation(evs, snap)
+    convergent = _majority_actionable_focus(evs)
+    # Strong register disruption overrides aesthetic STYLE exploration
+    if _reg(snap) == "DISRUPTED":
+        functional = True
+    # 2+ QAs converging on the same bottleneck beats STYLE exploration.
+    if convergent:
+        functional = True
     style = bool(desired.get("type") == "TIMBRE") and not functional
 
     if primary_ev and not style:
@@ -592,6 +663,29 @@ def plan_coaching_goal(
     else:
         focus = str((primary_ev or {}).get("primary_focus") or "MAINTAIN")
         supporting = []
+        mode = "GUIDE"
+
+    if convergent and (style or focus in ("STYLE", "MAINTAIN", "TIMBRE")):
+        style = False
+        focus = convergent
+        mode = "GUIDE"
+        # Prefer an evaluation that already carries this focus
+        for ev in evs:
+            if str(ev.get("primary_focus") or "").upper() == convergent:
+                primary_ev = ev
+                break
+
+    # Strong register disruption precedes aesthetic / presence-only goals
+    if _reg(snap) == "DISRUPTED" and focus in (
+        "STYLE",
+        "TIMBRE",
+        "MAINTAIN",
+        "PRESENCE",
+        "BRIGHTNESS",
+        "CONTACT",
+    ):
+        style = False
+        focus = "REGISTER_CONNECTION"
         mode = "GUIDE"
 
     if style:
@@ -630,6 +724,39 @@ def plan_coaching_goal(
             for axis in ("effort", "register", "presence", "breathiness"):
                 evidence_used.append({"axis": axis, "status": "USED", "scope": "SONG"})
 
+    concern_ids = [
+        str(c.get("id") or "")
+        for c in concerns
+        if c.get("id")
+    ]
+    if primary_ev and (primary_ev.get("concern_id") or primary_ev.get("concern")):
+        cid0 = str(primary_ev.get("concern_id") or primary_ev.get("concern"))
+        if cid0 and cid0 not in concern_ids:
+            concern_ids.insert(0, cid0)
+
+    # Soften comfort copy when firm+disrupted+unreliable low effort
+    if (
+        _contact(snap) == "FIRM"
+        and _reg(snap) == "DISRUPTED"
+        and _effort(snap) == "LOW"
+        and "LOW_EFFORT" not in preserve
+        and focus == "REGISTER_CONNECTION"
+    ):
+        why = (
+            "현재 분석에서 전반적인 힘 증가가 강하게 잡히지는 않았지만, "
+            "음역 연결을 먼저 안정시키는 것이 우선이에요."
+        )
+
+    protocol = build_coaching_protocol(
+        focus,
+        snap=snap,
+        concern_ids=concern_ids,
+        target_timbre=desired if desired.get("type") == "TIMBRE" else None,
+        pain=False,
+        why_this_first=why,
+        preserve_factors=preserve,
+    )
+
     return {
         "version": GOAL_VERSION,
         "desired_outcome": desired,
@@ -649,4 +776,5 @@ def plan_coaching_goal(
         "gap_interpretation": gap,
         "evidence_used": evidence_used[:6],
         "source_concern_id": (primary_ev or {}).get("concern_id") or (primary_ev or {}).get("concern"),
+        "coaching_protocol": protocol,
     }

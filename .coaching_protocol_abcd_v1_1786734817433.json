@@ -1,0 +1,314 @@
+{
+  "audit": "coaching-protocol-abcd-v1",
+  "generated_at": "2026-08-14T19:13:37.433177+00:00",
+  "threshold_changed": false,
+  "protocol_ids": [
+    "TIMBRE_STYLE",
+    "EFFORT",
+    "REGISTER_CONNECTION",
+    "EFFORT"
+  ],
+  "meaningfully_different": true,
+  "cases": [
+    {
+      "label": "A",
+      "human_intent": "RELAXED",
+      "canonical": {
+        "effort": {
+          "available": true,
+          "level": "LOW",
+          "severity": "LOW",
+          "status": "LOW",
+          "confidence_label": "medium",
+          "reliable_for_preserve": true
+        },
+        "contact": {
+          "available": true,
+          "status": "MID",
+          "continuum": 0.5,
+          "status_label": null
+        },
+        "breathiness": {
+          "available": true,
+          "level": "LOW",
+          "status": "LOW",
+          "status_label": null,
+          "airiness_continuum": 0.28
+        },
+        "register": {
+          "available": true,
+          "status": "CONNECTED",
+          "mix_evidence": null,
+          "description": null,
+          "modifiers": [],
+          "head_chest": {}
+        },
+        "stability": {
+          "available": true,
+          "status": "STABLE",
+          "status_label": null
+        },
+        "presence": 0.55
+      },
+      "raw_effort": {
+        "global_severity": "LOW",
+        "peak_event_score": 0.08,
+        "hit_segments": 0,
+        "hit_ratio": 0.0,
+        "confidence_label": "medium",
+        "strength_eligible": true
+      },
+      "focus": "STYLE",
+      "protocol_id": "TIMBRE_STYLE",
+      "entry_title": "부드럽고 감미롭게 · 짧은 비교",
+      "steps": [
+        {
+          "level": 1,
+          "id": "STYLE_COMPARE",
+          "title": "부드럽고 감미롭게 · 짧은 비교"
+        },
+        {
+          "level": 2,
+          "id": "STYLE_PHRASE",
+          "title": "짧은 phrase에 적용"
+        },
+        {
+          "level": 3,
+          "id": "STYLE_SONG",
+          "title": "원곡 구절에 적용"
+        }
+      ],
+      "threshold_changed": false
+    },
+    {
+      "label": "B",
+      "human_intent": "PUSHED",
+      "canonical": {
+        "effort": {
+          "available": true,
+          "level": "MODERATE",
+          "severity": "MODERATE",
+          "status": "HIGH",
+          "confidence_label": "medium",
+          "reliable_for_preserve": false
+        },
+        "contact": {
+          "available": true,
+          "status": "FIRM",
+          "continuum": 0.72,
+          "status_label": null
+        },
+        "breathiness": {
+          "available": true,
+          "level": "LOW",
+          "status": "LOW",
+          "status_label": null,
+          "airiness_continuum": 0.28
+        },
+        "register": {
+          "available": true,
+          "status": "PARTIAL",
+          "mix_evidence": null,
+          "description": null,
+          "modifiers": [],
+          "head_chest": {}
+        },
+        "stability": {
+          "available": true,
+          "status": "STABLE",
+          "status_label": null
+        },
+        "presence": 0.45
+      },
+      "raw_effort": {
+        "global_severity": "MODERATE",
+        "peak_event_score": 0.62,
+        "hit_segments": 2,
+        "hit_ratio": 0.1667,
+        "confidence_label": "medium",
+        "strength_eligible": false
+      },
+      "focus": "EFFORT",
+      "protocol_id": "EFFORT",
+      "entry_title": "쉬운 음역에서 작은~중간 강도",
+      "steps": [
+        {
+          "level": 1,
+          "id": "EFFORT_EASY_RANGE",
+          "title": "쉬운 음역에서 작은~중간 강도"
+        },
+        {
+          "level": 2,
+          "id": "EFFORT_APPROACH",
+          "title": "같은 강도로 문제 음역 접근"
+        },
+        {
+          "level": 3,
+          "id": "EFFORT_SAME_PITCH",
+          "title": "원래 음높이 · 음량 고정"
+        },
+        {
+          "level": 4,
+          "id": "EFFORT_SONG_PHRASE",
+          "title": "원곡 phrase"
+        }
+      ],
+      "threshold_changed": false
+    },
+    {
+      "label": "C",
+      "human_intent": "PUSHED_REGISTER_FAIL",
+      "canonical": {
+        "effort": {
+          "available": true,
+          "level": "LOW",
+          "severity": "LOW",
+          "status": "LOW",
+          "confidence_label": "medium",
+          "reliable_for_preserve": true
+        },
+        "contact": {
+          "available": true,
+          "status": "FIRM",
+          "continuum": 0.72,
+          "status_label": null
+        },
+        "breathiness": {
+          "available": true,
+          "level": "LOW",
+          "status": "LOW",
+          "status_label": null,
+          "airiness_continuum": 0.28
+        },
+        "register": {
+          "available": true,
+          "status": "DISRUPTED",
+          "mix_evidence": null,
+          "description": null,
+          "modifiers": [],
+          "head_chest": {}
+        },
+        "stability": {
+          "available": true,
+          "status": "UNSTABLE",
+          "status_label": null
+        },
+        "presence": 0.4
+      },
+      "raw_effort": {
+        "global_severity": "LOW",
+        "peak_event_score": 0.12,
+        "hit_segments": 0,
+        "hit_ratio": 0.0,
+        "confidence_label": "medium",
+        "strength_eligible": true
+      },
+      "focus": "REGISTER_CONNECTION",
+      "protocol_id": "REGISTER_CONNECTION",
+      "entry_title": "작은 강도로 연결 감각 만들기",
+      "steps": [
+        {
+          "level": 1,
+          "id": "REGISTER_SOVT_GLIDE",
+          "title": "작은 강도로 연결 감각 만들기"
+        },
+        {
+          "level": 2,
+          "id": "REGISTER_VOWEL_GLIDE",
+          "title": "편한 모음으로 연결하기"
+        },
+        {
+          "level": 3,
+          "id": "REGISTER_LYRIC_VOWELS",
+          "title": "가사 모음만으로 연결하기"
+        },
+        {
+          "level": 4,
+          "id": "REGISTER_SHORT_LYRIC",
+          "title": "짧은 실제 가사로 옮기기"
+        },
+        {
+          "level": 5,
+          "id": "REGISTER_FULL_EXPRESSION",
+          "title": "원래 표현으로 복귀"
+        }
+      ],
+      "threshold_changed": false
+    },
+    {
+      "label": "D",
+      "human_intent": "HIGH_NOTE_PUSH",
+      "canonical": {
+        "effort": {
+          "available": true,
+          "level": "MODERATE",
+          "severity": "MODERATE",
+          "status": "HIGH",
+          "confidence_label": "medium",
+          "reliable_for_preserve": false
+        },
+        "contact": {
+          "available": true,
+          "status": "FIRM",
+          "continuum": 0.72,
+          "status_label": null
+        },
+        "breathiness": {
+          "available": true,
+          "level": "LOW",
+          "status": "LOW",
+          "status_label": null,
+          "airiness_continuum": 0.28
+        },
+        "register": {
+          "available": true,
+          "status": "PARTIAL",
+          "mix_evidence": null,
+          "description": null,
+          "modifiers": [],
+          "head_chest": {}
+        },
+        "stability": {
+          "available": true,
+          "status": "UNSTABLE",
+          "status_label": null
+        },
+        "presence": 0.4
+      },
+      "raw_effort": {
+        "global_severity": "MODERATE",
+        "peak_event_score": 0.65,
+        "hit_segments": 3,
+        "hit_ratio": 0.25,
+        "confidence_label": "medium",
+        "strength_eligible": false
+      },
+      "focus": "EFFORT",
+      "protocol_id": "EFFORT",
+      "entry_title": "쉬운 음역에서 작은~중간 강도",
+      "steps": [
+        {
+          "level": 1,
+          "id": "EFFORT_EASY_RANGE",
+          "title": "쉬운 음역에서 작은~중간 강도"
+        },
+        {
+          "level": 2,
+          "id": "EFFORT_APPROACH",
+          "title": "같은 강도로 문제 음역 접근"
+        },
+        {
+          "level": 3,
+          "id": "EFFORT_SAME_PITCH",
+          "title": "원래 음높이 · 음량 고정"
+        },
+        {
+          "level": 4,
+          "id": "EFFORT_SONG_PHRASE",
+          "title": "원곡 phrase"
+        }
+      ],
+      "threshold_changed": false
+    }
+  ]
+}

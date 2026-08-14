@@ -56,6 +56,11 @@ from audio_analyzer.diagnostic.task_registry import (
     PLANNER_VERSION,
     TASK_REGISTRY,
 )
+from audio_analyzer.diagnostic.report_versions import (
+    GOAL_VERSION as QA_GOAL_VERSION,
+    QA_GUIDANCE_VERSION,
+    REPORT_LOGIC_VERSION,
+)
 from audio_analyzer.physiology import build_premium_report
 from audio_analyzer.physiology.report import public_premium_report
 from audio_analyzer.preprocessing.audio_io import load_analysis_audio
@@ -834,6 +839,192 @@ class DiagnosticSessionService:
         self._save(session)
         return self.public_session(session)
 
+    def _compose_premium_report(self, session: dict[str, Any]) -> dict[str, Any]:
+        """Rebuild QA/goal/coaching presentation from stored session evidence.
+
+        Does not re-run song analysis, task audio, or payment.
+        """
+        session_id = session["session_id"]
+        song_summary = None
+        song_payload = None
+        src = session.get("source_analysis_id")
+        if src:
+            song_payload = self._load_song_payload(src)
+            if song_payload:
+                song_summary = {
+                    "timeline_preview": [],
+                    "overall": (song_payload.get("score") or {}).get("overall"),
+                    "label": (song_payload.get("score") or {}).get("label"),
+                }
+        report = build_premium_report(
+            session_id=session_id,
+            task_results=session.get("task_results") or [],
+            song_summary=song_summary,
+            safety_flags=session.get("safety_flags") or [],
+            include_scientific_debug=True,  # stored server-side for developer mode
+        )
+        from audio_analyzer.diagnostic.song_evidence import (
+            extract_vocal_function_profile,
+            wrap_song_profile_with_snapshot,
+            snapshot_to_ui_acoustic_axes,
+        )
+
+        vf, vf_path = extract_vocal_function_profile(song_payload)
+        song_wrapped = wrap_song_profile_with_snapshot(song_payload or {"vocal_function_profile": vf})
+        final_dx = build_final_diagnostic_profile(
+            song_profile=vf,
+            task_results=session.get("task_results") or [],
+            plan={
+                "unresolved_dimensions": session.get("unresolved_dimensions") or [],
+                "selected_tasks": session.get("selected_tasks") or [],
+                "user_skipped_tasks": list_user_skipped_tasks(session),
+                "completed_tasks": list_completed_tasks(session),
+                "safety_blocked_tasks": list_safety_blocked_tasks(session),
+            },
+        )
+        if song_wrapped.get("canonical_song_evidence"):
+            final_dx["canonical_song_evidence"] = song_wrapped["canonical_song_evidence"]
+            final_dx["song_evidence_source_path"] = vf_path
+        sync_skip_provenance(session)
+        evidence_mode = session.get("evidence_mode") or derive_evidence_mode(session)
+        concerns = session.get("user_concerns") or []
+        personalized = build_personalized_qa(
+            user_concerns=concerns,
+            song_profile=song_wrapped,
+            task_results=session.get("task_results") or [],
+            fused_profile=final_dx,
+            diagnostic_mode=session.get("diagnostic_mode"),
+            timbre_goal=session.get("timbre_goal"),
+        )
+        from audio_analyzer.diagnostic.goal_planner import plan_coaching_goal
+
+        pain = bool(
+            session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED
+            or session.get("safety_flag_pain")
+            or has_pain_safety_flag(concerns)
+        )
+        coaching_goal = plan_coaching_goal(
+            user_concerns=concerns,
+            timbre_goal=session.get("timbre_goal"),
+            concern_evaluations=personalized.get("concern_evaluations") or [],
+            song_profile=song_wrapped,
+            pain=pain,
+        )
+        personalized["coaching_goal"] = coaching_goal
+        personalized["qa_guidance_version"] = QA_GUIDANCE_VERSION
+        if coaching_goal.get("coaching_protocol"):
+            personalized["coaching_protocol"] = coaching_goal["coaching_protocol"]
+        if coaching_goal.get("practices"):
+            coach = dict(personalized.get("coaching") or {})
+            goal_dirs = []
+            for p in coaching_goal["practices"][:2]:
+                if not p:
+                    continue
+                goal_dirs.append(
+                    {
+                        **p,
+                        "mode": coaching_goal.get("mode") or "GUIDE",
+                        "mode_label": "맞춤" if coaching_goal.get("mode") != "STYLE" else "탐색",
+                    }
+                )
+            coach["practice_directions"] = goal_dirs
+            personalized["coaching"] = coach
+        session["timbre_goal"] = session.get("timbre_goal")
+        session["coaching_goal"] = coaching_goal
+        session["final_diagnostic_profile"] = final_dx
+        session["evidence_mode"] = evidence_mode
+        report["protocol_version"] = session.get("protocol_version") or VOCAL_DIAGNOSTIC_PROTOCOL_VERSION
+        report["planner_version"] = session.get("planner_version") or PLANNER_VERSION
+        report["qa_guidance_version"] = QA_GUIDANCE_VERSION
+        report["goal_version"] = coaching_goal.get("goal_version") or QA_GOAL_VERSION
+        report["report_logic_version"] = REPORT_LOGIC_VERSION
+        report["selected_tasks"] = session.get("selected_tasks") or []
+        report["completed_tasks"] = session.get("completed_tasks") or []
+        report["user_skipped_tasks"] = session.get("user_skipped_tasks") or []
+        report["safety_blocked_tasks"] = session.get("safety_blocked_tasks") or []
+        report["core_tasks"] = session.get("core_tasks") or []
+        report["adaptive_tasks"] = session.get("adaptive_tasks") or []
+        report["planned_task_count"] = session.get("planned_task_count") or len(
+            session.get("selected_tasks") or []
+        )
+        report["completed_task_count"] = len(report["completed_tasks"])
+        report["user_skipped_task_count"] = len(report["user_skipped_tasks"])
+        report["safety_blocked_task_count"] = len(report["safety_blocked_tasks"])
+        report["valid_task_count"] = session.get("valid_task_count") or valid_controlled_task_count(
+            session
+        )
+        report["evidence_mode"] = evidence_mode
+        report["evidence_mode_label"] = EVIDENCE_MODE_COVERAGE_COPY.get(evidence_mode)
+        report["report_title"] = report_title_for_mode(evidence_mode)
+        report["report_subtitle"] = report_subtitle_for_mode(evidence_mode)
+        report["unresolved_dimensions"] = session.get("unresolved_dimensions") or []
+        report["source_analysis_id"] = session.get("source_analysis_id")
+        report["diagnostic_mode"] = session.get("diagnostic_mode")
+        report["diagnostic_status"] = session.get("diagnostic_status")
+        report["final_diagnostic_profile"] = final_dx
+        report["user_concerns"] = concerns
+        report["timbre_goal"] = session.get("timbre_goal")
+        report["coaching_goal"] = coaching_goal
+        if coaching_goal.get("coaching_protocol"):
+            report["coaching_protocol"] = coaching_goal["coaching_protocol"]
+        report["personalized_qa"] = personalized
+        if coaching_goal.get("practices"):
+            report["improvement_priorities"] = coaching_goal["practices"]
+        else:
+            report["improvement_priorities"] = personalized.get("improvement_priorities") or []
+        report["coaching"] = personalized.get("coaching") or {}
+        report["discovered_features"] = personalized.get("discovered_features") or []
+        snap = song_wrapped.get("canonical_song_evidence") or {}
+        report["song_key_features"] = snap.get("key_features") or personalized.get("song_key_features") or []
+        ui_axes = snapshot_to_ui_acoustic_axes(snap)
+        report["canonical_song_evidence"] = {
+            "source_path": snap.get("source_path"),
+            "availability": snap.get("availability"),
+            "key_features": snap.get("key_features") or [],
+            "register": snap.get("register"),
+            "effort": snap.get("effort"),
+            "contact": snap.get("contact"),
+            "breathiness": snap.get("breathiness"),
+            "timbre": {
+                "available": (snap.get("timbre") or {}).get("available"),
+                "presence": (snap.get("timbre") or {}).get("presence"),
+                "brightness": (snap.get("timbre") or {}).get("brightness"),
+                "airiness": (snap.get("timbre") or {}).get("airiness"),
+            },
+            "stability": snap.get("stability"),
+        }
+        report["canonical_acoustic_axes"] = ui_axes
+        if snap.get("register"):
+            report["canonical_register"] = {
+                "status": (snap.get("register") or {}).get("status"),
+                "title": (snap.get("register") or {}).get("description"),
+                "profile_label": (snap.get("register") or {}).get("description"),
+            }
+        song_vf = song_wrapped.get("vocal_function_profile") or vf or {}
+        if isinstance(song_vf, dict):
+            if song_vf.get("vocal_style_profile"):
+                report["vocal_style_profile"] = song_vf.get("vocal_style_profile")
+            if song_vf.get("vocal_type_profile"):
+                report["vocal_type_profile"] = song_vf.get("vocal_type_profile")
+                report["baseline_vocal_type"] = song_vf.get("vocal_type_profile")
+        if personalized.get("coaching"):
+            report["coaching_version"] = personalized["coaching"].get("coaching_version")
+        if session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED or session.get("safety_flag_pain") or has_pain_safety_flag(concerns):
+            report["safety_note"] = (
+                "통증이나 지속적인 불편감은 음향 분석만으로 원인을 판단할 수 없어요. "
+                "불편한 상태에서는 강한 고음이나 큰 소리를 반복하지 마세요."
+            )
+        report["diagnostic_report_version"] = final_dx.get("report_version")
+        return report
+
+    def _persist_premium_report(self, session: dict[str, Any], report: dict[str, Any]) -> None:
+        session_id = session["session_id"]
+        report_path = self._dir(session_id) / "premium_report.json"
+        report_path.write_text(
+            json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+        session["report_storage_key"] = f"diagnostic_sessions/{session_id}/premium_report.json"
+
     def analyze(self, session_id: str, user_id: str = "anon") -> dict[str, Any]:
         session = self._require_unlocked(session_id, user_id)
         if session["status"] not in ("READY_FOR_ANALYSIS", "COMPLETED"):
@@ -844,177 +1035,8 @@ class DiagnosticSessionService:
         session["status"] = "ANALYZING"
         self._save(session)
         try:
-            song_summary = None
-            song_payload = None
-            src = session.get("source_analysis_id")
-            if src:
-                song_payload = self._load_song_payload(src)
-                if song_payload:
-                    song_summary = {
-                        "timeline_preview": [],
-                        "overall": (song_payload.get("score") or {}).get("overall"),
-                        "label": (song_payload.get("score") or {}).get("label"),
-                    }
-            report = build_premium_report(
-                session_id=session_id,
-                task_results=session.get("task_results") or [],
-                song_summary=song_summary,
-                safety_flags=session.get("safety_flags") or [],
-                include_scientific_debug=True,  # stored server-side for developer mode
-            )
-            # Adaptive fusion (song + task), additive schema
-            from audio_analyzer.diagnostic.song_evidence import (
-                extract_vocal_function_profile,
-                wrap_song_profile_with_snapshot,
-                snapshot_to_ui_acoustic_axes,
-            )
-
-            vf, vf_path = extract_vocal_function_profile(song_payload)
-            song_wrapped = wrap_song_profile_with_snapshot(song_payload or {"vocal_function_profile": vf})
-            final_dx = build_final_diagnostic_profile(
-                song_profile=vf,
-                task_results=session.get("task_results") or [],
-                plan={
-                    "unresolved_dimensions": session.get("unresolved_dimensions") or [],
-                    "selected_tasks": session.get("selected_tasks") or [],
-                    "user_skipped_tasks": list_user_skipped_tasks(session),
-                    "completed_tasks": list_completed_tasks(session),
-                    "safety_blocked_tasks": list_safety_blocked_tasks(session),
-                },
-            )
-            if song_wrapped.get("canonical_song_evidence"):
-                final_dx["canonical_song_evidence"] = song_wrapped["canonical_song_evidence"]
-                final_dx["song_evidence_source_path"] = vf_path
-            sync_skip_provenance(session)
-            evidence_mode = session.get("evidence_mode") or derive_evidence_mode(session)
-            concerns = session.get("user_concerns") or []
-            personalized = build_personalized_qa(
-                user_concerns=concerns,
-                song_profile=song_wrapped,
-                task_results=session.get("task_results") or [],
-                fused_profile=final_dx,
-                diagnostic_mode=session.get("diagnostic_mode"),
-                timbre_goal=session.get("timbre_goal"),
-            )
-            from audio_analyzer.diagnostic.goal_planner import plan_coaching_goal
-
-            pain = bool(
-                session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED
-                or session.get("safety_flag_pain")
-                or has_pain_safety_flag(concerns)
-            )
-            coaching_goal = plan_coaching_goal(
-                user_concerns=concerns,
-                timbre_goal=session.get("timbre_goal"),
-                concern_evaluations=personalized.get("concern_evaluations") or [],
-                song_profile=song_wrapped,
-                pain=pain,
-            )
-            personalized["coaching_goal"] = coaching_goal
-            # Global practice from goal (1–2); keep maintain separate
-            if coaching_goal.get("practices"):
-                coach = dict(personalized.get("coaching") or {})
-                goal_dirs = []
-                for p in coaching_goal["practices"][:2]:
-                    if not p:
-                        continue
-                    goal_dirs.append(
-                        {
-                            **p,
-                            "mode": coaching_goal.get("mode") or "GUIDE",
-                            "mode_label": "맞춤" if coaching_goal.get("mode") != "STYLE" else "탐색",
-                        }
-                    )
-                coach["practice_directions"] = goal_dirs
-                personalized["coaching"] = coach
-            session["timbre_goal"] = session.get("timbre_goal")
-            session["coaching_goal"] = coaching_goal
-            session["final_diagnostic_profile"] = final_dx
-            session["evidence_mode"] = evidence_mode
-            report["protocol_version"] = session.get("protocol_version") or VOCAL_DIAGNOSTIC_PROTOCOL_VERSION
-            report["planner_version"] = session.get("planner_version") or PLANNER_VERSION
-            report["selected_tasks"] = session.get("selected_tasks") or []
-            report["completed_tasks"] = session.get("completed_tasks") or []
-            report["user_skipped_tasks"] = session.get("user_skipped_tasks") or []
-            report["safety_blocked_tasks"] = session.get("safety_blocked_tasks") or []
-            report["core_tasks"] = session.get("core_tasks") or []
-            report["adaptive_tasks"] = session.get("adaptive_tasks") or []
-            report["planned_task_count"] = session.get("planned_task_count") or len(
-                session.get("selected_tasks") or []
-            )
-            report["completed_task_count"] = len(report["completed_tasks"])
-            report["user_skipped_task_count"] = len(report["user_skipped_tasks"])
-            report["safety_blocked_task_count"] = len(report["safety_blocked_tasks"])
-            report["valid_task_count"] = session.get("valid_task_count") or valid_controlled_task_count(
-                session
-            )
-            report["evidence_mode"] = evidence_mode
-            report["evidence_mode_label"] = EVIDENCE_MODE_COVERAGE_COPY.get(evidence_mode)
-            report["report_title"] = report_title_for_mode(evidence_mode)
-            report["report_subtitle"] = report_subtitle_for_mode(evidence_mode)
-            report["unresolved_dimensions"] = session.get("unresolved_dimensions") or []
-            report["source_analysis_id"] = session.get("source_analysis_id")
-            report["diagnostic_mode"] = session.get("diagnostic_mode")
-            report["diagnostic_status"] = session.get("diagnostic_status")
-            report["final_diagnostic_profile"] = final_dx
-            report["user_concerns"] = concerns
-            report["timbre_goal"] = session.get("timbre_goal")
-            report["coaching_goal"] = coaching_goal
-            report["personalized_qa"] = personalized
-            # Prefer goal practices for the main practice section
-            if coaching_goal.get("practices"):
-                report["improvement_priorities"] = coaching_goal["practices"]
-            else:
-                report["improvement_priorities"] = personalized.get("improvement_priorities") or []
-            report["coaching"] = personalized.get("coaching") or {}
-            report["discovered_features"] = personalized.get("discovered_features") or []
-            snap = song_wrapped.get("canonical_song_evidence") or {}
-            report["song_key_features"] = snap.get("key_features") or personalized.get("song_key_features") or []
-            ui_axes = snapshot_to_ui_acoustic_axes(snap)
-            report["canonical_song_evidence"] = {
-                "source_path": snap.get("source_path"),
-                "availability": snap.get("availability"),
-                "key_features": snap.get("key_features") or [],
-                "register": snap.get("register"),
-                "effort": snap.get("effort"),
-                "contact": snap.get("contact"),
-                "breathiness": snap.get("breathiness"),
-                "timbre": {
-                    "available": (snap.get("timbre") or {}).get("available"),
-                    "presence": (snap.get("timbre") or {}).get("presence"),
-                    "brightness": (snap.get("timbre") or {}).get("brightness"),
-                    "airiness": (snap.get("timbre") or {}).get("airiness"),
-                },
-                "stability": snap.get("stability"),
-            }
-            report["canonical_acoustic_axes"] = ui_axes
-            if snap.get("register"):
-                report["canonical_register"] = {
-                    "status": (snap.get("register") or {}).get("status"),
-                    "title": (snap.get("register") or {}).get("description"),
-                    "profile_label": (snap.get("register") or {}).get("description"),
-                }
-            # Surface song vocal style/type on premium report when available
-            song_vf = song_wrapped.get("vocal_function_profile") or vf or {}
-            if isinstance(song_vf, dict):
-                if song_vf.get("vocal_style_profile"):
-                    report["vocal_style_profile"] = song_vf.get("vocal_style_profile")
-                if song_vf.get("vocal_type_profile"):
-                    report["vocal_type_profile"] = song_vf.get("vocal_type_profile")
-                    report["baseline_vocal_type"] = song_vf.get("vocal_type_profile")
-            if personalized.get("coaching"):
-                report["coaching_version"] = personalized["coaching"].get("coaching_version")
-            if session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED or session.get("safety_flag_pain") or has_pain_safety_flag(concerns):
-                report["safety_note"] = (
-                    "통증이나 지속적인 불편감은 음향 분석만으로 원인을 판단할 수 없어요. "
-                    "불편한 상태에서는 강한 고음이나 큰 소리를 반복하지 마세요."
-                )
-            report["diagnostic_report_version"] = final_dx.get("report_version")
-            report_path = self._dir(session_id) / "premium_report.json"
-            report_path.write_text(
-                json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
-            session["report_storage_key"] = f"diagnostic_sessions/{session_id}/premium_report.json"
+            report = self._compose_premium_report(session)
+            self._persist_premium_report(session, report)
             session["status"] = "COMPLETED"
             session["completed_at"] = datetime.now(timezone.utc).isoformat()
             self._save(session)
@@ -1023,6 +1045,29 @@ class DiagnosticSessionService:
             session["status"] = "FAILED"
             session["error"] = str(exc)
             self._save(session)
+            raise
+
+    def regenerate_report(self, session_id: str, user_id: str = "anon") -> dict[str, Any]:
+        """DEV-only: rebuild QA/goal presentation from stored evidence. Never re-analyzes audio."""
+        from ..config import is_production
+
+        if is_production():
+            raise PermissionError("REGENERATE_DISABLED")
+        session = self._require_unlocked(session_id, user_id)
+        if session.get("status") != "COMPLETED":
+            raise ValueError("report can only be regenerated when completed")
+        report_path = self._dir(session_id) / "premium_report.json"
+        if not report_path.exists():
+            raise FileNotFoundError("report not ready")
+        backup = report_path.read_text(encoding="utf-8")
+        try:
+            report = self._compose_premium_report(session)
+            self._persist_premium_report(session, report)
+            session["status"] = "COMPLETED"
+            self._save(session)
+            return public_premium_report(report)
+        except Exception:
+            report_path.write_text(backup, encoding="utf-8")
             raise
 
     def get_report(
@@ -1065,6 +1110,20 @@ class DiagnosticSessionService:
                 }
             raise FileNotFoundError("report not ready")
         report = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            from ..config import is_production
+
+            stored = report.get("qa_guidance_version")
+            if not is_production() and stored != QA_GUIDANCE_VERSION:
+                print(
+                    "[DIAG_STALE_REPORT]",
+                    f"session_id={session_id}",
+                    f"stored={stored}",
+                    f"current={QA_GUIDANCE_VERSION}",
+                    flush=True,
+                )
+        except Exception:
+            pass
         if include_scientific_debug:
             return report
         return public_premium_report(report)
@@ -1087,6 +1146,9 @@ class DiagnosticSessionService:
             "tasks": TASKS,
             "supported_task_ids": list(TASK_REGISTRY.keys()),
             "safety_questions": SAFETY_QUESTIONS,
+            "qa_guidance_version": QA_GUIDANCE_VERSION,
+            "goal_version": QA_GOAL_VERSION,
+            "report_logic_version": REPORT_LOGIC_VERSION,
             "adaptive": True,
             "concern_catalog": public_concern_catalog(),
         }

@@ -1,6 +1,9 @@
 /**
  * Personalized Coaching Goal v1 — real browser E2E (4 cases).
  *
+ * Do not edit miniapp/vite.config.ts for this test.
+ * Override backend with VAGENT_E2E_API (page route) or VITE_API_PROXY_TARGET.
+ *
  *   set VAGENT_E2E_API=http://127.0.0.1:8002
  *   node miniapp/scripts/e2e_coaching_goal_v1_browser.mjs
  */

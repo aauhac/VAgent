@@ -521,11 +521,18 @@ def build_personalized_qa(
                 "observed": ev.get("observed") or [],
                 "interpretation": ev.get("interpretation"),
                 "knowledge_support": ev.get("knowledge_support"),
+                "knowledge_support_internal": ev.get("knowledge_support_internal", True),
                 "what_to_change": ev.get("what_to_change"),
                 "action": ev.get("action"),
                 "success_cues": ev.get("success_cues") or [],
                 "avoid": ev.get("avoid") or [],
                 "knowledge_scope": ev.get("knowledge_scope"),
+                "answer_mode": ev.get("answer_mode"),
+                "response_mode": ev.get("response_mode") or ev.get("answer_mode"),
+                "working_direction": ev.get("working_direction"),
+                "comparison": ev.get("comparison") or ev.get("comparison_protocol"),
+                "comparison_protocol": ev.get("comparison") or ev.get("comparison_protocol"),
+                "counts_for_consensus": ev.get("counts_for_consensus"),
                 "evidence_used": ev.get("evidence_used")
                 or (ev.get("functional_hypothesis") or {}).get("evidence_used")
                 or [],
@@ -628,6 +635,7 @@ def build_personalized_qa(
 
     from audio_analyzer.diagnostic.song_evidence import get_canonical_snapshot
     from audio_analyzer.diagnostic.functional_hypothesis import CONCERN_GUIDANCE_VERSION
+    from audio_analyzer.diagnostic.report_versions import QA_GUIDANCE_VERSION
 
     song_feats = list(get_canonical_snapshot(song_profile).get("key_features") or [])
 
@@ -636,6 +644,7 @@ def build_personalized_qa(
         "question": questions[0]["question"] if questions else None,
         "questions": questions,
         "concern_guidance_version": CONCERN_GUIDANCE_VERSION,
+        "qa_guidance_version": QA_GUIDANCE_VERSION,
         "answer_summary": (questions[0].get("takeaway") or questions[0]["answer"])
         if questions
         else "",

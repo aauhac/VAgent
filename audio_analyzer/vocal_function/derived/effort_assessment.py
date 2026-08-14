@@ -13,6 +13,7 @@ SEVERITY_ORDER = ("LOW", "MILD", "MODERATE", "HIGH")
 
 # Representative UI axis positions — NOT engine measurement scores.
 SEVERITY_DISPLAY_CONTINUUM = {
+    "UNKNOWN": 0.5,
     "LOW": 0.18,
     "MILD": 0.38,
     "MODERATE": 0.62,
@@ -20,6 +21,7 @@ SEVERITY_DISPLAY_CONTINUUM = {
 }
 
 SEVERITY_LABELS_KO = {
+    "UNKNOWN": "이번 녹음에서 뚜렷하게 구분되지 않음",
     "LOW": "편안한 편",
     "MILD": "일부 구간에서 힘이 증가",
     "MODERATE": "힘이 들어가는 편",
@@ -131,7 +133,8 @@ def build_effort_assessment(
     high_note_sev = _high_note_severity(high_note_profile)
 
     if status in ("UNKNOWN", "UNAVAILABLE", "AMBIGUOUS") or dim.get("hidden"):
-        global_sev = "LOW"
+        # Presentation: UNKNOWN is not LOW strength — do not retune detector thresholds
+        global_sev = "UNKNOWN"
         conf = "low"
         evidence_source = ["insufficient_effort_dimension"]
     elif status == "LOW" or hits <= 0:
@@ -198,11 +201,19 @@ def build_effort_assessment(
         context_note = "일부 구간에서 힘이 증가하는 패턴이 관찰됐어요."
     elif global_sev == "LOW":
         context_note = "과도하게 힘이 증가하는 패턴은 두드러지지 않았어요."
+    elif global_sev == "UNKNOWN":
+        context_note = "힘 사용은 이번 녹음에서 뚜렷하게 구분되지 않았어요."
     else:
         context_note = None
 
     display_continuum = SEVERITY_DISPLAY_CONTINUUM.get(global_sev, 0.5)
-    label = SEVERITY_LABELS_KO.get(global_sev, "편안한 편")
+    label = SEVERITY_LABELS_KO.get(global_sev, "이번 녹음에서 뚜렷하게 구분되지 않음")
+    strength_eligible = (
+        global_sev == "LOW"
+        and conf in ("medium", "high")
+        and status not in ("UNKNOWN", "UNAVAILABLE", "AMBIGUOUS")
+        and not dim.get("hidden")
+    )
 
     return {
         "continuum": round(peak, 4) if hits or status == "LOW" else None,
@@ -226,6 +237,7 @@ def build_effort_assessment(
         "confidence_source": "criteria_coverage_or_dimension",
         "label": label,
         "context_note": context_note,
+        "strength_eligible": strength_eligible,
         "evidence_source": evidence_source,
         "derived_from": {
             "peak_event_score": round(peak, 4),
@@ -244,10 +256,12 @@ def build_effort_assessment(
 
 def effort_display_bundle(assessment: dict[str, Any]) -> dict[str, Any]:
     """User-facing presentation slice (no raw family counts)."""
-    sev = assessment.get("global_severity") or assessment.get("severity") or "LOW"
+    sev = assessment.get("global_severity") or assessment.get("severity") or "UNKNOWN"
     return {
         "severity": sev,
-        "label": assessment.get("label") or SEVERITY_LABELS_KO.get(sev, "편안한 편"),
+        "label": assessment.get("label") or SEVERITY_LABELS_KO.get(
+            sev, "이번 녹음에서 뚜렷하게 구분되지 않음"
+        ),
         "continuum": assessment.get("display_continuum"),
         "display_continuum": assessment.get("display_continuum"),
         "confidence_label": assessment.get("confidence_label") or "medium",
@@ -255,6 +269,7 @@ def effort_display_bundle(assessment: dict[str, Any]) -> dict[str, Any]:
         "high_note_severity": assessment.get("high_note_severity"),
         "global_severity": assessment.get("global_severity"),
         "localized_peak_severity": assessment.get("localized_peak_severity"),
+        "strength_eligible": bool(assessment.get("strength_eligible")),
     }
 
 

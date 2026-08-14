@@ -262,6 +262,15 @@ export async function analyzeDiagnosticSession(sessionId: string) {
   return res.json();
 }
 
+export async function regenerateDiagnosticReport(sessionId: string) {
+  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/regenerate-report`, {
+    method: 'POST',
+    headers: await headers(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function getDiagnosticReport(sessionId: string, opts?: { debug?: boolean }) {
   const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/report`, {
     headers: await headers(opts?.debug ? { 'X-VAgent-Debug': '1' } : undefined),

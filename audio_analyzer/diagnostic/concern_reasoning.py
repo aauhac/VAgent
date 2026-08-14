@@ -152,41 +152,35 @@ def _evidence_item(axis: str, status: str, *, used_for: str, scope: str = SCOPE_
 
 
 def _fallback_interpretation(category: str, concern_id: str) -> tuple[str, str]:
-    """Category-specific SAFE_GENERAL — unknown exact cause still returns an action."""
+    """Category-specific GUIDED_EXPERIMENT lead — never lead with 'unknown cause' meta."""
+    from audio_analyzer.diagnostic.general_guidance import comparison_protocol_for
+
+    proto = comparison_protocol_for(concern_id)
+    lead = str(proto.get("lead") or "").strip()
     if category == "high_note":
         return (
             FACTOR_REGISTER,
-            "현재 노래에서는 이 고민과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요. "
-            "그래서 특정 원인을 가정하기보다는, 음량을 먼저 키우지 않고 "
-            "편안한 중음에서 높은 음까지 작은 강도로 연결하는 연습부터 시작하는 것이 좋아요.",
+            lead
+            or (
+                "높은 음에 닿으려면 세게 밀기보다, "
+                "편안한 중음에서 작은 강도로 연결하는 쪽을 먼저 비교해보세요."
+            ),
         )
     if category == "effort":
         return (
             FACTOR_EFFORT,
-            "현재 노래에서는 힘과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요. "
-            "그래서 작은~중간 강도로 짧게 유지하며 음량을 고정하는 연습부터 "
-            "시작하는 것이 좋아요.",
+            lead
+            or "작은~중간 강도로 짧게 유지하며 음량을 고정하는 쪽을 먼저 비교해보세요.",
         )
     if category == "timbre":
-        return (
-            FACTOR_TIMBRE,
-            "현재 노래에서는 이 고민과 직접 연결되는 음색 특징이 뚜렷하게 잡히지 않았어요. "
-            "그래서 특정 원인을 가정하기보다는, 같은 구절을 작은 강도에서 "
-            "두 가지 방식으로 짧게 비교하며 더 편안한 쪽을 찾는 것부터 시작해보세요.",
-        )
+        return (FACTOR_TIMBRE, lead or "같은 짧은 구절을 두 방식으로 비교해보세요.")
     if category == "control":
         return (
             FACTOR_STABILITY,
-            "현재 노래에서는 조절과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요. "
-            "짧은 구간에서 안정이 유지되는 범위를 확인한 뒤 "
-            "조금씩 넓히는 연습부터 시작하는 것이 좋아요.",
+            lead
+            or "짧은 구간에서 안정이 유지되는 쪽을 먼저 비교해보세요.",
         )
-    return (
-        FACTOR_MAINTAIN,
-        "현재 노래에서는 이 고민과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요. "
-        "그래서 특정 원인을 가정하기보다는, 같은 구절을 작은 강도에서 "
-        "두 가지 방식으로 짧게 비교하며 더 편안하고 안정적인 쪽을 찾는 것부터 시작해보세요.",
-    )
+    return (FACTOR_MAINTAIN, lead or "같은 짧은 구절을 두 방식으로 비교해보세요.")
 
 
 def _reason_safety(concern_id: str) -> dict[str, Any]:
@@ -288,16 +282,15 @@ def _reason_descriptive_timbre(
         guidance = GUIDANCE_SONG_COMPOSITE if len(evidence) >= 2 else GUIDANCE_SONG_DIRECT
         primary = {"factor": FACTOR_TIMBRE, "claim": body, "scope": scope}
     else:
-        interpretation = (
-            f"{lead} 이 고민과 직접 연결되는 음색 특징이 뚜렷하게 잡히지 않았어요. "
-            "그래서 특정 원인을 가정하기보다는, 같은 구절을 작은 강도에서 "
-            "두 가지 방식으로 짧게 비교하며 더 편안한 쪽을 찾는 것부터 시작해보세요."
-        )
+        from audio_analyzer.diagnostic.general_guidance import comparison_protocol_for
+
+        proto = comparison_protocol_for(concern_id)
+        interpretation = str(proto.get("lead") or "같은 짧은 구절을 두 방식으로 비교해보세요.")
         goal_line = timbre_goal_support_line(timbre_goal, snap)
         if goal_line:
             interpretation = f"{interpretation} {goal_line}"
         guidance = GUIDANCE_SAFE_GENERAL
-        primary = {"factor": FACTOR_TIMBRE, "claim": "제한적 관찰", "scope": scope}
+        primary = {"factor": FACTOR_TIMBRE, "claim": "guided experiment", "scope": scope}
 
     return {
         "concern_id": concern_id,
@@ -383,11 +376,15 @@ def _reason_thin(concern_id: str, snap: dict[str, Any], scope: str) -> dict[str,
             supporting.append({"factor": FACTOR_CONTACT, "claim": "가벼운 접촉", "scope": scope})
         guidance = GUIDANCE_SONG_COMPOSITE if (less or supporting) else GUIDANCE_SONG_DIRECT
     elif register in ("PARTIAL", "DISRUPTED") and breath != "HIGH":
+        contra = ""
+        if less:
+            contra = "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요. "
         interpretation = (
-            (less[0]["claim"] + " " if less else "")
+            contra
             + f"{lead} 음역이 올라가는 구간의 연결이 "
             + ("급격히 달라지거나 " if register == "DISRUPTED" else "일부만 안정적으로 이어져 ")
-            + "특정 구간에서 소리가 가볍게 느껴질 수 있어 보여요."
+            + "특정 구간에서 소리가 가볍게 느껴질 수 있어요. "
+            "지금은 음역이 변할 때도 소리 중심이 유지되는 방식을 먼저 찾아보는 게 좋아요."
         )
         primary_focus = FACTOR_REGISTER
         primary = {"factor": FACTOR_REGISTER, "claim": f"register {register}", "scope": scope}
@@ -402,12 +399,20 @@ def _reason_thin(concern_id: str, snap: dict[str, Any], scope: str) -> dict[str,
         evidence.append(_evidence_item("contact", "LIGHT", used_for="primary_explanation", scope=scope))
         guidance = GUIDANCE_SONG_DIRECT
     else:
-        interpretation = (
-            f"{lead} 얇은 인상을 설명하는 뚜렷한 음향 특징이 강하지 않아요. "
-            "특정 음역·모음·구간에서만 나타나는지 확인하는 방향이 적합해 보여요."
-        )
+        from audio_analyzer.diagnostic.general_guidance import comparison_protocol_for
+
+        if less:
+            interpretation = (
+                "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요. "
+                + str(comparison_protocol_for(concern_id).get("lead") or "")
+            ).strip()
+        else:
+            interpretation = str(
+                comparison_protocol_for(concern_id).get("lead")
+                or "얇게 느껴지는 구간에서 소리 중심이 유지되는 방식을 찾는 게 좋아요."
+            )
         primary_focus = FACTOR_MAINTAIN
-        primary = {"factor": FACTOR_MAINTAIN, "claim": "뚜렷한 thin cue 약함", "scope": scope}
+        primary = {"factor": FACTOR_MAINTAIN, "claim": "guided experiment", "scope": scope}
         guidance = GUIDANCE_SAFE_GENERAL
 
     return {
@@ -530,11 +535,15 @@ def _reason_muffled(concern_id: str, snap: dict[str, Any], scope: str) -> dict[s
             evidence.append(_evidence_item("effort", effort, used_for="primary_explanation", scope=scope))
             guidance = GUIDANCE_SONG_DIRECT
         else:
+            from audio_analyzer.diagnostic.general_guidance import comparison_protocol_for
+
             interpretation = (
                 (f"{lead} {contra} " if contra else f"{lead} ")
-                + "같은 구절을 작은 강도에서 두 가지 방식으로 짧게 비교하며 "
-                "더 편안하게 들리는 쪽을 찾아보세요."
-            )
+                + str(
+                    comparison_protocol_for(concern_id).get("lead")
+                    or "같은 짧은 구절을 두 방식으로 비교해보세요."
+                )
+            ).strip()
             primary_focus = FACTOR_PRESENCE
             primary = {"factor": FACTOR_PRESENCE, "claim": "비교 탐색", "scope": scope}
             guidance = GUIDANCE_SAFE_GENERAL if not evidence else GUIDANCE_SONG_DIRECT
@@ -779,17 +788,17 @@ def _reason_timbre_changes_high(concern_id: str, snap: dict[str, Any], scope: st
     if register == "DISRUPTED":
         interpretation = (
             f"{lead} {process} 발성 특성이 급격하게 달라지는 구간이 관찰됐어요. "
-            "그래서 지금은 고음을 더 세게 내기보다, 중음에서 위쪽 음역으로 넘어갈 때 "
-            "그 변화가 덜 갑작스럽도록 연결을 다듬는 것을 먼저 추천해요."
+            "그래서 고음에서 음색이 갑자기 달라지는 느낌을 줄이려면, "
+            "높은 음을 더 세게 만드는 것보다 전환 구간을 더 일정하게 연결하는 것을 먼저 해보는 게 좋아요."
         )
         focus = FACTOR_REGISTER
         guidance = GUIDANCE_SONG_DIRECT
         evidence = [_evidence_item("register", "DISRUPTED", used_for="primary_explanation", scope=scope)]
     elif register == "PARTIAL":
         interpretation = (
-            f"{lead} {process} 연결이 일부 구간에서만 안정적으로 이어져요. "
-            "고음을 더 세게 내기보다, 중음에서 위쪽으로 넘어갈 때 변화가 덜 갑작스럽도록 "
-            "연결을 다듬는 것을 먼저 추천해요."
+            f"{lead} 음역이 올라갈 때 연결이 일부 구간에서만 안정적으로 이어졌어요. "
+            "그래서 고음에서 음색이 갑자기 달라지는 느낌을 줄이려면, "
+            "높은 음을 더 세게 만드는 것보다 전환 구간을 더 일정하게 연결하는 것을 먼저 해보는 게 좋아요."
         )
         focus = FACTOR_REGISTER
         guidance = GUIDANCE_SONG_DIRECT
@@ -803,10 +812,14 @@ def _reason_timbre_changes_high(concern_id: str, snap: dict[str, Any], scope: st
         guidance = GUIDANCE_SONG_DIRECT
         evidence = [_evidence_item("effort", effort, used_for="primary_explanation", scope=scope)]
     else:
-        interpretation = (
-            f"{lead} 고음에서 음색이 달라지는 느낌을 한 원인으로 단정하지는 않아요. "
-            "지금은 고음을 더 세게 내기보다, 편안한 중음에서 작은 강도로 시작해 "
-            "위쪽 음역까지 천천히 연결해보세요."
+        from audio_analyzer.diagnostic.general_guidance import comparison_protocol_for
+
+        interpretation = str(
+            comparison_protocol_for(concern_id).get("lead")
+            or (
+                "고음에서 음색이 갑자기 달라지는 느낌을 줄이려면, "
+                "높은 음을 더 세게 만드는 것보다 전환 구간을 더 일정하게 연결하는 것을 먼저 해보는 게 좋아요."
+            )
         )
         focus = FACTOR_REGISTER
         guidance = GUIDANCE_SAFE_GENERAL
@@ -831,6 +844,7 @@ def _reason_timbre_changes_high(concern_id: str, snap: dict[str, Any], scope: st
 
 
 def _reason_controlish(concern_id: str, snap: dict[str, Any], scope: str, sem: dict[str, Any]) -> dict[str, Any]:
+    """Walk candidate_factors in semantic order — question meaning sets priority."""
     register = _reg(snap)
     stab = _stability(snap)
     effort = _effort(snap)
@@ -838,35 +852,77 @@ def _reason_controlish(concern_id: str, snap: dict[str, Any], scope: str, sem: d
     category = str(sem.get("category") or "control")
     factors = list(sem.get("candidate_factors") or [])
 
-    if FACTOR_REGISTER in factors and register in ("DISRUPTED", "PARTIAL"):
-        interpretation = (
-            f"{lead} 음역이 올라가는 구간의 연결이 "
-            + ("급격히 달라지는 " if register == "DISRUPTED" else "일부만 안정적으로 이어지는 ")
-            + "패턴이 보여요."
-        )
-        focus = FACTOR_REGISTER
-        guidance = GUIDANCE_SONG_DIRECT
-        evidence = [_evidence_item("register", register, used_for="primary_explanation", scope=scope)]
-    elif FACTOR_STABILITY in factors and stab is False:
-        interpretation = f"{lead} 안정성이 떨어지는 구간이 보여, 흔들림·불안정감과 관련될 가능성이 있어 보여요."
-        focus = FACTOR_STABILITY
-        guidance = GUIDANCE_SONG_DIRECT
-        evidence = [_evidence_item("stability", "UNSTABLE", used_for="primary_explanation", scope=scope)]
-    elif FACTOR_EFFORT in factors and effort in ("HIGH", "MODERATE"):
-        interpretation = f"{lead} 힘 사용이 큰 구간이 함께 보여, 조절이 더 어렵게 느껴질 수 있어 보여요."
-        focus = FACTOR_EFFORT
-        guidance = GUIDANCE_SONG_DIRECT
-        evidence = [_evidence_item("effort", effort, used_for="primary_explanation", scope=scope)]
-    elif FACTOR_DYNAMICS in factors:
-        focus = FACTOR_DYNAMICS
-        interpretation = (
-            f"{lead} 강약 조절은 긴 프레이즈보다 짧은 구간에서 작은 강도로 시작해 "
-            "편안함이 유지되는 범위를 먼저 찾는 방식이 좋아요."
-        )
-        guidance = GUIDANCE_SAFE_GENERAL
-        evidence = []
-    else:
-        focus, interpretation = _fallback_interpretation(category, concern_id)
+    focus = None
+    interpretation = ""
+    guidance = GUIDANCE_SAFE_GENERAL
+    evidence: list[dict[str, Any]] = []
+
+    for factor in factors:
+        if factor == FACTOR_STABILITY and stab is False:
+            interpretation = (
+                f"{lead} 안정성이 떨어지는 구간이 보여, "
+                "흔들림·불안정감과 관련될 가능성이 있어 보여요."
+            )
+            focus = FACTOR_STABILITY
+            guidance = GUIDANCE_SONG_DIRECT
+            evidence = [_evidence_item("stability", "UNSTABLE", used_for="primary_explanation", scope=scope)]
+            break
+        if factor == FACTOR_REGISTER and register in ("DISRUPTED", "PARTIAL"):
+            interpretation = (
+                f"{lead} 음역이 올라가는 구간의 연결이 "
+                + ("급격히 달라지는 " if register == "DISRUPTED" else "일부만 안정적으로 이어지는 ")
+                + "패턴이 보여요."
+            )
+            focus = FACTOR_REGISTER
+            guidance = GUIDANCE_SONG_DIRECT
+            evidence = [_evidence_item("register", register, used_for="primary_explanation", scope=scope)]
+            break
+        if factor == FACTOR_EFFORT and effort in ("HIGH", "MODERATE"):
+            interpretation = f"{lead} 힘 사용이 큰 구간이 함께 보여, 조절이 더 어렵게 느껴질 수 있어 보여요."
+            focus = FACTOR_EFFORT
+            guidance = GUIDANCE_SONG_DIRECT
+            evidence = [_evidence_item("effort", effort, used_for="primary_explanation", scope=scope)]
+            break
+        if factor == FACTOR_DYNAMICS:
+            focus = FACTOR_DYNAMICS
+            interpretation = (
+                f"{lead} 강약 조절은 긴 프레이즈보다 짧은 구간에서 작은 강도로 시작해 "
+                "편안함이 유지되는 범위를 먼저 찾는 방식이 좋아요."
+            )
+            guidance = GUIDANCE_SAFE_GENERAL
+            evidence = []
+            break
+
+    if focus is None:
+        # Concern-specific defaults when no matching evidence
+        if concern_id == "HIGH_NOTE_UNSTABLE":
+            focus = FACTOR_STABILITY
+            interpretation = (
+                f"{lead} 고음에서 음정·소리가 흔들릴 때는 "
+                "길게 버티기보다 짧은 안정 구간부터 비교하는 쪽이 좋아요."
+            )
+        elif concern_id == "PITCH_UNSTABLE":
+            focus = FACTOR_STABILITY
+            interpretation = f"{lead} 음정 흔들림은 짧은 안정 구간부터 비교하는 쪽이 좋아요."
+        elif concern_id == "VIBRATO_UNSTABLE":
+            focus = FACTOR_STABILITY
+            interpretation = (
+                f"{lead} 비브라토는 억지로 크게 만들기보다 "
+                "짧은 지속음에서 자연스러운 흔들림이 생기는지 비교해보세요."
+            )
+        elif concern_id == "PHRASE_END_WEAK":
+            focus = FACTOR_DYNAMICS
+            interpretation = (
+                f"{lead} 프레이즈 끝은 긴 문장을 세게 버티기보다 "
+                "짧은 프레이즈부터 끝까지 같은 편안함을 유지해보세요."
+            )
+        elif concern_id == "DYNAMICS_DIFFICULT":
+            focus = FACTOR_DYNAMICS
+            interpretation = (
+                f"{lead} 강약 조절은 편한 강도에서 작은 변화만 추가해 비교하는 쪽이 좋아요."
+            )
+        else:
+            focus, interpretation = _fallback_interpretation(category, concern_id)
         guidance = GUIDANCE_SAFE_GENERAL
         evidence = []
 
@@ -919,6 +975,15 @@ def reason_about_concern(
         out = _reason_sharp(concern_id, snap, scope)
     elif concern_id == "HIGH_NOTE_TOO_EFFORTFUL":
         out = _reason_effortful_high(concern_id, snap, scope, skipped)
+    elif concern_id in (
+        "PITCH_UNSTABLE",
+        "REGISTER_CONNECTION_DIFFICULT",
+        "VIBRATO_UNSTABLE",
+        "DYNAMICS_DIFFICULT",
+        "PHRASE_END_WEAK",
+        "HIGH_NOTE_UNSTABLE",
+    ):
+        out = _reason_controlish(concern_id, snap, scope, sem)
     elif qtype in (TYPE_CONTROL, TYPE_FUNCTIONAL) and concern_id not in (
         "HIGH_NOTE_CANNOT_REACH",
         "HIGH_NOTE_FLIPS",
@@ -932,14 +997,6 @@ def reason_about_concern(
         "VOICE_TOO_NASAL_PERCEPT",
     ):
         out = _reason_controlish(concern_id, snap, scope, sem)
-    elif concern_id in (
-        "PITCH_UNSTABLE",
-        "REGISTER_CONNECTION_DIFFICULT",
-        "VIBRATO_UNSTABLE",
-        "DYNAMICS_DIFFICULT",
-        "PHRASE_END_WEAK",
-    ):
-        out = _reason_controlish(concern_id, snap, scope, sem)
     elif concern_id in ("VOICE_ROUGH", "TIMBRE_CHANGES_HIGH", "VOICE_TOO_NASAL_PERCEPT"):
         # Perceptual with control/timbre mix
         if concern_id == "VOICE_ROUGH":
@@ -951,8 +1008,8 @@ def reason_about_concern(
                 guidance = GUIDANCE_SONG_DIRECT
             else:
                 interpretation = (
-                    f"{lead} 거친 인상을 한 원인으로 단정하지는 않아요. "
-                    "짧은 구간에서 안정이 유지되는 범위를 확인한 뒤 조금씩 넓혀보세요."
+                    f"{lead} 짧은 구간에서 안정이 유지되는 범위를 먼저 만든 뒤 "
+                    "조금씩 넓혀보는 쪽이 좋아요."
                 )
                 focus = FACTOR_STABILITY
                 guidance = GUIDANCE_SAFE_GENERAL
@@ -993,17 +1050,22 @@ def reason_about_concern(
             elif register in ("DISRUPTED", "PARTIAL"):
                 interpretation = (
                     f"{_scope_label(scope)} 음역이 바뀔 때 발성 특성이 달라지는 구간이 보여요. "
-                    "콧소리처럼 느껴지는 지점을 세게 바꾸기보다, 작은 강도로 연결을 다듬으며 비교해보세요."
+                    "콧소리처럼 느껴지는 구간에서는 소리를 더 세게 바꾸기보다, "
+                    "같은 짧은 구절을 두 방식으로 비교해보세요."
                 )
                 focus = FACTOR_REGISTER
                 guidance = GUIDANCE_SONG_DIRECT
                 evidence = [_evidence_item("register", register, used_for="primary_explanation", scope=scope)]
             else:
+                from audio_analyzer.diagnostic.general_guidance import comparison_protocol_for
+
                 focus = FACTOR_TIMBRE
-                interpretation = (
-                    f"{_scope_label(scope)} 콧소리처럼 들리는 느낌을 직접 확정할 음향 지표는 제한적이에요. "
-                    "같은 구절을 작은 강도에서 두 가지 방식으로 짧게 비교하며 "
-                    "더 편안하게 들리는 쪽을 찾아보세요."
+                interpretation = str(
+                    comparison_protocol_for(concern_id).get("lead")
+                    or (
+                        "콧소리처럼 느껴지는 구간에서는 소리를 더 세게 바꾸기보다, "
+                        "같은 짧은 구절을 두 방식으로 비교해보세요."
+                    )
                 )
                 guidance = GUIDANCE_SAFE_GENERAL
                 evidence = []

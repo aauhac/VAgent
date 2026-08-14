@@ -5,7 +5,9 @@
  *  - Skip-all: Recording Choice → concern-only report
  *  - Partial: record task1 via FE → skip task2 → PARTIAL_PRECISION report
  *
- * All /v1 traffic is forced to BACKEND (default :8001) so Vite :8000 proxy mismatch cannot occur.
+ * All /v1 traffic is forced to BACKEND via VAGENT_E2E_API (default :8001).
+ * Do not edit miniapp/vite.config.ts for this test.
+ * Default Vite proxy remains http://127.0.0.1:8000; override with VITE_API_PROXY_TARGET if needed.
  *
  *   node miniapp/scripts/e2e_safety_browser.mjs
  */

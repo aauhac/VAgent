@@ -125,19 +125,36 @@ def build_song_evidence_snapshot(
         or effort_dim.get("status")
         or ""
     ).upper()
+    raw_status = str(effort.get("status") or effort_dim.get("status") or "").upper()
     if sev or effort or effort_dim:
         level = "UNKNOWN"
-        if sev in ("HIGH", "EXCESS"):
+        # Raw UNKNOWN/AMBIGUOUS must not be presented as LOW strength
+        if raw_status in ("UNKNOWN", "UNAVAILABLE", "AMBIGUOUS") or effort_dim.get("hidden"):
+            level = "UNKNOWN"
+        elif sev in ("UNKNOWN", "UNAVAILABLE", "AMBIGUOUS"):
+            level = "UNKNOWN"
+        elif sev in ("HIGH", "EXCESS"):
             level = "HIGH"
         elif sev == "MODERATE":
             level = "MODERATE"
-        elif sev in ("LOW", "STABLE", "NORMAL"):
+        elif sev in ("MILD", "OCCASIONAL"):
+            level = "MODERATE"
+        elif sev in ("LOW", "STABLE", "NORMAL") and raw_status not in (
+            "UNKNOWN",
+            "UNAVAILABLE",
+            "AMBIGUOUS",
+        ):
             level = "LOW"
+        conf = str(effort.get("confidence_label") or effort_dim.get("confidence_label") or "").lower()
         snap["effort"] = {
-            "available": level != "UNKNOWN" or bool(effort),
+            "available": level not in ("UNKNOWN",),
             "level": level,
             "severity": sev or None,
-            "status": effort.get("status") or effort_dim.get("status"),
+            "status": raw_status or effort.get("status") or effort_dim.get("status"),
+            "confidence_label": conf or None,
+            "reliable_for_preserve": (
+                level == "LOW" and conf in ("medium", "high") and not effort_dim.get("hidden")
+            ),
         }
         availability["effort"] = bool(snap["effort"]["available"])
 
@@ -391,47 +408,71 @@ def snapshot_to_ui_acoustic_axes(snap: Optional[dict[str, Any]]) -> dict[str, An
 
 
 def _derive_key_features(snap: dict[str, Any]) -> list[str]:
-    feats: list[str] = []
+    """Salience-ranked key features — actionable bottlenecks beat maintained positives."""
+    scored: list[tuple[int, str]] = []
+
+    reg = snap.get("register") or {}
+    rst = str(reg.get("status") or "").upper()
+    if rst in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS", "BREAK", "FAIL", "ABRUPT"):
+        scored.append((100, "성구 연결이 급격히 달라지는 편"))
+    elif rst in ("PARTIAL", "INSUFFICIENT", "MIXED"):
+        scored.append((90, "성구 연결이 일부 구간에서만 이어지는 편"))
+
+    effort = snap.get("effort") or {}
+    effort_level = str(effort.get("level") or "").upper()
+    effort_conf = str(effort.get("confidence_label") or "").lower()
+    effort_reliable = bool(effort.get("available")) and effort_level not in (
+        "",
+        "UNKNOWN",
+        "UNAVAILABLE",
+        "AMBIGUOUS",
+    )
+    if effort_level in ("HIGH", "MODERATE"):
+        scored.append((95, "일부 구간에서 힘 사용이 증가하는 편"))
+    elif effort_reliable and effort_level == "LOW" and effort_conf in ("medium", "high", ""):
+        # Positive maintain trait — lower salience than bottlenecks
+        scored.append((25, "힘 사용은 낮은 편"))
+
+    stab = snap.get("stability") or {}
+    sst = str(stab.get("status") or "").upper()
+    if sst in ("UNSTABLE", "POOR", "LOW", "IRREGULAR"):
+        scored.append((88, "발성 안정성이 떨어지는 구간이 있는 편"))
+    elif sst in ("STABLE", "NORMAL", "OK_PROXY", "NOT_PROMINENT"):
+        scored.append((20, "발성 안정성은 비교적 유지되는 편"))
+
+    hn = snap.get("high_note") or {}
+    if hn.get("available") and str(hn.get("severity") or "").upper() in ("HIGH", "MODERATE"):
+        scored.append((85, "고음 구간에서 제한이 두드러지는 편"))
+
     breath = snap.get("breathiness") or {}
-    if breath.get("available") and breath.get("level") == "LOW":
-        feats.append("숨 섞임은 적은 편")
-    elif breath.get("available") and breath.get("level") == "HIGH":
-        feats.append("숨 섞임이 두드러지는 편")
+    if breath.get("available") and breath.get("level") == "HIGH":
+        scored.append((70, "숨 섞임이 두드러지는 편"))
+    elif breath.get("available") and breath.get("level") == "LOW":
+        scored.append((22, "숨 섞임은 적은 편"))
 
     contact = snap.get("contact") or {}
     if contact.get("status") == "FIRM":
-        feats.append("접촉감은 단단한 쪽")
+        scored.append((55, "접촉감은 단단한 쪽"))
     elif contact.get("status") == "LIGHT":
-        feats.append("접촉감은 가벼운 쪽")
+        scored.append((55, "접촉감은 가벼운 쪽"))
 
     timbre = snap.get("timbre") or {}
     if timbre.get("presence") is not None:
         if timbre["presence"] <= 0.42:
-            feats.append("중역 존재감이 다소 낮은 편")
+            scored.append((75, "중역 존재감이 다소 낮은 편"))
         elif timbre["presence"] >= 0.58:
-            feats.append("중역 존재감이 유지되는 편")
+            scored.append((30, "중역 존재감이 유지되는 편"))
     if timbre.get("brightness") is not None:
-        if timbre["brightness"] <= 0.42:
-            feats.append("밝기는 어두운 쪽에 가까운 편")
-        elif timbre["brightness"] >= 0.58:
-            feats.append("밝기는 밝은 쪽에 가까운 편")
+        if timbre["brightness"] <= 0.35 or timbre["brightness"] >= 0.65:
+            side = "어두운" if timbre["brightness"] <= 0.35 else "밝은"
+            scored.append((50, f"밝기는 {side} 쪽에 가까운 편"))
 
-    effort = snap.get("effort") or {}
-    if effort.get("level") == "LOW":
-        feats.append("힘 사용은 낮은 편")
-    elif effort.get("level") in ("HIGH", "MODERATE"):
-        feats.append("일부 구간에서 힘 사용이 증가하는 편")
-
-    stab = snap.get("stability") or {}
-    if str(stab.get("status") or "").upper() in ("STABLE", "LOW", "NORMAL"):
-        feats.append("발성 안정성은 비교적 유지되는 편")
-
-    # unique, max 3
+    scored.sort(key=lambda x: -x[0])
     out: list[str] = []
-    for f in feats:
-        if f not in out:
-            out.append(f)
-        if len(out) >= 3:
+    for _score, text in scored:
+        if text not in out:
+            out.append(text)
+        if len(out) >= 4:
             break
     return out
 

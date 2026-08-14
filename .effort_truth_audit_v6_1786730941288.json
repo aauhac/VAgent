@@ -1,0 +1,190 @@
+{
+  "audit": "effort-truth-v6",
+  "generated_at": "2026-08-14T18:09:01.288062+00:00",
+  "threshold_changed": false,
+  "cases": [
+    {
+      "label": "RELAXED",
+      "raw_effort_dim": {
+        "status": "LOW",
+        "continuum_0_to_1": 0.08,
+        "effort_score": 0.08,
+        "peak_event_score": 0.08,
+        "mean_segment_effort_score": 0.05,
+        "hit_segments": 0,
+        "hit_ratio": 0.0,
+        "core_family_count": 0,
+        "support_family_count": 0,
+        "persistent_segments": 0,
+        "localized_episode_count": 0,
+        "confidence_label": "medium"
+      },
+      "effort_assessment": {
+        "global_severity": "LOW",
+        "localized_peak_severity": "LOW",
+        "high_note_severity": null,
+        "label": "편안한 편",
+        "strength_eligible": true,
+        "status": "LOW"
+      },
+      "canonical_effort": {
+        "available": true,
+        "level": "LOW",
+        "severity": "LOW",
+        "status": "LOW",
+        "confidence_label": "medium",
+        "reliable_for_preserve": true
+      },
+      "canonical_register": {
+        "available": true,
+        "status": "CONNECTED",
+        "mix_evidence": null,
+        "description": null,
+        "modifiers": [],
+        "head_chest": {}
+      },
+      "canonical_contact": {
+        "available": true,
+        "status": "MID",
+        "continuum": 0.5,
+        "status_label": null
+      },
+      "canonical_stability": {
+        "available": true,
+        "status": "UNSTABLE",
+        "status_label": null
+      },
+      "key_features": [
+        "발성 안정성이 떨어지는 구간이 있는 편",
+        "힘 사용은 낮은 편"
+      ],
+      "root_cause_if_mismatch": "DETECTOR",
+      "threshold_changed": false
+    },
+    {
+      "label": "PUSHED_REGISTER_FAIL_DETECTOR_LOW",
+      "raw_effort_dim": {
+        "status": "LOW",
+        "continuum_0_to_1": 0.12,
+        "effort_score": 0.12,
+        "peak_event_score": 0.12,
+        "mean_segment_effort_score": 0.1,
+        "hit_segments": 0,
+        "hit_ratio": 0.0,
+        "core_family_count": 0,
+        "support_family_count": 0,
+        "persistent_segments": 0,
+        "localized_episode_count": 0,
+        "confidence_label": "medium"
+      },
+      "effort_assessment": {
+        "global_severity": "LOW",
+        "localized_peak_severity": "LOW",
+        "high_note_severity": null,
+        "label": "편안한 편",
+        "strength_eligible": true,
+        "status": "LOW"
+      },
+      "canonical_effort": {
+        "available": true,
+        "level": "LOW",
+        "severity": "LOW",
+        "status": "LOW",
+        "confidence_label": "medium",
+        "reliable_for_preserve": true
+      },
+      "canonical_register": {
+        "available": true,
+        "status": "DISRUPTED",
+        "mix_evidence": null,
+        "description": null,
+        "modifiers": [],
+        "head_chest": {}
+      },
+      "canonical_contact": {
+        "available": true,
+        "status": "FIRM",
+        "continuum": 0.78,
+        "status_label": null
+      },
+      "canonical_stability": {
+        "available": true,
+        "status": "UNSTABLE",
+        "status_label": null
+      },
+      "key_features": [
+        "성구 연결이 급격히 달라지는 편",
+        "발성 안정성이 떨어지는 구간이 있는 편",
+        "접촉감은 단단한 쪽",
+        "힘 사용은 낮은 편"
+      ],
+      "root_cause_if_mismatch": "DETECTOR",
+      "threshold_changed": false
+    },
+    {
+      "label": "PUSHED_WITH_RAW_ELEVATED",
+      "raw_effort_dim": {
+        "status": "OCCASIONAL",
+        "continuum_0_to_1": 0.62,
+        "effort_score": 0.62,
+        "peak_event_score": 0.62,
+        "mean_segment_effort_score": 0.22,
+        "hit_segments": 2,
+        "hit_ratio": 0.1667,
+        "core_family_count": 2,
+        "support_family_count": 1,
+        "persistent_segments": 1,
+        "localized_episode_count": 0,
+        "confidence_label": "medium"
+      },
+      "effort_assessment": {
+        "global_severity": "MODERATE",
+        "localized_peak_severity": "MODERATE",
+        "high_note_severity": null,
+        "label": "힘이 들어가는 편",
+        "strength_eligible": false,
+        "status": "OCCASIONAL"
+      },
+      "canonical_effort": {
+        "available": true,
+        "level": "MODERATE",
+        "severity": "MODERATE",
+        "status": "OCCASIONAL",
+        "confidence_label": "medium",
+        "reliable_for_preserve": false
+      },
+      "canonical_register": {
+        "available": true,
+        "status": "DISRUPTED",
+        "mix_evidence": null,
+        "description": null,
+        "modifiers": [],
+        "head_chest": {}
+      },
+      "canonical_contact": {
+        "available": true,
+        "status": "FIRM",
+        "continuum": 0.78,
+        "status_label": null
+      },
+      "canonical_stability": {
+        "available": true,
+        "status": "UNSTABLE",
+        "status_label": null
+      },
+      "key_features": [
+        "성구 연결이 급격히 달라지는 편",
+        "일부 구간에서 힘 사용이 증가하는 편",
+        "발성 안정성이 떨어지는 구간이 있는 편",
+        "접촉감은 단단한 쪽"
+      ],
+      "root_cause_if_mismatch": "NONE",
+      "threshold_changed": false
+    }
+  ],
+  "notes": [
+    "UNKNOWN must not present as LOW strength.",
+    "If PUSHED_REGISTER_FAIL_DETECTOR_LOW shows LOW with hit_segments=0, classify DETECTOR.",
+    "Do not retune thresholds in this audit."
+  ]
+}

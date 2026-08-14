@@ -555,6 +555,28 @@ def analyze_session(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@router.post("/diagnostic-sessions/{session_id}/regenerate-report")
+def regenerate_report(
+    session_id: str,
+    x_user_id: str | None = Header(default=None),
+) -> dict:
+    """DEV only. Rebuild QA/goal presentation from stored evidence. Production → 403."""
+    if not validate_session_id(session_id):
+        raise HTTPException(status_code=404, detail="session not found")
+    try:
+        return diag.regenerate_report(session_id, user_id=_user_id(x_user_id))
+    except PermissionError as exc:
+        if str(exc) == "REGENERATE_DISABLED":
+            raise HTTPException(status_code=403, detail="REGENERATE_DISABLED") from None
+        raise HTTPException(status_code=402, detail="REPORT_LOCKED") from None
+    except KeyError:
+        raise HTTPException(status_code=404, detail="session not found") from None
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="report not ready") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @router.get("/diagnostic-sessions/{session_id}")
 def get_session(
     session_id: str,

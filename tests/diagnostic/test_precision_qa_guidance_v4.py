@@ -314,11 +314,22 @@ def test_general_knowledge_only_fills_interpretation_or_action():
         task_evidence=_skip(),
     )
     ks = ev.get("knowledge_support") or ""
+    ans = ev.get("answer_hint") or ""
     assert ks
     assert "이 사용자의 원인" not in ks
+    assert ks not in ans
+    assert "①" in ans and "②" in ans
     assert ev.get("knowledge_scope") == "GENERAL_VOCAL_GUIDANCE"
     assert ev.get("what_to_change")
     assert ev.get("success_cues")
+    assert ev.get("knowledge_support_internal") is True
+    for bad in (
+        "직접 확정할 음향 지표는 제한적이에요",
+        "한 원인으로 단정하지는 않아요",
+        "특정 원인을 가정하기보다는",
+        "뚜렷한 음향 특징이 강하지 않아요",
+    ):
+        assert bad not in ans
 
 
 def test_goal_and_qa_share_register_evidence():

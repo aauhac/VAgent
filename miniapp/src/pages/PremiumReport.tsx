@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { getDiagnosticReport, getDiagnosticSession, analyzeDiagnosticSession } from '../api/client';
+import { getDiagnosticReport, getDiagnosticSession, analyzeDiagnosticSession, regenerateDiagnosticReport } from '../api/client';
 import VocalProfile from '../components/report/VocalProfile';
+import QAComparisonBlock from '../components/report/QAComparisonBlock';
+import CoachingProtocolCard from '../components/report/CoachingProtocolCard';
 import {
   buildDiagnosticHeroText,
   buildTaskResultSummary,
@@ -12,6 +14,7 @@ import {
   translateDiagnosticFinding,
   translateMechanismTitle,
 } from '../lib/reportPresentation';
+import { QA_GUIDANCE_VERSION } from '../lib/reportVersions';
 
 function AccordionRow({
   title,
@@ -42,6 +45,7 @@ export default function PremiumReport() {
   const [params] = useSearchParams();
   const [report, setReport] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [regenBusy, setRegenBusy] = useState(false);
   const showDebug = params.get('debug') === '1';
 
   useEffect(() => {
@@ -93,6 +97,32 @@ export default function PremiumReport() {
       if (timer) clearTimeout(timer);
     };
   }, [sessionId, showDebug]);
+
+  useEffect(() => {
+    if (!report || !import.meta.env.DEV) return;
+    const stored = report.qa_guidance_version;
+    if (stored !== QA_GUIDANCE_VERSION) {
+      console.warn('[DIAG_STALE_REPORT]', {
+        stored: stored || null,
+        current: QA_GUIDANCE_VERSION,
+        sessionId,
+      });
+    }
+  }, [report, sessionId]);
+
+  async function regenerateWithCurrentLogic() {
+    if (!sessionId || regenBusy) return;
+    setRegenBusy(true);
+    try {
+      await regenerateDiagnosticReport(sessionId);
+      const r = await getDiagnosticReport(sessionId, { debug: showDebug });
+      setReport(r);
+    } catch (e: any) {
+      setError(String(e?.message || '결과를 다시 생성하지 못했어요.'));
+    } finally {
+      setRegenBusy(false);
+    }
+  }
 
   if (error === 'REPORT_LOCKED') {
     return (
@@ -153,8 +183,18 @@ export default function PremiumReport() {
   );
   const hero = buildDiagnosticHeroText(reliable);
   const pqa = report.personalized_qa || {};
+  const songKeyFeatures: string[] = report.song_key_features || pqa.song_key_features || [];
+  type DistinctFinding = ReturnType<typeof translateDiagnosticFinding>;
+  type DistinctFeature =
+    | { kind: 'finding'; finding: DistinctFinding }
+    | { kind: 'canonical'; text: string };
+  const distinctFeatures: DistinctFeature[] =
+    topFindings.length > 0
+      ? topFindings.map((f: DistinctFinding) => ({ kind: 'finding' as const, finding: f }))
+      : songKeyFeatures.slice(0, 3).map((text: string) => ({ kind: 'canonical' as const, text }));
   const coaching = report.coaching || pqa.coaching || {};
   const goal = report.coaching_goal || pqa.coaching_goal || {};
+  const coachingProtocol = report.coaching_protocol || goal.coaching_protocol || pqa.coaching_protocol;
   const timbreGoal = report.timbre_goal || pqa.timbre_goal;
   const desired = goal.desired_outcome || (timbreGoal?.id ? timbreGoal : null);
   const showDesiredTimbre = desired?.type === 'TIMBRE' || Boolean(timbreGoal?.id && timbreGoal.id !== 'RECOMMEND_FOR_ME') || desired?.source === 'SYSTEM_RECOMMENDED';
@@ -177,8 +217,15 @@ export default function PremiumReport() {
     || vocalStyle?.canonical_acoustic_axes;
 
   function qaAnswerOnly(answer: string) {
-    const idx = answer.indexOf('\n\n→');
-    return (idx >= 0 ? answer.slice(0, idx) : answer).trim();
+    let text = answer;
+    const arrow = text.indexOf('\n\n→');
+    if (arrow >= 0) text = text.slice(0, arrow);
+    // Prefer structured comparison UI — strip embedded block from prose
+    const compareIdx = text.indexOf('\n\n비교해보기');
+    if (compareIdx >= 0) text = text.slice(0, compareIdx);
+    const circled = text.indexOf('\n\n①');
+    if (circled >= 0) text = text.slice(0, circled);
+    return text.trim();
   }
 
   function evidenceLines(qa: {
@@ -248,6 +295,19 @@ export default function PremiumReport() {
       {safetyNote && (
         <p className="warn" style={{ marginTop: 10 }}>{scrubUserText(safetyNote)}</p>
       )}
+      {import.meta.env.DEV && showDebug ? (
+        <p style={{ marginTop: 10 }}>
+          <button
+            type="button"
+            className="btn secondary"
+            data-testid="dev-regenerate-report"
+            disabled={regenBusy}
+            onClick={() => void regenerateWithCurrentLogic()}
+          >
+            {regenBusy ? '다시 생성 중…' : '최신 로직으로 결과 다시 생성'}
+          </button>
+        </p>
+      ) : null}
 
       {showDesiredTimbre && (desired?.label || timbreGoal?.label) ? (
         <section className="section" data-testid="desired-timbre">
@@ -315,8 +375,10 @@ export default function PremiumReport() {
         </section>
       ) : null}
 
+      <CoachingProtocolCard protocol={coachingProtocol} />
+
       {pqa.show_qa_section !== false && (pqa.questions?.length > 0 || pqa.question) ? (
-        <section className="section">
+        <section className="section" data-testid="qa-section">
           <h3 className="section-title">당신이 궁금했던 것</h3>
           {(pqa.questions || []).length > 0
             ? (pqa.questions as Array<{
@@ -324,6 +386,28 @@ export default function PremiumReport() {
                 answer: string;
                 takeaway?: string;
                 what_to_change?: string;
+                working_direction?: string;
+                comparison?: {
+                  baseline_label?: string;
+                  baseline_instruction?: string;
+                  variant_label?: string;
+                  variant_instruction?: string;
+                  success_condition?: string;
+                  if_better?: string;
+                  if_not_better?: string;
+                  A?: string;
+                  B?: string;
+                  success?: string;
+                };
+                comparison_protocol?: {
+                  baseline_instruction?: string;
+                  variant_instruction?: string;
+                  success_condition?: string;
+                  if_better?: string;
+                  A?: string;
+                  B?: string;
+                  success?: string;
+                };
                 coaching_mode?: string;
                 support?: string[];
                 against?: string[];
@@ -336,16 +420,22 @@ export default function PremiumReport() {
                 const body = scrubUserText(qaAnswerOnly(qa.answer || ''));
                 const nextStep = scrubUserText(qa.what_to_change || '');
                 const showNext = Boolean(nextStep) && !body.includes(nextStep);
+                const comparison = qa.comparison || qa.comparison_protocol;
                 return (
-                  <div key={`${qa.question}-${i}`} style={{ marginBottom: 20 }}>
-                    <p className="body-text" style={{ fontWeight: 600 }}>
+                  <div key={`${qa.question}-${i}`} data-testid={`qa-item-${i}`} style={{ marginBottom: 20 }}>
+                    <p className="body-text" style={{ fontWeight: 600 }} data-testid={`qa-question-${i}`}>
                       Q{i + 1}. {qa.question}
                     </p>
-                    <p className="body-text" style={{ marginTop: 8, lineHeight: 1.55 }}>
+                    <p
+                      className="body-text"
+                      style={{ marginTop: 8, lineHeight: 1.55, whiteSpace: 'pre-line' }}
+                      data-testid={`qa-answer-${i}`}
+                    >
                       A. {body}
                     </p>
+                    <QAComparisonBlock comparison={comparison} testIdPrefix={`qa-compare-${i}`} />
                     {showNext ? (
-                      <p className="muted body-text" style={{ marginTop: 6, lineHeight: 1.5 }}>
+                      <p className="muted body-text" style={{ marginTop: 8, lineHeight: 1.5 }} data-testid={`qa-next-${i}`}>
                         {nextStep}
                       </p>
                     ) : null}
@@ -394,7 +484,7 @@ export default function PremiumReport() {
         </section>
       )}
 
-      {practices.filter((g: any) => g && (g.mode || '') !== 'MAINTAIN').length > 0 && (
+      {practices.filter((g: any) => g && (g.mode || '') !== 'MAINTAIN').length > 0 && !coachingProtocol ? (
         <section className="section" data-testid="practice-section">
           <h3 className="section-title">맞춤 연습 방향</h3>
           {practices
@@ -429,7 +519,7 @@ export default function PremiumReport() {
             </div>
           ))}
         </section>
-      )}
+      ) : null}
 
       {preserveLabels.length > 0 && (
         <section className="section" data-testid="maintain-section">
@@ -498,23 +588,32 @@ export default function PremiumReport() {
 
       <section className="section">
         <h3 className="section-title">가장 뚜렷한 특징</h3>
-        {topFindings.length === 0 ? (
+        {distinctFeatures.length === 0 ? (
           <p className="muted body-text">이번 진단에서 특별히 강하게 나타난 특징은 제한적이에요.</p>
         ) : (
-          topFindings.map((f: ReturnType<typeof translateDiagnosticFinding>, i: number) => (
-            <div key={`${f.title}-${i}`} className="diag-finding">
-              <p className="diag-num">{String(i + 1).padStart(2, '0')}</p>
-              <div>
-                <p className="diag-finding-title">
-                  {f.title}
-                  <span className="diag-tone">{f.tone}</span>
-                </p>
-                <p className="body-text muted" style={{ margin: '6px 0 0' }}>{f.body}</p>
-                <p className="spectrum-confidence">
-                  {formatAnalysisConfidence(f.confidence_label, f.confidence_percent)}
-                </p>
+          distinctFeatures.map((item, i) => (
+            item.kind === 'finding' ? (
+              <div key={`${item.finding.title}-${i}`} className="diag-finding">
+                <p className="diag-num">{String(i + 1).padStart(2, '0')}</p>
+                <div>
+                  <p className="diag-finding-title">
+                    {item.finding.title}
+                    <span className="diag-tone">{item.finding.tone}</span>
+                  </p>
+                  <p className="body-text muted" style={{ margin: '6px 0 0' }}>{item.finding.body}</p>
+                  <p className="spectrum-confidence">
+                    {formatAnalysisConfidence(item.finding.confidence_label, item.finding.confidence_percent)}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div key={`${item.text}-${i}`} className="diag-finding">
+                <p className="diag-num">{String(i + 1).padStart(2, '0')}</p>
+                <div>
+                  <p className="diag-finding-title">{scrubUserText(item.text)}</p>
+                </div>
+              </div>
+            )
           ))
         )}
       </section>

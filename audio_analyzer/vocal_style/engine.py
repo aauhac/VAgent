@@ -90,9 +90,9 @@ def _primary_traits(axes: dict[str, dict[str, Any]], max_n: int = 3) -> list[dic
 
 
 def _composite_from_axes(axes: dict[str, dict[str, Any]]) -> tuple[str, str, list[str]]:
-    """Build descriptive title/body from top distinctive axes — no hardcode of sample names."""
-    snippets: list[tuple[int, str, str]] = []
-    # weight: higher = more distinctive for naming
+    """Build descriptive title/body from top distinctive axes — grammar-safe templates."""
+    # Each entry: (weight, trait_key, noun_phrase for title, body clause)
+    traits: list[tuple[int, str, str, str]] = []
     effort = axes.get("effort") or {}
     contact = axes.get("contact") or {}
     breath = axes.get("breathiness") or axes.get("functional_breathiness") or {}
@@ -101,35 +101,35 @@ def _composite_from_axes(axes: dict[str, dict[str, Any]]) -> tuple[str, str, lis
     stab = axes.get("stability") or {}
 
     if effort.get("available") and effort.get("value") == "LOW":
-        snippets.append((10, "편안하고", "힘 사용이 비교적 편안하고"))
+        traits.append((10, "effort_low", "낮은 힘 사용", "힘 사용이 비교적 편안하고"))
     elif effort.get("available") and effort.get("value") == "HIGH":
-        snippets.append((12, "힘이 두드러지는", "힘 사용이 크게 나타나고"))
+        traits.append((12, "effort_high", "힘이 두드러지는", "힘 사용이 크게 나타나고"))
 
     if contact.get("available") and contact.get("value") == "FIRM":
-        snippets.append((11, "접촉이 단단한", "접촉감이 단단하며"))
+        traits.append((11, "contact_firm", "단단한 접촉", "접촉감이 단단하며"))
     elif contact.get("available") and contact.get("value") == "LIGHT":
-        snippets.append((9, "가벼운", "접촉감이 가벼운 편이며"))
+        traits.append((9, "contact_light", "가벼운 접촉", "접촉감이 가벼운 편이며"))
 
     if breath.get("available") and breath.get("value") == "LOW":
-        snippets.append((10, "숨 섞임이 적은", "숨 섞임이 적으며"))
+        traits.append((10, "breath_low", "적은 숨 섞임", "숨 섞임이 적으며"))
     elif breath.get("available") and breath.get("value") == "HIGH":
-        snippets.append((10, "숨 섞임이 있는", "숨 섞임이 함께 나타나며"))
+        traits.append((10, "breath_high", "숨 섞임이 있는", "숨 섞임이 함께 나타나며"))
 
     if presence.get("available") and presence.get("value") == "LOW":
-        snippets.append((7, "차분한 음색 성향의", "존재감이 차분한 편으로"))
+        traits.append((7, "presence_low", "차분한 음색 성향", "존재감이 차분한 편으로"))
     elif presence.get("available") and presence.get("value") == "HIGH":
-        snippets.append((8, "존재감이 있는", "존재감이 비교적 분명하고"))
+        traits.append((8, "presence_high", "존재감이 있는", "존재감이 비교적 분명하고"))
 
     if bright.get("available") and bright.get("value") == "DARK":
-        snippets.append((6, "어두운 음색의", "밝기가 어두운 편이며"))
+        traits.append((6, "bright_dark", "어두운 음색", "밝기가 어두운 편이며"))
     elif bright.get("available") and bright.get("value") == "BRIGHT":
-        snippets.append((6, "밝은 음색의", "밝기가 비교적 두드러지며"))
+        traits.append((6, "bright_bright", "밝은 음색", "밝기가 비교적 두드러지며"))
 
     if stab.get("available") and stab.get("value") == "STABLE":
-        snippets.append((5, "안정적인", "발성 안정성이 유지되며"))
+        traits.append((5, "stab_stable", "안정적인", "발성 안정성이 유지되며"))
 
-    snippets.sort(key=lambda x: -x[0])
-    top = snippets[:3]
+    traits.sort(key=lambda x: -x[0])
+    top = traits[:3]
     if not top:
         return (
             ARCHETYPES["UNRESOLVED"]["display_name"],
@@ -137,13 +137,31 @@ def _composite_from_axes(axes: dict[str, dict[str, Any]]) -> tuple[str, str, lis
             [],
         )
 
-    title_bits = [t[1] for t in top[:2]]
-    # Join with spaces so "편안하고" + "숨 섞임이 적은" does not glue
-    title = " ".join(b.strip() for b in title_bits if b and str(b).strip())
-    if not title.endswith("발성형"):
-        title = f"{title} 발성형".replace("  ", " ").strip()
+    keys = {t[1] for t in top[:2]}
+    # Grammar-validated templates for common pairs
+    if keys == {"contact_firm", "effort_low"}:
+        title = "접촉은 단단하지만 힘 사용은 낮은 발성형"
+    elif keys == {"contact_light", "breath_low"}:
+        title = "가벼운 접촉과 적은 숨 섞임이 나타나는 발성형"
+    elif keys == {"contact_firm", "breath_low"}:
+        title = "단단한 접촉 · 적은 숨 섞임 발성형"
+    elif keys == {"effort_low", "breath_low"}:
+        title = "낮은 힘 사용 · 적은 숨 섞임 발성형"
+    elif keys == {"contact_firm", "stab_stable"}:
+        title = "단단한 접촉 · 안정적인 발성형"
+    else:
+        noun_bits = [t[2] for t in top[:2]]
+        if len(noun_bits) == 1:
+            title = f"{noun_bits[0]}형" if "발성" in noun_bits[0] else f"{noun_bits[0]} 발성형"
+        else:
+            title = f"{noun_bits[0]} · {noun_bits[1]} 발성형"
 
-    body_bits = [t[2] for t in top]
+    # Ban broken fragment joins
+    for broken in ("단단한 편안하고", "가벼운 안정적인하고", "낮은 단단하고", "편안하고 발성"):
+        if broken in title:
+            title = " · ".join(t[2] for t in top[:2]) + " 발성형"
+
+    body_bits = [t[3] for t in top]
     if len(body_bits) == 1:
         description = f"이번 노래에서는 {body_bits[0]} 발성 경향이 나타났어요."
     elif len(body_bits) == 2:

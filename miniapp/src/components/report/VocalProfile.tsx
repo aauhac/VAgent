@@ -1,5 +1,6 @@
 import type { DisplayAxis } from '../../lib/reportPresentation';
 import { buildVocalAxes } from '../../lib/reportPresentation';
+import { helpTextForAxis } from '../../lib/axisHelpText';
 import SpectrumAxis from './SpectrumAxis';
 
 type Props = {
@@ -8,7 +9,7 @@ type Props = {
   title?: string;
   axes?: DisplayAxis[];
   showConfidence?: boolean;
-  canonicalRegister?: { status?: string; profile_label?: string; title?: string } | null;
+  canonicalRegister?: { status?: string; profile_label?: string; title?: string; description?: string } | null;
   canonicalAcoustic?: { axes?: Record<string, any> } | null;
 };
 
@@ -39,6 +40,8 @@ export default function VocalProfile({
             rightLabel={ax.right}
             value={ax.value ?? 0}
             stateLabel={ax.display}
+            description={ax.description}
+            helpText={helpTextForAxis(ax.id)}
             confidencePercent={ax.confidence_percent}
             confidenceLabel={ax.confidence_label}
             showConfidence={showConfidence}

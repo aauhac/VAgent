@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "entryVisible": true,
+  "progressionVisible": true,
+  "regressionVisible": true,
+  "songTransferVisible": true,
+  "mobileCss": true,
+  "regenerateHidden": true,
+  "error": null
+}

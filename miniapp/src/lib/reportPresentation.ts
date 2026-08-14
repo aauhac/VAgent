@@ -16,6 +16,8 @@ export type DisplayAxis = {
   right: string;
   value: number | null;
   display: string;
+  /** Longer explanation under the continuum (optional) */
+  description?: string;
   available: boolean;
   confidence_percent: number | null;
   confidence_label: string;
@@ -514,27 +516,35 @@ export function getDimensionLabel(
     return '많은 편';
   }
   if (kind === 'effort') {
+    if (st === 'UNKNOWN' || st === 'UNAVAILABLE' || st === 'AMBIGUOUS') {
+      return '뚜렷하게 구분되지 않음';
+    }
     if (st === 'LOW') return '편안한 편';
     if (st === 'OCCASIONAL' || st === 'MILD') return '일부 구간에서 힘이 증가';
     if (st === 'MODERATE') return '힘이 들어가는 편';
     if (st === 'REPEATED' || st === 'HIGH') return '힘이 많이 들어가는 편';
-    if (value == null) return '편안한 편';
+    if (value == null) return '뚜렷하게 구분되지 않음';
     if (value < 0.28) return '편안한 편';
     if (value < 0.5) return '일부 구간에서 힘이 증가';
     if (value < 0.72) return '힘이 들어가는 편';
     return '힘이 많이 들어가는 편';
   }
   if (kind === 'register') {
-    if (st.includes('STABLE') || st.includes('SMOOTH')) return '비교적 자연스러움';
-    if (st.includes('TRANSITION') || st.includes('EVENT') || st.includes('DISRUPT')) {
-      return '다소 급한 편';
+    if (st.includes('CONNECTED') || st.includes('SMOOTH') || st.includes('STABLE')) {
+      return '연결이 자연스러운 편';
+    }
+    if (st.includes('PARTIAL') || st.includes('MIXED') || st.includes('INSUFFICIENT')) {
+      return '일부 구간만 연결';
+    }
+    if (st.includes('TRANSITION') || st.includes('EVENT') || st.includes('DISRUPT') || st.includes('BREAK')) {
+      return '전환이 급격한 편';
     }
     if (value == null) return '보통';
-    if (value < 0.25) return '분리되는 편';
-    if (value < 0.4) return '다소 급한 편';
-    if (value < 0.6) return '보통';
-    if (value < 0.8) return '비교적 자연스러움';
-    return '자연스러운 편';
+    if (value < 0.25) return '전환이 급격한 편';
+    if (value < 0.4) return '전환이 급격한 편';
+    if (value < 0.6) return '일부 구간만 연결';
+    if (value < 0.8) return '연결이 자연스러운 편';
+    return '연결이 자연스러운 편';
   }
   if (kind === 'resonance') {
     if (value == null) return '보통';
@@ -650,10 +660,34 @@ function estimateResonance(d: any): { value: number; display: string } | null {
   return { value, display: getDimensionLabel('resonance', value, st) };
 }
 
+export function registerShortState(status?: string | null, value?: number | null): string {
+  const st = String(status || '').toUpperCase();
+  if (st === 'CONNECTED' || st.includes('SMOOTH') || st.includes('STABLE')) return '연결이 자연스러운 편';
+  if (st === 'PARTIAL' || st.includes('MIXED')) return '일부 구간만 연결';
+  if (st === 'DISRUPTED' || st.includes('DISRUPT') || st.includes('BREAK') || st.includes('EVENT')) {
+    return '전환이 급격한 편';
+  }
+  return getDimensionLabel('register', value ?? null, st);
+}
+
+export function registerLongDescription(status?: string | null): string {
+  const st = String(status || '').toUpperCase();
+  if (st === 'DISRUPTED' || st.includes('DISRUPT') || st.includes('BREAK')) {
+    return '음역 상승 과정에서 발성 특성이 급격하게 달라지는 구간이 관찰됐어요.';
+  }
+  if (st === 'PARTIAL' || st.includes('MIXED') || st.includes('INSUFFICIENT')) {
+    return '일부 구간에서는 연결이 이어졌지만, 음역 전체에서 일관되게 확인되지는 않았어요.';
+  }
+  if (st === 'CONNECTED' || st.includes('SMOOTH') || st.includes('STABLE')) {
+    return '음역 상승 과정에서 연결이 비교적 연속적으로 유지됐어요.';
+  }
+  return '';
+}
+
 export function buildVocalAxes(
   dimsInput: any,
   criteriaMatrix: any[] = [],
-  canonicalRegister?: { status?: string; profile_label?: string; title?: string } | null,
+  canonicalRegister?: { status?: string; profile_label?: string; title?: string; description?: string } | null,
   canonicalAcoustic?: { axes?: Record<string, any> } | null,
 ): DisplayAxis[] {
   const byId = indexDims(dimsInput);
@@ -666,7 +700,7 @@ export function buildVocalAxes(
     left: string,
     right: string,
     dim: any,
-    estimate: { value: number; display: string } | null,
+    estimate: { value: number; display: string; description?: string } | null,
   ): DisplayAxis | null {
     if (dim?.hidden) return null;
     if (!estimate || estimate.value == null) return null;
@@ -682,6 +716,7 @@ export function buildVocalAxes(
       right,
       value: estimate.value ?? null,
       display: estimate.display || '',
+      description: estimate.description || undefined,
       available: true,
       confidence_percent: conf.confidence_percent ?? null,
       confidence_label: conf.confidence_label || '',
@@ -692,17 +727,19 @@ export function buildVocalAxes(
 
   function fromCanonical(
     key: string,
-    fallback: { value: number; display: string } | null,
-  ): { value: number; display: string } | null {
+    fallback: { value: number; display: string; description?: string } | null,
+  ): { value: number; display: string; description?: string } | null {
     const ax = cAxes[key];
     if (!ax || ax.available === false || ax.continuum == null) return fallback;
     return {
       value: Number(ax.continuum),
       display: String(ax.display || ax.status || fallback?.display || ''),
+      description: fallback?.description,
     };
   }
 
-  let registerEstimate = estimateRegister(byId.register_configuration);
+  let registerEstimate: { value: number; display: string; description?: string } | null =
+    estimateRegister(byId.register_configuration);
   if (canonicalRegister?.status || canonicalRegister?.profile_label) {
     const st = String(canonicalRegister.status || '').toUpperCase();
     const value =
@@ -711,12 +748,21 @@ export function buildVocalAxes(
           : st === 'DISRUPTED' ? 0.32
             : st === 'CONFLICTED' ? 0.5
               : 0.5;
+    const longDesc =
+      canonicalRegister.description
+      || registerLongDescription(st)
+      || String(canonicalRegister.profile_label || canonicalRegister.title || '');
     registerEstimate = {
       value,
-      display:
-        canonicalRegister.profile_label
-        || canonicalRegister.title
-        || getDimensionLabel('register', value, st),
+      display: registerShortState(st, value),
+      description: longDesc && longDesc !== registerShortState(st, value) ? longDesc : registerLongDescription(st),
+    };
+  } else if (registerEstimate) {
+    const st = String(byId.register_configuration?.status || '').toUpperCase();
+    registerEstimate = {
+      ...registerEstimate,
+      display: registerShortState(st, registerEstimate.value),
+      description: registerLongDescription(st),
     };
   }
 
@@ -736,7 +782,8 @@ export function buildVocalAxes(
     pack('breath', '숨 섞임', '적음', '많음', byId.air_leakage_breathiness, breathEst),
     pack('effort', '힘', '편안', '밀어붙임', byId.vocal_effort_strain, effortEst),
     pack('register', '성구 연결', '분리', '자연스러움', byId.register_configuration, registerEstimate),
-    pack('resonance', '공명 존재감', '낮음', '높음', byId.resonance_formant_strategy, presenceEst),
+    // UI: single presence concept (internal alias resonance kept)
+    pack('resonance', '중역 존재감', '낮음', '높음', byId.resonance_formant_strategy, presenceEst),
   ];
 
   return axes.filter(Boolean) as DisplayAxis[];
