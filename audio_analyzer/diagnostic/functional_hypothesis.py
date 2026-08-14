@@ -44,7 +44,7 @@ _BANNED_USER_SUBSTRINGS = (
 def _reg_bucket(snap: dict[str, Any]) -> str:
     reg = snap.get("register") or {}
     st = str(reg.get("status") or "").upper()
-    if st in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS"):
+    if st in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS", "BREAK", "FAIL", "ABRUPT"):
         return "DISRUPTED"
     if st in ("PARTIAL", "INSUFFICIENT", "MIXED"):
         return "PARTIAL"
@@ -101,16 +101,24 @@ def _scope_note_for_skip(skipped: set[str], concern_id: str) -> Optional[str]:
     return None
 
 
-def _attach_practice(hyp: dict[str, Any], *, category: str = "") -> dict[str, Any]:
+def _attach_practice(
+    hyp: dict[str, Any],
+    *,
+    category: str = "",
+    snap: Optional[dict[str, Any]] = None,
+    timbre_goal: Any = None,
+) -> dict[str, Any]:
+    from audio_analyzer.diagnostic.general_guidance import finalize_actionable_qa
+
     if hyp.get("practice_required") is False:
         hyp["practice"] = None
         hyp["practice_id"] = None
-        return hyp
+        return finalize_actionable_qa(hyp, snap, timbre_goal=timbre_goal)
     focus = str(hyp.get("primary_focus") or "MAINTAIN")
     practice = practice_for_focus(focus, category=category)
     hyp["practice"] = practice
     hyp["practice_id"] = (practice or {}).get("practice_id")
-    return hyp
+    return finalize_actionable_qa(hyp, snap, timbre_goal=timbre_goal)
 
 
 def build_functional_hypothesis(
@@ -119,9 +127,11 @@ def build_functional_hypothesis(
     song_profile: dict[str, Any],
     evaluation: Optional[dict[str, Any]] = None,
     user_skipped_tasks: Optional[set[str]] = None,
+    timbre_goal: Any = None,
 ) -> dict[str, Any]:
     """Build actionable guidance from canonical song evidence (never invent anatomy)."""
     from audio_analyzer.diagnostic.concern_reasoning import reason_about_concern
+    from audio_analyzer.diagnostic.general_guidance import finalize_actionable_qa
     from audio_analyzer.diagnostic.question_semantics import semantics_for
 
     # Dynamic QA v3 path — structured multi-axis reasoning by concern_id
@@ -130,7 +140,9 @@ def build_functional_hypothesis(
         song_profile=song_profile,
         evaluation=evaluation,
         user_skipped_tasks=user_skipped_tasks,
+        timbre_goal=timbre_goal,
     )
+    snap = get_canonical_snapshot(song_profile)
     if not reasoned.get("defer_to_legacy"):
         # Map structured reasoning into hyp shape used by compose_user_answer
         hyp = {
@@ -154,7 +166,7 @@ def build_functional_hypothesis(
             "practice": reasoned.get("practice"),
             "practice_id": reasoned.get("practice_id"),
         }
-        return hyp
+        return finalize_actionable_qa(hyp, snap, timbre_goal=timbre_goal)
 
     # Legacy high-note / remaining paths below
     snap = get_canonical_snapshot(song_profile)
@@ -191,7 +203,7 @@ def build_functional_hypothesis(
             "causal_certainty": "SAFETY_GATE",
             "scope_note": None,
         }
-        return _attach_practice(hyp, category="safety")
+        return _attach_practice(hyp, category="safety", snap=snap, timbre_goal=timbre_goal)
 
     # Controlled already confirmed — keep tone, still ensure practice
     st = str(ev.get("status") or "").upper()
@@ -220,7 +232,7 @@ def build_functional_hypothesis(
             hyp["primary_focus"] = "EFFORT"
         elif any("STABILITY" in str(c) for c in causes):
             hyp["primary_focus"] = "STABILITY"
-        return _attach_practice(hyp, category=category)
+        return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
     # ========== High-note cannot reach ==========
     if concern_id == "HIGH_NOTE_CANNOT_REACH":
@@ -243,7 +255,7 @@ def build_functional_hypothesis(
             }
             if effort in ("HIGH", "MODERATE"):
                 hyp["secondary_factors"] = ["EFFORT"]
-            return _attach_practice(hyp, category=category)
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
         if register == "PARTIAL" and (effort in ("HIGH", "MODERATE") or contact == "FIRM"):
             bits = ["음역이 올라갈 때 연결이 충분히 이어지지 않는 구간이 있고"]
@@ -286,7 +298,7 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp, category=category)
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
         if register == "PARTIAL":
             hyp = {
@@ -305,7 +317,7 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp, category=category)
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
         if effort in ("HIGH", "MODERATE"):
             hyp = {
@@ -325,7 +337,7 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp, category=category)
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
         hyp = {
             "concern_id": concern_id,
@@ -333,8 +345,8 @@ def build_functional_hypothesis(
             "primary_focus": "REGISTER_CONNECTION",
             "secondary_factors": [],
             "interpretation": (
-                "이번 노래만으로 고음이 어려운 원인을 하나로 좁히기는 어려워요. "
-                "다만 고음을 연습할 때는 음량을 먼저 키우지 않고, "
+                "현재 노래에서는 고음이 어려운 특징이 뚜렷하게 잡히지 않았어요. "
+                "그래서 특정 원인을 가정하기보다는, 고음을 연습할 때는 음량을 먼저 키우지 않고, "
                 "편안한 중음에서 높은 음까지 작은 강도로 연결하는 연습부터 시작하는 것이 좋아요."
             ),
             "evidence": [],
@@ -343,7 +355,7 @@ def build_functional_hypothesis(
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
         }
-        return _attach_practice(hyp, category=category)
+        return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
     # ========== High-note flips ==========
     if concern_id == "HIGH_NOTE_FLIPS":
@@ -369,7 +381,7 @@ def build_functional_hypothesis(
                     "함께 달라질 수 있어 보여요."
                 )
                 hyp["secondary_factors"] = ["PRESENCE"]
-            return _attach_practice(hyp, category=category)
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
         if register == "PARTIAL":
             hyp = {
                 "concern_id": concern_id,
@@ -393,15 +405,15 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp, category=category)
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
         hyp = {
             "concern_id": concern_id,
             "guidance_level": GUIDANCE_SAFE_GENERAL,
             "primary_focus": "REGISTER_CONNECTION",
             "secondary_factors": [],
             "interpretation": (
-                "이번 노래만으로 뒤집힘의 원인을 하나로 좁히기는 어려워요. "
-                "다만 지금은 작은 강도의 립트릴이나 빨대 발성으로 "
+                "현재 노래에서는 뒤집힘과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요. "
+                "지금은 작은 강도의 립트릴이나 빨대 발성으로 "
                 "중음에서 높은 음까지 끊기지 않게 연결하는 연습부터 시작하는 것이 좋아요."
             ),
             "evidence": [],
@@ -410,7 +422,7 @@ def build_functional_hypothesis(
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
         }
-        return _attach_practice(hyp, category=category)
+        return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
     if concern_id == "HIGH_NOTE_UNSTABLE":
         if stab is False:
@@ -429,15 +441,15 @@ def build_functional_hypothesis(
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
             }
-            return _attach_practice(hyp, category=category)
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
         hyp = {
             "concern_id": concern_id,
             "guidance_level": GUIDANCE_SAFE_GENERAL,
             "primary_focus": "STABILITY",
             "secondary_factors": [],
             "interpretation": (
-                "이번 노래만으로 고음 흔들림의 원인을 하나로 좁히기는 어려워요. "
-                "다만 짧은 안정 구간을 유지한 뒤 조금씩 범위를 넓히는 연습부터 시작하는 것이 좋아요."
+                "현재 노래에서는 고음 흔들림과 직접 연결되는 특징이 뚜렷하게 잡히지 않았어요. "
+                "짧은 안정 구간을 유지한 뒤 조금씩 범위를 넓히는 연습부터 시작하는 것이 좋아요."
             ),
             "evidence": [],
             "contra_evidence": [],
@@ -445,7 +457,7 @@ def build_functional_hypothesis(
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
         }
-        return _attach_practice(hyp, category=category)
+        return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
     # Default category fallback — never force register glide for timbre/effort/control
     focus = str(sem.get("fallback_focus") or "MAINTAIN")
@@ -465,37 +477,36 @@ def build_functional_hypothesis(
         "scope_note": scope,
         "practice_required": bool(sem.get("practice_required", True)),
     }
-    return _attach_practice(hyp, category=category or "other")
+    return _attach_practice(hyp, category=category or "other", snap=snap, timbre_goal=timbre_goal)
 
 
 # Keep helper symbols used by tests / callers that imported private names via module
 
 def compose_user_answer(hyp: dict[str, Any]) -> str:
-    """Primary answer: interpretation (+ optional practice cue). Never end on bad fallback alone."""
-    text = str(hyp.get("interpretation") or "").strip()
-    practice = hyp.get("practice") or {}
-    if (
-        practice.get("instruction")
-        and hyp.get("guidance_level") != GUIDANCE_SAFETY
-        and hyp.get("practice_required") is not False
-    ):
-        # Append actionable direction (second beat)
-        title = practice.get("title") or "연습"
-        tip = practice.get("instruction")
-        text = f"{text}\n\n→ 지금은 {title}: {tip}"
-        avoid = practice.get("avoid") or []
-        if avoid:
-            first = str(avoid[0]).rstrip(".。")
-            particle = "는" if first.endswith(("기", "다", "음")) else "은"
-            text += f" {first}{particle} 피하세요."
+    """Primary answer: observed interpretation + short next step. Full practice stays in coaching."""
+    from audio_analyzer.diagnostic.general_guidance import fix_korean_suffixes, public_answer_text
+
+    text = public_answer_text(hyp)
     scope = hyp.get("scope_note")
     if scope:
         text = f"{text}\n\n({scope})"
-    # Scrub banned
     for bad in _BANNED_USER_SUBSTRINGS:
         if bad in text:
             text = text.replace(bad, "")
-    return text.strip()
+    return fix_korean_suffixes(text).strip()
+
+
+def _copy_qa_contract(out: dict[str, Any], hyp: dict[str, Any]) -> None:
+    out["observed"] = hyp.get("observed") or []
+    out["knowledge_support"] = hyp.get("knowledge_support")
+    out["what_to_change"] = hyp.get("what_to_change")
+    out["action"] = hyp.get("action")
+    out["success_cues"] = hyp.get("success_cues") or []
+    out["avoid"] = hyp.get("avoid") or []
+    out["knowledge_scope"] = hyp.get("knowledge_scope")
+    out["interpretation"] = hyp.get("interpretation") or out.get("interpretation")
+    if hyp.get("evidence_used") is not None:
+        out["evidence_used"] = hyp.get("evidence_used")
 
 
 def ensure_actionable_guidance(
@@ -503,6 +514,7 @@ def ensure_actionable_guidance(
     *,
     song_profile: dict[str, Any],
     user_skipped_tasks: Optional[set[str]] = None,
+    timbre_goal: Any = None,
 ) -> dict[str, Any]:
     """Enrich concern evaluation so skip never leaves a useless final answer."""
     out = dict(evaluation or {})
@@ -513,13 +525,18 @@ def ensure_actionable_guidance(
     status = str(out.get("status") or "").upper()
     if status == "SAFETY_ONLY":
         hyp = build_functional_hypothesis(
-            cid, song_profile=song_profile, evaluation=out, user_skipped_tasks=user_skipped_tasks
+            cid,
+            song_profile=song_profile,
+            evaluation=out,
+            user_skipped_tasks=user_skipped_tasks,
+            timbre_goal=timbre_goal,
         )
         out["guidance_level"] = GUIDANCE_SAFETY
         out["primary_focus"] = "SAFETY"
         out["functional_hypothesis"] = hyp
         out["answer_hint"] = compose_user_answer(hyp)
         out["practice"] = hyp.get("practice")
+        _copy_qa_contract(out, hyp)
         return out
 
     skipped = set(user_skipped_tasks or [])
@@ -536,6 +553,7 @@ def ensure_actionable_guidance(
         song_profile=song_profile,
         evaluation=out,
         user_skipped_tasks=skipped,
+        timbre_goal=timbre_goal,
     )
 
     # If controlled CONFIRMED already had a strong answer, prefer it but attach practice
@@ -549,6 +567,7 @@ def ensure_actionable_guidance(
             out["answer_hint"] = compose_user_answer(
                 {**hyp, "interpretation": out["answer_hint"]}
             )
+        _copy_qa_contract(out, hyp)
         return out
 
     out["guidance_level"] = hyp["guidance_level"]
@@ -563,6 +582,7 @@ def ensure_actionable_guidance(
     out["song_evidence_used"] = list(
         dict.fromkeys([*(out.get("song_evidence_used") or []), *(hyp.get("evidence") or [])])
     )
+    _copy_qa_contract(out, hyp)
     # Soften status for song guidance paths without claiming controlled confirmation
     if status in ("UNRESOLVED", "") and hyp["guidance_level"] in (
         GUIDANCE_SONG_DIRECT,

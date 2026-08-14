@@ -309,7 +309,7 @@ def _answer_for_concern(
         if reason == "NASALITY_NOT_DIRECTLY_MEASURED":
             return "콧소리처럼 들린다는 인상은 이번 음향 지표만으로 단정하기 어려워요."
         if reason == "CONFLICTING_TASK_RESULTS":
-            return "음색 관련 지표가 과제마다 서로 다르게 나타나 원인을 하나로 좁히기 어려웠어요."
+            return "음색 관련 지표가 과제마다 서로 다르게 나타났어요. 같은 구절을 작은 강도로 짧게 비교하며 더 안정적인 쪽을 찾아보세요."
     if concern_id in ("THROAT_EFFORT", "HIGH_NOTE_TOO_EFFORTFUL") and effort_level == "HIGH":
         return (
             "노래와 추가 녹음에서 확인된 힘 증가 패턴이 "
@@ -431,6 +431,7 @@ def build_personalized_qa(
     task_results: list[dict[str, Any]] | None = None,
     fused_profile: dict[str, Any] | None = None,
     diagnostic_mode: str | None = None,
+    timbre_goal: Any = None,
 ) -> dict[str, Any]:
     concerns = normalize_user_concerns(user_concerns)
     mode = normalize_diagnostic_mode(diagnostic_mode, concerns)
@@ -465,6 +466,7 @@ def build_personalized_qa(
             song_profile=song_profile,
             task_evidence=task_evidence,
             task_results=task_results,
+            timbre_goal=timbre_goal,
         )
         for c in concerns
     ]
@@ -516,6 +518,17 @@ def build_personalized_qa(
                 "unresolved_reason": ev.get("unresolved_reason"),
                 "candidate_causes": ev.get("candidate_causes") or [],
                 "controlled_confirmation": ev.get("controlled_confirmation"),
+                "observed": ev.get("observed") or [],
+                "interpretation": ev.get("interpretation"),
+                "knowledge_support": ev.get("knowledge_support"),
+                "what_to_change": ev.get("what_to_change"),
+                "action": ev.get("action"),
+                "success_cues": ev.get("success_cues") or [],
+                "avoid": ev.get("avoid") or [],
+                "knowledge_scope": ev.get("knowledge_scope"),
+                "evidence_used": ev.get("evidence_used")
+                or (ev.get("functional_hypothesis") or {}).get("evidence_used")
+                or [],
             }
         )
         answer_parts.append(a)
@@ -696,6 +709,7 @@ def evaluate_concern_status(
     song_profile: dict[str, Any],
     task_evidence: Optional[dict[str, Any]] = None,
     task_results: Optional[list[dict[str, Any]]] = None,
+    timbre_goal: Any = None,
 ) -> dict[str, Any]:
     """Map one concern using song + controlled task contrast evidence."""
     from audio_analyzer.diagnostic.concern_resolver import evaluate_concern
@@ -705,6 +719,7 @@ def evaluate_concern_status(
         song_profile=song_profile,
         task_evidence=task_evidence,
         task_results=task_results,
+        timbre_goal=timbre_goal,
     )
 
 

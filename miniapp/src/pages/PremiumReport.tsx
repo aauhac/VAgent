@@ -323,6 +323,7 @@ export default function PremiumReport() {
                 question: string;
                 answer: string;
                 takeaway?: string;
+                what_to_change?: string;
                 coaching_mode?: string;
                 support?: string[];
                 against?: string[];
@@ -332,14 +333,22 @@ export default function PremiumReport() {
                 user_facing_missing?: string[];
               }>).map((qa, i) => {
                 const ev = evidenceLines(qa);
+                const body = scrubUserText(qaAnswerOnly(qa.answer || ''));
+                const nextStep = scrubUserText(qa.what_to_change || '');
+                const showNext = Boolean(nextStep) && !body.includes(nextStep);
                 return (
                   <div key={`${qa.question}-${i}`} style={{ marginBottom: 20 }}>
                     <p className="body-text" style={{ fontWeight: 600 }}>
                       Q{i + 1}. {qa.question}
                     </p>
                     <p className="body-text" style={{ marginTop: 8, lineHeight: 1.55 }}>
-                      A. {scrubUserText(qaAnswerOnly(qa.answer || ''))}
+                      A. {body}
                     </p>
+                    {showNext ? (
+                      <p className="muted body-text" style={{ marginTop: 6, lineHeight: 1.5 }}>
+                        {nextStep}
+                      </p>
+                    ) : null}
                     {showDebug && (ev.support.length > 0 || ev.against.length > 0 || ev.missing.length > 0) && (
                       <ul className="body-text muted" style={{ marginTop: 8, paddingLeft: 18, fontSize: '0.85rem' }}>
                         {ev.support.slice(0, 3).map((s) => (

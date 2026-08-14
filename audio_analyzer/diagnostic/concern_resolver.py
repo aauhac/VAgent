@@ -384,6 +384,7 @@ def evaluate_concern(
     song_profile: dict[str, Any],
     task_evidence: Optional[dict[str, Any]] = None,
     task_results: Optional[list[dict[str, Any]]] = None,
+    timbre_goal: Any = None,
 ) -> dict[str, Any]:
     """Full provenance concern evaluation using song + controlled contrasts."""
     from .concerns import PAIN_CONCERN_IDS
@@ -395,7 +396,9 @@ def evaluate_concern(
             "SAFETY_ONLY",
             note="통증·불편은 음향 분석만으로 원인을 판단할 수 없어요.",
         )
-        return ensure_actionable_guidance(ev, song_profile=song_profile)
+        return ensure_actionable_guidance(
+            ev, song_profile=song_profile, timbre_goal=timbre_goal
+        )
 
     fused = task_evidence or {}
     profiles = fused.get("task_profiles") or build_task_profiles(task_results or [])
@@ -455,7 +458,7 @@ def evaluate_concern(
         )
 
     return ensure_actionable_guidance(
-        ev, song_profile=song_profile, user_skipped_tasks=skipped
+        ev, song_profile=song_profile, user_skipped_tasks=skipped, timbre_goal=timbre_goal
     )
 
 
@@ -613,7 +616,7 @@ def _resolve_high_note_effort(
         unresolved_reason="LOW_CONFIDENCE",
         task_ids_used=used,
         contrast_evidence=[effort_c],
-        answer_hint="고음 힘 변화에 대한 근거가 엇갈려 하나로 좁히기 어려웠어요.",
+        answer_hint="고음 힘 변화에 대한 근거가 엇갈려 보여요. 작은 강도에서 짧게 유지하며 힘 증가가 덜한 쪽을 비교해보세요.",
     )
 
 

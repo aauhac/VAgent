@@ -293,6 +293,10 @@ export function scrubUserText(text: string): string {
     .replace(new RegExp(['\\b', 'SUFFICIENT', '\\b'].join(''), 'gi'), '충분히 분석됨')
     .replace(new RegExp(['\\b', 'INSUFFICIENT', '\\b'].join(''), 'gi'), '추가 확인 필요')
     .replace(new RegExp(['\\b', 'ELIGIBLE', '\\b'].join(''), 'gi'), '')
+    .replace(/\bGENERAL_VOCAL_GUIDANCE\b/g, '')
+    .replace(/\bSONG_DIRECT\b/g, '')
+    .replace(/\bSONG_COMPOSITE\b/g, '')
+    .replace(/\bSAFE_GENERAL_GUIDANCE\b/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim();
   // Drop leftover tech tokens as whole words/phrases

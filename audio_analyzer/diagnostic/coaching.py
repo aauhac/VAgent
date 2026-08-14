@@ -550,7 +550,6 @@ def build_concern_coaching(
             )
         else:
             takeaway = (
-                "원인을 하나로 좁히기는 어렵지만, "
                 "지금은 작은 강도로 고음을 연결하는 연습부터 시도하는 것이 좋아요."
             )
 

@@ -894,6 +894,7 @@ class DiagnosticSessionService:
                 task_results=session.get("task_results") or [],
                 fused_profile=final_dx,
                 diagnostic_mode=session.get("diagnostic_mode"),
+                timbre_goal=session.get("timbre_goal"),
             )
             from audio_analyzer.diagnostic.goal_planner import plan_coaching_goal
 
