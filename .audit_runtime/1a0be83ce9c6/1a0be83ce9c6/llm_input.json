@@ -1,0 +1,34 @@
+{
+  "overall_score": null,
+  "score_available": false,
+  "score_label": null,
+  "score_version": "vocal-score-v3.0",
+  "calibration_status": "uncalibrated",
+  "areas": [],
+  "priority_issues": [],
+  "strengths": [],
+  "timeline": [],
+  "quality_notes": {
+    "status": "fail",
+    "reasons": [
+      "유성음 비율이 너무 낮음 (0.00)",
+      "분석 가능한 유성음 구간이 부족함 (0.00s)",
+      "녹음 레벨이 너무 작음 (-200.0 dBFS)",
+      "녹음이 다소 짧음 (4.4s)",
+      "저역 잡음이 다소 높음 (0.0 dB)"
+    ],
+    "user_message": "정확한 분석이 어려운 녹음이에요. 더 조용한 곳에서 목소리를 조금 더 크게, 조금 더 길게 불러 다시 시도해 주세요."
+  },
+  "analysis_notes": [
+    "녹음 품질이 분석 기준을 통과하지 못해 실력 점수를 제공하지 않아요.",
+    "정확한 분석이 어려운 녹음이에요. 더 조용한 곳에서 목소리를 조금 더 크게, 조금 더 길게 불러 다시 시도해 주세요."
+  ],
+  "optional_vibrato": {
+    "available": false,
+    "rate_hz": null,
+    "depth_cents": null,
+    "regularity": null,
+    "regions_used": 0,
+    "note": "충분히 긴 지속음에서 규칙적인 비브라토가 측정되지 않았어요. 없어도 문제 없어요."
+  }
+}

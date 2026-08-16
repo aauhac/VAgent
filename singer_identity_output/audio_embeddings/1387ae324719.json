@@ -1,0 +1,14 @@
+{
+  "audio_id": "1387ae324719",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 11,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361",
+  "filename": "거의동117.m4a",
+  "display_name": "거의동117.m4a",
+  "path": "C:\\VocalAgent\\거의동117.m4a"
+}

@@ -1,0 +1,12 @@
+{
+  "ok": false,
+  "versions": {
+    "qa": true,
+    "report": true
+  },
+  "protocolCardInSource": true,
+  "legacyGated": true,
+  "hasProtocolStepsGuard": true,
+  "live": null,
+  "error": null
+}

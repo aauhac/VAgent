@@ -1,0 +1,2274 @@
+[
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0f26db696e8e",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0f26db696e8e",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0f26db696e8e",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0f26db696e8e",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "10d07cc48c55",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "10d07cc48c55",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "10d07cc48c55",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "1387ae324719",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "1387ae324719",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "1387ae324719",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "1387ae324719",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "15f8e161f598",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "15f8e161f598",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "15f8e161f598",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "16b7e83c0418",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "16b7e83c0418",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "16b7e83c0418",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "16b7e83c0418",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "357eeb649bd6",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "357eeb649bd6",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "357eeb649bd6",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "36a7bd4286b4",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "36a7bd4286b4",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "36a7bd4286b4",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "3ced1f723c5e",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "3ced1f723c5e",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "3ced1f723c5e",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "54b972ad300a",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "54b972ad300a",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "54b972ad300a",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "5e7819c3abb4",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "5e7819c3abb4",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "5e7819c3abb4",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "6fb8c8208c80",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "6fb8c8208c80",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "6fb8c8208c80",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "6fb8c8208c80",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "70479ec67665",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "70479ec67665",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "70479ec67665",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "95b54db5ba3d",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "95b54db5ba3d",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "95b54db5ba3d",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "99023e55f0f5",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "99023e55f0f5",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "99023e55f0f5",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a69d81db3e48",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a69d81db3e48",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a69d81db3e48",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a7c957603751",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a7c957603751",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a7c957603751",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a7c957603751",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a888cb14dd6a",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a888cb14dd6a",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a888cb14dd6a",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "a888cb14dd6a",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "aba38287641d",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "aba38287641d",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "aba38287641d",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "aba38287641d",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b4b7ce279c98",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b4b7ce279c98",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b4b7ce279c98",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b960707ab2f6",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b960707ab2f6",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b960707ab2f6",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b9ff5bf02262",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "b9ff5bf02262",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "bdb75679732a",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "bdb75679732a",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "bdb75679732a",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c1815547c828",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c1815547c828",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c1815547c828",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c5b20be3c802",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c5b20be3c802",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c5b20be3c802",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c5b20be3c802",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c8d4b24b6f55",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c8d4b24b6f55",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "c8d4b24b6f55",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "d241c8e7a734",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "d241c8e7a734",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "d241c8e7a734",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "d5045bc290a1",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "d5045bc290a1",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "d5045bc290a1",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "e67deea6f112",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "e67deea6f112",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "e67deea6f112",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "ec93548d279f",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "ec93548d279f",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "ec93548d279f",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "ec93548d279f",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "ed401e191813",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "ed401e191813",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "ed401e191813",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "fadd83f6eb33",
+    "concern_id": "HIGH_NOTE_THINS",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "fadd83f6eb33",
+    "concern_id": "VOICE_TOO_THIN",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "fadd83f6eb33",
+    "concern_id": "VOICE_TOO_BREATHY",
+    "kind": "singleton"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+HIGH_NOTE_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+THROAT_EFFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+LOUD_VOICE_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VOCAL_FATIGUE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+AFTER_SINGING_FATIGUE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+TIMBRE_DISSATISFIED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_THIN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_DARK_MUFFLED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_NASAL_PERCEPT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_BREATHY",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "HIGH_NOTE_THINS+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_DARK_MUFFLED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_NASAL_PERCEPT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_BREATHY",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_THIN+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "00ae450b11f1",
+    "concern_id": "VOICE_TOO_BREATHY+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "TARGET_OVERRIDES_BOTTLENECK",
+    "detail": "STYLE over HIGH_NOTE_FLIPS",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_FLIPS+TIMBRE_DISSATISFIED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+HIGH_NOTE_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+THROAT_EFFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+LOUD_VOICE_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VOCAL_FATIGUE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+AFTER_SINGING_FATIGUE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+TIMBRE_DISSATISFIED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_THIN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_DARK_MUFFLED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_NASAL_PERCEPT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_BREATHY",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "HIGH_NOTE_THINS+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_DARK_MUFFLED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_NASAL_PERCEPT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_BREATHY",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_THIN+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "07564b6df5b9",
+    "concern_id": "VOICE_TOO_BREATHY+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "TARGET_OVERRIDES_BOTTLENECK",
+    "detail": "STYLE over HIGH_NOTE_FLIPS",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_FLIPS+TIMBRE_DISSATISFIED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+HIGH_NOTE_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+THROAT_EFFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+LOUD_VOICE_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VOCAL_FATIGUE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+AFTER_SINGING_FATIGUE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+TIMBRE_DISSATISFIED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_THIN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_DARK_MUFFLED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_NASAL_PERCEPT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_BREATHY",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "HIGH_NOTE_THINS+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_DARK_MUFFLED",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_NASAL_PERCEPT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_BREATHY",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_THIN+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+VOICE_TOO_NASAL_PERCEPT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+VOICE_TOO_BREATHY",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_DARK_MUFFLED+OTHER_CONCERN",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+VOICE_TOO_SHARP",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+VOICE_ROUGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+TIMBRE_CHANGES_HIGH",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+PITCH_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+REGISTER_CONNECTION_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+VIBRATO_UNSTABLE",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+DYNAMICS_DIFFICULT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+PHRASE_END_WEAK",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+PAIN_WHILE_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+PAIN_AFTER_SINGING",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+SPEAKING_DISCOMFORT",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+PERSISTENT_HOARSENESS",
+    "kind": "pair"
+  },
+  {
+    "severity": "FAIL",
+    "code": "UNSUPPORTED_ACOUSTIC_CLAIM",
+    "detail": "QA claims high breath while snap LOW",
+    "audio_id": "0ada85fffc84",
+    "concern_id": "VOICE_TOO_BREATHY+OTHER_CONCERN",
+    "kind": "pair"
+  }
+]

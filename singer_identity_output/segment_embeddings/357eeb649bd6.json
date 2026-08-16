@@ -1,0 +1,65 @@
+{
+  "audio_id": "357eeb649bd6",
+  "segments": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 3.0,
+      "quality": 0.8293333333333334
+    },
+    {
+      "start_sec": 3.0,
+      "end_sec": 6.0,
+      "quality": 0.868
+    },
+    {
+      "start_sec": 4.5,
+      "end_sec": 7.5,
+      "quality": 0.9506666666666667
+    },
+    {
+      "start_sec": 6.0,
+      "end_sec": 9.0,
+      "quality": 0.9133333333333333
+    },
+    {
+      "start_sec": 7.5,
+      "end_sec": 10.5,
+      "quality": 0.7363320575276837
+    },
+    {
+      "start_sec": 9.0,
+      "end_sec": 12.0,
+      "quality": 0.6441316342370387
+    },
+    {
+      "start_sec": 10.5,
+      "end_sec": 13.5,
+      "quality": 0.533584228019454
+    },
+    {
+      "start_sec": 13.5,
+      "end_sec": 16.5,
+      "quality": 0.912
+    },
+    {
+      "start_sec": 15.0,
+      "end_sec": 18.0,
+      "quality": 0.9279999999999999
+    },
+    {
+      "start_sec": 16.5,
+      "end_sec": 19.5,
+      "quality": 0.8653333333333333
+    },
+    {
+      "start_sec": 18.0,
+      "end_sec": 21.0,
+      "quality": 0.8959999999999999
+    },
+    {
+      "start_sec": 19.5,
+      "end_sec": 22.26,
+      "quality": 0.9211678832116789
+    }
+  ]
+}

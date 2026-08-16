@@ -89,8 +89,8 @@ def _sample_qa():
 
 
 def test_report_versions_are_v6_qa_v7_report():
-    assert QA_GUIDANCE_VERSION == "precision-coaching-generalization-v6"
-    assert REPORT_LOGIC_VERSION == "precision-report-v7"
+    assert QA_GUIDANCE_VERSION == "precision-qa-coaching-ux-v9"
+    assert REPORT_LOGIC_VERSION == "precision-report-v10"
 
 
 def test_non_safety_answer_hides_epistemic_disclaimer():
@@ -163,9 +163,11 @@ def test_nasal_partial_register_gets_explicit_comparison():
         task_evidence=_skip(),
     )
     c = ev.get("comparison") or ev.get("comparison_protocol") or {}
-    assert "①" in (ev.get("answer_hint") or "") or c.get("baseline_instruction")
-    assert c.get("variant_instruction")
-    assert "음량" in (c.get("variant_instruction") or "") or "연결" in (c.get("variant_instruction") or "")
+    assert "비교해보기" not in (ev.get("answer_hint") or "")
+    assert c.get("baseline_instruction") or (ev.get("prescription") or {}).get("instruction")
+    assert c.get("variant_instruction") or (ev.get("prescription") or {}).get("instruction")
+    blob = (c.get("variant_instruction") or "") + ((ev.get("prescription") or {}).get("instruction") or "")
+    assert "음량" in blob or "모음" in blob or "자음" in blob or "연결" in blob
 
 
 def test_nasal_never_claims_nasality_measured():
@@ -349,5 +351,7 @@ def test_no_user_answer_contains_undefined_two_way_comparison():
     qa = _sample_qa()
     for q in qa["questions"]:
         ans = q.get("answer") or ""
+        # Prescription-first: public answer should not lead with A/B comparison UI copy
+        assert "비교해보기" not in ans
         if "두 가지 방식" in ans:
-            assert "①" in ans and "②" in ans
+            assert q.get("comparison") or q.get("prescription")

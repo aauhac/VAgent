@@ -1,0 +1,230 @@
+{
+  "before": {
+    "audios": 72,
+    "singleton_cases": 1944,
+    "target_cases": 576,
+    "pairs_tested": 1053,
+    "triples_tested": 12,
+    "safety_singleton_cases": 288,
+    "safety_combination_cases": 360,
+    "canonical_mutations": 0,
+    "target_overrides_bottleneck": 2,
+    "unsupported_acoustic_claims": 282,
+    "generic_collapse_warnings": 1425,
+    "collapse_classes": {
+      "GENERIC_COLLAPSE_LEGACY": 1425
+    },
+    "high_note_cannot_reach_distribution": {
+      "EFFORT": 4,
+      "REGISTER_CONNECTION": 68
+    },
+    "safety_violations": 0,
+    "focus_protocol_mismatches": 0,
+    "focus_practice_mismatches": 0
+  },
+  "after": {
+    "audios": 73,
+    "singleton_cases": 1971,
+    "target_cases": 584,
+    "pairs_tested": 1053,
+    "triples_tested": 12,
+    "safety_singleton_cases": 292,
+    "safety_combination_cases": 365,
+    "canonical_mutations": 0,
+    "target_overrides_bottleneck": 0,
+    "true_unsupported_acoustic_claims": 0,
+    "unsupported_claim_classes": {
+      "FALSE_POSITIVE_LINT": 1018
+    },
+    "collapse_classes": {
+      "EXPECTED_SHARED_PROTOCOL": 2447,
+      "OVER_SHARED_PRESCRIPTION": 0,
+      "WRONG_GENERIC_COLLAPSE": 0
+    },
+    "high_note_cannot_reach_distribution": {
+      "REGISTER_CONNECTION": 51,
+      "HIGH_NOTE": 22
+    },
+    "high_note_cannot_reach_reasons": {
+      "REGISTER_EVIDENCE": 51,
+      "GENERAL_HIGH_NOTE_ACCESS": 22
+    },
+    "high_note_evidence_backed_register": 51,
+    "high_note_fallback_register": 0,
+    "safety_violations": 0,
+    "focus_protocol_mismatches": 0,
+    "focus_practice_mismatches": 0,
+    "axis_distributions": {
+      "effort": {
+        "MODERATE": 5,
+        "LOW": 49,
+        "UNKNOWN": 19
+      },
+      "contact": {
+        "FIRM": 26,
+        "AMBIGUOUS": 9,
+        "UNKNOWN": 31,
+        "MID": 2,
+        "LIGHT": 5
+      },
+      "breathiness": {
+        "LOW": 34,
+        "UNKNOWN": 38,
+        "HIGH": 1
+      },
+      "register_connection": {
+        "PARTIAL": 29,
+        "DISRUPTED": 22,
+        "UNRESOLVED": 11,
+        "UNKNOWN": 10,
+        "CONNECTED": 1
+      },
+      "source_balance": {
+        "BALANCED": 1,
+        "BALANCED_ACOUSTIC": 3,
+        "CHEST_LEANING": 15,
+        "CHEST_DOMINANT": 12,
+        "CONFLICTED": 4,
+        "UNKNOWN": 35,
+        "HEAD_LEANING": 3
+      },
+      "stability": {
+        "STABLE": 57,
+        "UNKNOWN": 11,
+        "REPEATED_IRREGULAR": 4,
+        "INTERMITTENT": 1
+      },
+      "presence": {
+        "MID": 8,
+        "LOW": 39,
+        "UNAVAILABLE": 23,
+        "HIGH": 3
+      },
+      "brightness": {
+        "LOW": 44,
+        "UNAVAILABLE": 23,
+        "HIGH": 2,
+        "MID": 4
+      }
+    },
+    "detector_sensitivity": {
+      "effort": {
+        "distribution": {
+          "MODERATE": 5,
+          "LOW": 49,
+          "UNKNOWN": 19
+        },
+        "available": 54,
+        "total": 73,
+        "available_rate": 0.7397,
+        "unknown_rate": 0.2603,
+        "class_imbalance_warning": true
+      },
+      "breathiness": {
+        "distribution": {
+          "LOW": 34,
+          "UNKNOWN": 38,
+          "HIGH": 1
+        },
+        "available": 35,
+        "total": 73,
+        "available_rate": 0.4795,
+        "unknown_rate": 0.5205,
+        "class_imbalance_warning": true
+      },
+      "brightness": {
+        "distribution": {
+          "LOW": 44,
+          "UNAVAILABLE": 23,
+          "HIGH": 2,
+          "MID": 4
+        },
+        "available": 50,
+        "total": 73,
+        "available_rate": 0.6849,
+        "unknown_rate": 0.3151,
+        "class_imbalance_warning": true
+      },
+      "presence": {
+        "distribution": {
+          "MID": 8,
+          "LOW": 39,
+          "UNAVAILABLE": 23,
+          "HIGH": 3
+        },
+        "available": 50,
+        "total": 73,
+        "available_rate": 0.6849,
+        "unknown_rate": 0.3151,
+        "class_imbalance_warning": true
+      },
+      "human_labeled_validation_recommended": [
+        "EFFORT",
+        "BREATHINESS",
+        "BRIGHTNESS",
+        "PRESENCE"
+      ],
+      "threshold_changed": false
+    },
+    "non_adaptive_warnings": [
+      {
+        "concern_id": "HIGH_NOTE_FLIPS",
+        "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+        "unique_audio_fps": 54,
+        "unique_coaching": 1
+      },
+      {
+        "concern_id": "VIBRATO_UNSTABLE",
+        "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+        "unique_audio_fps": 54,
+        "unique_coaching": 1
+      },
+      {
+        "concern_id": "DYNAMICS_DIFFICULT",
+        "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+        "unique_audio_fps": 54,
+        "unique_coaching": 1
+      },
+      {
+        "concern_id": "PHRASE_END_WEAK",
+        "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+        "unique_audio_fps": 54,
+        "unique_coaching": 1
+      }
+    ]
+  },
+  "delta": {
+    "target_override": {
+      "before": 2,
+      "after": 0
+    },
+    "true_unsupported": {
+      "before": 282,
+      "after": 0
+    },
+    "wrong_generic_collapse": {
+      "before": "unclassified_in_legacy_1425",
+      "after": 0
+    },
+    "over_shared": {
+      "before": "subset_of_1425",
+      "after": 0
+    },
+    "expected_shared": {
+      "before": "n/a",
+      "after": 2447
+    },
+    "canonical_mutation": {
+      "before": 0,
+      "after": 0
+    },
+    "safety_violation": {
+      "before": 0,
+      "after": 0
+    },
+    "focus_protocol_mismatch": {
+      "before": 0,
+      "after": 0
+    }
+  }
+}

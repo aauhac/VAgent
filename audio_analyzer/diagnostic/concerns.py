@@ -532,6 +532,8 @@ def build_personalized_qa(
                 "working_direction": ev.get("working_direction"),
                 "comparison": ev.get("comparison") or ev.get("comparison_protocol"),
                 "comparison_protocol": ev.get("comparison") or ev.get("comparison_protocol"),
+                "prescription": ev.get("prescription"),
+                "coaching_protocol_ref": ev.get("coaching_protocol_ref"),
                 "counts_for_consensus": ev.get("counts_for_consensus"),
                 "evidence_used": ev.get("evidence_used")
                 or (ev.get("functional_hypothesis") or {}).get("evidence_used")

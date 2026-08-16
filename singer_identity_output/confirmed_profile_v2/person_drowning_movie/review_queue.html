@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>Confirmed Profile v2 Review (local)</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 24px; background:#0f1216; color:#e8eaed; }
+h1,h2 { color:#fff; }
+.card { background:#1a1f27; border:1px solid #2a3340; border-radius:10px; padding:14px; margin:12px 0; }
+.muted { color:#9aa3af; }
+button { margin:4px; padding:8px 12px; border-radius:8px; border:1px solid #2a3340; background:#11151b; color:#e8eaed; cursor:pointer; }
+button.same { border-color:#3fb950; }
+button.diff { border-color:#ff7b72; }
+button.unk { border-color:#e3b341; }
+.nums.hidden { display:none; }
+.refs.hidden { display:none; }
+audio { width:100%; margin-top:8px; }
+.row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+@media (max-width:900px) { .row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<h1>Confirmed Singer Profile v2 — Human Review</h1>
+<p class="muted">Local-only. MODEL_CANDIDATE는 사람 확인 전까지 ground truth가 아닙니다. Blind mode 기본 ON.</p>
+<label><input type="checkbox" id="blind" checked/> Blind Review Mode (숫자 숨김)</label>
+<div class="card">
+  <h2>Confirmed Singer References (8)</h2>
+  <div class="row">
+    <div><b>대표(medoid):</b> <span id="medName"></span><audio id="medAud" controls></audio></div>
+    <div><b>가장 다른 확정 음원:</b> <span id="farName"></span><audio id="farAud" controls></audio></div>
+  </div>
+  <button id="toggleRefs">확정 8곡 전체 보기</button>
+  <div id="allRefs" class="refs hidden"></div>
+</div>
+<div id="list"></div>
+<script>
+const DATA = {"singer_id": "person_drowning_movie", "profile_version": 2, "medoid": {"filename": "요즘 바쁜가봐.m4a", "path": "C:/VocalAgent/요즘 바쁜가봐.m4a", "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f", "audio_id": "8156c1254947"}, "farthest": {"filename": "거의동117.m4a", "path": "C:/VocalAgent/거의동117.m4a", "sha256": "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361", "audio_id": "1387ae324719"}, "confirmed": [{"audio_id": "5fdfa9eb73e5", "sha256": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef", "filename": "drowning.m4a", "path": "C:/VocalAgent/drowning.m4a", "is_medoid": false}, {"audio_id": "6fb8c8208c80", "sha256": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e", "filename": "movie.m4a", "path": "C:/VocalAgent/movie.m4a", "is_medoid": false}, {"audio_id": "d5045bc290a1", "sha256": "d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc", "filename": "거의동115.m4a", "path": "C:/VocalAgent/거의동115.m4a", "is_medoid": false}, {"audio_id": "3ced1f723c5e", "sha256": "3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca", "filename": "거의동116.m4a", "path": "C:/VocalAgent/거의동116.m4a", "is_medoid": false}, {"audio_id": "1387ae324719", "sha256": "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361", "filename": "거의동117.m4a", "path": "C:/VocalAgent/거의동117.m4a", "is_medoid": false}, {"audio_id": "a7c957603751", "sha256": "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181", "filename": "좋은사람.m4a", "path": "C:/VocalAgent/좋은사람.m4a", "is_medoid": false}, {"audio_id": "8156c1254947", "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f", "filename": "요즘 바쁜가봐.m4a", "path": "C:/VocalAgent/요즘 바쁜가봐.m4a", "is_medoid": true}, {"audio_id": "5e7819c3abb4", "sha256": "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253", "filename": "bluemoon.m4a", "path": "C:/VocalAgent/bluemoon.m4a", "is_medoid": false}], "candidates": [{"audio_id": "0f26db696e8e", "sha256": "0f26db696e8e0cb98243f8064176b11bfaeeea2eaf690ea5b4223f4e85967e4d", "filename": "I'llneverloveagain.m4a", "path": "C:/VocalAgent/I'llneverloveagain.m4a", "status": "CONSISTENT_HIGH", "sim_centroid": 0.8639, "sim_medoid": 0.8437, "median_confirmed": 0.7806, "min_confirmed": 0.6622, "support_ratio": 0.875, "segment_support": 0.7604, "cluster": "speaker_009", "old_rank": 7, "new_rank": 1}, {"audio_id": "ec93548d279f", "sha256": "ec93548d279f509b476fc928b507301e8c6ab030d9084471f5c2d38419234187", "filename": "옥탑방.m4a", "path": "C:/VocalAgent/옥탑방.m4a", "status": "CONSISTENT_HIGH", "sim_centroid": 0.7948, "sim_medoid": 0.7152, "median_confirmed": 0.701, "min_confirmed": 0.6168, "support_ratio": 0.5, "segment_support": 0.6667, "cluster": "speaker_009", "old_rank": 9, "new_rank": 2}, {"audio_id": "aef8b974cfb0", "sha256": "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24", "filename": "love again.m4a", "path": "C:/VocalAgent/love again.m4a", "status": "CONFLICT", "sim_centroid": 0.7592, "sim_medoid": 0.6874, "median_confirmed": 0.6653, "min_confirmed": 0.495, "support_ratio": 0.375, "segment_support": 0.6042, "cluster": "speaker_009", "old_rank": 8, "new_rank": 3}, {"audio_id": "99023e55f0f5", "sha256": "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc", "filename": "호흡많고헤드.m4a", "path": "C:/VocalAgent/호흡많고헤드.m4a", "status": "BORDERLINE", "sim_centroid": 0.6355, "sim_medoid": 0.6084, "median_confirmed": 0.5636, "min_confirmed": 0.4701, "support_ratio": 0.0, "segment_support": 0.1771, "cluster": "speaker_006", "old_rank": 12, "new_rank": 5}, {"audio_id": "54b972ad300a", "sha256": "54b972ad300a3466f05c653a20f66b2e247f2ca243cde61dc3e925c627bec230", "filename": "편하게.m4a", "path": "C:/VocalAgent/편하게.m4a", "status": "BORDERLINE", "sim_centroid": 0.5898, "sim_medoid": 0.5828, "median_confirmed": 0.5615, "min_confirmed": 0.363, "support_ratio": 0.0, "segment_support": 0.1771, "cluster": "speaker_006", "old_rank": 21, "new_rank": 15}]};
+function fileUrl(p) {
+  if (!p) return "";
+  if (p.startsWith("file:")) return p;
+  if (/^[A-Za-z]:/.test(p)) return "file:///" + p.replace(/\\/g,"/");
+  return "file://" + p;
+}
+function loadLocal() {
+  try { return JSON.parse(localStorage.getItem("confirmed_profile_v2_review")||"{}"); }
+  catch { return {}; }
+}
+function saveLocal(obj) {
+  localStorage.setItem("confirmed_profile_v2_review", JSON.stringify(obj, null, 2));
+  document.getElementById("export").textContent = JSON.stringify(obj, null, 2);
+}
+document.getElementById("medName").textContent = DATA.medoid.filename;
+document.getElementById("farName").textContent = DATA.farthest.filename;
+document.getElementById("medAud").src = fileUrl(DATA.medoid.path);
+document.getElementById("farAud").src = fileUrl(DATA.farthest.path);
+const refBox = document.getElementById("allRefs");
+DATA.confirmed.forEach(r => {
+  const d = document.createElement("div");
+  d.innerHTML = `<div class="muted">${r.filename}${r.is_medoid ? " (medoid)" : ""}</div><audio controls src="${fileUrl(r.path)}"></audio>`;
+  refBox.appendChild(d);
+});
+document.getElementById("toggleRefs").onclick = () => refBox.classList.toggle("hidden");
+const decisions = loadLocal();
+decisions.singer_id = DATA.singer_id;
+decisions.profile_version = DATA.profile_version;
+decisions.reviews = decisions.reviews || {};
+function render() {
+  const blind = document.getElementById("blind").checked;
+  const root = document.getElementById("list");
+  root.innerHTML = "";
+  DATA.candidates.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    const prev = (decisions.reviews[c.sha256]||{}).decision || "";
+    div.innerHTML = `
+      <h2>#${i+1} ${c.filename} <span class="muted">${c.status}</span></h2>
+      <div class="muted">cluster: ${c.cluster} · old_rank: ${c.old_rank} · new_rank: ${c.new_rank}</div>
+      <audio controls src="${fileUrl(c.path)}"></audio>
+      <div class="nums ${blind ? "hidden" : ""}">
+        centroid: ${c.sim_centroid} · medoid: ${c.sim_medoid} · median_confirmed: ${c.median_confirmed} ·
+        min_confirmed: ${c.min_confirmed} · support: ${c.support_ratio} · segment: ${c.segment_support}
+      </div>
+      <div>
+        <button class="same" data-d="SAME">같은 사람</button>
+        <button class="diff" data-d="DIFFERENT">다른 사람</button>
+        <button class="unk" data-d="UNKNOWN">모르겠음</button>
+        <button data-d="REVEAL">분석값 보기</button>
+        <span class="muted" id="dec-${c.sha256}">${prev}</span>
+      </div>`;
+    div.querySelectorAll("button").forEach(btn => {
+      btn.onclick = () => {
+        const d = btn.getAttribute("data-d");
+        if (d === "REVEAL") {
+          div.querySelector(".nums").classList.remove("hidden");
+          return;
+        }
+        decisions.reviews[c.sha256] = {
+          decision: d,
+          filename: c.filename,
+          audio_id: c.audio_id,
+          sha256: c.sha256,
+          model_status: c.status,
+          label_source: "HUMAN_REVIEW",
+          relationship: d === "SAME" ? "person_drowning_movie" : (d === "DIFFERENT" ? "NOT_person_drowning_movie" : "UNCERTAIN"),
+          note: "Does not auto-expand profile; explicit rebuild required for profile v3",
+        };
+        document.getElementById("dec-"+c.sha256).textContent = d;
+        saveLocal(decisions);
+      };
+    });
+    root.appendChild(div);
+  });
+}
+document.getElementById("blind").onchange = render;
+render();
+</script>
+<div class="card">
+  <h2>Export → singer_identity_labels/reviews/confirmed_profile_v2_review.json</h2>
+  <pre id="export" style="white-space:pre-wrap;background:#11151b;padding:12px;border-radius:8px;"></pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "singer_id": "person_drowning_movie",
+  "display_name": "Drowning/Movie Singer",
+  "confirmed_recordings": [
+    {
+      "role": "SEED",
+      "filename": "drowning.m4a",
+      "audio_id": "5fdfa9eb73e5",
+      "sha256": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef",
+      "path": "C:\\VocalAgent\\drowning.m4a",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "role": "SEED",
+      "filename": "movie.m4a",
+      "audio_id": "6fb8c8208c80",
+      "sha256": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e",
+      "path": "C:\\VocalAgent\\movie.m4a",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    }
+  ],
+  "prototype_method": "normalize(sum(L2(confirmed embeddings)))",
+  "confirmed_embedding_count": 2,
+  "seed_pair_similarity": 0.6487793922424316,
+  "segment_seed_cross": {
+    "median": 0.5298211574554443,
+    "q75": 0.5565602779388428,
+    "top_k_mean": 0.5993580222129822,
+    "support_ratio": 0.5833333333333334,
+    "best_mean": 0.4828532040119171
+  },
+  "model_candidates_do_not_expand_profile": true,
+  "ambiguity_notes": []
+}

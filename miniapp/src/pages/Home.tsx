@@ -1,5 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getVocalGoalProgress } from '../api/client';
+import GoalProgressCard from '../components/progress/GoalProgressCard';
+import { buildLocalGoalProgress, type GoalProgressPayload } from '../lib/goalProgress';
+import { getLocalActiveGoal } from '../lib/localGoalStore';
+import { listLocalVocalSnapshots } from '../lib/localVocalHistory';
 
 function BrandMark() {
   return (
@@ -15,6 +20,34 @@ type Tab = 'record' | 'upload';
 export default function Home() {
   const nav = useNavigate();
   const [tab, setTab] = useState<Tab>('record');
+  const [goalProgress, setGoalProgress] = useState<GoalProgressPayload | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const server = await getVocalGoalProgress({ recent_n: 5 });
+      if (cancelled) return;
+      if (server && server.status !== 'NO_GOAL') {
+        setGoalProgress(server);
+        return;
+      }
+      const active = getLocalActiveGoal();
+      if (!active) {
+        setGoalProgress({ status: 'NO_GOAL', uses_fake_percent: false });
+        return;
+      }
+      const snaps = listLocalVocalSnapshots();
+      const hist = snaps.map((s) => ({
+        canonical: s.canonical,
+        created_at: s.created_at,
+        goal_id: s.goal_id || undefined,
+      }));
+      setGoalProgress(buildLocalGoalProgress(active, hist.slice(0, -1), { recentN: 5 }));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main>
@@ -32,6 +65,12 @@ export default function Home() {
         </p>
         <p className="home-hero-meta">한 구절이면 충분해요 · 무료로 시작</p>
       </section>
+
+      {goalProgress && goalProgress.status !== 'NO_GOAL' && goalProgress.goal ? (
+        <section className="section" style={{ paddingTop: 8, paddingBottom: 8 }} data-testid="home-goal-card">
+          <GoalProgressCard progress={goalProgress} compact />
+        </section>
+      ) : null}
 
       <div className="panel home-input-card">
         <h2 className="section-title" style={{ marginTop: 0 }}>분석할 음원을 준비해주세요</h2>

@@ -1,0 +1,103 @@
+{
+  "singer_id": "person_drowning_movie",
+  "profile_id": "person_drowning_movie_profile_v2",
+  "profile_version": 2,
+  "display_name": "Drowning/Movie Singer",
+  "encoder": "ECAPA-TDNN (cached audio embeddings)",
+  "embedding_dim": 192,
+  "confirmed_recordings": [
+    {
+      "filename": "drowning.m4a",
+      "audio_id": "5fdfa9eb73e5",
+      "sha256": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "movie.m4a",
+      "audio_id": "6fb8c8208c80",
+      "sha256": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "거의동115.m4a",
+      "audio_id": "d5045bc290a1",
+      "sha256": "d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "거의동116.m4a",
+      "audio_id": "3ced1f723c5e",
+      "sha256": "3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "거의동117.m4a",
+      "audio_id": "1387ae324719",
+      "sha256": "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "좋은사람.m4a",
+      "audio_id": "a7c957603751",
+      "sha256": "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "요즘 바쁜가봐.m4a",
+      "audio_id": "8156c1254947",
+      "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "bluemoon.m4a",
+      "audio_id": "5e7819c3abb4",
+      "sha256": "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    }
+  ],
+  "confirmed_count": 8,
+  "centroid_method": "L2-normalize(mean(L2-normalized embeddings))",
+  "medoid_audio_id": "8156c1254947",
+  "medoid_filename": "요즘 바쁜가봐.m4a",
+  "medoid_mean_similarity_to_others": 0.789548899446215,
+  "within_singer": {
+    "mean": 0.7472790053912571,
+    "median": 0.7474302053451538,
+    "min": 0.5875834226608276,
+    "max": 0.8596420288085938,
+    "std": 0.06182696165069662,
+    "p25": 0.7049001157283783,
+    "p75": 0.7877908945083618,
+    "n_pairs": 28
+  },
+  "hardest_pair": {
+    "a": "거의동117.m4a",
+    "b": "bluemoon.m4a",
+    "similarity": 0.5875834226608276,
+    "audio_ids": [
+      "1387ae324719",
+      "5e7819c3abb4"
+    ]
+  },
+  "easiest_pair": {
+    "a": "drowning.m4a",
+    "b": "거의동116.m4a",
+    "similarity": 0.8596420288085938,
+    "audio_ids": [
+      "5fdfa9eb73e5",
+      "3ced1f723c5e"
+    ]
+  },
+  "segment_pair_median_mean": 0.5567742777722222,
+  "model_candidates_excluded_from_profile": true,
+  "ambiguity": [],
+  "created_at": "2026-08-16T12:21:06.652101+00:00"
+}

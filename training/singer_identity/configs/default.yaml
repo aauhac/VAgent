@@ -1,0 +1,9 @@
+# default training config (not used until labels sufficient)
+min_speakers: 5
+min_recordings_per_speaker: 3
+augmentation:
+  pitch_shift_semitones: [-1, 1]
+  time_stretch: [0.97, 1.03]
+forbid_identity_breaking_aug: true
+objective: "deferred_metric_learning"
+test_untouched: true

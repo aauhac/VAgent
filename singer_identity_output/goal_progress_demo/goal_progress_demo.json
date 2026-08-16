@@ -1,0 +1,74 @@
+{
+  "demo": true,
+  "note": "Synthetic TEST_GOAL — not a real user goal claim",
+  "goal": {
+    "id": "TEST_GOAL_REGISTER_CONNECTION",
+    "focus": "REGISTER_CONNECTION",
+    "label": "[DEMO] 고음 구간을 더 안정적으로 연결하기",
+    "source": "USER_SELECTED",
+    "kind": "FUNCTIONAL",
+    "axis": "register_connection",
+    "target": "CONNECTED",
+    "started_at": "2026-08-01T00:00:00+00:00"
+  },
+  "progress": {
+    "status": "STABLE",
+    "goal": {
+      "id": "TEST_GOAL_REGISTER_CONNECTION",
+      "focus": "REGISTER_CONNECTION",
+      "label": "[DEMO] 고음 구간을 더 안정적으로 연결하기",
+      "source": "USER_SELECTED",
+      "kind": "FUNCTIONAL",
+      "axis": "register_connection",
+      "target": "CONNECTED",
+      "style_id": null,
+      "started_at": "2026-08-01T00:00:00+00:00",
+      "is_recommended": false,
+      "display_title": "이번 목표"
+    },
+    "window": {
+      "size": 5,
+      "recording_count": 5,
+      "evaluable_count": 5,
+      "goal_aligned_count": 1
+    },
+    "previous_window": {
+      "size": 5,
+      "recording_count": 5,
+      "evaluable_count": 5,
+      "goal_aligned_count": 1
+    },
+    "sequence": [
+      "NOT_GOAL_ALIGNED",
+      "NOT_GOAL_ALIGNED",
+      "NOT_GOAL_ALIGNED",
+      "GOAL_ALIGNED",
+      "NOT_GOAL_ALIGNED"
+    ],
+    "dots": [
+      "NOT_ALIGNED",
+      "NOT_ALIGNED",
+      "NOT_ALIGNED",
+      "ALIGNED",
+      "NOT_ALIGNED"
+    ],
+    "current_evidence": {
+      "evaluable": true,
+      "direction": "GOAL_ALIGNED",
+      "axis": "register_connection",
+      "evidence": "CONNECTED",
+      "reason": "CONNECTED_IS_GOAL_DIRECTION",
+      "quality": "RELIABLE",
+      "called_generic_improvement": false,
+      "uses_fake_percent": false,
+      "uses_identity_similarity": false
+    },
+    "summary": "최근 녹음에서도 비슷한 수준으로 유지되고 있어요.",
+    "comparison_available": true,
+    "mixed_analyzer_versions": false,
+    "uses_fake_percent": false,
+    "uses_identity_similarity": false,
+    "note": "목표는 달성률(%)이 아니라 최근 기록에서 목표 방향 evidence가 나타난 횟수로 보여드려요."
+  },
+  "scenario": "B"
+}

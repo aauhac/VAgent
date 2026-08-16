@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>Confirmed Profile v3 Review (local)</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 24px; background:#0f1216; color:#e8eaed; }
+h1,h2 { color:#fff; }
+.card { background:#1a1f27; border:1px solid #2a3340; border-radius:10px; padding:14px; margin:12px 0; }
+.muted { color:#9aa3af; }
+button { margin:4px; padding:8px 12px; border-radius:8px; border:1px solid #2a3340; background:#11151b; color:#e8eaed; cursor:pointer; }
+button.same { border-color:#3fb950; }
+button.diff { border-color:#ff7b72; }
+button.unk { border-color:#e3b341; }
+.nums.hidden,.refs.hidden { display:none; }
+audio { width:100%; margin-top:8px; }
+.row { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+@media (max-width:900px) { .row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<h1>Confirmed Singer Profile v3 — Human Review</h1>
+<p class="muted">Local-only. MODEL candidates are not ground truth. Blind mode ON by default. Multi-prototype is EXPERIMENTAL ONLY.</p>
+<label><input type="checkbox" id="blind" checked/> Blind Review Mode</label>
+<div class="card">
+  <h2>Confirmed singer references: 11</h2>
+  <div class="row">
+    <div><b>대표(medoid)</b><br/><span id="medName"></span><audio id="medAud" controls></audio></div>
+    <div><b>hard positive (love again)</b><br/><span id="loveName"></span><audio id="loveAud" controls></audio></div>
+    <div><b>가장 다른 confirmed</b><br/><span id="hardName"></span><audio id="hardAud" controls></audio></div>
+  </div>
+  <button id="toggleRefs">전체 11개 펼치기</button>
+  <div id="allRefs" class="refs hidden"></div>
+</div>
+<div id="list"></div>
+<script>
+const DATA = {"singer_id": "person_drowning_movie", "profile_version": 3, "default_strategy": "SINGLE_CENTROID", "multi_prototype_production_enabled": false, "medoid": {"filename": "요즘 바쁜가봐.m4a", "path": "C:/VocalAgent/요즘 바쁜가봐.m4a", "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f", "audio_id": "8156c1254947"}, "hardest": {"filename": "love again.m4a", "path": "C:/VocalAgent/love again.m4a", "sha256": "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24", "audio_id": "aef8b974cfb0"}, "love_again": {"filename": "love again.m4a", "path": "C:/VocalAgent/love again.m4a", "sha256": "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24", "audio_id": "aef8b974cfb0"}, "confirmed": [{"audio_id": "5fdfa9eb73e5", "sha256": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef", "filename": "drowning.m4a", "path": "C:/VocalAgent/drowning.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "6fb8c8208c80", "sha256": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e", "filename": "movie.m4a", "path": "C:/VocalAgent/movie.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "d5045bc290a1", "sha256": "d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc", "filename": "거의동115.m4a", "path": "C:/VocalAgent/거의동115.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "3ced1f723c5e", "sha256": "3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca", "filename": "거의동116.m4a", "path": "C:/VocalAgent/거의동116.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "1387ae324719", "sha256": "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361", "filename": "거의동117.m4a", "path": "C:/VocalAgent/거의동117.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "a7c957603751", "sha256": "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181", "filename": "좋은사람.m4a", "path": "C:/VocalAgent/좋은사람.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "8156c1254947", "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f", "filename": "요즘 바쁜가봐.m4a", "path": "C:/VocalAgent/요즘 바쁜가봐.m4a", "is_medoid": true, "is_hardest": false, "is_love_again": false}, {"audio_id": "5e7819c3abb4", "sha256": "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253", "filename": "bluemoon.m4a", "path": "C:/VocalAgent/bluemoon.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "0f26db696e8e", "sha256": "0f26db696e8e0cb98243f8064176b11bfaeeea2eaf690ea5b4223f4e85967e4d", "filename": "I'llneverloveagain.m4a", "path": "C:/VocalAgent/I'llneverloveagain.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}, {"audio_id": "aef8b974cfb0", "sha256": "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24", "filename": "love again.m4a", "path": "C:/VocalAgent/love again.m4a", "is_medoid": false, "is_hardest": true, "is_love_again": true}, {"audio_id": "ec93548d279f", "sha256": "ec93548d279f509b476fc928b507301e8c6ab030d9084471f5c2d38419234187", "filename": "옥탑방.m4a", "path": "C:/VocalAgent/옥탑방.m4a", "is_medoid": false, "is_hardest": false, "is_love_again": false}], "candidates": [{"audio_id": "99023e55f0f5", "sha256": "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc", "filename": "호흡많고헤드.m4a", "path": "C:/VocalAgent/호흡많고헤드.m4a", "status": "BORDERLINE", "sim_centroid": 0.6397, "sim_medoid": 0.6084, "sim_k2": 0.6608, "sim_k3": 0.6608, "mean_confirmed": 0.5547, "min_confirmed": 0.431, "segment_support": 0.1439, "cluster": "speaker_006", "rank": 1}, {"audio_id": "d241c8e7a734", "sha256": "d241c8e7a7346bebe1b5802d5a43a11422aa50635f969c5c8842fb58cb7acb88", "filename": "기모그.m4a", "path": "C:/VocalAgent/기모그.m4a", "status": "STYLE_SPECIFIC", "sim_centroid": 0.6272, "sim_medoid": 0.6359, "sim_k2": 0.6447, "sim_k3": 0.6447, "mean_confirmed": 0.5438, "min_confirmed": 0.4294, "segment_support": 0.2348, "cluster": "speaker_010", "rank": 2}, {"audio_id": "2c9d61ebb9da", "sha256": "2c9d61ebb9da411d4a3b8592d3fc0f7696b4c40a07a88bded722bfab4c114f11", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/f973bce50557481fad8ba55a40bcb21c/tasks/sustain_i/attempt_1/upload.webm", "status": "CONFLICT", "sim_centroid": 0.6229, "sim_medoid": 0.5237, "sim_k2": 0.6551, "sim_k3": 0.6678, "mean_confirmed": 0.5401, "min_confirmed": 0.4179, "segment_support": 0.4318, "cluster": "speaker_025", "rank": 3}, {"audio_id": "983379d1fe46", "sha256": "983379d1fe46018a844e384f9f0f5648d23d86003365b570f6dde8d7bf41c0ab", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/e9039df1e37d44719bf930cf695ead64/tasks/sustain_i/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.6082, "sim_medoid": 0.5679, "sim_k2": 0.6135, "sim_k3": 0.6135, "mean_confirmed": 0.5273, "min_confirmed": 0.4497, "segment_support": 0.2727, "cluster": "speaker_007", "rank": 4}, {"audio_id": "ee4a74e09cc1", "sha256": "ee4a74e09cc1d3a84c8dd5f05069b2a31884a3f4bf5909010b4c42814462900f", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/c84304fcb6b843d2a1e6eb5087134291/tasks/sustain_i/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.6069, "sim_medoid": 0.5452, "sim_k2": 0.5873, "sim_k3": 0.5873, "mean_confirmed": 0.5262, "min_confirmed": 0.4809, "segment_support": 0.303, "cluster": "speaker_004", "rank": 5}, {"audio_id": "e8314e2d9fd3", "sha256": "e8314e2d9fd3aea07b95ae46ce1b342e1388cb465f048fa47d7954e0f3399e73", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/ba62f95fa43f43688d0dcd34aa0b336c/tasks/sustain_a/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.606, "sim_medoid": 0.5201, "sim_k2": 0.6491, "sim_k3": 0.6623, "mean_confirmed": 0.5255, "min_confirmed": 0.3678, "segment_support": 0.4545, "cluster": "speaker_025", "rank": 6}, {"audio_id": "f17b7f4ff446", "sha256": "f17b7f4ff446eac9181094b557eeffb1a3bbb7779174569b763646b06eca7e41", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/0ff873201e0f4ce8adeb1f176d39cb16/upload.webm", "status": "LOW", "sim_centroid": 0.5869, "sim_medoid": 0.5855, "sim_k2": 0.6421, "sim_k3": 0.6421, "mean_confirmed": 0.5089, "min_confirmed": 0.3563, "segment_support": 0.0455, "cluster": "speaker_004", "rank": 7}, {"audio_id": "54b972ad300a", "sha256": "54b972ad300a3466f05c653a20f66b2e247f2ca243cde61dc3e925c627bec230", "filename": "편하게.m4a", "path": "C:/VocalAgent/편하게.m4a", "status": "LOW", "sim_centroid": 0.5848, "sim_medoid": 0.5828, "sim_k2": 0.631, "sim_k3": 0.631, "mean_confirmed": 0.5071, "min_confirmed": 0.2926, "segment_support": 0.1667, "cluster": "speaker_006", "rank": 8}, {"audio_id": "00ae450b11f1", "sha256": "00ae450b11f15f53af9e4ea58c4e52d4bdde098e292c5e6530675c775de0fac1", "filename": "목잡이.m4a", "path": "C:/VocalAgent/목잡이.m4a", "status": "LOW", "sim_centroid": 0.5718, "sim_medoid": 0.532, "sim_k2": 0.574, "sim_k3": 0.574, "mean_confirmed": 0.4958, "min_confirmed": 0.3965, "segment_support": 0.0909, "cluster": "speaker_020", "rank": 9}, {"audio_id": "d87efe3c048b", "sha256": "d87efe3c048b3a701e13327d22bccf4a2d3d464e5b208b9252482cb702fb032d", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/f973bce50557481fad8ba55a40bcb21c/tasks/sustain_a/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.5589, "sim_medoid": 0.4679, "sim_k2": 0.615, "sim_k3": 0.6171, "mean_confirmed": 0.4846, "min_confirmed": 0.3359, "segment_support": 0.2045, "cluster": "speaker_025", "rank": 10}, {"audio_id": "5662e8094f66", "sha256": "5662e8094f66d3fd27846cd64b216dd557acef7d5817025c677957bea94780f0", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/e9039df1e37d44719bf930cf695ead64/tasks/high_note_sustain_a/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.5547, "sim_medoid": 0.4822, "sim_k2": 0.5385, "sim_k3": 0.5363, "mean_confirmed": 0.4809, "min_confirmed": 0.3871, "segment_support": 0.2273, "cluster": "speaker_019", "rank": 11}, {"audio_id": "15f8e161f598", "sha256": "15f8e161f5987f8ea83bccbe92a8ac25ac3260cfdb67bbd40483ae76e527e6a9", "filename": "Lyrics.mp3", "path": "C:/VocalAgent/Lyrics.mp3", "status": "LOW", "sim_centroid": 0.5238, "sim_medoid": 0.4501, "sim_k2": 0.5585, "sim_k3": 0.5546, "mean_confirmed": 0.4542, "min_confirmed": 0.3609, "segment_support": 0.0379, "cluster": "speaker_022", "rank": 12}, {"audio_id": "fadd83f6eb33", "sha256": "fadd83f6eb3313e95ef6b2600000daf035cbc6aee4b846f479a9c5e882787d16", "filename": "가없너.m4a", "path": "C:/VocalAgent/가없너.m4a", "status": "LOW", "sim_centroid": 0.5121, "sim_medoid": 0.5217, "sim_k2": 0.5187, "sim_k3": 0.5187, "mean_confirmed": 0.4441, "min_confirmed": 0.3727, "segment_support": 0.0379, "cluster": "speaker_010", "rank": 13}, {"audio_id": "07564b6df5b9", "sha256": "07564b6df5b9862814817adcb31be945298cd3e956eb859d0ae0f7f336b0506f", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/65c2390ef2324f6088b420f8485e56e5/upload.webm", "status": "LOW", "sim_centroid": 0.5015, "sim_medoid": 0.4693, "sim_k2": 0.5117, "sim_k3": 0.5117, "mean_confirmed": 0.4349, "min_confirmed": 0.2532, "segment_support": 0.0379, "cluster": "speaker_020", "rank": 14}, {"audio_id": "0ea5487c229a", "sha256": "0ea5487c229a9e74970718c68e391de0bbf0126138ab78f21ef76e4e1e407bea", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/e9039df1e37d44719bf930cf695ead64/tasks/sustain_a/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.4927, "sim_medoid": 0.4015, "sim_k2": 0.4832, "sim_k3": 0.5013, "mean_confirmed": 0.4273, "min_confirmed": 0.2762, "segment_support": 0.1818, "cluster": "speaker_025", "rank": 15}, {"audio_id": "90147c986aae", "sha256": "90147c986aae93ab817b52c80a3422a2b362c9a172ff602b2d301220117951c6", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/7a90a8f1a59b41c6b0f8e7c678b4a9df/upload.webm", "status": "LOW", "sim_centroid": 0.4861, "sim_medoid": 0.3651, "sim_k2": 0.5529, "sim_k3": 0.5591, "mean_confirmed": 0.4215, "min_confirmed": 0.314, "segment_support": 0.4545, "cluster": "speaker_005", "rank": 16}, {"audio_id": "40fb338380cc", "sha256": "40fb338380ccc7353ba5bf76ba5e135e3b8a2b6d0b4ac20b5976be85a6f948d6", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/46eaac51bdab4d2fa6108ee3e736b757/tasks/dynamic_swell/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.4809, "sim_medoid": 0.455, "sim_k2": 0.4857, "sim_k3": 0.4857, "mean_confirmed": 0.417, "min_confirmed": 0.3384, "segment_support": 0.0909, "cluster": "speaker_007", "rank": 17}, {"audio_id": "6b3aa0d0ddfb", "sha256": "6b3aa0d0ddfb5566666c3d263cd565600414ee03187045dfa90b2079bdd141af", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/diagnostic_sessions/c84304fcb6b843d2a1e6eb5087134291/tasks/siren/attempt_1/upload.webm", "status": "LOW", "sim_centroid": 0.4806, "sim_medoid": 0.421, "sim_k2": 0.4658, "sim_k3": 0.4658, "mean_confirmed": 0.4168, "min_confirmed": 0.3512, "segment_support": 0.0606, "cluster": "speaker_023", "rank": 18}, {"audio_id": "c3fca76b89b8", "sha256": "c3fca76b89b8095917a4c8b97e723c95c1723a105e89535722eeb857aae5c5a8", "filename": "upload.webm", "path": "C:/VocalAgent/runtime/02ca15a9e9a542cf99c19dfd6c9d1fe2/upload.webm", "status": "LOW", "sim_centroid": 0.4751, "sim_medoid": 0.4203, "sim_k2": 0.5235, "sim_k3": 0.5235, "mean_confirmed": 0.4119, "min_confirmed": 0.2312, "segment_support": 0.0455, "cluster": "speaker_006", "rank": 19}, {"audio_id": "e8b8aa373520", "sha256": "e8b8aa37352029f955420e5e5a5d98ba9dcf3a52913aa1630f8a89515c0b55dc", "filename": "upload.wav", "path": "C:/VocalAgent/runtime/0cd50917f9ed40d1a9e62a9f5904268f/upload.wav", "status": "LOW", "sim_centroid": 0.4676, "sim_medoid": 0.3749, "sim_k2": 0.5023, "sim_k3": 0.516, "mean_confirmed": 0.4055, "min_confirmed": 0.3054, "segment_support": 0.3561, "cluster": "speaker_005", "rank": 20}]};
+function fileUrl(p) {
+  if (!p) return "";
+  if (p.startsWith("file:")) return p;
+  if (/^[A-Za-z]:/.test(p)) return "file:///" + p.replace(/\\/g,"/");
+  return "file://" + p;
+}
+function loadLocal() {
+  try { return JSON.parse(localStorage.getItem("confirmed_profile_v3_review")||"{}"); }
+  catch { return {}; }
+}
+function saveLocal(obj) {
+  localStorage.setItem("confirmed_profile_v3_review", JSON.stringify(obj, null, 2));
+  document.getElementById("export").textContent = JSON.stringify(obj, null, 2);
+}
+document.getElementById("medName").textContent = DATA.medoid.filename;
+document.getElementById("medAud").src = fileUrl(DATA.medoid.path);
+document.getElementById("hardName").textContent = DATA.hardest.filename;
+document.getElementById("hardAud").src = fileUrl(DATA.hardest.path);
+if (DATA.love_again) {
+  document.getElementById("loveName").textContent = DATA.love_again.filename;
+  document.getElementById("loveAud").src = fileUrl(DATA.love_again.path);
+} else {
+  document.getElementById("loveName").textContent = "(n/a)";
+}
+const refBox = document.getElementById("allRefs");
+DATA.confirmed.forEach(r => {
+  const d = document.createElement("div");
+  d.innerHTML = `<div class="muted">${r.filename}${r.is_medoid?" (medoid)":""}${r.is_love_again?" (hard+)":""}${r.is_hardest?" (atypical)":""}</div><audio controls src="${fileUrl(r.path)}"></audio>`;
+  refBox.appendChild(d);
+});
+document.getElementById("toggleRefs").onclick = () => refBox.classList.toggle("hidden");
+const decisions = loadLocal();
+decisions.singer_id = DATA.singer_id;
+decisions.profile_version = DATA.profile_version;
+decisions.reviews = decisions.reviews || {};
+function render() {
+  const blind = document.getElementById("blind").checked;
+  const root = document.getElementById("list");
+  root.innerHTML = "";
+  DATA.candidates.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    const prev = (decisions.reviews[c.sha256]||{}).decision || "";
+    div.innerHTML = `
+      <h2>#${i+1} ${c.filename} <span class="muted">${c.status}</span></h2>
+      <div class="muted">cluster: ${c.cluster} · rank: ${c.rank}</div>
+      <audio controls src="${fileUrl(c.path)}"></audio>
+      <div class="nums ${blind ? "hidden" : ""}">
+        Centroid: ${c.sim_centroid} · Medoid: ${c.sim_medoid} · K2: ${c.sim_k2} · K3: ${c.sim_k3} ·
+        mean: ${c.mean_confirmed} · min: ${c.min_confirmed} · segment: ${c.segment_support}
+      </div>
+      <div>
+        <button class="same" data-d="SAME">같은 사람</button>
+        <button class="diff" data-d="DIFFERENT">다른 사람</button>
+        <button class="unk" data-d="UNKNOWN">모르겠음</button>
+        <button data-d="REVEAL">분석값 보기</button>
+        <span class="muted" id="dec-${c.sha256}">${prev}</span>
+      </div>`;
+    div.querySelectorAll("button").forEach(btn => {
+      btn.onclick = () => {
+        const d = btn.getAttribute("data-d");
+        if (d === "REVEAL") { div.querySelector(".nums").classList.remove("hidden"); return; }
+        decisions.reviews[c.sha256] = {
+          decision: d, filename: c.filename, audio_id: c.audio_id, sha256: c.sha256,
+          model_status: c.status, label_source: "HUMAN_REVIEW",
+          scores: {centroid:c.sim_centroid, medoid:c.sim_medoid, k2:c.sim_k2, k3:c.sim_k3},
+          note: "Does not auto-expand profile; explicit rebuild required",
+        };
+        document.getElementById("dec-"+c.sha256).textContent = d;
+        saveLocal(decisions);
+      };
+    });
+    root.appendChild(div);
+  });
+}
+document.getElementById("blind").onchange = render;
+render();
+</script>
+<div class="card">
+  <h2>Export → singer_identity_labels/reviews/confirmed_profile_v3_review.json</h2>
+  <pre id="export" style="white-space:pre-wrap;background:#11151b;padding:12px;border-radius:8px;"></pre>
+</div>
+</body>
+</html>

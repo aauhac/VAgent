@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { getDiagnosticReport, getDiagnosticSession, analyzeDiagnosticSession, regenerateDiagnosticReport } from '../api/client';
 import VocalProfile from '../components/report/VocalProfile';
 import QAComparisonBlock from '../components/report/QAComparisonBlock';
+import PrescriptionBlock from '../components/report/PrescriptionBlock';
 import CoachingProtocolCard from '../components/report/CoachingProtocolCard';
 import {
   buildDiagnosticHeroText,
@@ -194,7 +195,12 @@ export default function PremiumReport() {
       : songKeyFeatures.slice(0, 3).map((text: string) => ({ kind: 'canonical' as const, text }));
   const coaching = report.coaching || pqa.coaching || {};
   const goal = report.coaching_goal || pqa.coaching_goal || {};
-  const coachingProtocol = report.coaching_protocol || goal.coaching_protocol || pqa.coaching_protocol;
+  const rawProtocol = report.coaching_protocol || goal.coaching_protocol || pqa.coaching_protocol;
+  const coachingProtocol =
+    rawProtocol && Array.isArray(rawProtocol.steps) && rawProtocol.steps.length > 0
+      ? rawProtocol
+      : null;
+  const hasProtocolSteps = Boolean(coachingProtocol);
   const timbreGoal = report.timbre_goal || pqa.timbre_goal;
   const desired = goal.desired_outcome || (timbreGoal?.id ? timbreGoal : null);
   const showDesiredTimbre = desired?.type === 'TIMBRE' || Boolean(timbreGoal?.id && timbreGoal.id !== 'RECOMMEND_FOR_ME') || desired?.source === 'SYSTEM_RECOMMENDED';
@@ -344,31 +350,15 @@ export default function PremiumReport() {
 
       {goal.primary_focus_label || goal.primary_focus ? (
         <section className="section" data-testid="priority-change">
-          <h3 className="section-title">우선 바꿔볼 것</h3>
-          <p className="body-text" style={{ fontWeight: 700, margin: 0 }}>
-            {scrubUserText(goal.primary_focus_label || goal.primary_focus)}
+          <p className="body-text muted" style={{ margin: 0, fontSize: '0.95rem' }}>
+            우선 포인트 · {scrubUserText(goal.primary_focus_label || goal.primary_focus)}
           </p>
-          {goal.goal_description ? (
-            <p className="body-text muted" style={{ marginTop: 8, lineHeight: 1.5 }}>
-              {scrubUserText(
-                goal.mode === 'STYLE'
-                  ? '목표 음색을 작은 강도로 짧게 탐색하는 방향'
-                  : goal.primary_focus === 'REGISTER_CONNECTION'
-                    ? '음역이 올라갈 때 발성 특성이 급격하게 달라지는 구간'
-                    : goal.primary_focus === 'EFFORT'
-                      ? '같은 음을 더 세게 밀지 않는 힘 사용'
-                      : goal.primary_focus === 'PRESENCE'
-                        ? '밀지 않으면서 소리 존재감이 흐려지지 않게 하기'
-                        : '',
-              )}
-            </p>
-          ) : null}
         </section>
       ) : null}
 
       {goal.why_this_first ? (
         <section className="section" data-testid="why-this-first">
-          <h3 className="section-title">왜 이것부터?</h3>
+          <h3 className="section-title">왜 이 연습?</h3>
           <p className="body-text" style={{ margin: 0, lineHeight: 1.55 }}>
             {scrubUserText(goal.why_this_first)}
           </p>
@@ -387,6 +377,14 @@ export default function PremiumReport() {
                 takeaway?: string;
                 what_to_change?: string;
                 working_direction?: string;
+                prescription?: {
+                  title?: string;
+                  instruction?: string;
+                  repetitions?: string;
+                  success_cues?: string[];
+                  alternate?: { title?: string; instruction?: string } | null;
+                  song_transfer?: string;
+                };
                 comparison?: {
                   baseline_label?: string;
                   baseline_instruction?: string;
@@ -419,7 +417,11 @@ export default function PremiumReport() {
                 const ev = evidenceLines(qa);
                 const body = scrubUserText(qaAnswerOnly(qa.answer || ''));
                 const nextStep = scrubUserText(qa.what_to_change || '');
-                const showNext = Boolean(nextStep) && !body.includes(nextStep);
+                const prescription = qa.prescription;
+                const showNext =
+                  Boolean(nextStep)
+                  && !body.includes(nextStep)
+                  && !prescription?.instruction;
                 const comparison = qa.comparison || qa.comparison_protocol;
                 return (
                   <div key={`${qa.question}-${i}`} data-testid={`qa-item-${i}`} style={{ marginBottom: 20 }}>
@@ -433,7 +435,10 @@ export default function PremiumReport() {
                     >
                       A. {body}
                     </p>
-                    <QAComparisonBlock comparison={comparison} testIdPrefix={`qa-compare-${i}`} />
+                    <PrescriptionBlock prescription={prescription} testIdPrefix={`qa-rx-${i}`} />
+                    {showDebug ? (
+                      <QAComparisonBlock comparison={comparison} testIdPrefix={`qa-compare-${i}`} />
+                    ) : null}
                     {showNext ? (
                       <p className="muted body-text" style={{ marginTop: 8, lineHeight: 1.5 }} data-testid={`qa-next-${i}`}>
                         {nextStep}
@@ -484,7 +489,7 @@ export default function PremiumReport() {
         </section>
       )}
 
-      {practices.filter((g: any) => g && (g.mode || '') !== 'MAINTAIN').length > 0 && !coachingProtocol ? (
+      {practices.filter((g: any) => g && (g.mode || '') !== 'MAINTAIN').length > 0 && !hasProtocolSteps ? (
         <section className="section" data-testid="practice-section">
           <h3 className="section-title">맞춤 연습 방향</h3>
           {practices
@@ -593,25 +598,17 @@ export default function PremiumReport() {
         ) : (
           distinctFeatures.map((item, i) => (
             item.kind === 'finding' ? (
-              <div key={`${item.finding.title}-${i}`} className="diag-finding">
-                <p className="diag-num">{String(i + 1).padStart(2, '0')}</p>
-                <div>
-                  <p className="diag-finding-title">
-                    {item.finding.title}
-                    <span className="diag-tone">{item.finding.tone}</span>
-                  </p>
-                  <p className="body-text muted" style={{ margin: '6px 0 0' }}>{item.finding.body}</p>
-                  <p className="spectrum-confidence">
-                    {formatAnalysisConfidence(item.finding.confidence_label, item.finding.confidence_percent)}
-                  </p>
-                </div>
+              <div key={`${item.finding.title}-${i}`} className="diag-finding" style={{ marginBottom: 8 }}>
+                <p className="diag-finding-title" style={{ margin: 0 }}>
+                  {String(i + 1).padStart(2, '0')} · {item.finding.title}
+                  <span className="diag-tone">{item.finding.tone}</span>
+                </p>
               </div>
             ) : (
-              <div key={`${item.text}-${i}`} className="diag-finding">
-                <p className="diag-num">{String(i + 1).padStart(2, '0')}</p>
-                <div>
-                  <p className="diag-finding-title">{scrubUserText(item.text)}</p>
-                </div>
+              <div key={`${item.text}-${i}`} className="diag-finding" style={{ marginBottom: 8 }}>
+                <p className="diag-finding-title" style={{ margin: 0 }}>
+                  {String(i + 1).padStart(2, '0')} · {scrubUserText(item.text)}
+                </p>
               </div>
             )
           ))

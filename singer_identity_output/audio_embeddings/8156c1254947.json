@@ -1,0 +1,14 @@
+{
+  "audio_id": "8156c1254947",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 12,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f",
+  "filename": "요즘 바쁜가봐.m4a",
+  "display_name": "요즘 바쁜가봐.m4a",
+  "path": "C:\\VocalAgent\\요즘 바쁜가봐.m4a"
+}

@@ -1,0 +1,4 @@
+stage,confirmed,loo_match,loo_mean_sim,enrollment_note,seed_pair,curve_trend,hard_positives
+2_seed,2,,,frozen seed expansion,0.6488,,
+8_song_v2,8,8,0.8445609211921692,YES,,,
+11_song_v3,11,11,0.8372701948339288,IMPROVED,,IMPROVED,3

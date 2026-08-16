@@ -1,0 +1,14 @@
+{
+  "audio_id": "00ae450b11f1",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 9,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "00ae450b11f15f53af9e4ea58c4e52d4bdde098e292c5e6530675c775de0fac1",
+  "filename": "목잡이.m4a",
+  "display_name": "목잡이.m4a",
+  "path": "C:\\VocalAgent\\목잡이.m4a"
+}

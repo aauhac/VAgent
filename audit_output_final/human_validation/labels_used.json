@@ -1,0 +1,66 @@
+{
+  "path": "C:\\VocalAgent\\audit_labels\\human_audio_labels.json",
+  "labels": {
+    "00ae450b11f15f53af9e4ea58c4e52d4bdde098e292c5e6530675c775de0fac1": {
+      "name": "B",
+      "intent": [
+        "PUSHED"
+      ],
+      "ratings": {
+        "effort": "HIGH",
+        "register_connection": null,
+        "breathiness": "LOW",
+        "brightness": null,
+        "presence": null
+      },
+      "confidence": "HIGH",
+      "notes": "목잡이 — intentional high effort (contact_effort_controlled_v1)"
+    },
+    "10d07cc48c5598fbd2497f0391de54c659e0fafdd7133ad7c9678f3c11b93e6f": {
+      "name": "D",
+      "intent": [
+        "FIRM_LOUD_NOT_EXCESS_EFFORT"
+      ],
+      "ratings": {
+        "effort": "LOW",
+        "register_connection": null,
+        "breathiness": null,
+        "brightness": null,
+        "presence": null
+      },
+      "confidence": "MEDIUM",
+      "notes": "편안세게 — firm/loud without excess effort (contact_effort_controlled_v1)"
+    },
+    "54b972ad300a3466f05c653a20f66b2e247f2ca243cde61dc3e925c627bec230": {
+      "name": "A",
+      "intent": [
+        "RELAXED"
+      ],
+      "ratings": {
+        "effort": "LOW",
+        "register_connection": null,
+        "breathiness": "LOW",
+        "brightness": null,
+        "presence": null
+      },
+      "confidence": "HIGH",
+      "notes": "편하게 — intentional relaxed phonation (contact_effort_controlled_v1)"
+    },
+    "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc": {
+      "name": "C",
+      "intent": [
+        "HIGH_BREATH",
+        "HEAD_LEAN"
+      ],
+      "ratings": {
+        "effort": "LOW",
+        "register_connection": null,
+        "breathiness": "HIGH",
+        "brightness": null,
+        "presence": null
+      },
+      "confidence": "HIGH",
+      "notes": "호흡많고헤드 — intentional high breathiness (contact_effort_controlled_v1)"
+    }
+  }
+}

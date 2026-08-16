@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends libsndfile1 ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY services/singer_identity/requirements.txt /app/services/singer_identity/requirements.txt
+RUN pip install --no-cache-dir -r /app/services/singer_identity/requirements.txt
+
+COPY services/singer_identity /app/services/singer_identity
+COPY scripts/vocal_behavioral_audit/report_labels.py /app/scripts/vocal_behavioral_audit/report_labels.py
+COPY scripts/__init__.py /app/scripts/__init__.py
+RUN mkdir -p /app/scripts/vocal_behavioral_audit && \
+    printf '' > /app/scripts/vocal_behavioral_audit/__init__.py && \
+    printf '' > /app/services/__init__.py
+
+ENV PYTHONPATH=/app
+ENV SINGER_ID_RUNTIME=/data
+EXPOSE 8100
+VOLUME ["/data"]
+
+CMD ["uvicorn", "services.singer_identity.api.app:app", "--host", "0.0.0.0", "--port", "8100"]

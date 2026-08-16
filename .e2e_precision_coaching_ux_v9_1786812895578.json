@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "versions": {
+    "qa": true,
+    "report": true
+  },
+  "ui": {
+    "priorityCompact": true,
+    "whyLabel": true,
+    "comparisonDebugOnly": true,
+    "directBrightTitle": true,
+    "noShortCompare": true
+  },
+  "language": {
+    "scrubPitch": true,
+    "scrubPhrase": true,
+    "scrubGlide": true
+  },
+  "live": null,
+  "error": null
+}

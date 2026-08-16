@@ -1,0 +1,14 @@
+{
+  "singer_id": "person_drowning_movie",
+  "enabled": false,
+  "production_feature": "OFF",
+  "implementation": "READY",
+  "multi_singer_gate": "INSUFFICIENT_DATA",
+  "recording_count": 11,
+  "profile_status": "EXPANDED",
+  "strategy": "CENTROID",
+  "k2_production_enabled": false,
+  "global_identification_user_facing": false,
+  "current_user_verification_first": true,
+  "note": "Demo fixture only — not production DB seed"
+}

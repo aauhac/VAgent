@@ -1,0 +1,359 @@
+{
+  "audit_version": "behavioral-audit-remediation-v1",
+  "elapsed_sec": 32.64,
+  "audios": 73,
+  "audios_discovered": 73,
+  "audios_skipped_files": 1817,
+  "analysis_failures": 0,
+  "cache_hits": 73,
+  "fresh_analyses": 0,
+  "analyzed_once": true,
+  "concerns_catalog": 27,
+  "concerns_swept": 27,
+  "missing_concerns": [],
+  "singleton_cases": 1971,
+  "coverage": "27/27",
+  "canonical_mutations": 0,
+  "missing_prescriptions": 0,
+  "generic_collapse_warnings": 0,
+  "collapse_classes": {
+    "EXPECTED_SHARED_PROTOCOL": 2447,
+    "OVER_SHARED_PRESCRIPTION": 0,
+    "WRONG_GENERIC_COLLAPSE": 0
+  },
+  "unsupported_claim_classes": {
+    "FALSE_POSITIVE_LINT": 1018
+  },
+  "true_unsupported_acoustic_claims": 0,
+  "target_overrides_bottleneck": 0,
+  "focus_protocol_mismatches": 0,
+  "focus_practice_mismatches": 0,
+  "safety_violations": 0,
+  "anatomical_claims": 0,
+  "abstract_actions": 0,
+  "english_tokens": 0,
+  "unique_canonical_fingerprints": 54,
+  "suspicious_audio_sameness": false,
+  "identical_fingerprint_groups": [
+    {
+      "fingerprint": "LOW|AMBIGUOUS|UNKNOWN|PARTIAL|CHEST_DOMINANT|STABLE|LOW|LOW",
+      "audio_ids": [
+        "0ea5487c229a",
+        "5662e8094f66"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "LOW|FIRM|LOW|PARTIAL|CHEST_LEANING|STABLE|LOW|LOW",
+      "audio_ids": [
+        "10d07cc48c55",
+        "99023e55f0f5"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "LOW|UNKNOWN|LOW|UNRESOLVED|UNKNOWN|STABLE|UNAVAILABLE|UNAVAILABLE",
+      "audio_ids": [
+        "16b7e83c0418",
+        "a888cb14dd6a"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "UNKNOWN|UNKNOWN|UNKNOWN|UNKNOWN|UNKNOWN|UNKNOWN|UNAVAILABLE|UNAVAILABLE",
+      "audio_ids": [
+        "1a0be83ce9c6",
+        "442202fca595",
+        "8b5617784c9c",
+        "90ac5e34aedd",
+        "9e6b39daf637",
+        "a77ba822cbfe",
+        "c1f4910eafe2",
+        "ca43bc2b048b",
+        "cfc6b206e99b",
+        "d46938baf1fc"
+      ],
+      "count": 10
+    },
+    {
+      "fingerprint": "LOW|FIRM|LOW|DISRUPTED|CHEST_LEANING|STABLE|LOW|LOW",
+      "audio_ids": [
+        "3ced1f723c5e",
+        "a69d81db3e48"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "LOW|FIRM|UNKNOWN|DISRUPTED|CONFLICTED|STABLE|LOW|LOW",
+      "audio_ids": [
+        "6b3aa0d0ddfb",
+        "d399575eeebe"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "LOW|FIRM|LOW|PARTIAL|CHEST_DOMINANT|STABLE|MID|LOW",
+      "audio_ids": [
+        "70479ec67665",
+        "e67deea6f112"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "LOW|FIRM|UNKNOWN|DISRUPTED|CHEST_DOMINANT|STABLE|LOW|LOW",
+      "audio_ids": [
+        "7436d634b9bf",
+        "d03ad168d8d7"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "UNKNOWN|UNKNOWN|UNKNOWN|PARTIAL|UNKNOWN|STABLE|LOW|LOW",
+      "audio_ids": [
+        "7b8c45cdd16b",
+        "c01fc220195f"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "LOW|UNKNOWN|LOW|DISRUPTED|UNKNOWN|REPEATED_IRREGULAR|LOW|LOW",
+      "audio_ids": [
+        "bdb75679732a",
+        "c8d4b24b6f55"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": "LOW|AMBIGUOUS|UNKNOWN|UNRESOLVED|CHEST_LEANING|STABLE|UNAVAILABLE|UNAVAILABLE",
+      "audio_ids": [
+        "ee4a74e09cc1",
+        "f19129f7b4dc"
+      ],
+      "count": 2
+    }
+  ],
+  "axis_distributions": {
+    "effort": {
+      "MODERATE": 5,
+      "LOW": 49,
+      "UNKNOWN": 19
+    },
+    "contact": {
+      "FIRM": 26,
+      "AMBIGUOUS": 9,
+      "UNKNOWN": 31,
+      "MID": 2,
+      "LIGHT": 5
+    },
+    "breathiness": {
+      "LOW": 34,
+      "UNKNOWN": 38,
+      "HIGH": 1
+    },
+    "register_connection": {
+      "PARTIAL": 29,
+      "DISRUPTED": 22,
+      "UNRESOLVED": 11,
+      "UNKNOWN": 10,
+      "CONNECTED": 1
+    },
+    "source_balance": {
+      "BALANCED": 1,
+      "BALANCED_ACOUSTIC": 3,
+      "CHEST_LEANING": 15,
+      "CHEST_DOMINANT": 12,
+      "CONFLICTED": 4,
+      "UNKNOWN": 35,
+      "HEAD_LEANING": 3
+    },
+    "stability": {
+      "STABLE": 57,
+      "UNKNOWN": 11,
+      "REPEATED_IRREGULAR": 4,
+      "INTERMITTENT": 1
+    },
+    "presence": {
+      "MID": 8,
+      "LOW": 39,
+      "UNAVAILABLE": 23,
+      "HIGH": 3
+    },
+    "brightness": {
+      "LOW": 44,
+      "UNAVAILABLE": 23,
+      "HIGH": 2,
+      "MID": 4
+    }
+  },
+  "detector_sensitivity": {
+    "effort": {
+      "distribution": {
+        "MODERATE": 5,
+        "LOW": 49,
+        "UNKNOWN": 19
+      },
+      "available": 54,
+      "total": 73,
+      "available_rate": 0.7397,
+      "unknown_rate": 0.2603,
+      "class_imbalance_warning": true
+    },
+    "breathiness": {
+      "distribution": {
+        "LOW": 34,
+        "UNKNOWN": 38,
+        "HIGH": 1
+      },
+      "available": 35,
+      "total": 73,
+      "available_rate": 0.4795,
+      "unknown_rate": 0.5205,
+      "class_imbalance_warning": true
+    },
+    "brightness": {
+      "distribution": {
+        "LOW": 44,
+        "UNAVAILABLE": 23,
+        "HIGH": 2,
+        "MID": 4
+      },
+      "available": 50,
+      "total": 73,
+      "available_rate": 0.6849,
+      "unknown_rate": 0.3151,
+      "class_imbalance_warning": true
+    },
+    "presence": {
+      "distribution": {
+        "MID": 8,
+        "LOW": 39,
+        "UNAVAILABLE": 23,
+        "HIGH": 3
+      },
+      "available": 50,
+      "total": 73,
+      "available_rate": 0.6849,
+      "unknown_rate": 0.3151,
+      "class_imbalance_warning": true
+    },
+    "human_labeled_validation_recommended": [
+      "EFFORT",
+      "BREATHINESS",
+      "BRIGHTNESS",
+      "PRESENCE"
+    ],
+    "threshold_changed": false
+  },
+  "unique_focuses": 12,
+  "unique_protocols": 12,
+  "unique_prescription_families": 14,
+  "top_repeated_prescriptions": [
+    [
+      "뒤집힘이 덜한 쪽으로, 편안한 중음에서 시작해 립트릴 또는 빨대 발성으로 위쪽 음역까지 작은 강도로 이어보세요. 끊기는 지점에서 더 세게 밀지 말고, 연결되는 범위까지만 반복하세요. (음역을 이어 올리기 3~5회)",
+      73
+    ],
+    [
+      "고음에서 얇아지지 않는 쪽으로, 립트릴로 편안한 중음에서 위쪽 음역까지 작은 강도로 천천히 이어 올리세요. 끊기는 지점에서는 음량을 더 키우지 말고 연결되는 범위까지만 올라가세요.",
+      73
+    ],
+    [
+      "같은 음량에서 자음 시작을 조금 더 분명하게 하고 모음을 오래 눌러 붙이지 않은 채 짧은 구절을 비교해보세요.",
+      73
+    ],
+    [
+      "콧소리처럼 들리지 않는 쪽으로, 콧소리처럼 느껴지는 모음·음절 하나만 골라, 같은 음높이·같은 음량으로 2~3회 짧게 반복하세요. 자음 뒤 모음을 길게 누르지 말고 조금 더 분명하게 시작한 뒤 바로 다음 음으로 연결",
+      73
+    ],
+    [
+      "숨 섞임이 과해지지 않는 쪽으로, 짧은 한 음 유지에서 숨이 먼저 과하게 새지 않는 쪽을 찾아보세요. 숨을 갑자기 막으려 하지 마세요.",
+      73
+    ],
+    [
+      "날카로움이 덜한 쪽으로, 작은~중간 강도에서 짧은 구절을 2~3회 부르세요. 음절 사이를 급하게 끊지 말고 매끄럽게 같은 편안한 강도로 이어주세요. 숨을 일부러 더 섞지 마세요.",
+      73
+    ],
+    [
+      "자연스러운 흔들림이 유지되는 쪽으로, 억지로 크게 만들지 말고, 짧은 지속음에서 자연스러운 흔들림이 생기는지 확인하세요. (3~5회)",
+      73
+    ],
+    [
+      "편한 강도로 짧은 구절을 유지하세요. 처음부터 큰 소리로 연습하지 마세요. (3회)",
+      73
+    ],
+    [
+      "조금 짧은 프레이즈부터 끝까지 같은 편안함을 유지하세요. (3회)",
+      73
+    ],
+    [
+      "지금 궁금한 표현을 기준으로, 답답하게 느껴지는 한 구절을 편한 음량으로 2~3번 부르세요. 자음 시작을 조금 더 분명하게 하고, 모음을 길게 눌러 끌지 말고 다음 음으로 또렷하게 이어주세요.",
+      73
+    ]
+  ],
+  "non_adaptive_warnings": [
+    {
+      "concern_id": "HIGH_NOTE_FLIPS",
+      "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+      "unique_audio_fps": 54,
+      "unique_coaching": 1
+    },
+    {
+      "concern_id": "VIBRATO_UNSTABLE",
+      "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+      "unique_audio_fps": 54,
+      "unique_coaching": 1
+    },
+    {
+      "concern_id": "DYNAMICS_DIFFICULT",
+      "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+      "unique_audio_fps": 54,
+      "unique_coaching": 1
+    },
+    {
+      "concern_id": "PHRASE_END_WEAK",
+      "code": "POSSIBLE_NON_ADAPTIVE_COACHING",
+      "unique_audio_fps": 54,
+      "unique_coaching": 1
+    }
+  ],
+  "voice_too_thin_focus_distribution": {
+    "REGISTER_CONNECTION": 31,
+    "MAINTAIN": 20,
+    "PRESENCE": 21,
+    "CONTACT": 1
+  },
+  "high_note_cannot_reach_distribution": {
+    "REGISTER_CONNECTION": 51,
+    "HIGH_NOTE": 22
+  },
+  "high_note_cannot_reach_reasons": {
+    "REGISTER_EVIDENCE": 51,
+    "GENERAL_HIGH_NOTE_ACCESS": 22
+  },
+  "high_note_evidence_backed_register": 51,
+  "high_note_fallback_register": 0,
+  "targets": [
+    "DENSE_SOLID",
+    "BRIGHT_CLEAR",
+    "SOFT_SWEET",
+    "LIGHT_CLEAR",
+    "WARM_FULL",
+    "AIRY_DELICATE",
+    "INTENSE_DISTINCT",
+    "RECOMMEND_FOR_ME"
+  ],
+  "target_cases": 584,
+  "target_canonical_mutations": 0,
+  "target_overlays_distinct": 26,
+  "safety_singleton_cases": 292,
+  "safety_combination_cases": 365,
+  "pairs_tested": 1053,
+  "triples_tested": 12,
+  "top_failures": [],
+  "top_warnings": [
+    {
+      "code": "LOW_COACHING_DIVERSITY",
+      "count": 4
+    }
+  ],
+  "mode": "full"
+}

@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends libsndfile1 ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY training/singer_identity/requirements.txt /app/training/singer_identity/requirements.txt
+RUN pip install --no-cache-dir -r /app/training/singer_identity/requirements.txt
+
+COPY services/singer_identity /app/services/singer_identity
+COPY training/singer_identity /app/training/singer_identity
+RUN printf '' > /app/services/__init__.py
+
+ENV PYTHONPATH=/app
+# GPU optional — works on CPU for dry-run
+CMD ["python", "-m", "training.singer_identity.train", "--dry-run"]

@@ -106,14 +106,15 @@ PRACTICE_LIBRARY: dict[str, dict[str, Any]] = {
     },
     "PRESENCE_WITHOUT_PUSHING": {
         "practice_id": "PRESENCE_WITHOUT_PUSHING",
-        "title": "밀지 않고 중역 존재감 유지하기",
+        "title": "음량을 키우지 않고 중음 존재감 유지하기",
         "goal": "음량을 키우지 않으면서 중역 존재감 유지",
         "instruction": (
-            "편안한 강도에서 짧은 모음을 유지하며 "
-            "중역 존재감이 사라지지 않게 하세요. 더 크게 밀어 가리지 마세요."
+            "편한 중음에서 짧은 모음을 1~2초 유지하세요. "
+            "음량을 키우지 않고 소리가 중간에 흐려지지 않는 강도를 찾은 뒤, "
+            "같은 강도로 2~3음 연결하세요."
         ),
         "success_cues": ["중역 존재감이 유지됨", "음량을 과하게 키우지 않음"],
-        "avoid": ["얇음을 가리기 위해 과하게 밀기"],
+        "avoid": ["얇음을 가리기 위해 과하게 밀기", "존재감을 유지하세요만 말하기"],
         "safe_for": ["PRESENCE", "TIMBRE"],
         "blocked_when": ["PAIN_LIMITED"],
     },
@@ -162,15 +163,16 @@ PRACTICE_LIBRARY: dict[str, dict[str, Any]] = {
     },
     "STYLE_BRIGHT_CLEAR": {
         "practice_id": "STYLE_BRIGHT_CLEAR",
-        "title": "선명한 표현을 작게 탐색하기",
-        "goal": "힘을 더하지 않고 또렷한 인상을 짧게 비교",
+        "title": "음량 유지하며 더 선명하게 만들기",
+        "goal": "음량을 키우지 않고 발음·모음 표현으로 선명함 만들기",
         "instruction": (
-            "편안한 중음에서 짧은 모음을 작은 강도로 유지하며 "
-            "소리가 앞으로 또렷하게 들리는 표현을 찾아보세요. 음량부터 키우지 마세요."
+            "편한 중음의 짧은 구절에서 음량은 그대로 두고 "
+            "자음 시작을 조금 더 분명하게 하세요. "
+            "모음을 오래 눌러 끌지 말고 다음 음으로 또렷하게 이어주세요. 2~3회만 반복하세요."
         ),
-        "success_cues": ["작은 강도에서도 또렷함이 유지됨", "힘을 급증시키지 않음"],
-        "avoid": ["선명함을 위해 음량부터 키우기"],
-        "safe_for": ["STYLE", "TIMBRE"],
+        "success_cues": ["더 선명하게 느껴짐", "음량·힘 급증 없음"],
+        "avoid": ["선명함을 위해 음량부터 키우기", "소리를 앞으로 보내라는 단독 지시만 하기"],
+        "safe_for": ["STYLE", "TIMBRE", "BRIGHTNESS"],
         "blocked_when": ["PAIN_LIMITED"],
     },
     "STYLE_SOFT_SWEET": {
@@ -246,7 +248,7 @@ FOCUS_TO_PRACTICE: dict[str, str] = {
     "EFFORT": "REDUCE_HIGH_NOTE_EFFORT",
     "STABILITY": "STABILITY_SHORT_HOLD",
     "PRESENCE": "PRESENCE_WITHOUT_PUSHING",
-    "BRIGHTNESS": "PRESENCE_WITHOUT_PUSHING",
+    "BRIGHTNESS": "STYLE_BRIGHT_CLEAR",
     "BREATHINESS": "BREATHINESS_CONTROL",
     "AIRINESS": "BREATHINESS_CONTROL",
     "CONTACT": "MAINTAIN_LOW_EFFORT",

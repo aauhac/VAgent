@@ -1,0 +1,74 @@
+audio_id,sha256,filename,path,quality,segment_count,used_segment_count
+00ae450b11f1,00ae450b11f15f53af9e4ea58c4e52d4bdde098e292c5e6530675c775de0fac1,목잡이.m4a,C:\VocalAgent\목잡이.m4a,GOOD,12,9
+07564b6df5b9,07564b6df5b9862814817adcb31be945298cd3e956eb859d0ae0f7f336b0506f,upload.webm · 07564b6d,C:\VocalAgent\runtime\65c2390ef2324f6088b420f8485e56e5\upload.webm,GOOD,12,10
+0ada85fffc84,0ada85fffc84819f704dff0073483d5bf536f635059c7caafa8129c9759a6307,테스트.m4a,C:\VocalAgent\테스트.m4a,FAIR,4,3
+0ea5487c229a,0ea5487c229a9e74970718c68e391de0bbf0126138ab78f21ef76e4e1e407bea,upload.webm · 0ea5487c,C:\VocalAgent\runtime\diagnostic_sessions\e9039df1e37d44719bf930cf695ead64\tasks\sustain_a\attempt_1\upload.webm,FAIR,4,3
+0f26db696e8e,0f26db696e8e0cb98243f8064176b11bfaeeea2eaf690ea5b4223f4e85967e4d,I'llneverloveagain.m4a,C:\VocalAgent\I'llneverloveagain.m4a,GOOD,12,12
+10d07cc48c55,10d07cc48c5598fbd2497f0391de54c659e0fafdd7133ad7c9678f3c11b93e6f,편안세게.m4a,C:\VocalAgent\편안세게.m4a,GOOD,12,10
+1387ae324719,1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361,거의동117.m4a,C:\VocalAgent\거의동117.m4a,GOOD,12,11
+15f8e161f598,15f8e161f5987f8ea83bccbe92a8ac25ac3260cfdb67bbd40483ae76e527e6a9,Lyrics.mp3,C:\VocalAgent\Lyrics.mp3,GOOD,12,10
+16b7e83c0418,16b7e83c0418de7c937ef132a6a328a2cc832d298d1a8a9085d7d9ab1aa7dfd4,upload.webm · 16b7e83c,C:\VocalAgent\runtime\a26c74cad70447bb900e4a31715c74f3\upload.webm,GOOD,10,9
+1a0be83ce9c6,1a0be83ce9c6c4dbbd0bf38bc106c4aa47fd88c9f599f67fb1c1dbd9c3764ceb,upload.webm · 1a0be83c,C:\VocalAgent\runtime\diagnostic_sessions\e532610cd0cc437189bbd33ed4052a1e\tasks\sustain_a\attempt_1\upload.webm,POOR,1,1
+2c9d61ebb9da,2c9d61ebb9da411d4a3b8592d3fc0f7696b4c40a07a88bded722bfab4c114f11,upload.webm · 2c9d61eb,C:\VocalAgent\runtime\diagnostic_sessions\f973bce50557481fad8ba55a40bcb21c\tasks\sustain_i\attempt_1\upload.webm,FAIR,4,3
+357eeb649bd6,357eeb649bd61551db054e8f4a19daa7315d6cdb402b4d668cd38bf01f3b099a,upload.webm · 357eeb64,C:\VocalAgent\runtime\56d38088aeba4c2a87b4cd8f43b8a1fa\upload.webm,GOOD,12,11
+36a7bd4286b4,36a7bd4286b4ba32a9d24ce246656607bde600e99da10babd2652b5a5dc9d2f1,upload.webm · 36a7bd42,C:\VocalAgent\runtime\6bc317cde50945bb9b282824e3354301\upload.webm,GOOD,9,9
+37db691d1416,37db691d14161b200b6ac892ca88b3a3eb0288d9c9df88fbfb29b9aad730d9c1,upload.webm · 37db691d,C:\VocalAgent\runtime\diagnostic_sessions\46eaac51bdab4d2fa6108ee3e736b757\tasks\sustain_i\attempt_1\upload.webm,FAIR,3,2
+3ced1f723c5e,3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca,거의동116.m4a,C:\VocalAgent\거의동116.m4a,GOOD,12,12
+40fb338380cc,40fb338380ccc7353ba5bf76ba5e135e3b8a2b6d0b4ac20b5976be85a6f948d6,upload.webm · 40fb3383,C:\VocalAgent\runtime\diagnostic_sessions\46eaac51bdab4d2fa6108ee3e736b757\tasks\dynamic_swell\attempt_1\upload.webm,FAIR,3,3
+442202fca595,442202fca595a8762e99074200044f82fe8c17fc8e411b35d5ffb0d60b2b3b6b,upload.wav · 442202fc,C:\VocalAgent\runtime\0e3cb9e466744bf69101def07914fcb7\upload.wav,POOR,1,1
+54b972ad300a,54b972ad300a3466f05c653a20f66b2e247f2ca243cde61dc3e925c627bec230,편하게.m4a,C:\VocalAgent\편하게.m4a,GOOD,12,10
+5662e8094f66,5662e8094f66d3fd27846cd64b216dd557acef7d5817025c677957bea94780f0,upload.webm · 5662e809,C:\VocalAgent\runtime\diagnostic_sessions\e9039df1e37d44719bf930cf695ead64\tasks\high_note_sustain_a\attempt_1\upload.webm,GOOD,4,4
+5e7819c3abb4,5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253,bluemoon.m4a,C:\VocalAgent\bluemoon.m4a,GOOD,12,12
+5fdfa9eb73e5,5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef,drowning.m4a,C:\VocalAgent\drowning.m4a,GOOD,12,9
+6b3aa0d0ddfb,6b3aa0d0ddfb5566666c3d263cd565600414ee03187045dfa90b2079bdd141af,upload.webm · 6b3aa0d0,C:\VocalAgent\runtime\diagnostic_sessions\c84304fcb6b843d2a1e6eb5087134291\tasks\siren\attempt_1\upload.webm,FAIR,3,2
+6fb8c8208c80,6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e,movie.m4a,C:\VocalAgent\movie.m4a,GOOD,12,11
+70479ec67665,70479ec6766578cdb4a3341bb6f3951080ea4e166613794d6bd4b1729e320074,upload.webm · 70479ec6,C:\VocalAgent\runtime\diagnostic_sessions\f973bce50557481fad8ba55a40bcb21c\tasks\high_note_sustain_a\attempt_1\upload.webm,FAIR,4,3
+7436d634b9bf,7436d634b9bf8b805cbac32dac0af598b1eca772878da8ab81162aa00f14b856,upload.webm · 7436d634,C:\VocalAgent\runtime\bdca833fe26d42dda76ffc469ee9b68b\upload.webm,GOOD,11,11
+7abf49d0b4cd,7abf49d0b4cdc7f451370d7cb5805222ad3482bc8842f59edfb13c215214da32,upload.webm · 7abf49d0,C:\VocalAgent\runtime\fce31e25965045ea8778700dad4b31cc\upload.webm,GOOD,12,9
+7b8c45cdd16b,7b8c45cdd16b1f9e08bbf2d6391f364f9bdd303ac58a1f78baa457df76d4f322,upload.wav · 7b8c45cd,C:\VocalAgent\runtime\0cc29f91aee74ab29f02519e3b381df5\upload.wav,FAIR,2,2
+8156c1254947,8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f,요즘 바쁜가봐.m4a,C:\VocalAgent\요즘 바쁜가봐.m4a,GOOD,12,12
+882c5cd5a0c8,882c5cd5a0c867be8d4378ef9f88dca9bb761f7b558cb2fb5b894835a2390ff4,upload.webm · 882c5cd5,C:\VocalAgent\runtime\diagnostic_sessions\46eaac51bdab4d2fa6108ee3e736b757\tasks\sustain_a\attempt_1\upload.webm,FAIR,3,2
+8b5617784c9c,8b5617784c9cc595a52c9f2acc8ed7dbed319892f0378f8edee2772b0ebc3de7,upload.wav · 8b561778,C:\VocalAgent\runtime\336e27a3d2af432aaecb554c46dbcc90\upload.wav,POOR,1,1
+90147c986aae,90147c986aae93ab817b52c80a3422a2b362c9a172ff602b2d301220117951c6,upload.webm · 90147c98,C:\VocalAgent\runtime\7a90a8f1a59b41c6b0f8e7c678b4a9df\upload.webm,FAIR,2,2
+90ac5e34aedd,90ac5e34aedd74908ebf78834d5b35ea34ff6ea843f2e1980fc7ded9d8d836dd,upload.wav · 90ac5e34,C:\VocalAgent\backend\runtime\e0e6361733b34633a1cd095d9d0b020e\upload.wav,POOR,1,1
+95b54db5ba3d,95b54db5ba3d0f7067ee955a5b3e3b160ddbd3ef8112d53a881c3a97c0539ecb,upload.webm · 95b54db5,C:\VocalAgent\runtime\diagnostic_sessions\e9039df1e37d44719bf930cf695ead64\tasks\dynamic_swell\attempt_1\upload.webm,FAIR,3,2
+983379d1fe46,983379d1fe46018a844e384f9f0f5648d23d86003365b570f6dde8d7bf41c0ab,upload.webm · 983379d1,C:\VocalAgent\runtime\diagnostic_sessions\e9039df1e37d44719bf930cf695ead64\tasks\sustain_i\attempt_1\upload.webm,GOOD,4,4
+99023e55f0f5,99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc,호흡많고헤드.m4a,C:\VocalAgent\호흡많고헤드.m4a,GOOD,12,11
+9e6b39daf637,9e6b39daf637fa2dcefa192385350b5123ad8601fae366ff47b58064d25f6816,upload.wav · 9e6b39da,C:\VocalAgent\runtime\4532e16bdda743b99052bda7bb0fa469\upload.wav,FAIR,2,2
+a29f829eedd0,a29f829eedd08ad5d7a33f7d88e4d5f840a362c7ea957039123c3633b653cf0f,upload.webm · a29f829e,C:\VocalAgent\runtime\2321ae4482414bd4ad33796695d1f1ee\upload.webm,GOOD,12,11
+a69d81db3e48,a69d81db3e488bab8eca8b86c932e6e1da0fd20023887c760ecf679ce0b0c511,upload.webm · a69d81db,C:\VocalAgent\runtime\f189a3aec64944648c138fb3af97ff74\upload.webm,GOOD,12,11
+a77ba822cbfe,a77ba822cbfe2f2a9a66e32736b836da899e2e2cc05401f011b69176a6548630,upload.wav · a77ba822,C:\VocalAgent\runtime\00588c90e6f3431b868eb274540a2e48\upload.wav,FAIR,2,2
+a7c957603751,a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181,좋은사람.m4a,C:\VocalAgent\좋은사람.m4a,GOOD,12,11
+a888cb14dd6a,a888cb14dd6a435ef11b9d3e1e350e942563384804df24dbefd77420438e1133,upload.webm · a888cb14,C:\VocalAgent\runtime\7968846c14a24f61954480da44b2a392\upload.webm,GOOD,10,8
+aba38287641d,aba38287641d7a29d9996b2930cee9c7c22dd2d857945af924386f02885b1899,upload.webm · aba38287,C:\VocalAgent\runtime\1183bbb7c8554599badbb4ab69e7ba23\upload.webm,GOOD,12,11
+aef8b974cfb0,aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24,love again.m4a,C:\VocalAgent\love again.m4a,GOOD,12,11
+b4b7ce279c98,b4b7ce279c987d50ed83eeb57137b7345fe9b052dda6094abe2b2b6f5394727b,upload.webm · b4b7ce27,C:\VocalAgent\runtime\c33e338ba1a04e7aa158fcc35215f5c0\upload.webm,GOOD,12,10
+b960707ab2f6,b960707ab2f6bbf6aee62f29c21011654ba410a0b310f452c11dd605cba2fe60,upload.webm · b960707a,C:\VocalAgent\runtime\diagnostic_sessions\c84304fcb6b843d2a1e6eb5087134291\tasks\sustain_a\attempt_1\upload.webm,GOOD,4,4
+b9ff5bf02262,b9ff5bf02262db03fd6a1ec5ae3870ccddf8ad508390584791ac54468cdbfb74,upload.webm · b9ff5bf0,C:\VocalAgent\runtime\diagnostic_sessions\f973bce50557481fad8ba55a40bcb21c\tasks\dynamic_swell\attempt_1\upload.webm,FAIR,3,2
+bdb75679732a,bdb75679732aedec10a78631cb8276b04b487c7cd2b1e5beb57b04cd4c495e78,upload.webm · bdb75679,C:\VocalAgent\runtime\0547c7e124584191b7db3f126479425e\upload.webm,GOOD,12,10
+c01fc220195f,c01fc220195f24668f8242f622fcaed321c4835de32592ae478c8e34c588a3ca,upload.webm · c01fc220,C:\VocalAgent\runtime\diagnostic_sessions\9794b5ceaddf434d9fcec7115a9be1ea\tasks\sustain_a\attempt_1\upload.webm,FAIR,2,2
+c1815547c828,c1815547c828c65d717f8d3fb948b844fe008b643145bb838f2f95fed9f3c9e3,upload.webm · c1815547,C:\VocalAgent\runtime\f82ace5a518a418d8fd71bcaecd271b8\upload.webm,GOOD,11,11
+c1f4910eafe2,c1f4910eafe21e50ed5c64e1d8faf27503427b10760bd55c9762e5a1965abc8e,upload.wav · c1f4910e,C:\VocalAgent\runtime\e7d6b8168bc64bed95f5a7cf2f27c204\upload.wav,POOR,1,1
+c3fca76b89b8,c3fca76b89b8095917a4c8b97e723c95c1723a105e89535722eeb857aae5c5a8,upload.webm · c3fca76b,C:\VocalAgent\runtime\02ca15a9e9a542cf99c19dfd6c9d1fe2\upload.webm,GOOD,12,12
+c5b20be3c802,c5b20be3c8028085b8f60dfe927ddc620fae4b6e1441af3d2c2942be6f9dec33,upload.webm · c5b20be3,C:\VocalAgent\runtime\9dff792efb0e44f59e4dd49882ed4ef2\upload.webm,GOOD,12,12
+c5cd93ed40a3,c5cd93ed40a39506b3acbc69cf882c57d411ef49ba3addc2c4f3e74b2ff1f805,upload.webm · c5cd93ed,C:\VocalAgent\runtime\396250c8f971409e9b54d79d8ac9f2c7\upload.webm,GOOD,11,9
+c8d4b24b6f55,c8d4b24b6f556a80d26c28ee7113aa8805f40a516742bd8a686ed36ec35a4e86,upload.webm · c8d4b24b,C:\VocalAgent\runtime\7e467a88f8c845aa9b8587afd4fc90ee\upload.webm,GOOD,12,9
+ca43bc2b048b,ca43bc2b048bb58da28e465ea1db4b8de28fba1ab83c76d7dde2b8dd27c70535,upload.wav · ca43bc2b,C:\VocalAgent\runtime\b43b58d4cfc544c28d4d809a6ad5c02c\upload.wav,POOR,1,1
+cfc6b206e99b,cfc6b206e99b298a229480f020e61d2b22a791e08a840fdd40ef62d8bd78b155,upload.wav · cfc6b206,C:\VocalAgent\runtime\02cee106dd424fde903d4b72c95d0522\upload.wav,POOR,1,1
+d03ad168d8d7,d03ad168d8d7335e0d42d5c4d570ef28f2d88ad292fe08088fe958f4127e1eeb,upload.webm · d03ad168,C:\VocalAgent\runtime\diagnostic_sessions\46eaac51bdab4d2fa6108ee3e736b757\tasks\siren\attempt_1\upload.webm,FAIR,3,2
+d241c8e7a734,d241c8e7a7346bebe1b5802d5a43a11422aa50635f969c5c8842fb58cb7acb88,기모그.m4a,C:\VocalAgent\기모그.m4a,GOOD,12,11
+d395d6bc40d4,d395d6bc40d49d0f06025972fc451fb251f1a8da04a06ee8b7abe45165e8593b,upload.webm · d395d6bc,C:\VocalAgent\runtime\diagnostic_sessions\c84304fcb6b843d2a1e6eb5087134291\tasks\dynamic_swell\attempt_1\upload.webm,FAIR,2,2
+d399575eeebe,d399575eeebed9ee5739df586f8851dd6f04620a466e634b85e97b81e9541a9d,upload.webm · d399575e,C:\VocalAgent\runtime\diagnostic_sessions\e9039df1e37d44719bf930cf695ead64\tasks\siren\attempt_1\upload.webm,FAIR,3,2
+d46938baf1fc,d46938baf1fc1019581e15818aac59d87cb4b5c18d1e0c88f40d3e815dedc149,upload.wav · d46938ba,C:\VocalAgent\runtime\5f423fdb91574d9b9df7dbeee9b18f0f\upload.wav,POOR,1,1
+d5045bc290a1,d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc,거의동115.m4a,C:\VocalAgent\거의동115.m4a,GOOD,12,12
+d87efe3c048b,d87efe3c048b3a701e13327d22bccf4a2d3d464e5b208b9252482cb702fb032d,upload.webm · d87efe3c,C:\VocalAgent\runtime\diagnostic_sessions\f973bce50557481fad8ba55a40bcb21c\tasks\sustain_a\attempt_1\upload.webm,FAIR,4,3
+e1c87ca2521c,e1c87ca2521c111be9167e088e3dce3a15d6ec95a01420423bcc991f36d002ca,upload.webm · e1c87ca2,C:\VocalAgent\runtime\78510f3622e64f1dbe00be542b3fdaa9\upload.webm,GOOD,11,10
+e67deea6f112,e67deea6f1126c7d63afbe0ff54464384a4e7405a48a5c4f399e5cb44cd425a7,upload.webm · e67deea6,C:\VocalAgent\runtime\8d5a87bf67a04919a8e39245a47de599\upload.webm,GOOD,6,4
+e8314e2d9fd3,e8314e2d9fd3aea07b95ae46ce1b342e1388cb465f048fa47d7954e0f3399e73,upload.webm · e8314e2d,C:\VocalAgent\runtime\diagnostic_sessions\ba62f95fa43f43688d0dcd34aa0b336c\tasks\sustain_a\attempt_1\upload.webm,FAIR,3,2
+e8b8aa373520,e8b8aa37352029f955420e5e5a5d98ba9dcf3a52913aa1630f8a89515c0b55dc,upload.wav · e8b8aa37,C:\VocalAgent\runtime\0cd50917f9ed40d1a9e62a9f5904268f\upload.wav,GOOD,12,10
+ec93548d279f,ec93548d279f509b476fc928b507301e8c6ab030d9084471f5c2d38419234187,옥탑방.m4a,C:\VocalAgent\옥탑방.m4a,GOOD,12,9
+ed401e191813,ed401e191813a304b8ea3194ffed35ed285e33b948375a727a1e30698ca8a78a,upload.webm · ed401e19,C:\VocalAgent\runtime\diagnostic_sessions\f973bce50557481fad8ba55a40bcb21c\tasks\siren\attempt_1\upload.webm,FAIR,4,3
+ee4a74e09cc1,ee4a74e09cc1d3a84c8dd5f05069b2a31884a3f4bf5909010b4c42814462900f,upload.webm · ee4a74e0,C:\VocalAgent\runtime\diagnostic_sessions\c84304fcb6b843d2a1e6eb5087134291\tasks\sustain_i\attempt_1\upload.webm,FAIR,3,3
+f17b7f4ff446,f17b7f4ff446eac9181094b557eeffb1a3bbb7779174569b763646b06eca7e41,upload.webm · f17b7f4f,C:\VocalAgent\runtime\0ff873201e0f4ce8adeb1f176d39cb16\upload.webm,GOOD,12,10
+f19129f7b4dc,f19129f7b4dcc1f99a82aed34988eb263cdec737397d6846d781575f37757671,upload.webm · f19129f7,C:\VocalAgent\runtime\diagnostic_sessions\f973bce50557481fad8ba55a40bcb21c\tasks\dynamic_swell\attempt_2\upload.webm,GOOD,4,4
+fadd83f6eb33,fadd83f6eb3313e95ef6b2600000daf035cbc6aee4b846f479a9c5e882787d16,가없너.m4a,C:\VocalAgent\가없너.m4a,GOOD,12,12

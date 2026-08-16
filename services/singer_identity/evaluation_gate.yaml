@@ -1,0 +1,12 @@
+# Integration gate for future VAgent connection.
+# Thresholds left unset until enough labeled singers exist.
+# Do NOT auto-merge to production even if ELIGIBLE.
+
+min_speakers: 5
+min_recordings_per_speaker: 3
+require_heldout_test: true
+
+# Optional metric floors (apply only when evaluation status == OK)
+# min_top1: 0.70
+# max_eer: 0.20
+# min_unknown_recall: 0.80

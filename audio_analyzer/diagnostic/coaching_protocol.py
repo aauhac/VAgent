@@ -109,69 +109,103 @@ def _target_overlay(target_id: Optional[str]) -> Optional[dict[str, Any]]:
         "BRIGHT_CLEAR": {
             "id": "BRIGHT_CLEAR",
             "label": "밝고 선명하게",
+            "entry_title": "발음으로 선명함 만들기",
             "cue": (
-                "같은 음높이·같은 음량에서 평소 방식과, "
-                "자음 시작·모음 연결을 조금 더 또렷하게 한 방식을 짧게 비교하세요."
+                "편한 중음의 짧은 구절을 고르세요. "
+                "음량은 그대로 두고 자음 시작을 조금 더 분명하게 하세요. "
+                "모음을 오래 눌러 끌지 말고 다음 음으로 또렷하게 이어주세요."
             ),
-            "success_cues": ["더 또렷하게 느껴짐", "음량 증가 없음", "힘 증가 없음"],
+            "success_cues": [
+                "같은 음량에서도 더 또렷하게 들림",
+                "힘이 더 들어가지 않음",
+                "불편감 없음",
+            ],
             "avoid": ["힘을 더 써서 밝게 만들기", "음량을 키워 선명하게 만들기"],
+            "alternate": (
+                "같은 음형을 현재 편하게 선명하게 들리는 모음으로 "
+                "짧게 연습한 뒤 원래 가사로 돌아오세요."
+            ),
+            "song_transfer": "문제 구절에 같은 발음·모음 연결을 적용하세요.",
         },
         "DENSE_SOLID": {
             "id": "DENSE_SOLID",
             "label": "단단하고 밀도 있게",
+            "entry_title": "음량을 키우지 않고 밀도 유지하기",
             "cue": (
-                "음량을 키우지 않고 짧은 구절에서 소리 중심이 흐려지지 않게 유지하는 표현을 비교하세요."
+                "편한 중음에서 한 음을 1~2초 짧게 유지하세요. "
+                "음량을 키우지 않은 채 소리가 중간에 흐려지지 않도록 "
+                "같은 강도로 끝까지 유지하세요."
             ),
-            "success_cues": ["밀도감이 유지됨", "힘 증가 없음"],
+            "success_cues": ["밀도감이 유지됨", "힘이 더 들어가지 않음"],
             "avoid": ["접촉을 무조건 더 단단하게 만들기", "세게 붙여 밀도 만들기"],
+            "alternate": "2~3음 짧은 패턴으로 같은 음량 고정 유지를 옮기세요.",
+            "song_transfer": "유지되는 강도를 짧은 원곡 구절에 적용하세요.",
         },
         "SOFT_SWEET": {
             "id": "SOFT_SWEET",
             "label": "부드럽고 감미롭게",
-            "cue": "작은~중간 강도에서 구절 연결을 조금 더 매끄럽게 유지하는 표현을 비교하세요.",
-            "success_cues": ["거칠게 끊기지 않음", "숨을 일부러 늘리지 않음", "힘 증가 없음"],
+            "entry_title": "짧은 구절을 부드럽게 이어보기",
+            "cue": (
+                "작은~중간 강도에서 짧은 구절을 2~3회 부르세요. "
+                "음절 사이를 급하게 끊지 말고 같은 편안한 강도로 이어주세요. "
+                "숨을 일부러 더 섞지 마세요."
+            ),
+            "success_cues": ["거칠게 끊기지 않음", "숨을 일부러 늘리지 않음", "힘이 더 들어가지 않음"],
             "avoid": ["부드러움을 위해 숨을 과도하게 흘리기"],
+            "alternate": "더 짧은 구절만 골라 같은 강도로 이어보세요.",
+            "song_transfer": "편안한 연결을 원래 가사에 짧게 적용하세요.",
         },
         "LIGHT_CLEAR": {
             "id": "LIGHT_CLEAR",
             "label": "가볍고 맑게",
+            "entry_title": "가볍게 또렷하게 이어보기",
             "cue": (
-                "작은 구절에서 가벼운 표현을 비교하되, "
-                "소리 중심이 사라지지 않는지 확인하세요. 볼륨을 줄이는 것 자체가 목표는 아니에요."
+                "작은 강도의 짧은 구절에서 자음 시작을 조금 더 분명하게 하세요. "
+                "음량을 줄여 존재감을 잃지 않도록, 같은 편안한 강도로 이어주세요."
             ),
-            "success_cues": ["가벼운 느낌이 유지됨", "소리 중심이 사라지지 않음", "힘 증가 없음"],
+            "success_cues": ["가벼운 느낌이 유지됨", "소리가 중간에 사라지지 않음", "힘이 더 들어가지 않음"],
             "avoid": ["볼륨만 줄여 존재감을 잃기"],
+            "alternate": "더 짧은 구절에서만 같은 방식으로 반복하세요.",
+            "song_transfer": "유지되는 표현을 짧은 원곡 구절에 적용하세요.",
         },
         "WARM_FULL": {
             "id": "WARM_FULL",
             "label": "따뜻하고 풍성하게",
+            "entry_title": "음량 없이 중음 밀도 유지하기",
             "cue": (
-                "볼륨·힘을 늘리지 않으면서 짧은 중음 구절에서 "
-                "밀도와 안정성이 유지되는 표현을 비교하세요."
+                "편한 중음에서 한 음을 1~2초 유지한 뒤 "
+                "같은 강도로 2~3음 연결하세요. 풍성함을 위해 세게 밀지 마세요."
             ),
-            "success_cues": ["안정·밀도가 유지됨", "힘·음량 급증 없음"],
+            "success_cues": ["안정·밀도가 유지됨", "힘·음량이 갑자기 커지지 않음"],
             "avoid": ["풍성함을 위해 세게 밀기"],
+            "alternate": "더 짧은 구절에서만 같은 강도를 유지하세요.",
+            "song_transfer": "유지되는 강도를 짧은 원곡 구절에 적용하세요.",
         },
         "AIRY_DELICATE": {
             "id": "AIRY_DELICATE",
             "label": "공기감 있고 여리게",
+            "entry_title": "작은 강도로 섬세하게 이어보기",
             "cue": (
-                "작은 강도에서 섬세한 표현을 비교하되, "
-                "숨이 과도하게 새거나 소리 중심이 사라지면 중단하세요. "
-                "숨을 많이 새게 만들라는 뜻이 아니에요."
+                "작은 강도에서 짧은 구절을 섬세하게 부르세요. "
+                "숨을 많이 새게 만들라는 뜻이 아니며, 소리가 중간에 사라지면 중단하세요."
             ),
-            "success_cues": ["섬세함이 유지됨", "숨이 과하게 새지 않음", "소리 중심 유지"],
+            "success_cues": ["섬세함이 유지됨", "숨이 과하게 새지 않음", "소리가 중간에 사라지지 않음"],
             "avoid": ["숨을 일부러 많이 새게 만들기"],
+            "alternate": "더 짧은 구간만 골라 같은 작은 강도로 반복하세요.",
+            "song_transfer": "유지되는 표현을 짧은 원곡 구절에 적용하세요.",
         },
         "INTENSE_DISTINCT": {
             "id": "INTENSE_DISTINCT",
             "label": "강렬하고 개성 있게",
+            "entry_title": "음량 없이 표현으로 선명도 높이기",
             "cue": (
-                "짧은 구절에서 질감·명료도·존재감 표현을 비교하세요. "
-                "음량을 키우는 것이 곧 강렬함은 아니에요."
+                "짧은 구절에서 음량은 그대로 두고 "
+                "자음 시작과 리듬의 대비를 조금 더 분명하게 해보세요."
             ),
-            "success_cues": ["개성이 더 느껴짐", "힘 증가 없음", "음량 급증 없음"],
+            "success_cues": ["개성이 더 느껴짐", "힘이 더 들어가지 않음", "음량이 갑자기 커지지 않음"],
             "avoid": ["강렬함을 위해 처음부터 세게 밀기"],
+            "alternate": "같은 음량에서 질감만 조금 더 분명한 표현을 짧게 연습하세요.",
+            "song_transfer": "좋아진 표현을 짧은 원곡 구절에 적용하세요.",
         },
     }
     return dict(catalog[tid]) if tid in catalog else None
@@ -192,11 +226,11 @@ def _protocol_register() -> dict[str, Any]:
                 "위쪽 음역까지 작은 강도로 이어보세요. "
                 "끊기는 지점에서 더 세게 밀지 말고, 연결되는 범위까지만 반복하세요."
             ),
-            repetitions="짧은 glide 3~5회",
+            repetitions="음역을 이어 올리기 3~5회",
             success_cues=[
                 "전환 순간 끊김 감소",
-                "갑작스러운 음량 증가 없음",
-                "힘 증가 없음",
+                "갑작스러운 음량이 갑자기 커지지 않음",
+                "힘이 더 들어가지 않음",
                 "불편감 없음",
             ],
             failure_cues=[
@@ -218,7 +252,7 @@ def _protocol_register() -> dict[str, Any]:
                 "같은 음형을 '우' 또는 현재 편하게 이어지는 모음으로 옮겨보세요. "
                 "특정 모음 하나가 모두에게 정답은 아니니, 이어지기 쉬운 쪽을 고르세요."
             ),
-            repetitions="짧은 glide 3~5회",
+            repetitions="음역을 이어 올리기 3~5회",
             success_cues=["SOVT와 비슷한 연결 유지", "힘·음량 급증 없음"],
             failure_cues=["모음으로 바꾸자 끊김 증가", "음량 급증"],
             advance_when=["연결이 SOVT와 비슷하게 유지"],
@@ -232,20 +266,20 @@ def _protocol_register() -> dict[str, Any]:
             "가사 모음만으로 연결하기",
             "문제가 생기는 실제 구절에서 자음을 빼고 모음 중심으로 연결해보세요.",
             repetitions="짧은 구절 3회",
-            success_cues=["모음 연결이 한 흐름으로 이어짐", "힘 증가 없음"],
+            success_cues=["모음 연결이 한 흐름으로 이어짐", "힘이 더 들어가지 않음"],
             failure_cues=["모음만으로도 끊김·뒤집힘"],
             advance_when=["모음 연결 안정"],
             regress_when=["끊김 재발"],
-            next_preview="짧은 실제 가사 phrase",
-            regress_preview="편한 모음 glide로 회귀",
+            next_preview="짧은 실제 가사",
+            regress_preview="편한 모음으로 이어 올리기로 회귀",
         ),
         _step(
             4,
             "REGISTER_SHORT_LYRIC",
             "짧은 실제 가사로 옮기기",
             "같은 구절을 짧은 실제 가사로 불러 보세요. 음량을 먼저 키우지 마세요.",
-            repetitions="짧은 phrase 3회",
-            success_cues=["가사에서도 끊김 감소", "힘 증가 없음"],
+            repetitions="짧은 구절 3회",
+            success_cues=["가사에서도 끊김 감소", "힘이 더 들어가지 않음"],
             failure_cues=["가사로 바꾸자 다시 밀거나 뒤집힘"],
             advance_when=["가사에서도 연결 유지"],
             regress_when=["다시 밀거나 뒤집힘"],
@@ -278,14 +312,14 @@ def _protocol_register() -> dict[str, Any]:
         "song_transfer": _song_transfer(
             (
                 "문제가 생기는 실제 구절에서 "
-                "① 원곡 그대로 → ② 모음만 → ③ 간단한 glide → ④ 다시 실제 가사를 비교하세요."
+                "① 원곡 그대로 → ② 모음만 → ③ 음역을 이어 올리기 → ④ 다시 실제 가사로 돌아오세요."
             ),
             ["원곡에서도 끊김·뒤집힘 감소", "음량·힘 급증 없음"],
             fallback_step=2,
         ),
         "stop_conditions": ["통증", "지속 불편", "밀어서 통과하려는 패턴이 반복됨"],
-        "if_better": "다음 단계(편한 모음 glide)로 진행하세요.",
-        "if_no_difference": "립트릴 ↔ 빨대 발성처럼 SOVT 종류를 바꿔 다시 비교하세요.",
+        "if_better": "다음 단계(편한 모음으로 이어 올리기)로 진행하세요.",
+        "if_no_difference": "립트릴 ↔ 빨대 발성처럼 SOVT 종류를 바꿔 다시 이어보세요.",
         "if_worse": "음역 범위를 줄여 1단계로 돌아가세요.",
     }
 
@@ -298,7 +332,7 @@ def _protocol_stability() -> dict[str, Any]:
             "1~2초 짧은 유지",
             "편안한 음(또는 문제 음)을 1~2초만 짧게 유지한 뒤 쉬세요. 길게 버티지 마세요.",
             repetitions="3~5회",
-            success_cues=["짧은 구간에서 음정·소리 흔들림 감소", "음량 급증 없음", "힘 증가 없음"],
+            success_cues=["짧은 구간에서 음정·소리 흔들림 감소", "음량 급증 없음", "힘이 더 들어가지 않음"],
             failure_cues=["짧게 유지해도 흔들림 큼", "세게 고정하려 함"],
             advance_when=["1~2초 안정"],
             regress_when=["흔들림 지속", "불편"],
@@ -311,7 +345,7 @@ def _protocol_stability() -> dict[str, Any]:
             "2~3초 유지",
             "같은 음을 2~3초로 조금 늘려 유지하세요. 흔들림이 커지면 다시 짧게.",
             repetitions="3~5회",
-            success_cues=["2~3초에서도 흔들림 감소", "힘 증가 없음"],
+            success_cues=["2~3초에서도 흔들림 감소", "힘이 더 들어가지 않음"],
             failure_cues=["길이만 늘리자 흔들림 증가"],
             advance_when=["2~3초 안정"],
             regress_when=["길이 늘리자 흔들림 증가"],
@@ -328,18 +362,18 @@ def _protocol_stability() -> dict[str, Any]:
             failure_cues=["패턴에서 다시 흔들림"],
             advance_when=["패턴 안정"],
             regress_when=["흔들림 재발"],
-            next_preview="짧은 phrase",
+            next_preview="짧은 구절",
             regress_preview="단일 음 유지로 회귀",
         ),
         _step(
             4,
             "STABILITY_SHORT_PHRASE",
-            "짧은 phrase",
+            "짧은 구절",
             "짧은 구절에서 음정·소리가 흔들리지 않게 유지하세요.",
             repetitions="2~3회",
-            success_cues=["phrase에서도 안정", "힘 증가 없음"],
-            failure_cues=["phrase에서 흔들림 증가"],
-            advance_when=["phrase 안정"],
+            success_cues=["구절에서도 안정", "힘이 더 들어가지 않음"],
+            failure_cues=["구절에서 흔들림 증가"],
+            advance_when=["구절 안정"],
             regress_when=["흔들림 증가"],
             next_preview="원곡 적용",
             regress_preview="3음 패턴으로",
@@ -350,7 +384,7 @@ def _protocol_stability() -> dict[str, Any]:
             "원곡 구절",
             "문제가 되는 실제 구절에서 짧게 적용하세요. 길게 버텨 흔들림을 키우지 마세요.",
             repetitions="2~3회",
-            success_cues=["원곡에서도 흔들림 감소", "힘 증가 없음"],
+            success_cues=["원곡에서도 흔들림 감소", "힘이 더 들어가지 않음"],
             failure_cues=["원곡에서 다시 흔들림"],
             advance_when=["원곡 안정"],
             regress_when=["흔들림 재발"],
@@ -410,22 +444,22 @@ def _protocol_high_note_access() -> dict[str, Any]:
             "짧은 pattern",
             "짧은 음형으로 문제 음역 근처까지 접근하세요.",
             repetitions="3회",
-            success_cues=["pattern에서 접근이 편함"],
-            failure_cues=["pattern에서 밀어 통과"],
+            success_cues=["짧은 패턴에서 접근이 편함"],
+            failure_cues=["짧은 패턴에서 밀어 통과"],
             advance_when=["pattern 접근 안정"],
             regress_when=["밀어 통과"],
-            next_preview="짧은 phrase",
+            next_preview="짧은 구절",
             regress_preview="한 음 단계로",
         ),
         _step(
             4,
             "ACCESS_SHORT_PHRASE",
-            "짧은 phrase",
+            "짧은 구절",
             "짧은 구절로 목표 음역에 접근하세요. 처음부터 목표 고음을 크게 반복하지 마세요.",
             repetitions="2~3회",
-            success_cues=["phrase에서 도달이 더 편함", "힘 증가 없음"],
+            success_cues=["구절에서 도달이 더 편함", "힘이 더 들어가지 않음"],
             failure_cues=["크게 반복하려 함"],
-            advance_when=["phrase 접근 편함"],
+            advance_when=["구절 접근 편함"],
             regress_when=["크게 반복"],
             next_preview="실제 고음 구절",
             regress_preview="짧은 pattern으로",
@@ -436,7 +470,7 @@ def _protocol_high_note_access() -> dict[str, Any]:
             "실제 고음 구절",
             "실제 고음 구절을 작은 강도부터 시도하세요.",
             repetitions="2회",
-            success_cues=["도달이 더 편함", "힘 증가 없음"],
+            success_cues=["도달이 더 편함", "힘이 더 들어가지 않음"],
             failure_cues=["세게 밀어 통과"],
             advance_when=["원곡 고음 접근 편함"],
             regress_when=["세게 밀어 통과"],
@@ -451,7 +485,7 @@ def _protocol_high_note_access() -> dict[str, Any]:
         "entry_level": 1,
         "steps": steps,
         "song_transfer": _song_transfer(
-            "실제 고음 구절에서 짧은 pattern → 짧은 phrase → 실제 가사 순으로 옮기세요.",
+            "실제 고음 구절에서 짧은 pattern → 짧은 구절 → 실제 가사 순으로 옮기세요.",
             ["원곡 고음 접근이 더 편함", "힘·음량 급증 없음"],
             fallback_step=2,
         ),
@@ -499,17 +533,17 @@ def _protocol_effort() -> dict[str, Any]:
             "원래 음높이 · 음량 고정",
             "같은 구절을 원래 음높이에서 음량을 늘리지 않고 시도하세요.",
             repetitions="2~3회",
-            success_cues=["같은 pitch에서 밀기 감소", "음량 급증 없음"],
-            failure_cues=["같은 pitch에서 다시 세게 밀기"],
-            advance_when=["같은 pitch에서 밀기 감소"],
+            success_cues=["같은 음높이에서 밀기 감소", "음량 급증 없음"],
+            failure_cues=["같은 음높이에서 다시 세게 밀기"],
+            advance_when=["같은 음높이에서 밀기 감소"],
             regress_when=["다시 세게 밀기"],
-            next_preview="원곡 phrase",
+            next_preview="원곡 구절",
             regress_preview="접근 단계로",
         ),
         _step(
             4,
             "EFFORT_SONG_PHRASE",
-            "원곡 phrase",
+            "원곡 구절",
             "원곡 구절에 적용하세요. 큰 소리 연습이 목표가 아니에요.",
             repetitions="2회",
             success_cues=["원곡에서도 밀기 감소", "불편 없음"],
@@ -527,8 +561,8 @@ def _protocol_effort() -> dict[str, Any]:
         "entry_level": 1,
         "steps": steps,
         "song_transfer": _song_transfer(
-            "원곡 구절에서 쉬운 강도 → 같은 pitch → 실제 phrase 순으로 옮기세요.",
-            ["같은 pitch에서 밀기 감소", "음량 급증 없음", "불편 없음"],
+            "원곡 구절에서 쉬운 강도 → 같은 음높이 → 실제 구절 순으로 옮기세요.",
+            ["같은 음높이에서 밀기 감소", "음량 급증 없음", "불편 없음"],
             fallback_step=1,
         ),
         "stop_conditions": ["통증", "큰 소리로 반복하려는 패턴"],
@@ -547,11 +581,11 @@ def _protocol_presence() -> dict[str, Any]:
             "중음 짧은 모음에서 중심 찾기",
             (
                 "작은 강도로 짧게 소리를 내며, "
-                "음량을 키우지 않아도 소리 중심이 흐려지지 않는 지점을 찾아보세요."
+                "음량을 키우지 않고 소리가 중간에 흐려지지 않는 강도를 찾아보세요."
             ),
             repetitions="3~5회",
-            success_cues=["중역 존재감 유지", "음량 증가 없음", "힘 증가 없음"],
-            failure_cues=["존재감을 위해 세게 밀기", "소리 중심이 사라짐"],
+            success_cues=["중역 존재감 유지", "음량이 갑자기 커지지 않음", "힘이 더 들어가지 않음"],
+            failure_cues=["존재감을 위해 세게 밀기", "소리가 중간에 사라짐"],
             advance_when=["짧은 모음에서 중심 유지"],
             regress_when=["세게 밀기"],
             next_preview="2~3음 pattern",
@@ -561,24 +595,24 @@ def _protocol_presence() -> dict[str, Any]:
             2,
             "PRESENCE_PATTERN",
             "짧은 2~3음 pattern",
-            "짧은 2~3음 pattern에서도 존재감이 흐려지지 않게 유지하세요.",
+            "짧은 2~3음 짧은 패턴에서도 존재감이 흐려지지 않게 유지하세요.",
             repetitions="3회",
-            success_cues=["pattern에서 존재감 유지", "힘 증가 없음"],
-            failure_cues=["pattern에서 밀기"],
+            success_cues=["짧은 패턴에서 존재감 유지", "힘이 더 들어가지 않음"],
+            failure_cues=["짧은 패턴에서 밀기"],
             advance_when=["pattern 존재감 유지"],
             regress_when=["밀기"],
-            next_preview="짧은 phrase",
+            next_preview="짧은 구절",
             regress_preview="짧은 모음으로",
         ),
         _step(
             3,
             "PRESENCE_PHRASE",
-            "짧은 phrase",
-            "짧은 구절에서 밀지 않고 존재감을 유지하세요.",
+            "짧은 구절",
+            "짧은 구절에서 밀지 않고 같은 강도로 끝까지 유지하세요.",
             repetitions="2~3회",
-            success_cues=["phrase에서 존재감 유지"],
-            failure_cues=["phrase에서 세게 밀기"],
-            advance_when=["phrase 존재감 유지"],
+            success_cues=["구절에서 존재감 유지"],
+            failure_cues=["구절에서 세게 밀기"],
+            advance_when=["구절 존재감 유지"],
             regress_when=["세게 밀기"],
             next_preview="실제 가사",
             regress_preview="pattern으로",
@@ -586,10 +620,10 @@ def _protocol_presence() -> dict[str, Any]:
         _step(
             4,
             "PRESENCE_LYRIC",
-            "실제 가사 phrase",
+            "실제 가사",
             "실제 가사 구절에 적용하세요.",
             repetitions="2회",
-            success_cues=["원곡에서도 존재감 유지", "힘 증가 없음"],
+            success_cues=["원곡에서도 존재감 유지", "힘이 더 들어가지 않음"],
             failure_cues=["원곡에서 세게 밀기"],
             advance_when=["원곡 존재감 유지"],
             regress_when=["세게 밀기"],
@@ -600,7 +634,7 @@ def _protocol_presence() -> dict[str, Any]:
     return {
         "protocol_id": "PRESENCE",
         "primary_focus": "PRESENCE",
-        "reason": "세게 밀어 존재감을 만들기보다, 작은 강도에서 소리 중심이 유지되는 지점부터 찾는 것이 우선이에요.",
+        "reason": "세게 밀어 존재감을 만들기보다, 작은 강도에서 소리가 중간에 흐려지지 않는 지점부터 찾는 것이 우선이에요.",
         "entry_level": 1,
         "steps": steps,
         "song_transfer": _song_transfer(
@@ -610,7 +644,7 @@ def _protocol_presence() -> dict[str, Any]:
         ),
         "stop_conditions": ["통증", "존재감을 위해 세게 미는 패턴"],
         "if_better": "짧은 pattern으로 진행하세요.",
-        "if_no_difference": "더 짧은 모음·더 작은 강도로 비교하세요.",
+        "if_no_difference": "더 짧은 모음·더 작은 강도로 다시 이어보세요.",
         "if_worse": "1단계로 돌아가 음량을 고정하세요.",
     }
 
@@ -620,7 +654,7 @@ def _protocol_breathiness() -> dict[str, Any]:
         _step(
             1,
             "BREATH_SHORT_SUSTAIN",
-            "짧은 안정 sustain",
+            "짧은 한 음 유지",
             (
                 "짧은 지속에서 숨이 먼저 과하게 새지 않는 쪽을 찾아보세요. "
                 "숨을 갑자기 막으려 하지 마세요."
@@ -628,7 +662,7 @@ def _protocol_breathiness() -> dict[str, Any]:
             repetitions="3~5회",
             success_cues=["숨 섞임 감소", "힘·접촉 급증 없음", "시작이 과하게 세지 않음"],
             failure_cues=["숨을 갑자기 막아 세게 붙이기"],
-            advance_when=["짧은 sustain에서 숨 섞임 감소"],
+            advance_when=["짧은 한 음 유지에서 숨 섞임 감소"],
             regress_when=["세게 붙이기"],
             next_preview="짧은 모음 pattern",
             regress_preview="더 짧게·더 작은 강도",
@@ -637,27 +671,27 @@ def _protocol_breathiness() -> dict[str, Any]:
             2,
             "BREATH_VOWEL_PATTERN",
             "짧은 모음 pattern",
-            "짧은 모음 pattern에서도 숨이 과하게 새지 않게 유지하세요.",
+            "짧은 모음 짧은 패턴에서도 숨이 과하게 새지 않게 유지하세요.",
             repetitions="3회",
-            success_cues=["pattern에서 숨 섞임 감소", "힘 급증 없음"],
+            success_cues=["짧은 패턴에서 숨 섞임 감소", "힘 급증 없음"],
             failure_cues=["세게 막아 붙이기"],
             advance_when=["pattern 안정"],
             regress_when=["세게 붙이기"],
-            next_preview="phrase",
-            regress_preview="짧은 sustain으로",
+            next_preview="짧은 구절",
+            regress_preview="짧은 한 음 유지로",
         ),
         _step(
             3,
             "BREATH_PHRASE",
-            "짧은 phrase → 원곡",
-            "짧은 phrase와 실제 구절에 적용하세요.",
+            "짧은 구절 → 원곡",
+            "짧은 구절와 실제 구절에 적용하세요.",
             repetitions="2~3회",
-            success_cues=["phrase에서 숨 섞임 감소", "힘 급증 없음"],
+            success_cues=["구절에서 숨 섞임 감소", "힘 급증 없음"],
             failure_cues=["세게 막아 붙이기"],
-            advance_when=["phrase 안정"],
+            advance_when=["구절 안정"],
             regress_when=["세게 붙이기"],
             next_preview="완료",
-            regress_preview="짧은 sustain으로",
+            regress_preview="짧은 한 음 유지로",
         ),
     ]
     return {
@@ -667,13 +701,13 @@ def _protocol_breathiness() -> dict[str, Any]:
         "entry_level": 1,
         "steps": steps,
         "song_transfer": _song_transfer(
-            "실제 구절에서 짧은 sustain → 모음 pattern → 가사 순으로 옮기세요.",
+            "실제 구절에서 짧은 한 음 유지 → 모음 pattern → 가사 순으로 옮기세요.",
             ["숨 섞임 감소", "힘·접촉 급증 없음"],
             fallback_step=1,
         ),
         "stop_conditions": ["통증", "숨을 갑자기 막아 세게 붙이기"],
         "if_better": "짧은 모음 pattern으로 진행하세요.",
-        "if_no_difference": "더 짧은 구간만 골라 비교하세요.",
+        "if_no_difference": "더 짧은 구간만 골라 다시 이어보세요.",
         "if_worse": "1단계로 돌아가 세게 붙이지 마세요.",
     }
 
@@ -686,7 +720,7 @@ def _protocol_dynamics() -> dict[str, Any]:
             "편한 강도 유지",
             "편한 강도로 짧은 구절을 유지하세요. 처음부터 큰 소리로 연습하지 마세요.",
             repetitions="3회",
-            success_cues=["편한 강도에서 pitch·안정 유지"],
+            success_cues=["편한 강도에서 음높이·안정 유지"],
             failure_cues=["처음부터 크게"],
             advance_when=["편한 강도 안정"],
             regress_when=["크게 밀기"],
@@ -699,17 +733,17 @@ def _protocol_dynamics() -> dict[str, Any]:
             "작은 강약만 추가",
             "같은 구절에서 작은 강약 변화만 추가하세요.",
             repetitions="3회",
-            success_cues=["강약 변화 중 pitch·stability·effort 유지"],
+            success_cues=["강약 변화 중 음높이·안정·힘 유지"],
             failure_cues=["강약과 함께 힘 급증"],
             advance_when=["작은 강약에서도 안정"],
             regress_when=["힘 급증"],
-            next_preview="원곡 phrase",
+            next_preview="원곡 구절",
             regress_preview="편한 강도만",
         ),
         _step(
             3,
             "DYN_SONG",
-            "원곡 phrase",
+            "원곡 구절",
             "원곡 구절에 작은 강약만 적용하세요.",
             repetitions="2회",
             success_cues=["원곡에서도 강약 중 안정 유지"],
@@ -727,13 +761,13 @@ def _protocol_dynamics() -> dict[str, Any]:
         "entry_level": 1,
         "steps": steps,
         "song_transfer": _song_transfer(
-            "원곡에서 편한 강도 → 작은 강약 → 실제 phrase 순으로 옮기세요.",
+            "원곡에서 편한 강도 → 작은 강약 → 실제 구절 순으로 옮기세요.",
             ["강약 변화 중 안정 유지", "힘 급증 없음"],
             fallback_step=1,
         ),
         "stop_conditions": ["통증", "큰 소리 반복"],
         "if_better": "작은 강약을 추가하세요.",
-        "if_no_difference": "더 짧은 구절에서만 비교하세요.",
+        "if_no_difference": "더 짧은 구절에서만 다시 이어보세요.",
         "if_worse": "편한 강도 유지로 돌아가세요.",
     }
 
@@ -746,7 +780,7 @@ def _protocol_phrase_end() -> dict[str, Any]:
             "짧은 프레이즈부터",
             "조금 짧은 프레이즈부터 끝까지 같은 편안함을 유지하세요.",
             repetitions="3회",
-            success_cues=["끝음에서 소리 중심이 급격히 약해지지 않음"],
+            success_cues=["끝음에서 소리가 갑자기 약해지지 않음"],
             failure_cues=["긴 문장을 세게 버팀"],
             advance_when=["짧은 프레이즈 끝까지 유지"],
             regress_when=["끝에서 급격히 약해짐"],
@@ -763,13 +797,13 @@ def _protocol_phrase_end() -> dict[str, Any]:
             failure_cues=["늘리자 끝에서 무너짐"],
             advance_when=["길이 늘려도 유지"],
             regress_when=["끝에서 무너짐"],
-            next_preview="원곡 phrase",
+            next_preview="원곡 구절",
             regress_preview="짧은 프레이즈로",
         ),
         _step(
             3,
             "PHRASE_SONG",
-            "원곡 phrase",
+            "원곡 구절",
             "원곡 구절 끝까지 적용하세요.",
             repetitions="2회",
             success_cues=["원곡 끝에서도 중심 유지"],
@@ -804,7 +838,7 @@ def _protocol_vibrato() -> dict[str, Any]:
             1,
             "VIBRATO_SHORT",
             "짧은 지속에서 자연스러운 흔들림",
-            "억지로 크게 만들지 말고, 짧은 지속음에서 자연스러운 흔들림이 생기는지 비교하세요.",
+            "억지로 크게 만들지 말고, 짧은 지속음에서 자연스러운 흔들림이 생기는지 확인하세요.",
             repetitions="3~5회",
             success_cues=["자연스러운 흔들림 유지", "불편 없음"],
             failure_cues=["비브라토를 억지로 크게 만들기"],
@@ -816,12 +850,12 @@ def _protocol_vibrato() -> dict[str, Any]:
         _step(
             2,
             "VIBRATO_PHRASE",
-            "짧은 phrase → 원곡",
-            "짧은 phrase와 실제 구절에 자연스러운 흔들림만 옮기세요.",
+            "짧은 구절 → 원곡",
+            "짧은 구절와 실제 구절에 자연스러운 흔들림만 옮기세요.",
             repetitions="2~3회",
-            success_cues=["phrase에서도 자연스러움", "억지 없음"],
+            success_cues=["구절에서도 자연스러움", "억지 없음"],
             failure_cues=["억지로 크게"],
-            advance_when=["phrase 자연스러움"],
+            advance_when=["구절 자연스러움"],
             regress_when=["억지로 키우기"],
             next_preview="완료",
             regress_preview="짧은 지속으로",
@@ -834,49 +868,55 @@ def _protocol_vibrato() -> dict[str, Any]:
         "entry_level": 1,
         "steps": steps,
         "song_transfer": _song_transfer(
-            "원곡에서 짧은 지속 → phrase 순으로 옮기세요.",
+            "원곡에서 짧은 지속 → 짧은 구절 순으로 옮기세요.",
             ["자연스러운 흔들림 유지", "억지 없음"],
             fallback_step=1,
         ),
         "stop_conditions": ["통증", "억지로 크게 만들기"],
-        "if_better": "짧은 phrase로 옮기세요.",
-        "if_no_difference": "더 짧은 지속만 비교하세요.",
+        "if_better": "짧은 구절로 옮기세요.",
+        "if_no_difference": "더 짧은 지속만 확인하세요.",
         "if_worse": "억지로 키우지 말고 1단계로 돌아가세요.",
     }
 
 
 def _protocol_style(target_id: Optional[str]) -> dict[str, Any]:
     overlay = _target_overlay(target_id) or _target_overlay("SOFT_SWEET") or {}
-    label = str(overlay.get("label") or "원하는 음색")
+    label = str(overlay.get("label") or "목표 음색")
+    title = str(overlay.get("entry_title") or f"{label} 표현 만들기")
     cue = str(overlay.get("cue") or "")
-    success = list(overlay.get("success_cues") or ["원하는 느낌에 가까움", "불편 없음"])
+    success = list(overlay.get("success_cues") or ["원하는 음색 인상에 더 가까움", "불편 없음"])
     avoid = list(overlay.get("avoid") or ["세게 밀기"])
+    alternate = str(overlay.get("alternate") or "더 짧은 구절에서만 같은 방식으로 반복하세요.")
+    transfer = str(
+        overlay.get("song_transfer")
+        or f"문제 구절에 {label} 표현을 짧게 적용하세요."
+    )
     steps = [
         _step(
             1,
-            "STYLE_COMPARE",
-            f"{label} · 짧은 비교",
-            cue or "같은 짧은 구절을 평소 표현과 원하는 느낌에 가깝게 한 번 비교하세요.",
-            repetitions="A/B 각 2~3회",
+            "STYLE_ENTRY",
+            title,
+            cue,
+            repetitions="2~3회",
             success_cues=success,
             failure_cues=avoid,
-            advance_when=["원하는 느낌이 더 가깝고 불편 없음"],
+            advance_when=["표현이 유지되고 불편 없음"],
             regress_when=["힘·음량 급증", "불편"],
-            next_preview="짧은 phrase에 적용",
-            regress_preview="더 짧고 작은 강도로",
+            next_preview="짧은 실제 가사에 적용",
+            regress_preview=alternate,
         ),
         _step(
             2,
             "STYLE_PHRASE",
-            "짧은 phrase에 적용",
-            f"짧은 phrase에서 {label} 표현을 유지하세요. 음량을 먼저 키우지 마세요.",
+            "짧은 실제 가사에 적용",
+            f"짧은 실제 가사에서 {label} 표현을 유지하세요. 음량을 먼저 키우지 마세요.",
             repetitions="2~3회",
             success_cues=success,
             failure_cues=avoid,
-            advance_when=["phrase에서 유지"],
+            advance_when=["짧은 가사에서 유지"],
             regress_when=["힘 급증"],
             next_preview="원곡 적용",
-            regress_preview="짧은 A/B로",
+            regress_preview="1단계로 돌아가기",
         ),
         _step(
             3,
@@ -884,28 +924,27 @@ def _protocol_style(target_id: Optional[str]) -> dict[str, Any]:
             "원곡 구절에 적용",
             f"원곡 구절에서 {label} 표현을 적용하세요.",
             repetitions="2회",
-            success_cues=success + ["원곡에서도 유지"],
+            success_cues=list(dict.fromkeys([*success, "원곡에서도 유지"])),
             failure_cues=avoid,
             advance_when=["원곡에서 유지"],
             regress_when=["힘 급증"],
             next_preview="완료",
-            regress_preview="짧은 비교로",
+            regress_preview="짧은 가사 단계로",
         ),
     ]
     return {
         "protocol_id": "TIMBRE_STYLE",
         "primary_focus": "STYLE",
-        "reason": f"기능적 제한이 강하지 않을 때, {label} 방향을 작은 강도로 짧게 탐색하는 것이 우선이에요.",
+        "reason": (
+            f"기능적 제한이 강하지 않을 때, {label} 방향을 "
+            "음량을 키우지 않고 짧은 구절로 먼저 만드는 것이 우선이에요."
+        ),
         "entry_level": 1,
         "steps": steps,
-        "song_transfer": _song_transfer(
-            f"원곡에서 짧은 비교 → phrase → 실제 가사로 {label} 표현을 옮기세요.",
-            success,
-            fallback_step=1,
-        ),
+        "song_transfer": _song_transfer(transfer, success, fallback_step=1),
         "stop_conditions": ["통증", "음색을 위해 세게 밀기"],
-        "if_better": "짧은 phrase에 적용하세요.",
-        "if_no_difference": "더 짧은 구절·다른 표현 cue로 비교하세요.",
+        "if_better": "짧은 실제 가사에 적용하세요.",
+        "if_no_difference": alternate,
         "if_worse": "1단계로 돌아가 음량을 고정하세요.",
         "target_overlay": overlay,
     }
@@ -916,10 +955,10 @@ def _protocol_maintain() -> dict[str, Any]:
         _step(
             1,
             "MAINTAIN_COMPARE",
-            "현재 편한 패턴 유지하며 짧게 비교",
-            "평소 방식과 조금 작은 강도를 짧게 비교하며, 편한 패턴을 유지하세요.",
+            "현재 편한 패턴 유지하기",
+            "편한 중음의 짧은 구절을 작은 강도로 2~3회 부르며, 지금 편한 패턴을 그대로 유지하세요.",
             repetitions="2~3회",
-            success_cues=["편한 패턴 유지", "힘 증가 없음"],
+            success_cues=["편한 패턴 유지", "힘이 더 들어가지 않음"],
             failure_cues=["원인을 가정하고 세게 바꾸기"],
             advance_when=["편한 패턴 유지"],
             regress_when=["세게 바꾸기"],
@@ -937,23 +976,23 @@ def _protocol_maintain() -> dict[str, Any]:
             advance_when=["원곡 유지"],
             regress_when=["세게 바꾸기"],
             next_preview="완료",
-            regress_preview="짧은 비교로",
+            regress_preview="짧은 구절로",
         ),
     ]
     return {
         "protocol_id": "MAINTAIN",
         "primary_focus": "MAINTAIN",
-        "reason": "뚜렷한 기능 제한이 강하지 않아, 현재 편한 패턴을 유지하며 짧게 비교하는 것이 우선이에요.",
+        "reason": "뚜렷한 기능 제한이 강하지 않아, 현재 편한 패턴을 짧은 구절로 유지하는 것이 우선이에요.",
         "entry_level": 1,
         "steps": steps,
         "song_transfer": _song_transfer(
             "원곡 짧은 구절에서 편한 패턴을 유지하세요.",
-            ["편한 패턴 유지", "힘 증가 없음"],
+            ["편한 패턴 유지", "힘이 더 들어가지 않음"],
             fallback_step=1,
         ),
         "stop_conditions": ["통증"],
         "if_better": "원곡에 유지하세요.",
-        "if_no_difference": "더 짧은 구간만 비교하세요.",
+        "if_no_difference": "더 짧은 구간만 반복하세요.",
         "if_worse": "평소 편한 강도만 유지하세요.",
     }
 
@@ -1058,6 +1097,8 @@ def resolve_protocol_focus(
 
     if focus == "EFFORT" and not effort["reliable_high"]:
         # Do not force effort protocol on unreliable detector
+        if any(c == "VIBRATO_UNSTABLE" for c in concerns):
+            return "VIBRATO_CONTROL"
         if reg == "DISRUPTED":
             return "REGISTER_CONNECTION"
         if any(c in concerns for c in ("HIGH_NOTE_UNSTABLE", "PITCH_UNSTABLE")):
@@ -1066,6 +1107,12 @@ def resolve_protocol_focus(
 
     if focus == "CONTACT":
         return "CONTACT"
+
+    # Coherence lock: reliable HIGH/MODERATE effort never collapses to STYLE-only
+    if effort["reliable_high"] and focus in ("BRIGHTNESS", "TIMBRE", "TEXTURE", "STYLE", "MAINTAIN"):
+        if reg in ("DISRUPTED", "PARTIAL"):
+            return "REGISTER_CONNECTION"
+        return "EFFORT"
 
     if focus in ("BRIGHTNESS", "TIMBRE", "TEXTURE", "STYLE"):
         return "STYLE"
@@ -1078,6 +1125,10 @@ def resolve_protocol_focus(
 
     if focus in FOCUS_PROTOCOLS and FOCUS_PROTOCOLS[focus] is not None:
         return focus
+
+    # Target timbre alone does not override functional evidence
+    if effort["reliable_high"] and target_id:
+        return "EFFORT" if reg not in ("DISRUPTED", "PARTIAL") else "REGISTER_CONNECTION"
 
     if focus in ("BRIGHTNESS", "TIMBRE", "TEXTURE") or target_id:
         return "STYLE"

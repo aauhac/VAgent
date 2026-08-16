@@ -745,11 +745,23 @@ def _resolve_registerish(
     siren_skipped = "siren" in skipped and "siren" not in profiles
     reg = ((contrasts.get("siren_transition") or {}).get("dimensions") or {}).get("register") or {}
     vt = (song_profile.get("vocal_function_profile") or {}).get("vocal_type_profile") or {}
-    song_reg = str((vt.get("register_strategy") or {}).get("status") or "").upper()
-    canon = (vt.get("canonical_register") or {})
-    if not song_reg and canon.get("status"):
-        song_reg = str(canon.get("status") or "").upper()
-    song_unresolved = song_reg in ("", "UNRESOLVED", "UNKNOWN", "INSUFFICIENT")
+    canon = (vt.get("canonical_register") or {}) if isinstance(vt.get("canonical_register"), dict) else {}
+    # Prefer connection semantics (canonical) over source-tendency strategy labels
+    song_reg = str(canon.get("status") or "").upper()
+    raw_strategy = str((vt.get("register_strategy") or {}).get("status") or "").upper()
+    if not song_reg:
+        song_reg = raw_strategy
+    if song_reg in (
+        "CHEST_DOMINANT",
+        "HEAD_DOMINANT",
+        "CHEST_LEANING",
+        "HEAD_LEANING",
+        "BALANCED_ACOUSTIC",
+    ):
+        song_reg = "UNRESOLVED"
+    if song_reg in ("TRANSITION_UNSTABLE", "TRANSITION_EVENTS", "UNSTABLE"):
+        song_reg = "DISRUPTED"
+    song_unresolved = song_reg in ("", "UNRESOLVED", "UNKNOWN", "INSUFFICIENT", "CONFLICTED")
 
     if siren.get("valid") and reg and not siren_skipped:
         st = str(reg.get("status") or "").upper()

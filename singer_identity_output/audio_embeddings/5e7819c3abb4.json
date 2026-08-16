@@ -1,0 +1,14 @@
+{
+  "audio_id": "5e7819c3abb4",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 12,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253",
+  "filename": "bluemoon.m4a",
+  "display_name": "bluemoon.m4a",
+  "path": "C:\\VocalAgent\\bluemoon.m4a"
+}

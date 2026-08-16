@@ -1,0 +1,249 @@
+{
+  "status": "AVAILABLE",
+  "history_count": 10,
+  "baseline_all_history": {
+    "recording_count": 10,
+    "axis_distributions": {
+      "effort": {
+        "LOW": 0.7,
+        "MODERATE": 0.3
+      },
+      "contact": {
+        "FIRM": 0.6,
+        "UNKNOWN": 0.2,
+        "AMBIGUOUS": 0.1,
+        "LIGHT": 0.1
+      },
+      "breathiness": {
+        "UNKNOWN": 0.3,
+        "LOW": 0.7
+      },
+      "register_connection": {
+        "DISRUPTED": 0.7,
+        "PARTIAL": 0.3
+      },
+      "source_balance": {
+        "UNKNOWN": 0.2,
+        "CHEST_LEANING": 0.4,
+        "HEAD_LEANING": 0.2,
+        "CONFLICTED": 0.1,
+        "BALANCED_ACOUSTIC": 0.1
+      },
+      "stability": {
+        "STABLE": 1.0
+      },
+      "brightness": {
+        "HIGH": 0.2,
+        "UNAVAILABLE": 0.2,
+        "LOW": 0.3,
+        "MID": 0.3
+      },
+      "presence": {
+        "HIGH": 0.2,
+        "UNAVAILABLE": 0.2,
+        "LOW": 0.6
+      }
+    },
+    "history_status": "AVAILABLE",
+    "comparability": "COMPARABLE",
+    "window": "ALL_HISTORY",
+    "uses_ecapa_identity_score": false,
+    "categorical_axes_preserved": true,
+    "arbitrary_numeric_scoring": false
+  },
+  "baseline_recent": {
+    "recording_count": 5,
+    "axis_distributions": {
+      "effort": {
+        "LOW": 0.6,
+        "MODERATE": 0.4
+      },
+      "contact": {
+        "FIRM": 0.8,
+        "LIGHT": 0.2
+      },
+      "breathiness": {
+        "LOW": 0.6,
+        "UNKNOWN": 0.4
+      },
+      "register_connection": {
+        "DISRUPTED": 0.6,
+        "PARTIAL": 0.4
+      },
+      "source_balance": {
+        "HEAD_LEANING": 0.4,
+        "CONFLICTED": 0.2,
+        "BALANCED_ACOUSTIC": 0.2,
+        "CHEST_LEANING": 0.2
+      },
+      "stability": {
+        "STABLE": 1.0
+      },
+      "brightness": {
+        "MID": 0.4,
+        "UNAVAILABLE": 0.2,
+        "HIGH": 0.2,
+        "LOW": 0.2
+      },
+      "presence": {
+        "LOW": 0.6,
+        "UNAVAILABLE": 0.2,
+        "HIGH": 0.2
+      }
+    },
+    "history_status": "AVAILABLE",
+    "comparability": "COMPARABLE",
+    "window": "RECENT_5",
+    "uses_ecapa_identity_score": false,
+    "categorical_axes_preserved": true,
+    "arbitrary_numeric_scoring": false
+  },
+  "comparisons": [
+    {
+      "axis": "effort",
+      "current": {
+        "status": "UNKNOWN",
+        "confidence": "low",
+        "reliable": false,
+        "description": "힘 사용 관련 지표를 이번 녹음만으로 단정하기 어려워요.",
+        "display": "확인 부족"
+      },
+      "historical_distribution": {
+        "LOW": 0.6,
+        "MODERATE": 0.4
+      },
+      "historical_modal": "LOW",
+      "change": "CHANGED",
+      "interpretation": "힘 사용 변화 (LOW → {'status': 'UNKNOWN', 'confidence': 'low', 'reliable': False, 'description': '힘 사용 관련 지표를 이번 녹음만으로 단정하기 어려워요.', 'display': '확인 부족'})",
+      "improvement": null
+    },
+    {
+      "axis": "contact",
+      "current": {
+        "status": "UNKNOWN",
+        "confidence": "",
+        "description": "이번 녹음에서 단정하기 어려워요.",
+        "display": "확인 부족"
+      },
+      "historical_distribution": {
+        "FIRM": 0.8,
+        "LIGHT": 0.2
+      },
+      "historical_modal": "FIRM",
+      "change": "CHANGED",
+      "interpretation": "contact 변화 (FIRM → {'status': 'UNKNOWN', 'confidence': '', 'description': '이번 녹음에서 단정하기 어려워요.', 'display': '확인 부족'})",
+      "improvement": null
+    },
+    {
+      "axis": "breathiness",
+      "current": {
+        "status": "LOW",
+        "confidence": "",
+        "description": "숨결이 많이 섞이는 패턴은 두드러지지 않았어요.",
+        "display": "적은 편"
+      },
+      "historical_distribution": {
+        "LOW": 0.6,
+        "UNKNOWN": 0.4
+      },
+      "historical_modal": "LOW",
+      "change": "CHANGED",
+      "interpretation": "breathiness 변화 (LOW → {'status': 'LOW', 'confidence': '', 'description': '숨결이 많이 섞이는 패턴은 두드러지지 않았어요.', 'display': '적은 편'})",
+      "improvement": null
+    },
+    {
+      "axis": "register_connection",
+      "current": {
+        "status": "UNRESOLVED",
+        "confidence": "",
+        "description": "성구 연결을 이번 녹음만으로 단정하기 어려워요.",
+        "display": "연결 판단 부족"
+      },
+      "historical_distribution": {
+        "DISRUPTED": 0.6,
+        "PARTIAL": 0.4
+      },
+      "historical_modal": "DISRUPTED",
+      "change": "CHANGED",
+      "interpretation": "register_connection: DISRUPTED → {'status': 'UNRESOLVED', 'confidence': '', 'description': '성구 연결을 이번 녹음만으로 단정하기 어려워요.', 'display': '연결 판단 부족'}",
+      "improvement": null
+    },
+    {
+      "axis": "source_balance",
+      "current": {
+        "status": "UNKNOWN",
+        "confidence": "",
+        "description": "이번 녹음에서 단정하기 어려워요.",
+        "display": "확인 부족"
+      },
+      "historical_distribution": {
+        "HEAD_LEANING": 0.4,
+        "CONFLICTED": 0.2,
+        "BALANCED_ACOUSTIC": 0.2,
+        "CHEST_LEANING": 0.2
+      },
+      "historical_modal": "HEAD_LEANING",
+      "change": "CHANGED",
+      "interpretation": "소스 밸런스 변화 (HEAD_LEANING → {'status': 'UNKNOWN', 'confidence': '', 'description': '이번 녹음에서 단정하기 어려워요.', 'display': '확인 부족'})",
+      "improvement": null
+    },
+    {
+      "axis": "stability",
+      "current": {
+        "status": "STABLE",
+        "confidence": "",
+        "description": "지속되는 소리의 안정성이 비교적 유지됐어요.",
+        "display": "안정적인 편"
+      },
+      "historical_distribution": {
+        "STABLE": 1.0
+      },
+      "historical_modal": "STABLE",
+      "change": "CHANGED",
+      "interpretation": "stability: STABLE → {'status': 'STABLE', 'confidence': '', 'description': '지속되는 소리의 안정성이 비교적 유지됐어요.', 'display': '안정적인 편'}",
+      "improvement": null
+    },
+    {
+      "axis": "brightness",
+      "current": {
+        "status": "UNAVAILABLE",
+        "confidence": "",
+        "raw": null,
+        "description": "이번 녹음에서 단정하기 어려워요.",
+        "display": "확인 부족"
+      },
+      "historical_distribution": {
+        "MID": 0.4,
+        "UNAVAILABLE": 0.2,
+        "HIGH": 0.2,
+        "LOW": 0.2
+      },
+      "historical_modal": "MID",
+      "change": "CHANGED",
+      "interpretation": "밝기 변화 (MID → {'status': 'UNAVAILABLE', 'confidence': '', 'raw': None, 'description': '이번 녹음에서 단정하기 어려워요.', 'display': '확인 부족'})",
+      "improvement": null
+    },
+    {
+      "axis": "presence",
+      "current": {
+        "status": "UNAVAILABLE",
+        "confidence": "",
+        "raw": null,
+        "description": "이번 녹음에서 단정하기 어려워요.",
+        "display": "확인 부족"
+      },
+      "historical_distribution": {
+        "LOW": 0.6,
+        "UNAVAILABLE": 0.2,
+        "HIGH": 0.2
+      },
+      "historical_modal": "LOW",
+      "change": "CHANGED",
+      "interpretation": "presence 변화 (LOW → {'status': 'UNAVAILABLE', 'confidence': '', 'raw': None, 'description': '이번 녹음에서 단정하기 어려워요.', 'display': '확인 부족'})",
+      "improvement": null
+    }
+  ],
+  "goal_aware": true,
+  "current_excluded_from_baseline": true,
+  "uses_ecapa_as_vocal_quality": false
+}

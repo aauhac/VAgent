@@ -1,0 +1,20 @@
+{
+  "audio_id": "37db691d1416",
+  "segments": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 3.0,
+      "quality": 0.9266666666666666
+    },
+    {
+      "start_sec": 1.5,
+      "end_sec": 4.5,
+      "quality": 0.9226666666666666
+    },
+    {
+      "start_sec": 3.0,
+      "end_sec": 5.16,
+      "quality": 0.4005182711787866
+    }
+  ]
+}

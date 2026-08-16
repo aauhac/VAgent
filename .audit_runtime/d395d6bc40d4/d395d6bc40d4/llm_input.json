@@ -1,0 +1,68 @@
+{
+  "overall_score": 53.2,
+  "score_available": true,
+  "score_label": "다시 녹음해 보면 좋아요",
+  "score_version": "vocal-score-v3.0",
+  "calibration_status": "uncalibrated",
+  "areas": [
+    {
+      "name": "목소리 전달력",
+      "area_id": "projection",
+      "score": 75.0,
+      "confidence": 0.535,
+      "status": "normal"
+    },
+    {
+      "name": "공명 균형",
+      "area_id": "resonance",
+      "score": 54.7,
+      "confidence": 0.504,
+      "status": "needs_work"
+    },
+    {
+      "name": "강약 컨트롤",
+      "area_id": "dynamic_control",
+      "score": 38.0,
+      "confidence": 0.517,
+      "status": "needs_work"
+    }
+  ],
+  "priority_issues": [
+    {
+      "name": "강약 컨트롤",
+      "score": 38.0,
+      "status": "needs_work"
+    },
+    {
+      "name": "공명 균형",
+      "score": 54.7,
+      "status": "needs_work"
+    }
+  ],
+  "strengths": [],
+  "timeline": [],
+  "quality_notes": {
+    "status": "warn",
+    "reasons": [
+      "녹음이 다소 짧음 (4.0s)",
+      "저역 잡음이 다소 높음 (15.1 dB)"
+    ],
+    "user_message": "분석은 가능하지만 녹음 조건이 완벽하지 않아요. 결과는 참고용으로 봐 주세요."
+  },
+  "analysis_notes": [
+    "분석은 가능하지만 녹음 조건이 완벽하지 않아요. 결과는 참고용으로 봐 주세요.",
+    "저역 잡음은 녹음 환경 영향일 수 있어 실력 점수에는 직접 반영하지 않았어요.",
+    "발성 안정성은(는) 이번 녹음에서 신뢰하기 어려워 참고하지 않았어요.",
+    "점수는 아직 보정되지 않은(uncalibrated) 잠정 기준입니다.",
+    "이 서비스는 의료 진단이 아니며, 발성 특성 분석과 연습 참고용입니다.",
+    "발성 안정성 측정 신뢰도 부족 (unknown)"
+  ],
+  "optional_vibrato": {
+    "available": false,
+    "rate_hz": null,
+    "depth_cents": null,
+    "regularity": null,
+    "regions_used": 0,
+    "note": "충분히 긴 지속음에서 규칙적인 비브라토가 측정되지 않았어요. 없어도 문제 없어요."
+  }
+}

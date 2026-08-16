@@ -9,8 +9,8 @@ from __future__ import annotations
 from audio_analyzer.diagnostic.goal_planner import GOAL_VERSION
 from audio_analyzer.diagnostic.coaching_protocol import PROTOCOL_VERSION as COACHING_PROTOCOL_VERSION
 
-QA_GUIDANCE_VERSION = "precision-coaching-generalization-v6"
-REPORT_LOGIC_VERSION = "precision-report-v7"
+QA_GUIDANCE_VERSION = "precision-qa-coaching-ux-v9"
+REPORT_LOGIC_VERSION = "precision-report-v10"
 
 __all__ = [
     "QA_GUIDANCE_VERSION",

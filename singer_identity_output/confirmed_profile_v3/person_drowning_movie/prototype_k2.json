@@ -1,0 +1,26 @@
+{
+  "k": 2,
+  "k_effective": 2,
+  "method": "agglomerative_average_cosine",
+  "degenerate": false,
+  "warnings": [],
+  "members": {
+    "p0": [
+      "6fb8c8208c80",
+      "1387ae324719",
+      "aef8b974cfb0",
+      "ec93548d279f"
+    ],
+    "p1": [
+      "5fdfa9eb73e5",
+      "d5045bc290a1",
+      "3ced1f723c5e",
+      "a7c957603751",
+      "8156c1254947",
+      "5e7819c3abb4",
+      "0f26db696e8e"
+    ]
+  },
+  "note": "EXPERIMENTAL ONLY — not production default",
+  "production_enabled": false
+}

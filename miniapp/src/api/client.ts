@@ -370,3 +370,137 @@ export function saveSongDetailUnlock(analysisId: string) {
 export function loadSongDetailUnlocks(): string[] {
   return JSON.parse(localStorage.getItem('vocalfb_song_details') || '[]');
 }
+
+/** Progress Insight — soft-fail when feature disabled or offline. */
+export async function getVocalProgressInsight(opts?: {
+  recent_n?: number;
+  goal?: string;
+  exclude_analysis_id?: string;
+}): Promise<any | null> {
+  const q = new URLSearchParams();
+  if (opts?.recent_n) q.set('recent_n', String(opts.recent_n));
+  if (opts?.goal) q.set('goal', opts.goal);
+  if (opts?.exclude_analysis_id) q.set('exclude_analysis_id', opts.exclude_analysis_id);
+  const qs = q.toString();
+  try {
+    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/insight${qs ? `?${qs}` : ''}`, {
+      headers: await headers(),
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function postVocalProgressInsight(body: {
+  current_canonical: Record<string, string>;
+  goal?: any;
+  recent_n?: number;
+  exclude_analysis_id?: string;
+  today_highlights?: { axis: string; title: string; label: string }[];
+}): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/insight`, {
+      method: 'POST',
+      headers: await headers({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function postVocalSnapshot(body: {
+  analysis_id?: string;
+  canonical: Record<string, string>;
+  analyzer_version?: string | null;
+  goal?: any;
+  goal_id_at_analysis?: string | null;
+  goal_focus_at_analysis?: string | null;
+}): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/v1/me/vocal-snapshots`, {
+      method: 'POST',
+      headers: await headers({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function getVocalGoals(): Promise<{ active: any; history: any[] } | null> {
+  try {
+    const res = await fetch(`${API_BASE}/v1/me/vocal-goals`, { headers: await headers() });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function putActiveVocalGoal(body: {
+  focus: string;
+  label?: string;
+  source?: string;
+  target?: string | null;
+  style_id?: string | null;
+}): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/v1/me/vocal-goals/active`, {
+      method: 'PUT',
+      headers: await headers({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function getVocalGoalProgress(opts?: {
+  recent_n?: number;
+  exclude_analysis_id?: string;
+}): Promise<any | null> {
+  const q = new URLSearchParams();
+  if (opts?.recent_n) q.set('recent_n', String(opts.recent_n));
+  if (opts?.exclude_analysis_id) q.set('exclude_analysis_id', opts.exclude_analysis_id);
+  const qs = q.toString();
+  try {
+    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/goal${qs ? `?${qs}` : ''}`, {
+      headers: await headers(),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function postVocalGoalProgress(body: {
+  current_canonical: Record<string, string>;
+  historical: { canonical_json?: Record<string, string>; canonical?: Record<string, string>; created_at?: string; goal_id_at_analysis?: string }[];
+  recent_n?: number;
+  goal?: any;
+}): Promise<any | null> {
+  try {
+    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/goal`, {
+      method: 'POST',
+      headers: await headers({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}

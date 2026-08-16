@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from sqlalchemy import (
     Boolean,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -72,6 +73,90 @@ class Analysis(Base):
     audio_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     user: Mapped[User] = relationship(back_populates="analyses")
+
+
+class UserVoiceProfile(Base):
+    """Maps VAgent user → opaque Singer Identity subject (no raw embeddings)."""
+
+    __tablename__ = "user_voice_profiles"
+    __table_args__ = (UniqueConstraint("user_id", name="uq_user_voice_profiles_user"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False, index=True)
+    external_subject: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    singer_id: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="ACTIVE")
+    profile_status: Mapped[str] = mapped_column(String(32), nullable=False, default="INITIAL")
+    recording_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    profile_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    strategy: Mapped[str] = mapped_column(String(32), nullable=False, default="CENTROID")
+    encoder_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    encoder_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    embedding_dim: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    compatibility_state: Mapped[str] = mapped_column(String(32), nullable=False, default="COMPATIBLE")
+    consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class VoiceProfileEnrollment(Base):
+    __tablename__ = "voice_profile_enrollments"
+    __table_args__ = (
+        UniqueConstraint("user_id", "audio_sha256", name="uq_voice_enrollment_user_sha"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False, index=True)
+    singer_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    recording_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    analysis_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    audio_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    consent_source: Mapped[str] = mapped_column(String(64), nullable=False, default="USER_EXPLICIT")
+    consented_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    label_source: Mapped[str] = mapped_column(String(64), nullable=False, default="USER_ENROLLED")
+    model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    profile_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class PersonalVocalSnapshot(Base):
+    """Canonical HOW snapshot — separate from ECAPA WHO profile."""
+
+    __tablename__ = "personal_vocal_snapshots"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False, index=True)
+    singer_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    recording_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    analysis_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    diagnostic_session_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    recorded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    analyzer_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    analysis_quality: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    canonical_json: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
+    goal_json: Mapped[dict | list | None] = mapped_column(JSONType, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class SingerIdentityShadowEvent(Base):
+    """CENTROID production vs K2 shadow — scores/decisions only, no raw embeddings."""
+
+    __tablename__ = "singer_identity_shadow_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False, index=True)
+    singer_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    profile_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    recording_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    analysis_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    centroid_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    centroid_decision: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    k2_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    k2_decision: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    disagreement: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
 
 class DiagnosticSession(Base):

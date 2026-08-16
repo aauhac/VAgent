@@ -1,0 +1,14 @@
+{
+  "audio_id": "a7c957603751",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 11,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181",
+  "filename": "좋은사람.m4a",
+  "display_name": "좋은사람.m4a",
+  "path": "C:\\VocalAgent\\좋은사람.m4a"
+}

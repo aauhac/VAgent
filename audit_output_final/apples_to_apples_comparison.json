@@ -1,0 +1,27 @@
+{
+  "apples_to_apples": true,
+  "claim_classifier": "claim_lint_v1",
+  "collapse_classifier": "generic_collapse_pairs_v_remediation",
+  "baseline_singletons_n": 1944,
+  "claims": {
+    "baseline": {
+      "FALSE_POSITIVE_LINT": 894,
+      "TRUE_POSITIVE": 53
+    },
+    "baseline_true": 53,
+    "baseline_false_lint": 894,
+    "after": {
+      "FALSE_POSITIVE_LINT": 1018
+    },
+    "after_true": 0
+  },
+  "collapse": {
+    "baseline_expected": 9,
+    "baseline_over_shared": 1225,
+    "baseline_wrong": 119,
+    "after_expected": 2447,
+    "after_over_shared": 0,
+    "after_wrong": 0
+  },
+  "note": "Baseline raw UNSUPPORTED count (282) is not comparable; use reclassified TRUE/FALSE_LINT and collapse classes only."
+}

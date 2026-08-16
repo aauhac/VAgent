@@ -1,0 +1,9 @@
+{
+  "singer_id": "person_drowning_movie",
+  "seeds": {
+    "drowning": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef",
+    "movie": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e"
+  },
+  "reviews": {},
+  "note": "Fill via review_queue.html localStorage export. MODEL_CANDIDATE must not expand profile."
+}

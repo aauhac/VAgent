@@ -1,0 +1,6 @@
+{
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "embedding_dim": 192,
+  "preprocessing_version": "vocal_segment_v1"
+}

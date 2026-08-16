@@ -1,0 +1,14 @@
+{
+  "audio_id": "aef8b974cfb0",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 11,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24",
+  "filename": "love again.m4a",
+  "display_name": "love again.m4a",
+  "path": "C:\\VocalAgent\\love again.m4a"
+}

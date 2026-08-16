@@ -1,0 +1,25 @@
+{
+  "audio_id": "ed401e191813",
+  "segments": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 3.0,
+      "quality": 0.9173333333333333
+    },
+    {
+      "start_sec": 1.5,
+      "end_sec": 4.5,
+      "quality": 0.9826666666666667
+    },
+    {
+      "start_sec": 3.0,
+      "end_sec": 6.0,
+      "quality": 0.5479057191029979
+    },
+    {
+      "start_sec": 4.5,
+      "end_sec": 6.18,
+      "quality": 0.2908335739503532
+    }
+  ]
+}

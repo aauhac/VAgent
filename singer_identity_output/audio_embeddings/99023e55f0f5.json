@@ -1,0 +1,14 @@
+{
+  "audio_id": "99023e55f0f5",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 11,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc",
+  "filename": "호흡많고헤드.m4a",
+  "display_name": "호흡많고헤드.m4a",
+  "path": "C:\\VocalAgent\\호흡많고헤드.m4a"
+}

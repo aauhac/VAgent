@@ -172,7 +172,10 @@ GUIDANCE_BY_FOCUS: dict[str, dict[str, Any]] = {
             "뚜렷한 기능적 제한이 없다면 목표 음색을 작은 강도로 "
             "짧은 구절에서 비교 탐색할 수 있어요."
         ),
-        "what_to_change": "우선 짧은 구절에서 원하는 느낌에 가까운 표현을 비교해보세요.",
+        "what_to_change": (
+            "같은 음량에서 자음 시작을 조금 더 분명하게 하고 "
+            "모음을 오래 눌러 붙이지 않은 채 짧은 구절을 비교해보세요."
+        ),
         "short_instruction": "편안한 강도로 짧은 구절을 부르며 과하게 밀지 마세요.",
         "success_cues": ["음색이 갑자기 과하게 바뀌지 않음", "불편감 없음"],
         "avoid": ["음색을 바꾸려고 세게 밀기"],
@@ -259,7 +262,10 @@ def guidance_for_focus(primary_focus: str, *, timbre_goal_id: Optional[str] = No
                 "뚜렷한 기능적 제한이 없다면 목표 음색을 작은 강도로 "
                 "짧은 구절에서 비교 탐색할 수 있어요."
             ),
-            "what_to_change": "우선 짧은 구절에서 원하는 느낌에 가까운 표현을 비교해보세요.",
+            "what_to_change": (
+                "같은 음량에서 자음 시작을 조금 더 분명하게 하고 "
+                "모음을 오래 눌러 붙이지 않은 채 짧은 구절을 비교해보세요."
+            ),
             "short_instruction": str(p.get("instruction") or out.get("short_instruction") or ""),
             "success_cues": list(p.get("success_cues") or out.get("success_cues") or []),
             "avoid": list(p.get("avoid") or out.get("avoid") or []),
@@ -519,6 +525,12 @@ def finalize_actionable_qa(
     timbre_goal: Any = None,
 ) -> dict[str, Any]:
     """Attach QA contract fields. Never mutates canonical snapshot. Never invents diagnosis."""
+    from audio_analyzer.diagnostic.qa_coaching_depth import (
+        apply_qa_depth_contract,
+        is_abstract_only,
+        strip_abstract_actions,
+    )
+
     out = dict(hyp or {})
     snap = snap or {}
     snap_before = copy.deepcopy(snap)
@@ -529,11 +541,16 @@ def finalize_actionable_qa(
     safety = str(out.get("guidance_level") or "") == "SAFETY_ONLY" or focus == "SAFETY"
     guidance_level = str(out.get("guidance_level") or "")
 
+    # v7: question-type depth contract (HOW + protocol reuse)
+    if not safety:
+        out = apply_qa_depth_contract(out, snap, timbre_goal=timbre_goal)
+        focus = str(out.get("primary_focus") or focus)
+        qtype = str(out.get("question_type") or qtype)
+
     observed = observed_facts_from_snapshot(snap)
     evidence_used = list(out.get("evidence_used") or [])
     has_related = bool(evidence_used) or bool(out.get("evidence"))
     if not has_related and observed:
-        # Available canonical facts still count as related evidence for missing-data gating.
         has_related = True
 
     interpretation = fix_korean_suffixes(str(out.get("interpretation") or "").strip())
@@ -547,38 +564,57 @@ def finalize_actionable_qa(
     else:
         g = guidance_for_focus(focus, timbre_goal_id=_goal_id(timbre_goal) if qtype == "DESCRIPTIVE_PROFILE" else None)
 
-    # knowledge_support is INTERNAL reasoning only — never appended to public answer.
     knowledge = str(g.get("knowledge") or "").strip()
-    what = str(g.get("what_to_change") or "").strip()
+    depth = out.get("qa_depth") if isinstance(out.get("qa_depth"), dict) else {}
+    what = str(out.get("what_to_change") or "").strip()
+    if not what or is_abstract_only(what):
+        fallback_what = str(g.get("what_to_change") or "").strip()
+        if fallback_what and not is_abstract_only(fallback_what):
+            what = fallback_what
+        elif depth.get("what_to_change"):
+            what = str(depth["what_to_change"]).strip()
+    what = strip_abstract_actions(what) or what
+    if is_abstract_only(what):
+        what = str(depth.get("what_to_change") or "").strip() or what
     short = str(g.get("short_instruction") or "").strip()
     cues = list(g.get("success_cues") or [])
     avoid = list(g.get("avoid") or [])
     pid = str(g.get("practice_id") or "")
 
-    proto = (
-        comparison_protocol_for(
-            concern_id,
-            snap=snap,
-            primary_focus=focus,
-            timbre_goal=timbre_goal,
-            evidence_used=evidence_used,
-        )
-        if not safety
-        else {}
-    )
-    if proto.get("what_to_change"):
-        what = str(proto["what_to_change"]).strip() or what
-    if proto.get("avoid"):
-        avoid = list(proto.get("avoid") or avoid)
+    force_comparison = bool(depth.get("force_comparison", True))
+    if qtype == "DESCRIPTIVE_PROFILE":
+        force_comparison = bool(depth.get("force_comparison", False))
+
+    proto: dict[str, Any] = {}
+    if not safety:
+        if isinstance(depth.get("comparison"), dict) and (
+            depth["comparison"].get("variant_instruction") or depth["comparison"].get("B")
+        ):
+            proto = dict(depth["comparison"])
+        elif force_comparison:
+            proto = comparison_protocol_for(
+                concern_id,
+                snap=snap,
+                primary_focus=focus,
+                timbre_goal=timbre_goal,
+                evidence_used=evidence_used,
+            )
+        if proto.get("what_to_change"):
+            what = str(proto["what_to_change"]).strip() or what
+        if proto.get("variant_instruction") and (not what or is_abstract_only(what)):
+            what = str(proto.get("variant_instruction") or what)
+        if proto.get("avoid"):
+            avoid = list(proto.get("avoid") or avoid)
 
     answer_mode = ANSWER_MODE_EVIDENCE
     if safety:
         answer_mode = "SAFETY"
+    elif qtype == "DESCRIPTIVE_PROFILE":
+        answer_mode = ANSWER_MODE_EVIDENCE
     elif guidance_level in ("SAFE_GENERAL_GUIDANCE", "GUIDANCE_ONLY", "") and not evidence_used:
         answer_mode = ANSWER_MODE_EXPERIMENT
     elif not evidence_used and focus in ("MAINTAIN", "TIMBRE"):
         answer_mode = ANSWER_MODE_EXPERIMENT
-    # Evidence explanation still carries an explicit comparison for actionability.
 
     if safety:
         knowledge = GUIDANCE_BY_FOCUS["SAFETY"]["knowledge"]
@@ -594,7 +630,7 @@ def finalize_actionable_qa(
             )
     else:
         if not interpretation:
-            if answer_mode == ANSWER_MODE_EXPERIMENT:
+            if answer_mode == ANSWER_MODE_EXPERIMENT and force_comparison:
                 interpretation = _zero_evidence_scope_line(concern_id)
             elif has_related:
                 bits = [f["text"] for f in observed[:4]]
@@ -604,12 +640,7 @@ def finalize_actionable_qa(
                     else _zero_evidence_scope_line(concern_id)
                 )
             else:
-                interpretation = _zero_evidence_scope_line(concern_id)
-        goal_line = ""
-        if qtype == "DESCRIPTIVE_PROFILE":
-            goal_line = timbre_goal_support_line(timbre_goal, snap)
-            if goal_line and goal_line not in interpretation:
-                interpretation = (interpretation.rstrip() + " " + goal_line).strip()
+                interpretation = str(depth.get("interpretation") or _zero_evidence_scope_line(concern_id))
 
     interpretation = fix_korean_suffixes(interpretation)
     if contains_banned_personal_diagnosis(interpretation):
@@ -634,6 +665,9 @@ def finalize_actionable_qa(
         avoid = list(practice.get("avoid") or avoid)
         pid = str(practice.get("practice_id") or pid)
 
+    if depth.get("success_cues"):
+        cues = list(dict.fromkeys([*(depth.get("success_cues") or []), *(cues or [])]))
+
     if not safety and proto.get("success_condition"):
         cues = list(
             dict.fromkeys(
@@ -645,32 +679,39 @@ def finalize_actionable_qa(
             )
         )
 
-    if not safety and proto:
+    if not safety and proto and force_comparison:
         a = proto.get("baseline_instruction") or proto.get("A")
         b = proto.get("variant_instruction") or proto.get("B")
         short = f"① {a} / ② {b} 를 비교해보세요." if a and b else short
+    elif not safety and what and not is_abstract_only(what):
+        short = what
 
     comparison = None
-    if not safety and proto:
-        comparison = {
-            "comparison_family": proto.get("comparison_family"),
-            "baseline_label": proto.get("baseline_label"),
-            "baseline_instruction": proto.get("baseline_instruction") or proto.get("A"),
-            "variant_label": proto.get("variant_label"),
-            "variant_instruction": proto.get("variant_instruction") or proto.get("B"),
-            "success_condition": proto.get("success_condition") or proto.get("success"),
-            "if_better": proto.get("if_better"),
-            "if_not_better": proto.get("if_not_better"),
-            # Compat
-            "A": proto.get("baseline_instruction") or proto.get("A"),
-            "B": proto.get("variant_instruction") or proto.get("B"),
-            "success": proto.get("success_condition") or proto.get("success"),
-            "lead": proto.get("lead"),
-            "is_generic_fallback": bool(proto.get("is_generic_fallback")),
-        }
+    if not safety and proto and (force_comparison or proto.get("optional")):
+        # DESCRIPTIVE: optional target cue may attach comparison; generic forced AB skipped
+        if qtype == "DESCRIPTIVE_PROFILE" and not proto.get("optional") and not force_comparison:
+            comparison = None
+        else:
+            comparison = {
+                "comparison_family": proto.get("comparison_family"),
+                "baseline_label": proto.get("baseline_label"),
+                "baseline_instruction": proto.get("baseline_instruction") or proto.get("A"),
+                "variant_label": proto.get("variant_label"),
+                "variant_instruction": proto.get("variant_instruction") or proto.get("B"),
+                "success_condition": proto.get("success_condition") or proto.get("success"),
+                "if_better": proto.get("if_better"),
+                "if_not_better": proto.get("if_not_better") or depth.get("if_no_change"),
+                "A": proto.get("baseline_instruction") or proto.get("A"),
+                "B": proto.get("variant_instruction") or proto.get("B"),
+                "success": proto.get("success_condition") or proto.get("success"),
+                "lead": proto.get("lead"),
+                "is_generic_fallback": bool(proto.get("is_generic_fallback")),
+                "alternate_cue": proto.get("alternate_cue") or depth.get("if_no_change"),
+                "from_protocol": bool(proto.get("from_protocol")),
+                "optional": bool(proto.get("optional")),
+            }
 
-    working = "" if safety else str(proto.get("working_direction") or "").strip()
-    # Consensus eligibility: evidence-backed OR concern-specific guided experiment (not bare MAINTAIN)
+    working = "" if safety else str(proto.get("working_direction") or depth.get("interpretation") or "").strip()
     consensus_ok = False
     if not safety:
         if evidence_used and focus not in ("", "MAINTAIN", "TIMBRE", "STYLE"):
@@ -687,7 +728,7 @@ def finalize_actionable_qa(
 
     out["observed"] = [f["text"] for f in observed]
     out["interpretation"] = interpretation
-    out["knowledge_support"] = knowledge  # INTERNAL — do not append to public answer
+    out["knowledge_support"] = knowledge
     out["knowledge_support_internal"] = True
     out["what_to_change"] = what
     out["working_direction"] = working
@@ -700,14 +741,32 @@ def finalize_actionable_qa(
     out["knowledge_scope"] = KNOWLEDGE_SCOPE
     out["answer_summary"] = interpretation
     out["answer_mode"] = answer_mode
-    out["response_mode"] = answer_mode  # alias for v5 contract
+    out["response_mode"] = answer_mode
     out["comparison"] = comparison
-    out["comparison_protocol"] = comparison  # backward-compatible alias
+    out["comparison_protocol"] = comparison
     out["counts_for_consensus"] = consensus_ok
+    # Prescription-first: user UI uses prescription; comparison stays for debug/tests
+    presc = out.get("prescription")
+    if not isinstance(presc, dict):
+        presc = depth.get("prescription") if isinstance(depth.get("prescription"), dict) else None
+    if not presc and not safety and what and not is_abstract_only(what):
+        from audio_analyzer.diagnostic.qa_coaching_depth import build_prescription
+
+        presc = build_prescription(
+            instruction=what,
+            alternate=str((comparison or {}).get("if_not_better") or depth.get("if_no_change") or ""),
+            success=cues,
+            repetitions="",
+            song_transfer="",
+            cue=depth.get("target_cue") if isinstance(depth.get("target_cue"), dict) else None,
+            qtype=qtype,
+        )
+    out["prescription"] = presc
+    if out.get("coaching_protocol_ref") is None and depth.get("coaching_protocol_ref"):
+        out["coaching_protocol_ref"] = depth["coaching_protocol_ref"]
     if out.get("scope_note") is None:
         out["scope_note"] = None
 
-    # Guard: general knowledge must not rewrite snapshot
     if snap != snap_before:
         snap.clear()
         snap.update(snap_before)
@@ -725,11 +784,11 @@ def _goal_id(timbre_goal: Any) -> Optional[str]:
 
 
 def public_answer_text(hyp: dict[str, Any]) -> str:
-    """User-facing QA body: working direction text only.
+    """User-facing QA body: analysis / direction only (prescription-first v8).
 
     knowledge_support stays internal.
-    Comparison A/B is exposed via `comparison` for UI (and embedded for API clients).
-    Full practice instructions stay in the global practice section.
+    Comparison A/B is NOT embedded in normal public answer — use `prescription` for UI.
+    Internal `comparison` remains on the object for debug / tests.
     """
     text = fix_korean_suffixes(str(hyp.get("interpretation") or "").strip())
     text = strip_epistemic_disclaimers(text)
@@ -739,26 +798,14 @@ def public_answer_text(hyp: dict[str, Any]) -> str:
     if safety:
         return text
 
-    proto = hyp.get("comparison") or hyp.get("comparison_protocol")
-    if not isinstance(proto, dict) or not (
-        proto.get("baseline_instruction") or proto.get("A")
-    ):
-        proto = comparison_protocol_for(
-            str(hyp.get("concern_id") or ""),
-            primary_focus=str(hyp.get("primary_focus") or ""),
-            evidence_used=list(hyp.get("evidence_used") or []),
-        )
-
-    block = format_comparison_block(proto)
-    # Embed A/B for API / non-UI consumers; UI may also render structured `comparison`
-    if "①" not in text and block:
-        text = f"{text}\n\n{block}".strip() if text else block
-
+    # DESCRIPTIVE: profile (+ optional target cue already in interpretation)
     if qtype == "DESCRIPTIVE_PROFILE":
         if what and what not in text:
             text = (text + " " + what).strip()
-        return text
-    # Use "\n\n→ " — plain "→" also appears in labels like "중음→고음"
-    if what and "\n\n→ " not in text and not text.rstrip().endswith(what):
+        return text.strip()
+
+    # Prescription-first: do not embed 비교해보기 ①/② in public prose.
+    # Keep a short action arrow for API consumers that still scan answer_hint.
+    if what and "\n\n→ " not in text:
         text = f"{text}\n\n→ {what}"
     return text.strip()

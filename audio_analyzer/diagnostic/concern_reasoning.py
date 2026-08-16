@@ -878,6 +878,9 @@ def _reason_controlish(concern_id: str, snap: dict[str, Any], scope: str, sem: d
             evidence = [_evidence_item("register", register, used_for="primary_explanation", scope=scope)]
             break
         if factor == FACTOR_EFFORT and effort in ("HIGH", "MODERATE"):
+            if concern_id == "VIBRATO_UNSTABLE":
+                # Vibrato semantics stay stability-first; elevated effort is secondary context
+                continue
             interpretation = f"{lead} 힘 사용이 큰 구간이 함께 보여, 조절이 더 어렵게 느껴질 수 있어 보여요."
             focus = FACTOR_EFFORT
             guidance = GUIDANCE_SONG_DIRECT
@@ -910,21 +913,58 @@ def _reason_controlish(concern_id: str, snap: dict[str, Any], scope: str, sem: d
                 f"{lead} 비브라토는 억지로 크게 만들기보다 "
                 "짧은 지속음에서 자연스러운 흔들림이 생기는지 비교해보세요."
             )
+            guidance = GUIDANCE_SAFE_GENERAL
+            evidence = []
         elif concern_id == "PHRASE_END_WEAK":
-            focus = FACTOR_DYNAMICS
-            interpretation = (
-                f"{lead} 프레이즈 끝은 긴 문장을 세게 버티기보다 "
-                "짧은 프레이즈부터 끝까지 같은 편안함을 유지해보세요."
-            )
+            breath = str((snap.get("breathiness") or {}).get("level") or "").upper()
+            if stab is False:
+                focus = FACTOR_STABILITY
+                interpretation = (
+                    f"{lead} 끝으로 갈수록 안정이 떨어지는 패턴이 보여요. "
+                    "짧은 구간부터 끝까지 같은 편안함을 유지해보세요."
+                )
+                guidance = GUIDANCE_SONG_DIRECT
+                evidence = [
+                    _evidence_item("stability", "UNSTABLE", used_for="primary_explanation", scope=scope)
+                ]
+            elif breath == "HIGH":
+                focus = FACTOR_BREATHINESS
+                interpretation = (
+                    f"{lead} 끝 구간에서 숨 섞임이 커지면 힘이 빠지는 인상과 관련될 수 있어요. "
+                    "짧게 유지하며 숨이 과하게 새지 않는 쪽을 먼저 확인해보세요."
+                )
+                guidance = GUIDANCE_SONG_DIRECT
+                evidence = [
+                    _evidence_item("breathiness", "HIGH", used_for="primary_explanation", scope=scope)
+                ]
+            else:
+                focus = FACTOR_DYNAMICS
+                interpretation = (
+                    f"{lead} 프레이즈 끝은 긴 문장을 세게 버티기보다 "
+                    "짧은 프레이즈부터 끝까지 같은 편안함을 유지해보세요."
+                )
         elif concern_id == "DYNAMICS_DIFFICULT":
-            focus = FACTOR_DYNAMICS
-            interpretation = (
-                f"{lead} 강약 조절은 편한 강도에서 작은 변화만 추가해 비교하는 쪽이 좋아요."
-            )
+            if effort in ("HIGH", "MODERATE"):
+                focus = FACTOR_EFFORT
+                interpretation = (
+                    f"{lead} 힘 사용이 큰 구간이 있어 강약 조절이 더 어렵게 느껴질 수 있어요. "
+                    "편한 강도를 먼저 고정한 뒤 작은 변화만 추가해보세요."
+                )
+                guidance = GUIDANCE_SONG_DIRECT
+                evidence = [
+                    _evidence_item("effort", effort, used_for="primary_explanation", scope=scope)
+                ]
+            else:
+                focus = FACTOR_DYNAMICS
+                interpretation = (
+                    f"{lead} 강약 조절은 편한 강도에서 작은 변화만 추가해 비교하는 쪽이 좋아요."
+                )
         else:
             focus, interpretation = _fallback_interpretation(category, concern_id)
-        guidance = GUIDANCE_SAFE_GENERAL
-        evidence = []
+        if not guidance:
+            guidance = GUIDANCE_SAFE_GENERAL
+        if evidence is None:
+            evidence = []
 
     return {
         "concern_id": concern_id,
@@ -1001,18 +1041,45 @@ def reason_about_concern(
         # Perceptual with control/timbre mix
         if concern_id == "VOICE_ROUGH":
             stab = _stability(snap)
+            breath = str((snap.get("breathiness") or {}).get("level") or "").upper()
             lead = _scope_label(scope)
             if stab is False:
                 interpretation = f"{lead} 안정성이 떨어지는 구간이 보여 거친 인상과 관련될 가능성이 있어 보여요."
                 focus = FACTOR_STABILITY
                 guidance = GUIDANCE_SONG_DIRECT
-            else:
+                evidence_used = [
+                    _evidence_item("stability", "UNSTABLE", used_for="primary_explanation", scope=scope)
+                ]
+            elif breath == "HIGH":
                 interpretation = (
-                    f"{lead} 짧은 구간에서 안정이 유지되는 범위를 먼저 만든 뒤 "
-                    "조금씩 넓혀보는 쪽이 좋아요."
+                    f"{lead} 숨 섞임이 두드러지는 구간이 있어 "
+                    "거친 인상과 관련될 수 있어요. 짧은 유지에서 숨이 과하게 새지 않는 쪽을 먼저 확인해보세요."
                 )
-                focus = FACTOR_STABILITY
-                guidance = GUIDANCE_SAFE_GENERAL
+                focus = FACTOR_BREATHINESS
+                guidance = GUIDANCE_SONG_DIRECT
+                evidence_used = [
+                    _evidence_item("breathiness", "HIGH", used_for="primary_explanation", scope=scope)
+                ]
+            else:
+                contact = str((snap.get("contact") or {}).get("status") or "").upper()
+                if contact == "FIRM":
+                    interpretation = (
+                        f"{lead} 접촉이 단단한 특성과 함께 거친 인상이 느껴질 수 있어요. "
+                        "세게 밀지 않은 채 짧은 구절에서 표현을 조절해보세요."
+                    )
+                    focus = FACTOR_CONTACT
+                    guidance = GUIDANCE_SONG_COMPOSITE
+                    evidence_used = [
+                        _evidence_item("contact", "FIRM", used_for="primary_explanation", scope=scope)
+                    ]
+                else:
+                    interpretation = (
+                        f"{lead} 짧은 구간에서 안정이 유지되는 범위를 먼저 만든 뒤 "
+                        "조금씩 넓혀보는 쪽이 좋아요."
+                    )
+                    focus = FACTOR_STABILITY
+                    guidance = GUIDANCE_SAFE_GENERAL
+                    evidence_used = []
             out = {
                 "concern_id": concern_id,
                 "question_type": TYPE_PERCEPTUAL,
@@ -1022,11 +1089,7 @@ def reason_about_concern(
                 "supporting_explanations": [],
                 "less_likely_explanations": [],
                 "uncertain_factors": [],
-                "evidence_used": (
-                    [_evidence_item("stability", "UNSTABLE", used_for="primary_explanation", scope=scope)]
-                    if stab is False
-                    else []
-                ),
+                "evidence_used": evidence_used,
                 "interpretation": interpretation,
                 "confidence_label": "medium",
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",

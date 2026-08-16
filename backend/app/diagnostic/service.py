@@ -867,6 +867,7 @@ class DiagnosticSessionService:
             extract_vocal_function_profile,
             wrap_song_profile_with_snapshot,
             snapshot_to_ui_acoustic_axes,
+            get_canonical_snapshot,
         )
 
         vf, vf_path = extract_vocal_function_profile(song_payload)
@@ -967,6 +968,26 @@ class DiagnosticSessionService:
         report["coaching_goal"] = coaching_goal
         if coaching_goal.get("coaching_protocol"):
             report["coaching_protocol"] = coaching_goal["coaching_protocol"]
+        # Debug-only coherence audit (never shown in production UI)
+        try:
+            from audio_analyzer.diagnostic.qa_coaching_depth import audit_report_coherence
+
+            snap_for_audit = song_wrapped.get("canonical_song_evidence") or get_canonical_snapshot(
+                song_wrapped
+            )
+            coherence = audit_report_coherence(snap_for_audit or {}, coaching_goal)
+            report["_debug_canonical_consistency"] = coherence.get("canonical_consistency")
+            report["_debug_coherence_issues"] = coherence.get("issues") or []
+            if coherence.get("issues"):
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    "report coherence issues session=%s issues=%s",
+                    session.get("session_id"),
+                    coherence.get("issues"),
+                )
+        except Exception:
+            pass
         report["personalized_qa"] = personalized
         if coaching_goal.get("practices"):
             report["improvement_priorities"] = coaching_goal["practices"]

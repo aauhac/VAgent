@@ -1,0 +1,12 @@
+{
+  "classifier": "generic_collapse_pairs_v_remediation",
+  "counts": {
+    "OVER_SHARED_PRESCRIPTION": 1225,
+    "EXPECTED_SHARED_PROTOCOL": 9,
+    "WRONG_GENERIC_COLLAPSE": 119
+  },
+  "expected": 9,
+  "over_shared": 1225,
+  "wrong": 119,
+  "pair_count": 1353
+}

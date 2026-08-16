@@ -1,0 +1,219 @@
+{
+  "version": "singer-identity-labels-v1",
+  "note": "SHA-keyed identity labels only. Do not use VAgent effort/contact/register axes as identity features. A/B/C/D controlled samples are the same anonymous singer with different vocal styles (contact_effort_controlled_v1).",
+  "same_singer_groups": {
+    "person_controlled_v1": [
+      "54b972ad300a3466f05c653a20f66b2e247f2ca243cde61dc3e925c627bec230",
+      "00ae450b11f15f53af9e4ea58c4e52d4bdde098e292c5e6530675c775de0fac1",
+      "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc",
+      "10d07cc48c5598fbd2497f0391de54c659e0fafdd7133ad7c9678f3c11b93e6f"
+    ],
+    "person_drowning_movie": [
+      "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef",
+      "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e",
+      "d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc",
+      "3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca",
+      "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361",
+      "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181",
+      "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f",
+      "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253",
+      "0f26db696e8e0cb98243f8064176b11bfaeeea2eaf690ea5b4223f4e85967e4d",
+      "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24",
+      "ec93548d279f509b476fc928b507301e8c6ab030d9084471f5c2d38419234187"
+    ]
+  },
+  "style_tags": {
+    "54b972ad300a3466f05c653a20f66b2e247f2ca243cde61dc3e925c627bec230": "RELAXED",
+    "00ae450b11f15f53af9e4ea58c4e52d4bdde098e292c5e6530675c775de0fac1": "PUSHED",
+    "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc": "HIGH_BREATH_HEAD_LEAN",
+    "10d07cc48c5598fbd2497f0391de54c659e0fafdd7133ad7c9678f3c11b93e6f": "FIRM_LOUD_NOT_EXCESS_EFFORT"
+  },
+  "recordings": {
+    "54b972ad300a3466f05c653a20f66b2e247f2ca243cde61dc3e925c627bec230": {
+      "singer_id": "person_controlled_v1",
+      "display_name": "테스트 가수 (controlled)",
+      "split": "ENROLLMENT",
+      "legacy_style_name": "A"
+    },
+    "00ae450b11f15f53af9e4ea58c4e52d4bdde098e292c5e6530675c775de0fac1": {
+      "singer_id": "person_controlled_v1",
+      "display_name": "테스트 가수 (controlled)",
+      "split": "ENROLLMENT",
+      "legacy_style_name": "B"
+    },
+    "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc": {
+      "singer_id": "person_controlled_v1",
+      "display_name": "테스트 가수 (controlled)",
+      "split": "VALIDATION",
+      "legacy_style_name": "C"
+    },
+    "10d07cc48c5598fbd2497f0391de54c659e0fafdd7133ad7c9678f3c11b93e6f": {
+      "singer_id": "person_controlled_v1",
+      "display_name": "테스트 가수 (controlled)",
+      "split": "TEST",
+      "legacy_style_name": "D"
+    },
+    "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "SEED",
+      "filename": "drowning.m4a",
+      "audio_id": "5fdfa9eb73e5",
+      "confirmed_at": "2026-08-16T12:21:06.085564+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "seed_name": "drowning"
+    },
+    "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "SEED",
+      "filename": "movie.m4a",
+      "audio_id": "6fb8c8208c80",
+      "confirmed_at": "2026-08-16T12:21:06.085579+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "seed_name": "movie"
+    },
+    "d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "거의동115.m4a",
+      "audio_id": "d5045bc290a1",
+      "confirmed_at": "2026-08-16T12:21:06.085583+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "previous_model_status": "HIGH_CANDIDATE"
+    },
+    "3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "거의동116.m4a",
+      "audio_id": "3ced1f723c5e",
+      "confirmed_at": "2026-08-16T12:21:06.085586+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "previous_model_status": "HIGH_CANDIDATE"
+    },
+    "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "거의동117.m4a",
+      "audio_id": "1387ae324719",
+      "confirmed_at": "2026-08-16T12:21:06.085588+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "previous_model_status": "HIGH_CANDIDATE"
+    },
+    "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "좋은사람.m4a",
+      "audio_id": "a7c957603751",
+      "confirmed_at": "2026-08-16T12:21:06.085590+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "previous_model_status": "HIGH_CANDIDATE"
+    },
+    "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "요즘 바쁜가봐.m4a",
+      "audio_id": "8156c1254947",
+      "confirmed_at": "2026-08-16T12:21:06.085592+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "previous_model_status": "HIGH_CANDIDATE"
+    },
+    "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "bluemoon.m4a",
+      "audio_id": "5e7819c3abb4",
+      "confirmed_at": "2026-08-16T12:21:06.085593+00:00",
+      "confirmation_source": "USER_CONFIRMED_PROFILE_V2",
+      "profile_version": 3,
+      "previous_model_status": "HIGH_CANDIDATE"
+    },
+    "0f26db696e8e0cb98243f8064176b11bfaeeea2eaf690ea5b4223f4e85967e4d": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "I'llneverloveagain.m4a",
+      "audio_id": "0f26db696e8e",
+      "confirmed_at": "2026-08-16T12:36:43.843999+00:00",
+      "confirmation_source": "USER",
+      "profile_version": 3,
+      "previous_label_source": "MODEL_CANDIDATE",
+      "previous_model_status": "CONSISTENT_HIGH",
+      "previous_rank": 1,
+      "previous_sim_centroid": 0.8638575077056885,
+      "previous_min_similarity_to_confirmed": 0.6622277498245239,
+      "previous_median_similarity_to_confirmed": 0.7805758118629456,
+      "previous_mean_similarity_to_confirmed": 0.7623850479722023
+    },
+    "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "love again.m4a",
+      "audio_id": "aef8b974cfb0",
+      "confirmed_at": "2026-08-16T12:36:43.844021+00:00",
+      "confirmation_source": "USER",
+      "profile_version": 3,
+      "previous_label_source": "MODEL_CANDIDATE",
+      "previous_model_status": "CONFLICT",
+      "previous_v2_status": "CONFLICT",
+      "previous_rank": 3,
+      "previous_sim_centroid": 0.7591809034347534,
+      "previous_min_similarity_to_confirmed": 0.49501311779022217,
+      "previous_median_similarity_to_confirmed": 0.6653367877006531,
+      "previous_mean_similarity_to_confirmed": 0.670004203915596
+    },
+    "ec93548d279f509b476fc928b507301e8c6ab030d9084471f5c2d38419234187": {
+      "singer_id": "person_drowning_movie",
+      "display_name": "Drowning/Movie Singer",
+      "label_source": "USER_CONFIRMED",
+      "confidence": "CONFIRMED",
+      "role": "CONFIRMED",
+      "filename": "옥탑방.m4a",
+      "audio_id": "ec93548d279f",
+      "confirmed_at": "2026-08-16T12:36:43.844028+00:00",
+      "confirmation_source": "USER",
+      "profile_version": 3,
+      "previous_label_source": "MODEL_CANDIDATE",
+      "previous_model_status": "CONSISTENT_HIGH",
+      "previous_rank": 2,
+      "previous_sim_centroid": 0.7948200702667236,
+      "previous_min_similarity_to_confirmed": 0.616790771484375,
+      "previous_median_similarity_to_confirmed": 0.7010402977466583,
+      "previous_mean_similarity_to_confirmed": 0.7014570534229279
+    }
+  }
+}

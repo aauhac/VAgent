@@ -1,0 +1,11 @@
+{
+  "production_strategy": "CENTROID",
+  "production_score": 0.7645729780197144,
+  "production_decision": "MATCH",
+  "shadow_strategy": "K2",
+  "shadow_score": 0.8115379214286804,
+  "shadow_decision": "MATCH",
+  "disagreement": false,
+  "user_facing_affected": false,
+  "note": "Shadow-only — does not change production decision"
+}

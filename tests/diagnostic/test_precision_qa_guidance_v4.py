@@ -318,7 +318,9 @@ def test_general_knowledge_only_fills_interpretation_or_action():
     assert ks
     assert "이 사용자의 원인" not in ks
     assert ks not in ans
-    assert "①" in ans and "②" in ans
+    assert (ev.get("comparison") or {}).get("A") and (ev.get("comparison") or {}).get("B")
+    assert "비교해보기" not in ans
+    assert ev.get("prescription") or ev.get("what_to_change")
     assert ev.get("knowledge_scope") == "GENERAL_VOCAL_GUIDANCE"
     assert ev.get("what_to_change")
     assert ev.get("success_cues")

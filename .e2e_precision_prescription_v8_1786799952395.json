@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "versions": {
+    "qa": true,
+    "report": true
+  },
+  "prescriptionBlock": true,
+  "comparisonHiddenNormally": true,
+  "live": null,
+  "error": null
+}

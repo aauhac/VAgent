@@ -1,0 +1,101 @@
+[
+  {
+    "step": 1,
+    "filename": "drowning.m4a",
+    "audio_id": "5fdfa9eb73e5",
+    "profile_status": "INITIAL",
+    "profile_version": 1,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 2,
+    "filename": "movie.m4a",
+    "audio_id": "6fb8c8208c80",
+    "profile_status": "DEVELOPING",
+    "profile_version": 2,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 3,
+    "filename": "거의동115.m4a",
+    "audio_id": "d5045bc290a1",
+    "profile_status": "DEVELOPING",
+    "profile_version": 3,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 4,
+    "filename": "거의동116.m4a",
+    "audio_id": "3ced1f723c5e",
+    "profile_status": "DEVELOPING",
+    "profile_version": 4,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 5,
+    "filename": "거의동117.m4a",
+    "audio_id": "1387ae324719",
+    "profile_status": "EXPANDED",
+    "profile_version": 5,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 6,
+    "filename": "좋은사람.m4a",
+    "audio_id": "a7c957603751",
+    "profile_status": "EXPANDED",
+    "profile_version": 6,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 7,
+    "filename": "요즘 바쁜가봐.m4a",
+    "audio_id": "8156c1254947",
+    "profile_status": "EXPANDED",
+    "profile_version": 7,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 8,
+    "filename": "bluemoon.m4a",
+    "audio_id": "5e7819c3abb4",
+    "profile_status": "EXPANDED",
+    "profile_version": 8,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 9,
+    "filename": "I'llneverloveagain.m4a",
+    "audio_id": "0f26db696e8e",
+    "profile_status": "EXPANDED",
+    "profile_version": 9,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 10,
+    "filename": "love again.m4a",
+    "audio_id": "aef8b974cfb0",
+    "profile_status": "EXPANDED",
+    "profile_version": 10,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  },
+  {
+    "step": 11,
+    "filename": "옥탑방.m4a",
+    "audio_id": "ec93548d279f",
+    "profile_status": "EXPANDED",
+    "profile_version": 11,
+    "label_source": "USER_ENROLLED",
+    "strategy": "CENTROID"
+  }
+]

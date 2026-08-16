@@ -1,0 +1,14 @@
+{
+  "audio_id": "6fb8c8208c80",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 11,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e",
+  "filename": "movie.m4a",
+  "display_name": "movie.m4a",
+  "path": "C:\\VocalAgent\\movie.m4a"
+}

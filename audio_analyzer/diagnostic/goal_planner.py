@@ -17,7 +17,7 @@ from audio_analyzer.diagnostic.timbre_goals import (
 )
 from audio_analyzer.diagnostic.coaching_protocol import build_coaching_protocol
 
-GOAL_VERSION = "precision-goal-v1.1"
+GOAL_VERSION = "precision-goal-v1.2"
 
 FOCUS_LABELS = {
     "REGISTER_CONNECTION": "성구 연결",
@@ -29,9 +29,19 @@ FOCUS_LABELS = {
     "CONTACT": "접촉감",
     "TIMBRE": "음색 표현",
     "DYNAMICS": "강약 조절",
-    "STYLE": "음색 표현 탐색",
+    "STYLE": "목표 음색 표현",
     "SAFETY": "안전",
     "MAINTAIN": "현재 패턴 유지",
+}
+
+STYLE_TARGET_LABELS = {
+    "BRIGHT_CLEAR": "밝고 선명한 표현",
+    "DENSE_SOLID": "밀도 있는 표현",
+    "SOFT_SWEET": "부드러운 표현",
+    "LIGHT_CLEAR": "가볍고 맑은 표현",
+    "WARM_FULL": "따뜻하고 풍성한 표현",
+    "AIRY_DELICATE": "섬세한 표현",
+    "INTENSE_DISTINCT": "강렬한 표현",
 }
 
 PRESERVE_LABELS = {
@@ -74,7 +84,7 @@ def _breath(snap: dict[str, Any]) -> str:
 
 def _reg(snap: dict[str, Any]) -> str:
     st = str((snap.get("register") or {}).get("status") or "").upper()
-    if st in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS"):
+    if st in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS", "TRANSITION_UNSTABLE", "BREAK"):
         return "DISRUPTED"
     if st in ("PARTIAL", "INSUFFICIENT", "MIXED"):
         return "PARTIAL"
@@ -368,8 +378,11 @@ def _gap_text(desired: dict[str, Any], snap: dict[str, Any], focus: str) -> str:
             "연결과 소리 존재감을 안정시키는 방향이 좋아요."
         )
     if focus == "STYLE":
-        return f"{lead} 큰 기능적 교정보다, 원하는 느낌을 작은 강도로 짧게 탐색하는 것이 적합해 보여요."
-    return f"{lead} 이 부분을 먼저 다루는 것이 원하는 방향에 가까워지는 데 더 적합해 보여요."
+        return (
+            f"{lead} 큰 기능적 교정보다, "
+            "음량을 키우지 않고 짧은 구절에서 목표 음색을 만드는 것이 적합해 보여요."
+        )
+    return f"{lead} 이 부분을 먼저 다루는 것이 목표 음색에 가까워지는 데 더 적합해 보여요."
 
 
 def _goal_copy(
@@ -396,47 +409,82 @@ def _goal_copy(
         desc = "힘을 더 늘리지 않으면서, 음역이 올라갈 때 소리가 갑자기 얇아지지 않게 이어 보세요."
         return title, desc
     if style:
-        title = f"{keep}원하는 '{label}' 느낌을 작은 강도로 안전하게 탐색하기"
-        desc = (
-            "억지로 발성 구조를 바꾸기보다, 현재 잘 되는 패턴을 유지한 채 "
-            "목표 음색을 표현하는 방식을 짧게 비교해 보세요."
+        tid = str(desired.get("id") or "").upper()
+        style_titles = {
+            "BRIGHT_CLEAR": "음량을 키우지 않고 더 밝고 선명한 소리 만들기",
+            "DENSE_SOLID": "음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기",
+            "SOFT_SWEET": "힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기",
+            "LIGHT_CLEAR": "음량을 키우지 않고 더 가볍고 맑은 소리 만들기",
+            "WARM_FULL": "음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기",
+            "AIRY_DELICATE": "힘을 더 쓰지 않고 더 섬세하게 이어가기",
+            "INTENSE_DISTINCT": "음량을 키우지 않고 표현으로 선명도 높이기",
+        }
+        # Target-specific titles stay short; do not prepend planner-like keep prefix.
+        title = style_titles.get(tid) or f"{label} 소리 만들기"
+        style_descs = {
+            "BRIGHT_CLEAR": (
+                "짧은 구절에서 발음과 모음 연결을 조절해 선명함을 만든 뒤, "
+                "실제 가사에 적용해보세요."
+            ),
+            "DENSE_SOLID": (
+                "편한 중음에서 한 음을 1~2초 짧게 유지한 뒤, "
+                "같은 강도로 짧은 구절에 적용해보세요."
+            ),
+            "SOFT_SWEET": (
+                "작은~중간 강도에서 짧은 구절을 급하게 끊지 말고 "
+                "같은 편안한 강도로 이어보세요."
+            ),
+        }
+        desc = style_descs.get(
+            tid,
+            "짧은 구절에서 목표 음색을 만든 뒤, 실제 가사에 적용해보세요.",
         )
         return title, desc
     if focus == "REGISTER_CONNECTION":
-        title = f"{keep}음역이 바뀔 때 소리 특성이 더 일정하게 이어지도록 하기"
+        title = f"{keep}음역이 올라갈 때 끊기지 않는 연결 만들기"
         if desired.get("type") == "TIMBRE":
             desc = (
-                f"연결을 안정시킨 뒤 '{label}' 느낌을 짧게 탐색하는 것이 좋아요. "
-                "전환 구간에서 끊기지 않는 연결을 작은 강도로 먼저 만드세요."
+                f"연결을 안정시킨 뒤 '{label}' 표현을 짧게 만들어보는 것이 좋아요. "
+                "립트릴·빨대 등으로 작은 강도로 음역을 이어 올리는 연습을 먼저 하세요."
             )
         else:
-            desc = "전환 구간에서 끊기지 않는 연결을 작은 강도로 만드는 것이 이번 우선 목표예요."
+            desc = "편안한 중음에서 위쪽으로 작은 강도로 음역을 이어 올리기 3~5회를 먼저 하세요."
         return title, desc
     if focus == "EFFORT":
         title = "같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기"
         desc = "높은 음이나 강한 구간에 도달하려고 음량부터 키우지 않는 것이 핵심이에요."
         return title, desc
     if focus == "PRESENCE":
-        title = f"{keep}밀지 않으면서 소리 존재감이 흐려지지 않도록 하기"
-        desc = "음량을 키워 가리기보다, 편안한 강도에서 중역 존재감이 유지되는지 확인하세요."
+        title = f"{keep}음량을 키우지 않고 중음에서 소리 존재감 유지하기"
+        desc = (
+            "편한 중음에서 짧은 모음을 1~2초 유지한 뒤 "
+            "같은 강도로 2~3음 연결하세요. 존재감을 위해 음량부터 키우지 마세요."
+        )
+        return title, desc
+    if focus == "BRIGHTNESS":
+        title = f"{keep}음량을 더 키우지 않고 더 밝고 선명한 음색 만들기"
+        desc = (
+            "먼저 짧은 구절의 발음과 모음 표현을 조절해 선명함을 만들고, "
+            "그다음 실제 가사에 적용해보세요."
+        )
         return title, desc
     if focus == "BREATHINESS":
         title = "숨이 먼저 새지 않게, 짧은 구간에서 표현을 유지하기"
         desc = "숨을 더 막거나 더 흘리기보다 짧은 지속에서 섞임이 과해지지 않게 하세요."
         return title, desc
     if focus == "STABILITY":
-        title = f"{keep}짧은 구간에서 흔들림이 커지지 않게 유지하기"
-        desc = "길게 버티기보다 짧은 안정 구간을 만든 뒤 범위를 넓히세요."
+        title = f"{keep}짧은 음부터 흔들림 없이 유지하기"
+        desc = "길게 버티기보다 1~2초 짧은 유지부터 만든 뒤 2~3초·3음 pattern으로 옮기세요."
         return title, desc
     if focus == "MAINTAIN":
         title = f"{keep}{label}"
         desc = (
             "현재 기능적 문제를 억지로 바꾸기보다 "
-            "목표 느낌을 표현하는 방식을 안전하게 탐색하는 것이 우선이에요."
+            "짧은 구절에서 목표 음색을 만드는 것이 우선이에요."
         )
         return title, desc
-    title = f"{keep}원하는 방향에 가까워지도록 지금 가장 관련 있는 패턴부터 확인하기"
-    return title, "현재 분석에서 가장 관련 있어 보이는 제한을 작은 강도로 다루는 것이 우선이에요."
+    title = f"{keep}지금 가장 관련 있는 패턴부터 짧은 구절로 다루기"
+    return title, "작은 강도로 짧은 구간부터 구체 동작을 반복한 뒤 원곡에 적용하세요."
 
 
 def _why_first(focus: str, snap: dict[str, Any], preserve: list[str]) -> str:
@@ -452,13 +500,42 @@ def _why_first(focus: str, snap: dict[str, Any], preserve: list[str]) -> str:
         )
     elif focus == "EFFORT" and _effort(snap) in ("HIGH", "MODERATE"):
         parts.append("힘 사용이 큰 구간이 있어 이 패턴을 먼저 다루는 것이 좋아요.")
-    elif focus == "PRESENCE" and _presence_bucket(snap) == "LOW":
-        parts.append("중역 존재감이 낮은 편이라 소리 중심이 덜 또렷하게 느껴질 수 있어 보여요.")
-    elif focus == "STYLE":
+    elif focus == "BRIGHTNESS" or (
+        focus in ("STYLE", "TIMBRE") and _brightness_bucket(snap) == "LOW"
+    ):
+        if "LOW_EFFORT" in preserve or "LOW_BREATHINESS" in preserve:
+            parts.append("힘을 더 쓰거나 숨을 더 막을 필요는 없어 보여요.")
+        if _presence_bucket(snap) == "HIGH":
+            parts.append(
+                "현재 소리 존재감은 유지되는 편이라, 이를 크게 바꾸기보다 "
+                "발음과 모음 표현으로 선명함을 더하는 것을 먼저 해보는 게 좋아요."
+            )
         parts.append(
-            "뚜렷한 기능적 제한을 억지로 만들기보다, "
-            "목표 음색을 표현하는 방식을 안전하게 탐색하는 것이 우선이에요."
+            "밝기가 어두운 쪽으로 나타났기 때문에 "
+            "음량을 키우기보다 발음·모음 표현으로 선명도를 만드는 것을 먼저 시도하는 게 우선이에요."
         )
+    elif focus == "PRESENCE" and _presence_bucket(snap) == "LOW":
+        parts.append(
+            "중역 존재감이 낮은 편이라 "
+            "음량을 키우기보다 짧은 모음 유지로 존재감을 먼저 다루는 게 우선이에요."
+        )
+    elif focus == "STYLE":
+        pb = _presence_bucket(snap)
+        if "LOW_EFFORT" in preserve or "LOW_BREATHINESS" in preserve:
+            parts.append(
+                "힘을 더 쓰거나 숨을 더 막을 필요는 없어 보여요. "
+                + (
+                    "현재 소리 존재감은 유지되는 편이라, 이를 크게 바꾸기보다 "
+                    if pb == "HIGH"
+                    else ""
+                )
+                + "발음과 모음 표현으로 목표 음색을 만드는 것을 먼저 해보는 게 좋아요."
+            )
+        else:
+            parts.append(
+                "뚜렷한 기능적 제한을 억지로 만들기보다, "
+                "짧은 구절에서 목표 음색을 만드는 것이 우선이에요."
+            )
     elif focus == "SAFETY":
         parts.append("불편감이 있을 때는 연습보다 휴식이 우선이에요.")
     if not parts:
@@ -623,8 +700,12 @@ def plan_coaching_goal(
     primary_ev = _pick_primary_evaluation(evs, concerns)
     functional = _has_functional_limitation(evs, snap)
     convergent = _majority_actionable_focus(evs)
+    effort_elevated = _effort(snap) in ("HIGH", "MODERATE")
     # Strong register disruption overrides aesthetic STYLE exploration
     if _reg(snap) == "DISRUPTED":
+        functional = True
+    # Reliable elevated effort is a functional limitation — never STYLE-only
+    if effort_elevated:
         functional = True
     # 2+ QAs converging on the same bottleneck beats STYLE exploration.
     if convergent:
@@ -640,13 +721,13 @@ def plan_coaching_goal(
         if desired.get("id") == "AIRY_DELICATE" and focus == "BREATHINESS" and _breath(snap) == "HIGH":
             focus = "PRESENCE" if _presence_bucket(snap) == "LOW" else "MAINTAIN"
         if desired.get("id") == "SOFT_SWEET" and focus == "CONTACT" and _contact(snap) == "FIRM":
-            focus = "EFFORT" if _effort(snap) in ("HIGH", "MODERATE") else "PRESENCE"
+            focus = "EFFORT" if effort_elevated else "PRESENCE"
         mode = "GUIDE"
         if str(primary_ev.get("guidance_level")) == "CONTROLLED_CONFIRMED":
             mode = "CORRECT"
         elif str(primary_ev.get("status")) == "PARTIALLY_SUPPORTED":
             mode = "REFINE"
-        if focus == "MAINTAIN" and desired.get("type") == "TIMBRE":
+        if focus == "MAINTAIN" and desired.get("type") == "TIMBRE" and not effort_elevated:
             style = True
             focus = "STYLE"
             mode = "STYLE"
@@ -688,9 +769,77 @@ def plan_coaching_goal(
         focus = "REGISTER_CONNECTION"
         mode = "GUIDE"
 
-    if style:
+    # Functional high-note / register concerns beat target STYLE/TIMBRE (general priority)
+    _FUNCTIONAL_HN = frozenset(
+        {
+            "HIGH_NOTE_FLIPS",
+            "HIGH_NOTE_CANNOT_REACH",
+            "HIGH_NOTE_TOO_EFFORTFUL",
+            "HIGH_NOTE_UNSTABLE",
+            "REGISTER_CONNECTION_DIFFICULT",
+        }
+    )
+    concern_id_set = {str(c.get("id") or "") for c in concerns}
+    if concern_id_set & _FUNCTIONAL_HN and focus in (
+        "STYLE",
+        "TIMBRE",
+        "MAINTAIN",
+        "BRIGHTNESS",
+    ):
+        picked = None
+        for ev in evs:
+            cid = str(ev.get("concern_id") or ev.get("concern") or "")
+            if cid not in _FUNCTIONAL_HN:
+                continue
+            pf = str(ev.get("primary_focus") or "").upper()
+            if pf and pf not in ("STYLE", "TIMBRE", "MAINTAIN", ""):
+                picked = ev
+                break
+        if picked:
+            style = False
+            focus = str(picked.get("primary_focus") or "REGISTER_CONNECTION")
+            primary_ev = picked
+            mode = "GUIDE"
+        elif _reg(snap) in ("DISRUPTED", "PARTIAL"):
+            style = False
+            focus = "REGISTER_CONNECTION"
+            mode = "GUIDE"
+        elif _effort(snap) in ("HIGH", "MODERATE"):
+            style = False
+            focus = "EFFORT"
+            mode = "GUIDE"
+        else:
+            # Still prefer high-note access over aesthetic target when flips/cannot-reach present
+            if concern_id_set & {"HIGH_NOTE_FLIPS", "HIGH_NOTE_CANNOT_REACH", "REGISTER_CONNECTION_DIFFICULT"}:
+                style = False
+                focus = "HIGH_NOTE" if "HIGH_NOTE_CANNOT_REACH" in concern_id_set else "REGISTER_CONNECTION"
+                mode = "GUIDE"
+
+    # Coherence lock: HIGH/MODERATE effort cannot yield STYLE-only / TIMBRE primary
+    if effort_elevated and focus in ("STYLE", "TIMBRE", "MAINTAIN", "BRIGHTNESS"):
+        style = False
+        focus = "EFFORT"
+        mode = "GUIDE"
+
+    # Brightness-dark + BRIGHT_CLEAR: prefer BRIGHTNESS over vague STYLE exploration
+    if (
+        not effort_elevated
+        and _brightness_bucket(snap) == "LOW"
+        and str(desired.get("id") or "").upper() in ("BRIGHT_CLEAR", "LIGHT_CLEAR")
+        and focus in ("STYLE", "TIMBRE", "MAINTAIN", "BRIGHTNESS")
+        and _reg(snap) != "DISRUPTED"
+    ):
+        style = False
+        focus = "BRIGHTNESS"
+        mode = "GUIDE"
+
+    if style and not effort_elevated:
         focus = "STYLE"
         mode = "STYLE"
+    elif style and effort_elevated:
+        style = False
+        focus = "EFFORT"
+        mode = "GUIDE"
 
     title, desc = _goal_copy(
         desired, focus, snap, style=style, safety=False, concerns=concerns
@@ -702,11 +851,20 @@ def plan_coaching_goal(
         pid = _style_practice_id(str(desired.get("id") or "SOFT_SWEET"))
         practice = practice_for_focus(pid, category="timbre") or practice_for_focus("STYLE")
         pids = [pid]
+    elif focus == "BRIGHTNESS":
+        # Focus/practice coherence: BRIGHTNESS must not emit PRESENCE practice
+        tid = str(desired.get("id") or "BRIGHT_CLEAR")
+        pid = _style_practice_id(tid if tid else "BRIGHT_CLEAR")
+        if "BRIGHT" not in pid and "CLEAR" not in pid and "LIGHT" not in pid:
+            pid = "STYLE_BRIGHT_CLEAR"
+        practice = practice_for_focus(pid, category="timbre") or practice_for_focus("BRIGHTNESS")
+        pids = [pid if practice else "STYLE_BRIGHT_CLEAR"]
     else:
         cat = str(semantics_for(str((primary_ev or {}).get("concern_id") or "")).get("category") or "")
         practice = practice_for_focus(focus, category=cat)
         pids = [practice.get("practice_id")] if practice else []
-        if not practice and desired.get("type") == "TIMBRE":
+        # Never fall back to STYLE-only when effort is elevated
+        if not practice and desired.get("type") == "TIMBRE" and not effort_elevated:
             pid = _style_practice_id(str(desired.get("id") or "SOFT_SWEET"))
             practice = practice_for_focus(pid, category="timbre")
             pids = [pid] if practice else []
@@ -715,6 +873,21 @@ def plan_coaching_goal(
             title, desc = _goal_copy(
                 desired, focus, snap, style=True, safety=False, concerns=concerns
             )
+        elif not practice and effort_elevated:
+            practice = practice_for_focus("EFFORT") or practice_for_focus("REGISTER_CONNECTION")
+            pids = [practice.get("practice_id")] if practice else ["EFFORT_EASY_RANGE"]
+            focus = "EFFORT"
+            mode = "GUIDE"
+            title, desc = _goal_copy(
+                desired, focus, snap, style=False, safety=False, concerns=concerns
+            )
+
+    # Hard coherence: BRIGHTNESS heading cannot ship PRESENCE main practice
+    if focus == "BRIGHTNESS" and practice:
+        pt = str(practice.get("title") or "") + str(practice.get("practice_id") or "")
+        if "PRESENCE" in pt.upper() or "존재감" in pt:
+            practice = practice_for_focus("STYLE_BRIGHT_CLEAR") or practice
+            pids = ["STYLE_BRIGHT_CLEAR"]
 
     evidence_used = []
     if primary_ev:
@@ -757,6 +930,18 @@ def plan_coaching_goal(
         preserve_factors=preserve,
     )
 
+    # Target timbre stays secondary when a functional bottleneck owns primary focus
+    secondary_target = None
+    if desired.get("type") == "TIMBRE" and focus not in ("STYLE", "TIMBRE"):
+        secondary_target = {
+            "id": desired.get("id"),
+            "label": desired.get("label") or STYLE_TARGET_LABELS.get(str(desired.get("id") or "").upper()),
+            "type": "TIMBRE",
+        }
+        tid = str(desired.get("id") or "").upper()
+        if tid and tid not in [str(s).upper() for s in supporting]:
+            supporting = list(supporting) + [tid]
+
     return {
         "version": GOAL_VERSION,
         "desired_outcome": desired,
@@ -765,9 +950,14 @@ def plan_coaching_goal(
         "goal_title": title,
         "goal_description": desc,
         "primary_focus": focus,
-        "primary_focus_label": FOCUS_LABELS.get(focus, focus),
+        "primary_focus_label": (
+            STYLE_TARGET_LABELS.get(str(desired.get("id") or "").upper())
+            if focus == "STYLE"
+            else FOCUS_LABELS.get(focus, focus)
+        ),
         "why_this_first": why,
         "supporting_factors": supporting,
+        "secondary_target": secondary_target,
         "preserve_factors": preserve,
         "preserve_labels": [PRESERVE_LABELS[p] for p in preserve if p in PRESERVE_LABELS],
         "practice_ids": [p for p in pids if p],

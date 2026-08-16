@@ -179,7 +179,10 @@ def test_genre_display_not_used_as_reasoning_input():
     song = _song(effort="LOW", contact="LIGHT", register="CONNECTED", presence=0.5)
     goal = _plan(["TIMBRE_DISSATISFIED"], song, timbre="DENSE_SOLID")
     blob = _blob(goal)
-    assert "록" not in blob
+    # Genre labels must not drive coaching copy (avoid fragile single-syllable '록'
+    # which also appears inside Korean words like '않도록').
+    dense_genre = next(o["genre_display"] for o in TARGET_TIMBRE_OPTIONS if o["id"] == "DENSE_SOLID")
+    assert dense_genre not in blob
     assert "뮤지컬" not in blob
     assert goal["primary_focus"] != "CONTACT" or song  # genre must not imply FIRM
 

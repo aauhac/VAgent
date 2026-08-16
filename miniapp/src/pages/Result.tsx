@@ -5,9 +5,16 @@ import {
   getProducts,
   mockUnlockSongDetail,
   patchHistory,
+  postVocalGoalProgress,
+  postVocalProgressInsight,
+  postVocalSnapshot,
+  putActiveVocalGoal,
   removeHistory,
   saveSongDetailUnlock,
 } from '../api/client';
+import GoalSelectorSheet from '../components/progress/GoalSelectorSheet';
+import ProgressInsightSheet from '../components/progress/ProgressInsightSheet';
+import TodayPhonationSummary from '../components/progress/TodayPhonationSummary';
 import VocalTypeHero from '../components/report/VocalTypeHero';
 import VocalProfile from '../components/report/VocalProfile';
 import PremiumProductCard from '../components/ui/PremiumProductCard';
@@ -16,6 +23,25 @@ import {
   diagnosticOfferBullets,
   pickDiagnosticOffer,
 } from '../lib/diagnosticOffer';
+import {
+  buildLocalGoalProgress,
+  type GoalProgressPayload,
+} from '../lib/goalProgress';
+import {
+  getLocalActiveGoal,
+  setLocalActiveGoal,
+} from '../lib/localGoalStore';
+import {
+  listLocalVocalSnapshots,
+  upsertLocalVocalSnapshot,
+} from '../lib/localVocalHistory';
+import {
+  buildLocalProgressInsight,
+  buildTodayHighlights,
+  extractCanonicalFromResult,
+  type ProgressCard,
+  type ProgressInsightPayload,
+} from '../lib/progressPresentation';
 import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '../lib/reportPresentation';
 
 export default function Result() {
@@ -26,6 +52,12 @@ export default function Result() {
   const [error, setError] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
   const [busyDetail, setBusyDetail] = useState(false);
+  const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
+  const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
+  const [goalProgress, setGoalProgress] = useState<GoalProgressPayload | null>(null);
+  const [sheetMode, setSheetMode] = useState<'card' | 'goal'>('card');
+  const [goalPickerOpen, setGoalPickerOpen] = useState(false);
+  const [goalTick, setGoalTick] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -54,6 +86,135 @@ export default function Result() {
         setError('분석 기록이 만료됐어요.');
       });
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !data?.score?.available) return;
+    const canonical = extractCanonicalFromResult(data);
+    if (!Object.keys(canonical).length) {
+      setInsight({
+        status: 'NO_BASELINE',
+        insight_available: false,
+        today: [],
+        improved: [],
+        changed: [],
+        maintained: [],
+        note: '이번 녹음의 핵심 축을 아직 충분히 읽지 못했어요.',
+      });
+      setGoalProgress({ status: 'NO_GOAL', uses_fake_percent: false });
+      return;
+    }
+
+    const active = getLocalActiveGoal();
+    upsertLocalVocalSnapshot({
+      analysis_id: id,
+      created_at: new Date().toISOString(),
+      canonical,
+      analyzer_version: data.analysis_version || data.score?.version || null,
+      goal: active?.goal_focus || null,
+      goal_id: active?.id || null,
+      goal_focus: active?.goal_focus || null,
+    });
+
+    let cancelled = false;
+    (async () => {
+      const today = buildTodayHighlights(canonical);
+      void postVocalSnapshot({
+        analysis_id: id,
+        canonical,
+        analyzer_version: data.analysis_version || null,
+        goal: active || null,
+        goal_id_at_analysis: active?.id || null,
+        goal_focus_at_analysis: active?.goal_focus || null,
+      });
+
+      const server = await postVocalProgressInsight({
+        current_canonical: canonical,
+        goal: active
+          ? {
+              focus: active.goal_focus,
+              label: active.goal_label,
+              source: active.source,
+              target: active.target,
+              style_id: active.style_id,
+              kind: active.kind,
+              id: active.id,
+              started_at: active.started_at,
+            }
+          : null,
+        recent_n: 5,
+        exclude_analysis_id: id,
+        today_highlights: today,
+      });
+      if (cancelled) return;
+
+      const histSnaps = listLocalVocalSnapshots(id);
+      const hist = histSnaps.map((s) => ({
+        canonical: s.canonical,
+        created_at: s.created_at,
+        goal_id: s.goal_id || undefined,
+      }));
+
+      if (server?.insight_available) {
+        setInsight({ ...server, source: 'server', today: server.today?.length ? server.today : today });
+      } else {
+        setInsight(
+          buildLocalProgressInsight(canonical, hist.map((h) => ({ canonical: h.canonical })), {
+            goal: active?.goal_focus || null,
+            recentN: 5,
+          }),
+        );
+      }
+
+      const serverGp = server?.goal_progress;
+      if (serverGp && serverGp.status !== 'NO_GOAL' && serverGp.window) {
+        setGoalProgress(serverGp);
+      } else if (active) {
+        const posted = await postVocalGoalProgress({
+          current_canonical: canonical,
+          historical: histSnaps.map((s) => ({
+            canonical_json: s.canonical,
+            created_at: s.created_at,
+            goal_id_at_analysis: s.goal_id || undefined,
+          })),
+          recent_n: 5,
+          goal: active,
+        });
+        setGoalProgress(
+          posted && posted.status !== 'NO_GOAL'
+            ? posted
+            : buildLocalGoalProgress(active, hist, { recentN: 5, current: canonical }),
+        );
+      } else {
+        setGoalProgress({ status: 'NO_GOAL', uses_fake_percent: false });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, data, goalTick]);
+
+  async function onSelectGoal(
+    focus: string,
+    label: string,
+    extra?: { target?: string; style_id?: string; kind?: string },
+  ) {
+    setLocalActiveGoal({
+      focus,
+      label,
+      source: 'USER_SELECTED',
+      target: extra?.target,
+      style_id: extra?.style_id,
+    });
+    void putActiveVocalGoal({
+      focus,
+      label,
+      source: 'USER_SELECTED',
+      target: extra?.target,
+      style_id: extra?.style_id,
+    });
+    setGoalTick((n) => n + 1);
+  }
 
   async function buySongDetail() {
     if (!id) return;
@@ -167,10 +328,10 @@ export default function Result() {
       <Link className="muted" to="/">‹ 홈</Link>
       <p className="page-kicker" style={{ marginTop: 14 }}>무료 보컬 리포트</p>
       <h1 className="brand" style={{ fontSize: '1.4rem', marginBottom: 4 }}>
-        핵심만 먼저 확인해요
+        오늘의 발성
       </h1>
       <p className="lead" style={{ marginBottom: 8 }}>
-        더 자세한 프로필과 정밀 확인은 아래에서 이어갈 수 있어요.
+        현재 상태를 보고, 이전과 달라진 점과 다음 연습을 이어가요.
       </p>
 
       {!score.available ? (
@@ -205,6 +366,23 @@ export default function Result() {
               </div>
             </section>
           )}
+
+          {insight ? (
+            <TodayPhonationSummary
+              insight={insight}
+              onOpenCard={(card) => {
+                setSheetMode('card');
+                setSheetCard(card);
+              }}
+              goalProgress={goalProgress}
+              onOpenGoalInsight={() => {
+                setSheetMode('goal');
+                setSheetCard(null);
+              }}
+              onSetGoal={() => setGoalPickerOpen(true)}
+              onChangeGoal={() => setGoalPickerOpen(true)}
+            />
+          ) : null}
 
           {freeDims ? (
             <VocalProfile
@@ -275,6 +453,22 @@ export default function Result() {
               )}
             </div>
           </section>
+
+          <ProgressInsightSheet
+            open={sheetMode === 'goal' ? !!goalProgress?.goal : !!sheetCard}
+            card={sheetCard}
+            goalProgress={goalProgress}
+            mode={sheetMode}
+            onClose={() => {
+              setSheetCard(null);
+              setSheetMode('card');
+            }}
+          />
+          <GoalSelectorSheet
+            open={goalPickerOpen}
+            onClose={() => setGoalPickerOpen(false)}
+            onSelect={onSelectGoal}
+          />
         </>
       )}
 

@@ -181,7 +181,7 @@ def test_stability_failure_reduces_duration():
 def test_bright_clear_does_not_force_more_effort():
     p = build_coaching_protocol("STYLE", snap={}, target_timbre={"id": "BRIGHT_CLEAR"})
     blob = str(p)
-    assert "힘을 더" not in blob or "힘 증가 없음" in blob
+    assert "힘을 더" not in blob or "힘 증가 없음" in blob or "힘이 더 들어가지 않음" in blob
     assert "force" not in blob.lower()
     avoid = " ".join((p.get("target_overlay") or {}).get("avoid") or [])
     assert "힘" in avoid or "음량" in avoid
@@ -373,7 +373,7 @@ def test_goal_embeds_protocol_version():
 
 
 def test_report_logic_version_v7():
-    assert REPORT_LOGIC_VERSION == "precision-report-v7"
+    assert REPORT_LOGIC_VERSION == "precision-report-v10"
 
 
 def test_all_protocol_ids_listed():

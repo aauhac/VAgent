@@ -1,0 +1,351 @@
+{
+  "experimental": true,
+  "production_connected": false,
+  "uses_identity_embedding_as_vocal_quality": false,
+  "uses_existing_canonical_analysis": true,
+  "calls_descriptive_timbre_change_improvement": false,
+  "identity_layer": "WHO — Singer Identity selects whose history",
+  "vocal_layer": "HOW — VAgent analyzer describes how they sang",
+  "layers_separate": true,
+  "baseline": {
+    "singer_id": "person_drowning_movie",
+    "recording_count": 11,
+    "period": {
+      "start": null,
+      "end": null,
+      "note": "No recording dates — time trend forbidden"
+    },
+    "axis_distributions": {
+      "effort": {
+        "counts": {
+          "LOW": 7,
+          "MODERATE": 3,
+          "UNKNOWN": 1
+        },
+        "n": 11,
+        "expression_rule": "goal_aware_only"
+      },
+      "contact": {
+        "counts": {
+          "FIRM": 6,
+          "UNKNOWN": 3,
+          "AMBIGUOUS": 1,
+          "LIGHT": 1
+        },
+        "n": 11,
+        "expression_rule": "descriptive_change_only"
+      },
+      "breathiness": {
+        "counts": {
+          "UNKNOWN": 3,
+          "LOW": 8
+        },
+        "n": 11,
+        "expression_rule": "descriptive_change_only"
+      },
+      "register_connection": {
+        "counts": {
+          "DISRUPTED": 7,
+          "PARTIAL": 3,
+          "UNRESOLVED": 1
+        },
+        "n": 11,
+        "expression_rule": "goal_aware_only"
+      },
+      "source_balance": {
+        "counts": {
+          "UNKNOWN": 3,
+          "CHEST_LEANING": 4,
+          "HEAD_LEANING": 2,
+          "CONFLICTED": 1,
+          "BALANCED_ACOUSTIC": 1
+        },
+        "n": 11,
+        "expression_rule": "descriptive_change_only"
+      },
+      "stability": {
+        "counts": {
+          "STABLE": 11
+        },
+        "n": 11,
+        "expression_rule": "descriptive_change_only"
+      },
+      "brightness": {
+        "counts": {
+          "HIGH": 2,
+          "UNAVAILABLE": 3,
+          "LOW": 3,
+          "MID": 3
+        },
+        "n": 11,
+        "expression_rule": "descriptive_change_only"
+      },
+      "presence": {
+        "counts": {
+          "HIGH": 2,
+          "UNAVAILABLE": 3,
+          "LOW": 6
+        },
+        "n": 11,
+        "expression_rule": "descriptive_change_only"
+      }
+    },
+    "reliable_axes": [
+      "effort",
+      "contact",
+      "breathiness",
+      "register_connection",
+      "source_balance",
+      "stability",
+      "brightness",
+      "presence"
+    ],
+    "baseline_version": "personal-vocal-baseline-v0-experimental",
+    "experimental": true,
+    "production_connected": false,
+    "identity_embedding_used_as_quality": false,
+    "note": "Distribution over currently registered recordings only. Not a claim about the singer's average voice in general."
+  },
+  "snapshots": [
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "5fdfa9eb73e5",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "LOW",
+        "contact": "FIRM",
+        "breathiness": "UNKNOWN",
+        "register_connection": "DISRUPTED",
+        "source_balance": "UNKNOWN",
+        "stability": "STABLE",
+        "brightness": "HIGH",
+        "presence": "HIGH"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "drowning.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "6fb8c8208c80",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "LOW",
+        "contact": "UNKNOWN",
+        "breathiness": "LOW",
+        "register_connection": "DISRUPTED",
+        "source_balance": "CHEST_LEANING",
+        "stability": "STABLE",
+        "brightness": "UNAVAILABLE",
+        "presence": "UNAVAILABLE"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "movie.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "d5045bc290a1",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "LOW",
+        "contact": "UNKNOWN",
+        "breathiness": "LOW",
+        "register_connection": "DISRUPTED",
+        "source_balance": "UNKNOWN",
+        "stability": "STABLE",
+        "brightness": "LOW",
+        "presence": "LOW"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "거의동115.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "3ced1f723c5e",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "LOW",
+        "contact": "FIRM",
+        "breathiness": "LOW",
+        "register_connection": "DISRUPTED",
+        "source_balance": "CHEST_LEANING",
+        "stability": "STABLE",
+        "brightness": "LOW",
+        "presence": "LOW"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "거의동116.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "1387ae324719",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "MODERATE",
+        "contact": "AMBIGUOUS",
+        "breathiness": "LOW",
+        "register_connection": "PARTIAL",
+        "source_balance": "CHEST_LEANING",
+        "stability": "STABLE",
+        "brightness": "MID",
+        "presence": "LOW"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "거의동117.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "a7c957603751",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "LOW",
+        "contact": "FIRM",
+        "breathiness": "LOW",
+        "register_connection": "DISRUPTED",
+        "source_balance": "HEAD_LEANING",
+        "stability": "STABLE",
+        "brightness": "MID",
+        "presence": "LOW"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "좋은사람.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "8156c1254947",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "MODERATE",
+        "contact": "FIRM",
+        "breathiness": "UNKNOWN",
+        "register_connection": "DISRUPTED",
+        "source_balance": "CONFLICTED",
+        "stability": "STABLE",
+        "brightness": "MID",
+        "presence": "LOW"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "요즘 바쁜가봐.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "5e7819c3abb4",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "MODERATE",
+        "contact": "FIRM",
+        "breathiness": "LOW",
+        "register_connection": "DISRUPTED",
+        "source_balance": "BALANCED_ACOUSTIC",
+        "stability": "STABLE",
+        "brightness": "UNAVAILABLE",
+        "presence": "UNAVAILABLE"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "bluemoon.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "0f26db696e8e",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "LOW",
+        "contact": "FIRM",
+        "breathiness": "LOW",
+        "register_connection": "PARTIAL",
+        "source_balance": "CHEST_LEANING",
+        "stability": "STABLE",
+        "brightness": "HIGH",
+        "presence": "HIGH"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "I'llneverloveagain.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "aef8b974cfb0",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "LOW",
+        "contact": "LIGHT",
+        "breathiness": "UNKNOWN",
+        "register_connection": "PARTIAL",
+        "source_balance": "HEAD_LEANING",
+        "stability": "STABLE",
+        "brightness": "LOW",
+        "presence": "LOW"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "love again.m4a"
+    },
+    {
+      "singer_id": "person_drowning_movie",
+      "recording_id": "ec93548d279f",
+      "recorded_at": null,
+      "analyzer_version": null,
+      "canonical": {
+        "effort": "UNKNOWN",
+        "contact": "UNKNOWN",
+        "breathiness": "LOW",
+        "register_connection": "UNRESOLVED",
+        "source_balance": "UNKNOWN",
+        "stability": "STABLE",
+        "brightness": "UNAVAILABLE",
+        "presence": "UNAVAILABLE"
+      },
+      "goal": null,
+      "analysis_quality": null,
+      "experimental": true,
+      "note": "EXPERIMENTAL_NOT_PRODUCTION",
+      "filename": "옥탑방.m4a"
+    }
+  ],
+  "safety": {
+    "brightness_change_is_improvement": false,
+    "source_balance_change_is_improvement": false,
+    "pain_as_performance_improvement_forbidden": true,
+    "effort_decrease_not_always_improvement": true
+  },
+  "created_at": "2026-08-16T12:38:20.373049+00:00",
+  "confirmed_recordings": 11,
+  "canonical_analyses_available": 11
+}

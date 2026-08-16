@@ -1,0 +1,585 @@
+audio_id,target_id,canonical_hash,primary_focus,protocol_id,goal_title,protocol_entry_title
+00ae450b11f1,DENSE_SOLID,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+00ae450b11f1,BRIGHT_CLEAR,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+00ae450b11f1,SOFT_SWEET,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+00ae450b11f1,LIGHT_CLEAR,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+00ae450b11f1,WARM_FULL,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+00ae450b11f1,AIRY_DELICATE,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+00ae450b11f1,INTENSE_DISTINCT,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+00ae450b11f1,RECOMMEND_FOR_ME,74e36240de85c7e09b65233d82f4ff9406c3fcf72a1d483a29270582d90eaab5,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+07564b6df5b9,DENSE_SOLID,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+07564b6df5b9,BRIGHT_CLEAR,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+07564b6df5b9,SOFT_SWEET,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+07564b6df5b9,LIGHT_CLEAR,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+07564b6df5b9,WARM_FULL,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+07564b6df5b9,AIRY_DELICATE,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+07564b6df5b9,INTENSE_DISTINCT,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+07564b6df5b9,RECOMMEND_FOR_ME,c910b4a1929630c7bdab59e70ad1735e0e4221862a37a421adbc75d3995e69d1,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+0ada85fffc84,DENSE_SOLID,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+0ada85fffc84,BRIGHT_CLEAR,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+0ada85fffc84,SOFT_SWEET,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+0ada85fffc84,LIGHT_CLEAR,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+0ada85fffc84,WARM_FULL,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+0ada85fffc84,AIRY_DELICATE,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+0ada85fffc84,INTENSE_DISTINCT,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+0ada85fffc84,RECOMMEND_FOR_ME,a474591915b413ef919e02ae5bf66f4cd5d087d410ba20be7e1a7510649e21ba,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+0ea5487c229a,DENSE_SOLID,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+0ea5487c229a,BRIGHT_CLEAR,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+0ea5487c229a,SOFT_SWEET,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+0ea5487c229a,LIGHT_CLEAR,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+0ea5487c229a,WARM_FULL,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+0ea5487c229a,AIRY_DELICATE,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+0ea5487c229a,INTENSE_DISTINCT,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+0ea5487c229a,RECOMMEND_FOR_ME,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+0f26db696e8e,DENSE_SOLID,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+0f26db696e8e,BRIGHT_CLEAR,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+0f26db696e8e,SOFT_SWEET,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+0f26db696e8e,LIGHT_CLEAR,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+0f26db696e8e,WARM_FULL,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+0f26db696e8e,AIRY_DELICATE,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+0f26db696e8e,INTENSE_DISTINCT,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+0f26db696e8e,RECOMMEND_FOR_ME,34d89b509a2b1b73fe0a0ef60f88ec36b820801aa3f7c83405bcce02d133a4c3,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+10d07cc48c55,DENSE_SOLID,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+10d07cc48c55,BRIGHT_CLEAR,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+10d07cc48c55,SOFT_SWEET,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+10d07cc48c55,LIGHT_CLEAR,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+10d07cc48c55,WARM_FULL,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+10d07cc48c55,AIRY_DELICATE,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+10d07cc48c55,INTENSE_DISTINCT,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+10d07cc48c55,RECOMMEND_FOR_ME,60304c51b1f22c9507c4e686487b962ae9d7bfcc263a73f2abef8639533f1b79,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+1387ae324719,DENSE_SOLID,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+1387ae324719,BRIGHT_CLEAR,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+1387ae324719,SOFT_SWEET,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+1387ae324719,LIGHT_CLEAR,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+1387ae324719,WARM_FULL,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+1387ae324719,AIRY_DELICATE,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+1387ae324719,INTENSE_DISTINCT,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+1387ae324719,RECOMMEND_FOR_ME,61171b15ff729df3e32513c4e8789c7e982cc9de358d979577e719a1b04c9199,EFFORT,EFFORT,같은 음을 더 세게 밀지 않고 편안한 힘으로 유지하기,쉬운 음역에서 작은~중간 강도
+15f8e161f598,DENSE_SOLID,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+15f8e161f598,BRIGHT_CLEAR,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+15f8e161f598,SOFT_SWEET,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+15f8e161f598,LIGHT_CLEAR,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+15f8e161f598,WARM_FULL,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+15f8e161f598,AIRY_DELICATE,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+15f8e161f598,INTENSE_DISTINCT,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+15f8e161f598,RECOMMEND_FOR_ME,2703df39a3c11fb596bc1967524af320e3232c6f087f3a73d4201da6897bac75,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+16b7e83c0418,DENSE_SOLID,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+16b7e83c0418,BRIGHT_CLEAR,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+16b7e83c0418,SOFT_SWEET,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+16b7e83c0418,LIGHT_CLEAR,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+16b7e83c0418,WARM_FULL,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+16b7e83c0418,AIRY_DELICATE,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+16b7e83c0418,INTENSE_DISTINCT,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+16b7e83c0418,RECOMMEND_FOR_ME,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+1a0be83ce9c6,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+1a0be83ce9c6,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+1a0be83ce9c6,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+1a0be83ce9c6,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+1a0be83ce9c6,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+1a0be83ce9c6,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+1a0be83ce9c6,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+1a0be83ce9c6,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+2c9d61ebb9da,DENSE_SOLID,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+2c9d61ebb9da,BRIGHT_CLEAR,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+2c9d61ebb9da,SOFT_SWEET,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+2c9d61ebb9da,LIGHT_CLEAR,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+2c9d61ebb9da,WARM_FULL,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+2c9d61ebb9da,AIRY_DELICATE,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+2c9d61ebb9da,INTENSE_DISTINCT,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+2c9d61ebb9da,RECOMMEND_FOR_ME,71162feb9637a9a315a56bd7842753b18d43c83953915da594d05b49b3a90a5b,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+357eeb649bd6,DENSE_SOLID,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+357eeb649bd6,BRIGHT_CLEAR,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+357eeb649bd6,SOFT_SWEET,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+357eeb649bd6,LIGHT_CLEAR,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+357eeb649bd6,WARM_FULL,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+357eeb649bd6,AIRY_DELICATE,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+357eeb649bd6,INTENSE_DISTINCT,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+357eeb649bd6,RECOMMEND_FOR_ME,a831f85bc6dc7d6196be15671ac5eaa9efc1e92aab8f01e36a0ed81953158403,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+36a7bd4286b4,DENSE_SOLID,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+36a7bd4286b4,BRIGHT_CLEAR,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+36a7bd4286b4,SOFT_SWEET,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+36a7bd4286b4,LIGHT_CLEAR,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+36a7bd4286b4,WARM_FULL,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+36a7bd4286b4,AIRY_DELICATE,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+36a7bd4286b4,INTENSE_DISTINCT,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+36a7bd4286b4,RECOMMEND_FOR_ME,9f2fab5c611cb21159c3a8c8071bdcb44fe23e33d850f16567dfdd703865661f,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+37db691d1416,DENSE_SOLID,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+37db691d1416,BRIGHT_CLEAR,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+37db691d1416,SOFT_SWEET,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+37db691d1416,LIGHT_CLEAR,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+37db691d1416,WARM_FULL,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+37db691d1416,AIRY_DELICATE,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+37db691d1416,INTENSE_DISTINCT,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+37db691d1416,RECOMMEND_FOR_ME,184362759e6a9859c7b2cbb2e48307fdd279abb9a1222765be3abb5325748c66,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+3ced1f723c5e,DENSE_SOLID,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+3ced1f723c5e,BRIGHT_CLEAR,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+3ced1f723c5e,SOFT_SWEET,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+3ced1f723c5e,LIGHT_CLEAR,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+3ced1f723c5e,WARM_FULL,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+3ced1f723c5e,AIRY_DELICATE,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+3ced1f723c5e,INTENSE_DISTINCT,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+3ced1f723c5e,RECOMMEND_FOR_ME,4a3ee69bb7dea3ab6b5d6cbc804f03c6063a13c4efa28fc7452b32e36b19496a,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+40fb338380cc,DENSE_SOLID,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+40fb338380cc,BRIGHT_CLEAR,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+40fb338380cc,SOFT_SWEET,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+40fb338380cc,LIGHT_CLEAR,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+40fb338380cc,WARM_FULL,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+40fb338380cc,AIRY_DELICATE,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+40fb338380cc,INTENSE_DISTINCT,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+40fb338380cc,RECOMMEND_FOR_ME,9715e95cf320481e8cb0a198fa7bb3e0910af817f25c1ad1454936fafbc6887a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+442202fca595,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+442202fca595,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+442202fca595,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+442202fca595,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+442202fca595,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+442202fca595,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+442202fca595,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+442202fca595,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+54b972ad300a,DENSE_SOLID,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+54b972ad300a,BRIGHT_CLEAR,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+54b972ad300a,SOFT_SWEET,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+54b972ad300a,LIGHT_CLEAR,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+54b972ad300a,WARM_FULL,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+54b972ad300a,AIRY_DELICATE,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+54b972ad300a,INTENSE_DISTINCT,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+54b972ad300a,RECOMMEND_FOR_ME,047dd9e5104e0217970393adf6d2813c9877809279b31d944110ece3f15aaa3a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+5662e8094f66,DENSE_SOLID,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+5662e8094f66,BRIGHT_CLEAR,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+5662e8094f66,SOFT_SWEET,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+5662e8094f66,LIGHT_CLEAR,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+5662e8094f66,WARM_FULL,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+5662e8094f66,AIRY_DELICATE,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+5662e8094f66,INTENSE_DISTINCT,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+5662e8094f66,RECOMMEND_FOR_ME,9643489feab1b4bf169a8b36f6797eb4905082e2898629bded82a42a7dae2efc,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+5e7819c3abb4,DENSE_SOLID,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5e7819c3abb4,BRIGHT_CLEAR,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5e7819c3abb4,SOFT_SWEET,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5e7819c3abb4,LIGHT_CLEAR,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5e7819c3abb4,WARM_FULL,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5e7819c3abb4,AIRY_DELICATE,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5e7819c3abb4,INTENSE_DISTINCT,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5e7819c3abb4,RECOMMEND_FOR_ME,c550c2a23013b4f57cd8aeb90fffb5ab835fedc5dbfc9050ba0d892e161127a6,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,DENSE_SOLID,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,BRIGHT_CLEAR,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,SOFT_SWEET,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,LIGHT_CLEAR,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,WARM_FULL,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,AIRY_DELICATE,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,INTENSE_DISTINCT,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+5fdfa9eb73e5,RECOMMEND_FOR_ME,d9521f5ef91e8a22d8e9dede4a466224c74f875d11fcaeb4ddeb96c1142f8375,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,DENSE_SOLID,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,BRIGHT_CLEAR,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,SOFT_SWEET,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,LIGHT_CLEAR,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,WARM_FULL,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,AIRY_DELICATE,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,INTENSE_DISTINCT,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6b3aa0d0ddfb,RECOMMEND_FOR_ME,94b20ae93227e42ee33c269049ed5332a8f9f5f65eb675ba347ebdd0cf9d9992,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+6fb8c8208c80,DENSE_SOLID,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+6fb8c8208c80,BRIGHT_CLEAR,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+6fb8c8208c80,SOFT_SWEET,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+6fb8c8208c80,LIGHT_CLEAR,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+6fb8c8208c80,WARM_FULL,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+6fb8c8208c80,AIRY_DELICATE,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+6fb8c8208c80,INTENSE_DISTINCT,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+6fb8c8208c80,RECOMMEND_FOR_ME,9a23f0001274cc5e1f6dee8f1bf4583eada25363fa6bf8a864a5dbba319cb99d,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+70479ec67665,DENSE_SOLID,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+70479ec67665,BRIGHT_CLEAR,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+70479ec67665,SOFT_SWEET,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+70479ec67665,LIGHT_CLEAR,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+70479ec67665,WARM_FULL,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+70479ec67665,AIRY_DELICATE,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+70479ec67665,INTENSE_DISTINCT,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+70479ec67665,RECOMMEND_FOR_ME,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+7436d634b9bf,DENSE_SOLID,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7436d634b9bf,BRIGHT_CLEAR,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7436d634b9bf,SOFT_SWEET,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7436d634b9bf,LIGHT_CLEAR,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7436d634b9bf,WARM_FULL,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7436d634b9bf,AIRY_DELICATE,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7436d634b9bf,INTENSE_DISTINCT,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7436d634b9bf,RECOMMEND_FOR_ME,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,DENSE_SOLID,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,BRIGHT_CLEAR,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,SOFT_SWEET,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,LIGHT_CLEAR,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,WARM_FULL,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,AIRY_DELICATE,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,INTENSE_DISTINCT,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7abf49d0b4cd,RECOMMEND_FOR_ME,7a4bc64f5127697677ac9161c59bf9558054fd25db0043dbb3577e770199a963,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+7b8c45cdd16b,DENSE_SOLID,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+7b8c45cdd16b,BRIGHT_CLEAR,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,BRIGHTNESS,TIMBRE_STYLE,음량을 더 키우지 않고 더 밝고 선명한 음색 만들기,발음으로 선명함 만들기
+7b8c45cdd16b,SOFT_SWEET,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+7b8c45cdd16b,LIGHT_CLEAR,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,BRIGHTNESS,TIMBRE_STYLE,음량을 더 키우지 않고 더 밝고 선명한 음색 만들기,가볍게 또렷하게 이어보기
+7b8c45cdd16b,WARM_FULL,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+7b8c45cdd16b,AIRY_DELICATE,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+7b8c45cdd16b,INTENSE_DISTINCT,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+7b8c45cdd16b,RECOMMEND_FOR_ME,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+8156c1254947,DENSE_SOLID,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+8156c1254947,BRIGHT_CLEAR,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+8156c1254947,SOFT_SWEET,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+8156c1254947,LIGHT_CLEAR,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+8156c1254947,WARM_FULL,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+8156c1254947,AIRY_DELICATE,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+8156c1254947,INTENSE_DISTINCT,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+8156c1254947,RECOMMEND_FOR_ME,97e8edcec8ffdeff1cb6779534c664a549ebefbf792178ab5e8c7183788ffb3d,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+882c5cd5a0c8,DENSE_SOLID,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+882c5cd5a0c8,BRIGHT_CLEAR,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+882c5cd5a0c8,SOFT_SWEET,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+882c5cd5a0c8,LIGHT_CLEAR,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+882c5cd5a0c8,WARM_FULL,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+882c5cd5a0c8,AIRY_DELICATE,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+882c5cd5a0c8,INTENSE_DISTINCT,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+882c5cd5a0c8,RECOMMEND_FOR_ME,93723535b7ffe50377193cc5d318863c4fe40311f73709f3bd9bded1cdb79521,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+8b5617784c9c,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+8b5617784c9c,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+8b5617784c9c,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+8b5617784c9c,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+8b5617784c9c,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+8b5617784c9c,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+8b5617784c9c,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+8b5617784c9c,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+90147c986aae,DENSE_SOLID,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+90147c986aae,BRIGHT_CLEAR,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+90147c986aae,SOFT_SWEET,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+90147c986aae,LIGHT_CLEAR,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+90147c986aae,WARM_FULL,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+90147c986aae,AIRY_DELICATE,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+90147c986aae,INTENSE_DISTINCT,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+90147c986aae,RECOMMEND_FOR_ME,9489d8f43b567d80506a35767753067a8855f72cc979592f1a6bcb8070e3cfa7,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+90ac5e34aedd,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+90ac5e34aedd,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+90ac5e34aedd,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+90ac5e34aedd,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+90ac5e34aedd,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+90ac5e34aedd,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+90ac5e34aedd,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+90ac5e34aedd,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+95b54db5ba3d,DENSE_SOLID,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+95b54db5ba3d,BRIGHT_CLEAR,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+95b54db5ba3d,SOFT_SWEET,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+95b54db5ba3d,LIGHT_CLEAR,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+95b54db5ba3d,WARM_FULL,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+95b54db5ba3d,AIRY_DELICATE,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+95b54db5ba3d,INTENSE_DISTINCT,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+95b54db5ba3d,RECOMMEND_FOR_ME,536865c21987e74bec96d39ae27865f452065057e730fcf7e5740119367a9827,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+983379d1fe46,DENSE_SOLID,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+983379d1fe46,BRIGHT_CLEAR,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+983379d1fe46,SOFT_SWEET,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+983379d1fe46,LIGHT_CLEAR,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+983379d1fe46,WARM_FULL,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+983379d1fe46,AIRY_DELICATE,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+983379d1fe46,INTENSE_DISTINCT,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+983379d1fe46,RECOMMEND_FOR_ME,3e2944d54b78d8d4fe272ec64a089f5d07cc8cd030e9a6062fa3cb56b9a44723,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+99023e55f0f5,DENSE_SOLID,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+99023e55f0f5,BRIGHT_CLEAR,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+99023e55f0f5,SOFT_SWEET,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+99023e55f0f5,LIGHT_CLEAR,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+99023e55f0f5,WARM_FULL,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+99023e55f0f5,AIRY_DELICATE,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+99023e55f0f5,INTENSE_DISTINCT,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+99023e55f0f5,RECOMMEND_FOR_ME,ad7faecdd6f293ffabb61bcff432410f5d8e2968b5cd297131b0e89743ef5f3a,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+9e6b39daf637,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+9e6b39daf637,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+9e6b39daf637,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+9e6b39daf637,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+9e6b39daf637,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+9e6b39daf637,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+9e6b39daf637,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+9e6b39daf637,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+a29f829eedd0,DENSE_SOLID,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+a29f829eedd0,BRIGHT_CLEAR,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,BRIGHTNESS,TIMBRE_STYLE,음량을 더 키우지 않고 더 밝고 선명한 음색 만들기,발음으로 선명함 만들기
+a29f829eedd0,SOFT_SWEET,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+a29f829eedd0,LIGHT_CLEAR,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,BRIGHTNESS,TIMBRE_STYLE,음량을 더 키우지 않고 더 밝고 선명한 음색 만들기,가볍게 또렷하게 이어보기
+a29f829eedd0,WARM_FULL,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+a29f829eedd0,AIRY_DELICATE,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+a29f829eedd0,INTENSE_DISTINCT,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+a29f829eedd0,RECOMMEND_FOR_ME,c552030bc7c03de0d9dabf50c576e10ae8af1a2e9fd114e61563ca2ca2d465d0,BRIGHTNESS,TIMBRE_STYLE,음량을 더 키우지 않고 더 밝고 선명한 음색 만들기,가볍게 또렷하게 이어보기
+a69d81db3e48,DENSE_SOLID,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a69d81db3e48,BRIGHT_CLEAR,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a69d81db3e48,SOFT_SWEET,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a69d81db3e48,LIGHT_CLEAR,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a69d81db3e48,WARM_FULL,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a69d81db3e48,AIRY_DELICATE,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a69d81db3e48,INTENSE_DISTINCT,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a69d81db3e48,RECOMMEND_FOR_ME,f490f39d5f3fa5efd2d8d0f436d8c5a54892152352ad37413b4d8752482c0d1c,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a77ba822cbfe,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+a77ba822cbfe,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+a77ba822cbfe,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+a77ba822cbfe,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+a77ba822cbfe,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+a77ba822cbfe,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+a77ba822cbfe,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+a77ba822cbfe,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+a7c957603751,DENSE_SOLID,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a7c957603751,BRIGHT_CLEAR,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a7c957603751,SOFT_SWEET,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a7c957603751,LIGHT_CLEAR,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a7c957603751,WARM_FULL,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a7c957603751,AIRY_DELICATE,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a7c957603751,INTENSE_DISTINCT,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a7c957603751,RECOMMEND_FOR_ME,94610f4bf1e591e3856c1eb0cfcb445ca5f478a461f2bcd6fa8e56ae2e33cd10,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+a888cb14dd6a,DENSE_SOLID,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+a888cb14dd6a,BRIGHT_CLEAR,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+a888cb14dd6a,SOFT_SWEET,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+a888cb14dd6a,LIGHT_CLEAR,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+a888cb14dd6a,WARM_FULL,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+a888cb14dd6a,AIRY_DELICATE,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+a888cb14dd6a,INTENSE_DISTINCT,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+a888cb14dd6a,RECOMMEND_FOR_ME,0155346bbfc3a517ebed9fbb0398af591a497278f6a47aed7d5540d0c3e3be67,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+aba38287641d,DENSE_SOLID,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+aba38287641d,BRIGHT_CLEAR,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+aba38287641d,SOFT_SWEET,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+aba38287641d,LIGHT_CLEAR,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+aba38287641d,WARM_FULL,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+aba38287641d,AIRY_DELICATE,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+aba38287641d,INTENSE_DISTINCT,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+aba38287641d,RECOMMEND_FOR_ME,76456291b722ebd590d691acb0bfa72dac01341fdabd5a09f8bb5932fb68bb73,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+aef8b974cfb0,DENSE_SOLID,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+aef8b974cfb0,BRIGHT_CLEAR,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+aef8b974cfb0,SOFT_SWEET,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+aef8b974cfb0,LIGHT_CLEAR,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+aef8b974cfb0,WARM_FULL,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+aef8b974cfb0,AIRY_DELICATE,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+aef8b974cfb0,INTENSE_DISTINCT,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+aef8b974cfb0,RECOMMEND_FOR_ME,f992daf6822a59f31f3c16ac28a8a0ea78e9a41db6f6cb76298f36f2545e81d0,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+b4b7ce279c98,DENSE_SOLID,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+b4b7ce279c98,BRIGHT_CLEAR,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+b4b7ce279c98,SOFT_SWEET,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+b4b7ce279c98,LIGHT_CLEAR,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+b4b7ce279c98,WARM_FULL,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+b4b7ce279c98,AIRY_DELICATE,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+b4b7ce279c98,INTENSE_DISTINCT,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+b4b7ce279c98,RECOMMEND_FOR_ME,f5673071b75bd92a0b082d5739051794de3774c1025f10efca28a498a69d7368,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+b960707ab2f6,DENSE_SOLID,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+b960707ab2f6,BRIGHT_CLEAR,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+b960707ab2f6,SOFT_SWEET,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+b960707ab2f6,LIGHT_CLEAR,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+b960707ab2f6,WARM_FULL,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+b960707ab2f6,AIRY_DELICATE,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+b960707ab2f6,INTENSE_DISTINCT,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+b960707ab2f6,RECOMMEND_FOR_ME,ee7712649a4f4b98d245b3bf6be2c49b48a22e0b7de88bdc7f3c046e9340040f,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+b9ff5bf02262,DENSE_SOLID,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+b9ff5bf02262,BRIGHT_CLEAR,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+b9ff5bf02262,SOFT_SWEET,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+b9ff5bf02262,LIGHT_CLEAR,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+b9ff5bf02262,WARM_FULL,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+b9ff5bf02262,AIRY_DELICATE,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+b9ff5bf02262,INTENSE_DISTINCT,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+b9ff5bf02262,RECOMMEND_FOR_ME,797bfe6df44b8b83cf2f4aeaf28a71f1598cb43d329321363a1128e1a1986547,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+bdb75679732a,DENSE_SOLID,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+bdb75679732a,BRIGHT_CLEAR,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+bdb75679732a,SOFT_SWEET,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+bdb75679732a,LIGHT_CLEAR,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+bdb75679732a,WARM_FULL,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+bdb75679732a,AIRY_DELICATE,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+bdb75679732a,INTENSE_DISTINCT,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+bdb75679732a,RECOMMEND_FOR_ME,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c01fc220195f,DENSE_SOLID,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+c01fc220195f,BRIGHT_CLEAR,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,BRIGHTNESS,TIMBRE_STYLE,음량을 더 키우지 않고 더 밝고 선명한 음색 만들기,발음으로 선명함 만들기
+c01fc220195f,SOFT_SWEET,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+c01fc220195f,LIGHT_CLEAR,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,BRIGHTNESS,TIMBRE_STYLE,음량을 더 키우지 않고 더 밝고 선명한 음색 만들기,가볍게 또렷하게 이어보기
+c01fc220195f,WARM_FULL,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+c01fc220195f,AIRY_DELICATE,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+c01fc220195f,INTENSE_DISTINCT,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+c01fc220195f,RECOMMEND_FOR_ME,7902b54716bfc9e0e781bb5adc9c08ff118eddf07c19e519e0a3b2198363f637,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+c1815547c828,DENSE_SOLID,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+c1815547c828,BRIGHT_CLEAR,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+c1815547c828,SOFT_SWEET,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+c1815547c828,LIGHT_CLEAR,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+c1815547c828,WARM_FULL,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+c1815547c828,AIRY_DELICATE,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+c1815547c828,INTENSE_DISTINCT,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+c1815547c828,RECOMMEND_FOR_ME,8a5d2d34960b5b005d5c239a4c45a36568a300e929ef4d3f76661a59eb6d2751,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+c1f4910eafe2,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+c1f4910eafe2,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+c1f4910eafe2,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+c1f4910eafe2,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+c1f4910eafe2,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+c1f4910eafe2,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+c1f4910eafe2,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+c1f4910eafe2,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+c3fca76b89b8,DENSE_SOLID,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c3fca76b89b8,BRIGHT_CLEAR,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c3fca76b89b8,SOFT_SWEET,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c3fca76b89b8,LIGHT_CLEAR,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c3fca76b89b8,WARM_FULL,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c3fca76b89b8,AIRY_DELICATE,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c3fca76b89b8,INTENSE_DISTINCT,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c3fca76b89b8,RECOMMEND_FOR_ME,5a37f3bd3173c16d3c99506b0750cbb80c9383e7ba30af29cbcbf4ce57d73a5a,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c5b20be3c802,DENSE_SOLID,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+c5b20be3c802,BRIGHT_CLEAR,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+c5b20be3c802,SOFT_SWEET,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+c5b20be3c802,LIGHT_CLEAR,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+c5b20be3c802,WARM_FULL,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+c5b20be3c802,AIRY_DELICATE,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+c5b20be3c802,INTENSE_DISTINCT,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+c5b20be3c802,RECOMMEND_FOR_ME,5491f1bd8bbbbcbbae1a867b5a71917fa910f0166fa671d042278742a4a8c56e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+c5cd93ed40a3,DENSE_SOLID,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+c5cd93ed40a3,BRIGHT_CLEAR,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+c5cd93ed40a3,SOFT_SWEET,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+c5cd93ed40a3,LIGHT_CLEAR,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+c5cd93ed40a3,WARM_FULL,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+c5cd93ed40a3,AIRY_DELICATE,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+c5cd93ed40a3,INTENSE_DISTINCT,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+c5cd93ed40a3,RECOMMEND_FOR_ME,cb835f992f5c5acdd1cadcf74082be990bf697123869ff1b700ead2546babb10,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+c8d4b24b6f55,DENSE_SOLID,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c8d4b24b6f55,BRIGHT_CLEAR,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c8d4b24b6f55,SOFT_SWEET,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c8d4b24b6f55,LIGHT_CLEAR,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c8d4b24b6f55,WARM_FULL,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c8d4b24b6f55,AIRY_DELICATE,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c8d4b24b6f55,INTENSE_DISTINCT,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+c8d4b24b6f55,RECOMMEND_FOR_ME,2d265bf0103af764d72eae67742b6f63ca611ccdb873f5268f06d32fa3780f92,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+ca43bc2b048b,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+ca43bc2b048b,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+ca43bc2b048b,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+ca43bc2b048b,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+ca43bc2b048b,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+ca43bc2b048b,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+ca43bc2b048b,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+ca43bc2b048b,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+cfc6b206e99b,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+cfc6b206e99b,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+cfc6b206e99b,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+cfc6b206e99b,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+cfc6b206e99b,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+cfc6b206e99b,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+cfc6b206e99b,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+cfc6b206e99b,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+d03ad168d8d7,DENSE_SOLID,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d03ad168d8d7,BRIGHT_CLEAR,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d03ad168d8d7,SOFT_SWEET,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d03ad168d8d7,LIGHT_CLEAR,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d03ad168d8d7,WARM_FULL,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d03ad168d8d7,AIRY_DELICATE,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d03ad168d8d7,INTENSE_DISTINCT,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d03ad168d8d7,RECOMMEND_FOR_ME,f213888425b7bc7b43231eb0156a7a11816f08b381e3b60eac7b56546891fd0e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,DENSE_SOLID,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,BRIGHT_CLEAR,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,SOFT_SWEET,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,LIGHT_CLEAR,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,WARM_FULL,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,AIRY_DELICATE,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,INTENSE_DISTINCT,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d241c8e7a734,RECOMMEND_FOR_ME,1be9e167bccae0c1c0527f802d1ede4632d3fc698a4f6d8cf42bc3ea0bf563dc,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d395d6bc40d4,DENSE_SOLID,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+d395d6bc40d4,BRIGHT_CLEAR,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+d395d6bc40d4,SOFT_SWEET,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+d395d6bc40d4,LIGHT_CLEAR,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+d395d6bc40d4,WARM_FULL,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+d395d6bc40d4,AIRY_DELICATE,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+d395d6bc40d4,INTENSE_DISTINCT,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+d395d6bc40d4,RECOMMEND_FOR_ME,c678b3619b38956c03281679c30b6e120215bf41af572c26ce8c43d25144ed37,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+d399575eeebe,DENSE_SOLID,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d399575eeebe,BRIGHT_CLEAR,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d399575eeebe,SOFT_SWEET,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d399575eeebe,LIGHT_CLEAR,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d399575eeebe,WARM_FULL,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d399575eeebe,AIRY_DELICATE,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d399575eeebe,INTENSE_DISTINCT,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d399575eeebe,RECOMMEND_FOR_ME,545cfde75620c330abce185a79a69d3e0746bfb8936d370b680beabd0efd5bbd,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+d46938baf1fc,DENSE_SOLID,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+d46938baf1fc,BRIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+d46938baf1fc,SOFT_SWEET,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+d46938baf1fc,LIGHT_CLEAR,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+d46938baf1fc,WARM_FULL,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+d46938baf1fc,AIRY_DELICATE,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+d46938baf1fc,INTENSE_DISTINCT,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+d46938baf1fc,RECOMMEND_FOR_ME,f76ed43de1420cd6b20bb381dbf49245d6bcc566a26a37e7d88d300efe6d717d,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+d5045bc290a1,DENSE_SOLID,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d5045bc290a1,BRIGHT_CLEAR,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d5045bc290a1,SOFT_SWEET,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d5045bc290a1,LIGHT_CLEAR,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d5045bc290a1,WARM_FULL,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d5045bc290a1,AIRY_DELICATE,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d5045bc290a1,INTENSE_DISTINCT,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d5045bc290a1,RECOMMEND_FOR_ME,3462bd79388cfcca2a2748659d9dae5c74a391b6baa6d11bdbd0d28a8a303af2,REGISTER_CONNECTION,REGISTER_CONNECTION,"현재의 편안한 힘 사용은 유지하면서, 음역이 올라갈 때 끊기지 않는 연결 만들기",작은 강도로 연결 감각 만들기
+d87efe3c048b,DENSE_SOLID,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+d87efe3c048b,BRIGHT_CLEAR,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+d87efe3c048b,SOFT_SWEET,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+d87efe3c048b,LIGHT_CLEAR,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+d87efe3c048b,WARM_FULL,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+d87efe3c048b,AIRY_DELICATE,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+d87efe3c048b,INTENSE_DISTINCT,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+d87efe3c048b,RECOMMEND_FOR_ME,af69df9ddedc68024c70bf9c1e61941db8571387de9c6f6f586645b5e818c49e,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+e1c87ca2521c,DENSE_SOLID,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e1c87ca2521c,BRIGHT_CLEAR,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e1c87ca2521c,SOFT_SWEET,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e1c87ca2521c,LIGHT_CLEAR,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e1c87ca2521c,WARM_FULL,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e1c87ca2521c,AIRY_DELICATE,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e1c87ca2521c,INTENSE_DISTINCT,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e1c87ca2521c,RECOMMEND_FOR_ME,5116b3324bccfcbe9815b3b680b07ad97ba4e2603958f1925bcf6626e5e3692e,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+e67deea6f112,DENSE_SOLID,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+e67deea6f112,BRIGHT_CLEAR,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+e67deea6f112,SOFT_SWEET,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+e67deea6f112,LIGHT_CLEAR,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+e67deea6f112,WARM_FULL,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+e67deea6f112,AIRY_DELICATE,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+e67deea6f112,INTENSE_DISTINCT,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+e67deea6f112,RECOMMEND_FOR_ME,b39662a06f3e9ea4dc4b130727708a32f41c9c17e940197863b98aebe4b25c94,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+e8314e2d9fd3,DENSE_SOLID,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+e8314e2d9fd3,BRIGHT_CLEAR,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+e8314e2d9fd3,SOFT_SWEET,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+e8314e2d9fd3,LIGHT_CLEAR,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+e8314e2d9fd3,WARM_FULL,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+e8314e2d9fd3,AIRY_DELICATE,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+e8314e2d9fd3,INTENSE_DISTINCT,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+e8314e2d9fd3,RECOMMEND_FOR_ME,5261c27c9ec22c602e635584cf6378f2cbaa01d8f9bad8b5ef9d3890afde88ac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+e8b8aa373520,DENSE_SOLID,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+e8b8aa373520,BRIGHT_CLEAR,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+e8b8aa373520,SOFT_SWEET,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+e8b8aa373520,LIGHT_CLEAR,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+e8b8aa373520,WARM_FULL,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+e8b8aa373520,AIRY_DELICATE,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+e8b8aa373520,INTENSE_DISTINCT,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+e8b8aa373520,RECOMMEND_FOR_ME,1f6e32afb9c7e4bc5b435390ea13ecaa074a020b2b71a7c0e11b102b478820f5,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+ec93548d279f,DENSE_SOLID,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+ec93548d279f,BRIGHT_CLEAR,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+ec93548d279f,SOFT_SWEET,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+ec93548d279f,LIGHT_CLEAR,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+ec93548d279f,WARM_FULL,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+ec93548d279f,AIRY_DELICATE,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+ec93548d279f,INTENSE_DISTINCT,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+ec93548d279f,RECOMMEND_FOR_ME,6389dc24d29135627770116e3f4f4b6f3d49b99771f005ca7fdbfd629f2b5fa4,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+ed401e191813,DENSE_SOLID,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+ed401e191813,BRIGHT_CLEAR,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+ed401e191813,SOFT_SWEET,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+ed401e191813,LIGHT_CLEAR,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+ed401e191813,WARM_FULL,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+ed401e191813,AIRY_DELICATE,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+ed401e191813,INTENSE_DISTINCT,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+ed401e191813,RECOMMEND_FOR_ME,ee15e78f679e9f35b33af72356cea883f51e135c650044aba25329ec353a95a9,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+ee4a74e09cc1,DENSE_SOLID,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+ee4a74e09cc1,BRIGHT_CLEAR,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+ee4a74e09cc1,SOFT_SWEET,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+ee4a74e09cc1,LIGHT_CLEAR,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+ee4a74e09cc1,WARM_FULL,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+ee4a74e09cc1,AIRY_DELICATE,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+ee4a74e09cc1,INTENSE_DISTINCT,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+ee4a74e09cc1,RECOMMEND_FOR_ME,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+f17b7f4ff446,DENSE_SOLID,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+f17b7f4ff446,BRIGHT_CLEAR,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",발음으로 선명함 만들기
+f17b7f4ff446,SOFT_SWEET,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+f17b7f4ff446,LIGHT_CLEAR,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,BRIGHTNESS,TIMBRE_STYLE,"현재의 편안한 힘 사용은 유지하면서, 음량을 더 키우지 않고 더 밝고 선명한 음색 만들기",가볍게 또렷하게 이어보기
+f17b7f4ff446,WARM_FULL,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+f17b7f4ff446,AIRY_DELICATE,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+f17b7f4ff446,INTENSE_DISTINCT,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+f17b7f4ff446,RECOMMEND_FOR_ME,21fe30e3c3d697ca53718ad3c6dd8a81687217b31880fd98276d968ec8e57bac,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+f19129f7b4dc,DENSE_SOLID,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 단단하고 밀도 있는 소리 만들기,음량을 키우지 않고 밀도 유지하기
+f19129f7b4dc,BRIGHT_CLEAR,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 밝고 선명한 소리 만들기,발음으로 선명함 만들기
+f19129f7b4dc,SOFT_SWEET,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 부드럽고 자연스럽게 구절 이어가기,짧은 구절을 부드럽게 이어보기
+f19129f7b4dc,LIGHT_CLEAR,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+f19129f7b4dc,WARM_FULL,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 따뜻하고 풍성한 소리 만들기,음량 없이 중음 밀도 유지하기
+f19129f7b4dc,AIRY_DELICATE,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,힘을 더 쓰지 않고 더 섬세하게 이어가기,작은 강도로 섬세하게 이어보기
+f19129f7b4dc,INTENSE_DISTINCT,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 표현으로 선명도 높이기,음량 없이 표현으로 선명도 높이기
+f19129f7b4dc,RECOMMEND_FOR_ME,59cd12824b4b91e073faff3f7eef9eea667a27c0d8b43349516325b293dcfa0c,STYLE,TIMBRE_STYLE,음량을 키우지 않고 더 가볍고 맑은 소리 만들기,가볍게 또렷하게 이어보기
+fadd83f6eb33,DENSE_SOLID,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+fadd83f6eb33,BRIGHT_CLEAR,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+fadd83f6eb33,SOFT_SWEET,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+fadd83f6eb33,LIGHT_CLEAR,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+fadd83f6eb33,WARM_FULL,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+fadd83f6eb33,AIRY_DELICATE,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+fadd83f6eb33,INTENSE_DISTINCT,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기
+fadd83f6eb33,RECOMMEND_FOR_ME,0a9ca884666e5b050ad97674af547a948158d83770c8459b328c3b8045c99f72,REGISTER_CONNECTION,REGISTER_CONNECTION,음역이 올라갈 때 끊기지 않는 연결 만들기,작은 강도로 연결 감각 만들기

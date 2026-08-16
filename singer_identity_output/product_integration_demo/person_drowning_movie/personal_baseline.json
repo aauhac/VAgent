@@ -1,0 +1,9 @@
+{
+  "experimental": true,
+  "production_connected": false,
+  "recording_count": 11,
+  "expression": "현재 등록된 녹음에서 나타난 발성 특성 분포",
+  "forbidden_generalization": "영구적인 발성 특성",
+  "uses_ecapa_as_vocal_quality": false,
+  "snapshots_available": 11
+}

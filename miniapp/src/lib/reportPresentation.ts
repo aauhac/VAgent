@@ -287,6 +287,12 @@ export function scrubUserText(text: string): string {
     'g',
   );
   t = t
+    .replace(/\bsame\s+pitch\b/gi, '같은 음높이')
+    .replace(/\bpitch\b/gi, '음높이')
+    .replace(/\bphrase\b/gi, '구절')
+    .replace(/\bglide\b/gi, '이어 올리기')
+    .replace(/\bsustain\b/gi, '한 음 유지')
+    .replace(/\bonset\b/gi, '소리 시작')
     .replace(/연습 참고/g, '발성 분석 참고')
     .replace(/훈련 참고/g, '발성 분석 참고')
     .replace(new RegExp(lack, 'g'), '추가 확인 필요')

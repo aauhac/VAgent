@@ -1,0 +1,146 @@
+[
+  {
+    "audio_id": "00ae450b11f1",
+    "concerns": [
+      "HIGH_NOTE_FLIPS",
+      "HIGH_NOTE_UNSTABLE",
+      "REGISTER_CONNECTION_DIFFICULT"
+    ],
+    "primary_focus": "EFFORT",
+    "protocol_id": "EFFORT",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "00ae450b11f1",
+    "concerns": [
+      "VOICE_TOO_THIN",
+      "VOICE_TOO_DARK_MUFFLED",
+      "TIMBRE_DISSATISFIED"
+    ],
+    "primary_focus": "EFFORT",
+    "protocol_id": "EFFORT",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "00ae450b11f1",
+    "concerns": [
+      "THROAT_EFFORT",
+      "HIGH_NOTE_TOO_EFFORTFUL",
+      "VOCAL_FATIGUE"
+    ],
+    "primary_focus": "EFFORT",
+    "protocol_id": "EFFORT",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "00ae450b11f1",
+    "concerns": [
+      "PAIN_WHILE_SINGING",
+      "HIGH_NOTE_FLIPS",
+      "HIGH_NOTE_TOO_EFFORTFUL"
+    ],
+    "primary_focus": "SAFETY",
+    "protocol_id": "SAFETY",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "07564b6df5b9",
+    "concerns": [
+      "HIGH_NOTE_FLIPS",
+      "HIGH_NOTE_UNSTABLE",
+      "REGISTER_CONNECTION_DIFFICULT"
+    ],
+    "primary_focus": "REGISTER_CONNECTION",
+    "protocol_id": "REGISTER_CONNECTION",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "07564b6df5b9",
+    "concerns": [
+      "VOICE_TOO_THIN",
+      "VOICE_TOO_DARK_MUFFLED",
+      "TIMBRE_DISSATISFIED"
+    ],
+    "primary_focus": "REGISTER_CONNECTION",
+    "protocol_id": "REGISTER_CONNECTION",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "07564b6df5b9",
+    "concerns": [
+      "THROAT_EFFORT",
+      "HIGH_NOTE_TOO_EFFORTFUL",
+      "VOCAL_FATIGUE"
+    ],
+    "primary_focus": "REGISTER_CONNECTION",
+    "protocol_id": "REGISTER_CONNECTION",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "07564b6df5b9",
+    "concerns": [
+      "PAIN_WHILE_SINGING",
+      "HIGH_NOTE_FLIPS",
+      "HIGH_NOTE_TOO_EFFORTFUL"
+    ],
+    "primary_focus": "SAFETY",
+    "protocol_id": "SAFETY",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "0ada85fffc84",
+    "concerns": [
+      "HIGH_NOTE_FLIPS",
+      "HIGH_NOTE_UNSTABLE",
+      "REGISTER_CONNECTION_DIFFICULT"
+    ],
+    "primary_focus": "STABILITY",
+    "protocol_id": "STABILITY",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "0ada85fffc84",
+    "concerns": [
+      "VOICE_TOO_THIN",
+      "VOICE_TOO_DARK_MUFFLED",
+      "TIMBRE_DISSATISFIED"
+    ],
+    "primary_focus": "PRESENCE",
+    "protocol_id": "PRESENCE",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "0ada85fffc84",
+    "concerns": [
+      "THROAT_EFFORT",
+      "HIGH_NOTE_TOO_EFFORTFUL",
+      "VOCAL_FATIGUE"
+    ],
+    "primary_focus": "REGISTER_CONNECTION",
+    "protocol_id": "REGISTER_CONNECTION",
+    "findings": [],
+    "audit_status": "PASS"
+  },
+  {
+    "audio_id": "0ada85fffc84",
+    "concerns": [
+      "PAIN_WHILE_SINGING",
+      "HIGH_NOTE_FLIPS",
+      "HIGH_NOTE_TOO_EFFORTFUL"
+    ],
+    "primary_focus": "SAFETY",
+    "protocol_id": "SAFETY",
+    "findings": [],
+    "audit_status": "PASS"
+  }
+]

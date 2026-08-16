@@ -44,13 +44,12 @@ _BANNED_USER_SUBSTRINGS = (
 def _reg_bucket(snap: dict[str, Any]) -> str:
     reg = snap.get("register") or {}
     st = str(reg.get("status") or "").upper()
-    if st in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS", "BREAK", "FAIL", "ABRUPT"):
+    if st in ("DISRUPTED", "UNSTABLE", "TRANSITION_EVENTS", "TRANSITION_UNSTABLE", "BREAK", "FAIL", "ABRUPT"):
         return "DISRUPTED"
     if st in ("PARTIAL", "INSUFFICIENT", "MIXED"):
         return "PARTIAL"
     if st in ("CONNECTED", "SMOOTH", "STABLE", "CONTINUOUS", "STABLE_LIKE"):
         return "CONNECTED"
-    # canonical_register on vocal style / type
     return "UNKNOWN"
 
 
@@ -255,6 +254,7 @@ def build_functional_hypothesis(
             }
             if effort in ("HIGH", "MODERATE"):
                 hyp["secondary_factors"] = ["EFFORT"]
+            hyp["focus_selection_reason"] = "REGISTER_EVIDENCE"
             return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
         if register == "PARTIAL" and (effort in ("HIGH", "MODERATE") or contact == "FIRM"):
@@ -297,6 +297,7 @@ def build_functional_hypothesis(
                 "confidence_label": "medium",
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
+                "focus_selection_reason": "REGISTER_EVIDENCE",
             }
             return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
@@ -316,6 +317,7 @@ def build_functional_hypothesis(
                 "confidence_label": "medium",
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
+                "focus_selection_reason": "REGISTER_EVIDENCE",
             }
             return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
@@ -336,23 +338,47 @@ def build_functional_hypothesis(
                 "confidence_label": "low",
                 "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
                 "scope_note": scope,
+                "focus_selection_reason": "EFFORT_EVIDENCE",
             }
             return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
+        if _stability_ok(snap) is False:
+            hyp = {
+                "concern_id": concern_id,
+                "guidance_level": GUIDANCE_SONG_DIRECT,
+                "primary_focus": "STABILITY",
+                "secondary_factors": [],
+                "interpretation": (
+                    "이번 노래에서는 성구 연결을 단정하기 어렵지만, "
+                    "고음 구간에서 안정성이 떨어지는 패턴이 보여요. "
+                    "먼저 짧은 구간에서 흔들림을 줄이는 쪽이 고음 접근에 도움이 될 수 있어요."
+                ),
+                "evidence": ["song_stability_unstable"],
+                "contra_evidence": [],
+                "confidence_label": "low",
+                "causal_certainty": "FUNCTIONAL_HYPOTHESIS",
+                "scope_note": scope,
+                "focus_selection_reason": "STABILITY_EVIDENCE",
+            }
+            return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
+
+        # No connection / effort / stability support → generic high-note access (not REGISTER fallback)
         hyp = {
             "concern_id": concern_id,
             "guidance_level": GUIDANCE_SAFE_GENERAL,
-            "primary_focus": "REGISTER_CONNECTION",
+            "primary_focus": "HIGH_NOTE",
             "secondary_factors": [],
             "interpretation": (
+                "이번 녹음만으로 성구 연결·힘 사용 원인을 좁히기 어려워요. "
                 "높은 음에 닿으려면 세게 밀기보다, "
-                "편안한 중음에서 작은 강도로 연결하는 쪽을 먼저 비교해보세요."
+                "편안한 중음에서 작은 강도로 범위를 조금씩 넓히는 쪽을 먼저 시도해보세요."
             ),
             "evidence": [],
             "contra_evidence": [],
             "confidence_label": "low",
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
+            "focus_selection_reason": "GENERAL_HIGH_NOTE_ACCESS",
         }
         return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
@@ -420,6 +446,7 @@ def build_functional_hypothesis(
             "confidence_label": "low",
             "causal_certainty": "GUIDANCE_ONLY",
             "scope_note": scope,
+            "focus_selection_reason": "SEMANTIC_FALLBACK",
         }
         return _attach_practice(hyp, category=category, snap=snap, timbre_goal=timbre_goal)
 
@@ -510,6 +537,8 @@ def _copy_qa_contract(out: dict[str, Any], hyp: dict[str, Any]) -> None:
     out["working_direction"] = hyp.get("working_direction")
     out["comparison"] = hyp.get("comparison") or hyp.get("comparison_protocol")
     out["comparison_protocol"] = out["comparison"]
+    out["prescription"] = hyp.get("prescription")
+    out["coaching_protocol_ref"] = hyp.get("coaching_protocol_ref")
     out["counts_for_consensus"] = hyp.get("counts_for_consensus")
     if hyp.get("evidence_used") is not None:
         out["evidence_used"] = hyp.get("evidence_used")

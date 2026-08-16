@@ -131,7 +131,14 @@ def test_unresolved_cause_can_still_return_safe_guidance():
     )
     assert ev.get("guidance_level") == "SAFE_GENERAL_GUIDANCE"
     assert "→" in (ev.get("answer_hint") or "")
-    assert "연습" in (ev.get("answer_hint") or "") or "방향" in (ev.get("answer_hint") or "")
+    ans = ev.get("answer_hint") or ""
+    assert (
+        "연습" in ans
+        or "방향" in ans
+        or "립트릴" in ans
+        or "glide" in ans
+        or (ev.get("prescription") or {}).get("instruction")
+    )
 
 
 def test_high_note_cannot_reach_song_register_disrupted():

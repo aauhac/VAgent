@@ -1,0 +1,35 @@
+{
+  "audio_id": "e67deea6f112",
+  "segments": [
+    {
+      "start_sec": 0.0,
+      "end_sec": 3.0,
+      "quality": 0.848
+    },
+    {
+      "start_sec": 1.5,
+      "end_sec": 4.5,
+      "quality": 0.8986666666666667
+    },
+    {
+      "start_sec": 3.0,
+      "end_sec": 6.0,
+      "quality": 0.8573333333333333
+    },
+    {
+      "start_sec": 4.5,
+      "end_sec": 7.5,
+      "quality": 0.8879999999999999
+    },
+    {
+      "start_sec": 6.0,
+      "end_sec": 9.0,
+      "quality": 0.8733333333333333
+    },
+    {
+      "start_sec": 7.5,
+      "end_sec": 9.12,
+      "quality": 0.6383010549830749
+    }
+  ]
+}

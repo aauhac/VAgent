@@ -1,0 +1,264 @@
+{
+  "analysis_version": "2.0",
+  "recording_id": "5f423fdb91574d9b9df7dbeee9b18f0f",
+  "created_at": "2026-08-11T14:31:01.633190+00:00",
+  "analysis_status": "completed",
+  "feedback_status": "skipped",
+  "analysis_mode": "FUNCTIONAL",
+  "input_mode": "MIXED",
+  "input_mode_user_declared": false,
+  "separation_required": true,
+  "separation_used": true,
+  "analysis_time_origin_sec": 0.0,
+  "analysis_clip_start_sec": 0.0,
+  "analysis_clip_end_sec": 1.0,
+  "original_duration_sec": 1.0,
+  "time_context": {
+    "analysis_time_origin_sec": 0.0,
+    "analysis_clip_start_sec": 0.0,
+    "analysis_clip_end_sec": 1.0,
+    "original_duration_sec": 1.0,
+    "truncated": false,
+    "policy": "full"
+  },
+  "audio": {
+    "duration_sec": 1.0,
+    "score_duration_sec": 1.0,
+    "sample_rate": 44100,
+    "source_mode": "separated",
+    "original_path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\upload.wav",
+    "original_filename": "upload.wav",
+    "analysis_wav_path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\analysis.wav",
+    "preview_path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\preview.wav",
+    "separation": {
+      "used": true,
+      "source_mode": "separated",
+      "model": "htdemucs",
+      "vocals_path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\demucs\\vocals.wav",
+      "no_vocals_path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\demucs\\no_vocals.wav",
+      "skipped": false,
+      "separation_status": "success",
+      "failed": false,
+      "has_no_vocals": true
+    },
+    "separation_status": "success",
+    "duration_policy": {
+      "policy": "full",
+      "start_sec": 0.0,
+      "end_sec": 1.0,
+      "clip_sec": 1.0,
+      "voiced_density": null,
+      "truncated": false
+    },
+    "time_context": {
+      "analysis_time_origin_sec": 0.0,
+      "analysis_clip_start_sec": 0.0,
+      "analysis_clip_end_sec": 1.0,
+      "original_duration_sec": 1.0,
+      "truncated": false,
+      "policy": "full"
+    },
+    "content_sha256": "d46938baf1fc1019581e15818aac59d87cb4b5c18d1e0c88f40d3e815dedc149",
+    "analysis_waveform_sha256": "b9cba3ac2ff0ef4ea362a980d951b87f97301284798618aa2887457aef0eca45"
+  },
+  "fingerprints": {
+    "source_mode": "separated",
+    "source": {
+      "label": "source",
+      "path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\upload.wav",
+      "original_filename": "upload.wav",
+      "exists": true,
+      "size_bytes": 32044,
+      "sha256": "d46938baf1fc1019581e15818aac59d87cb4b5c18d1e0c88f40d3e815dedc149"
+    },
+    "analysis_wav": {
+      "label": "analysis_wav",
+      "path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\analysis.wav",
+      "original_filename": "analysis.wav",
+      "exists": true,
+      "size_bytes": 88244,
+      "sha256": "e92260a3bf1a87ba9d3f73653b3c030a64afd65f6647e3b904461cf4fb351061"
+    },
+    "vocals": {
+      "label": "vocals",
+      "path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\demucs\\vocals.wav",
+      "original_filename": "vocals.wav",
+      "exists": true,
+      "size_bytes": 176480,
+      "sha256": "a4c39f600bd4f0e656a24a9a8dbca1dce38c0871c9bc2327527d4761fb5152b9"
+    },
+    "waveform": {
+      "n_samples": 44100,
+      "duration_sec": 1.0,
+      "sample_rate": 44100,
+      "rms": 0.0008033107151277363,
+      "peak": 0.0021389632020145655,
+      "full_sha256": "b9cba3ac2ff0ef4ea362a980d951b87f97301284798618aa2887457aef0eca45",
+      "first_1s_sha256": "b9cba3ac2ff0ef4ea362a980d951b87f97301284798618aa2887457aef0eca45",
+      "last_1s_sha256": "b9cba3ac2ff0ef4ea362a980d951b87f97301284798618aa2887457aef0eca45"
+    },
+    "duration_policy": {
+      "policy": "full",
+      "start_sec": 0.0,
+      "end_sec": 1.0,
+      "clip_sec": 1.0,
+      "voiced_density": null,
+      "truncated": false
+    },
+    "full_duration_sec": 1.0,
+    "score_duration_sec": 1.0,
+    "time_context": {
+      "analysis_time_origin_sec": 0.0,
+      "analysis_clip_start_sec": 0.0,
+      "analysis_clip_end_sec": 1.0,
+      "original_duration_sec": 1.0,
+      "truncated": false,
+      "policy": "full"
+    }
+  },
+  "user_info": {
+    "user_id": null,
+    "song_title": null,
+    "artist": null,
+    "section": null
+  },
+  "quality": {
+    "status": "fail",
+    "confidence": 0.15,
+    "reasons": [
+      "녹음이 너무 짧음 (1.0s < 3.0s)",
+      "분석 가능한 유성음 구간이 부족함 (0.52s)",
+      "녹음 레벨이 너무 작음 (-61.9 dBFS)",
+      "저역 잡음이 다소 높음 (20.3 dB)"
+    ],
+    "codes": [
+      "SHORT_DURATION",
+      "SHORT_VOICED_DURATION",
+      "LOW_LEVEL",
+      "RUMBLE"
+    ],
+    "metrics": {
+      "duration_sec": 1.0,
+      "rms_dbfs": -61.9,
+      "clipping_ratio": 0.0,
+      "silent_ratio": 0.0,
+      "voiced_ratio": 0.5172,
+      "voiced_duration_sec": 0.517,
+      "rumble_ratio_db": 20.3
+    },
+    "user_message": "정확한 분석이 어려운 녹음이에요. 더 조용한 곳에서 목소리를 조금 더 크게, 조금 더 길게 불러 다시 시도해 주세요.",
+    "version": "quality-gate-v1.0",
+    "calibration_status": "uncalibrated"
+  },
+  "vocal_quality_profile": {
+    "available": false,
+    "reason": "quality_gate_failed"
+  },
+  "vocal_function_profile": {
+    "available": false,
+    "reason": "quality_gate_failed",
+    "functional_quality": "UNAVAILABLE"
+  },
+  "features": {
+    "waveform": {
+      "rms_mean": 0.00079,
+      "rms_max": 0.000994,
+      "peak_amplitude": 0.002139,
+      "dynamic_range_db": 9.66,
+      "silent_ratio": 0.0,
+      "envelope": [
+        {
+          "t": 0,
+          "rms": 0.000803
+        }
+      ]
+    },
+    "spectral": {
+      "band_energy_db": {
+        "80_250": -35.05,
+        "250_500": -37.32,
+        "500_800": -30.0,
+        "800_1500": -36.02,
+        "1500_2500": -44.61,
+        "2500_4000": -46.66,
+        "4000_6000": -48.87,
+        "6000_10000": -60.1
+      },
+      "spectral_centroid_mean_hz": 1513.52,
+      "acoustic_metrics": {
+        "rumble_ratio_db": 20.30225372314453,
+        "weight_gap_db": 21.358013153076172,
+        "mouth_gap_db": 16.33017349243164,
+        "air_ratio_db": -15.229331970214844,
+        "spr_db": 26.347536087036133,
+        "spectral_slope_db_per_oct": -6.22034235398438,
+        "singer_formant_center_hz": 2756.25,
+        "singer_formant_prominence_db": 27.28843116760254
+      }
+    },
+    "phonation": {
+      "sustained_regions": [],
+      "median_residual_std_cents": null,
+      "median_rms_variation_db": null,
+      "sustained_count": 0,
+      "legacy_pitch_stability_cents": null,
+      "f0_mean_hz": null,
+      "voiced_ratio": 0.5172
+    },
+    "timbre": {
+      "brightness_score": 0.298,
+      "warmth_score": 0.635,
+      "boxiness_score": 0.797,
+      "presence_score": 0.382,
+      "airiness_score": 0.123
+    }
+  },
+  "score": {
+    "available": false,
+    "version": "vocal-score-v3.0",
+    "calibration_status": "uncalibrated",
+    "overall": null,
+    "label": null,
+    "areas": [],
+    "reason": "quality_gate_failed"
+  },
+  "optional_analysis": {
+    "vibrato": {
+      "available": false,
+      "rate_hz": null,
+      "depth_cents": null,
+      "regularity": null,
+      "regions_used": 0,
+      "note": "충분히 긴 지속음에서 규칙적인 비브라토가 측정되지 않았어요. 없어도 문제 없어요."
+    }
+  },
+  "issues": [],
+  "timeline": [],
+  "strengths": [],
+  "analysis_notes": [
+    "녹음 품질이 분석 기준을 통과하지 못해 실력 점수를 제공하지 않아요.",
+    "정확한 분석이 어려운 녹음이에요. 더 조용한 곳에서 목소리를 조금 더 크게, 조금 더 길게 불러 다시 시도해 주세요."
+  ],
+  "preview_path": "runtime\\5f423fdb91574d9b9df7dbeee9b18f0f\\preview.wav",
+  "preview_report": {
+    "method": "legacy_preview",
+    "high_shelf_applied": true,
+    "high_shelf_freq_hz": 3500,
+    "high_shelf_gain_db": 4.0,
+    "air_shelf_freq_hz": 8000,
+    "air_shelf_gain_db": 2.0,
+    "compressor_threshold_db": -24.0,
+    "compressor_ratio": 2.0,
+    "limiter_ceiling": 0.98,
+    "used_for_analysis": false,
+    "used_for_preview": true,
+    "skipped": false,
+    "time_base": "original_file"
+  },
+  "artifact_flags": {
+    "demucs_high_band_loss_likely": true,
+    "high_band_loss_likely": true,
+    "relative_low_mid_inflation_likely": true,
+    "source_mode": "separated"
+  }
+}

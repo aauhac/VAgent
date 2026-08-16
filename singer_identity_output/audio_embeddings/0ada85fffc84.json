@@ -1,0 +1,14 @@
+{
+  "audio_id": "0ada85fffc84",
+  "embedding_dim": 192,
+  "segment_count": 4,
+  "used_segment_count": 3,
+  "quality": "FAIR",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "0ada85fffc84819f704dff0073483d5bf536f635059c7caafa8129c9759a6307",
+  "filename": "테스트.m4a",
+  "display_name": "테스트.m4a",
+  "path": "C:\\VocalAgent\\테스트.m4a"
+}

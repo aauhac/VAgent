@@ -1,0 +1,516 @@
+{
+  "analysis_version": "2.0",
+  "analysis_mode": "song",
+  "recording_id": "983379d1fe46",
+  "analysis_status": "completed",
+  "feedback_status": "skipped",
+  "tier": "free",
+  "audio": {
+    "duration_sec": 6.36,
+    "sample_rate": 44100,
+    "source_mode": "raw",
+    "separation": {
+      "used": false
+    }
+  },
+  "quality": {
+    "status": "warn",
+    "confidence": 0.65,
+    "reasons": [
+      "저역 잡음이 다소 높음 (8.6 dB)"
+    ],
+    "codes": [
+      "RUMBLE"
+    ],
+    "metrics": {
+      "duration_sec": 6.36,
+      "rms_dbfs": -33.51,
+      "silent_ratio": 0.219,
+      "voiced_ratio": 0.9051,
+      "voiced_duration_sec": 5.756,
+      "clipping_ratio": 0.0
+    },
+    "user_message": "분석은 가능하지만 녹음 조건이 완벽하지 않아요. 결과는 참고용으로 봐 주세요."
+  },
+  "score": {
+    "available": true,
+    "version": "vocal-score-v3.0",
+    "calibration_status": "uncalibrated",
+    "overall": 57.3,
+    "label": "개선 여지가 있어요",
+    "overall_display_state": "FULL",
+    "reliable_axis_count": 4,
+    "areas": [
+      {
+        "area_id": "stability",
+        "display_name": "발성 안정성",
+        "score": 68.8,
+        "status": "normal",
+        "status_label": "보통 이상",
+        "confidence": 0.765
+      },
+      {
+        "area_id": "projection",
+        "display_name": "목소리 전달력",
+        "score": 82.1,
+        "status": "good",
+        "status_label": "좋음",
+        "confidence": 0.722
+      },
+      {
+        "area_id": "resonance",
+        "display_name": "공명 균형",
+        "score": 35.0,
+        "status": "needs_work",
+        "status_label": "집중 개선 권장",
+        "confidence": 0.68
+      },
+      {
+        "area_id": "dynamic_control",
+        "display_name": "강약 컨트롤",
+        "score": 77.6,
+        "status": "normal",
+        "status_label": "보통 이상",
+        "confidence": 0.574
+      }
+    ],
+    "best_area": {
+      "area_id": "projection",
+      "display_name": "목소리 전달력",
+      "score": 82.1,
+      "status": "good"
+    },
+    "focus_area": {
+      "area_id": "resonance",
+      "display_name": "공명 균형",
+      "score": 35.0,
+      "status": "needs_work"
+    },
+    "reason": null
+  },
+  "short_summary": "오늘의 발성 요약. 이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요. 자세한 발성 상태 프로필은 노래 상세 리포트에서 확인할 수 있어요.",
+  "vocal_quality_teaser": [
+    "이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요."
+  ],
+  "vocal_function_teaser": [
+    "이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요."
+  ],
+  "vocal_type_teaser": {
+    "available": true,
+    "display_name": "흉성 쪽 음향 성향이 두드러지는 발성형",
+    "description": "이번 노래에서는 흉성 쪽 음향 성향이 비교적 분명히 나타났어요.",
+    "confidence": "medium",
+    "confidence_label": "중간",
+    "style_id": "CHEST_DRIVEN",
+    "head_chest": {
+      "available": true,
+      "chest_ratio": 75,
+      "head_ratio": 25,
+      "broad_label": "흉성 쪽 음향 성향이 더 강한 편",
+      "show_ratio": true
+    },
+    "source_balance": {
+      "balance_class": "CHEST_DOMINANT",
+      "label": "흉성 쪽 음향 성향이 더 강한 편",
+      "show_ratio": true,
+      "chest_percent": 75,
+      "head_percent": 25
+    },
+    "key_traits": [
+      {
+        "key": "effort",
+        "label": "힘",
+        "value": "낮은 편"
+      },
+      {
+        "key": "contact",
+        "label": "접촉감",
+        "value": "가벼운 편"
+      },
+      {
+        "key": "breathiness",
+        "label": "숨 섞임",
+        "value": "중간"
+      }
+    ],
+    "vocal_style_profile": {
+      "version": "vocal-style-v1.0",
+      "available": true,
+      "style_id": "CHEST_DRIVEN",
+      "style_mode": "NAMED",
+      "display_name": "흉성 쪽 음향 성향이 두드러지는 발성형",
+      "description": "이번 노래에서는 흉성 쪽 음향 성향이 비교적 분명히 나타났어요.",
+      "primary_traits": [
+        {
+          "key": "effort",
+          "label": "힘",
+          "value": "낮은 편"
+        },
+        {
+          "key": "contact",
+          "label": "접촉감",
+          "value": "가벼운 편"
+        },
+        {
+          "key": "breathiness",
+          "label": "숨 섞임",
+          "value": "중간"
+        }
+      ],
+      "axes": {
+        "effort": {
+          "value": "LOW",
+          "status": "LOW",
+          "continuum": 0.18,
+          "confidence": "medium",
+          "available": true,
+          "display": "낮은 편",
+          "evidence_source": [
+            "effort_assessment"
+          ],
+          "concept": "effort",
+          "ui_label": "힘"
+        },
+        "contact": {
+          "value": "LIGHT",
+          "status": "LIGHT",
+          "continuum": 0.25,
+          "confidence": "high",
+          "available": true,
+          "display": "가벼운 편",
+          "evidence_source": [
+            "glottal_contact_profile",
+            "modifiers"
+          ],
+          "concept": "contact",
+          "ui_label": "접촉감"
+        },
+        "functional_breathiness": {
+          "value": "MID",
+          "status": "MID",
+          "continuum": 0.5,
+          "confidence": "medium",
+          "available": true,
+          "display": "중간",
+          "evidence_source": [
+            "air_leakage_breathiness"
+          ],
+          "concept": "functional_breathiness",
+          "ui_label": "숨 섞임"
+        },
+        "breathiness": {
+          "value": "MID",
+          "status": "MID",
+          "continuum": 0.5,
+          "confidence": "medium",
+          "available": true,
+          "display": "중간",
+          "evidence_source": [
+            "air_leakage_breathiness"
+          ],
+          "concept": "functional_breathiness",
+          "ui_label": "숨 섞임"
+        },
+        "timbre_airiness": {
+          "value": "LOW",
+          "status": "LOW",
+          "continuum": 0.34,
+          "confidence": "medium",
+          "available": true,
+          "display": "적은 편",
+          "evidence_source": [
+            "timbre_profile.airiness"
+          ],
+          "concept": "timbre_airiness",
+          "ui_label": "음색의 공기감"
+        },
+        "register_connection": {
+          "value": "PARTIAL",
+          "status": "PARTIAL",
+          "confidence": "medium",
+          "evidence_source": [
+            "dimension:STABLE_LIKE"
+          ],
+          "available": true,
+          "display": "보통",
+          "title": "부분적으로 연결",
+          "description": "성구 연결이 일부 구간에서만 확인됐어요."
+        },
+        "stability": {
+          "value": "STABLE",
+          "status": "STABLE",
+          "continuum": 0.78,
+          "confidence": "medium",
+          "available": true,
+          "display": "안정적인 편",
+          "evidence_source": [
+            "phonation_regularity"
+          ],
+          "concept": "stability",
+          "ui_label": "안정성"
+        },
+        "resonance_presence": {
+          "value": "LOW",
+          "status": "LOW",
+          "continuum": 0.078,
+          "confidence": "medium",
+          "available": true,
+          "display": "낮은 편",
+          "evidence_source": [
+            "timbre_profile.presence"
+          ],
+          "concept": "resonance_presence",
+          "ui_label": "존재감"
+        },
+        "brightness": {
+          "value": "DARK",
+          "status": "DARK",
+          "continuum": 0.237,
+          "confidence": "medium",
+          "available": true,
+          "display": "어두운 편",
+          "evidence_source": [
+            "timbre_profile.brightness"
+          ],
+          "concept": "brightness",
+          "ui_label": "밝기"
+        },
+        "source_balance": {
+          "value": "CHEST_LEANING",
+          "status": "CHEST_LEANING",
+          "confidence": "medium",
+          "evidence_source": [
+            "balance:CHEST_DOMINANT"
+          ],
+          "available": true,
+          "display": "흉성 쪽",
+          "show_ratio": true,
+          "chest_percent": 75,
+          "head_percent": 25,
+          "label": "흉성 쪽 음향 성향이 더 강한 편"
+        }
+      },
+      "canonical_acoustic_axes": {
+        "version": "canonical-acoustic-axes-v1",
+        "axes": {
+          "effort": {
+            "value": "LOW",
+            "status": "LOW",
+            "continuum": 0.18,
+            "confidence": "medium",
+            "available": true,
+            "display": "낮은 편",
+            "evidence_source": [
+              "effort_assessment"
+            ],
+            "concept": "effort",
+            "ui_label": "힘"
+          },
+          "contact": {
+            "value": "LIGHT",
+            "status": "LIGHT",
+            "continuum": 0.25,
+            "confidence": "high",
+            "available": true,
+            "display": "가벼운 편",
+            "evidence_source": [
+              "glottal_contact_profile",
+              "modifiers"
+            ],
+            "concept": "contact",
+            "ui_label": "접촉감"
+          },
+          "functional_breathiness": {
+            "value": "MID",
+            "status": "MID",
+            "continuum": 0.5,
+            "confidence": "medium",
+            "available": true,
+            "display": "중간",
+            "evidence_source": [
+              "air_leakage_breathiness"
+            ],
+            "concept": "functional_breathiness",
+            "ui_label": "숨 섞임"
+          },
+          "breathiness": {
+            "value": "MID",
+            "status": "MID",
+            "continuum": 0.5,
+            "confidence": "medium",
+            "available": true,
+            "display": "중간",
+            "evidence_source": [
+              "air_leakage_breathiness"
+            ],
+            "concept": "functional_breathiness",
+            "ui_label": "숨 섞임"
+          },
+          "timbre_airiness": {
+            "value": "LOW",
+            "status": "LOW",
+            "continuum": 0.34,
+            "confidence": "medium",
+            "available": true,
+            "display": "적은 편",
+            "evidence_source": [
+              "timbre_profile.airiness"
+            ],
+            "concept": "timbre_airiness",
+            "ui_label": "음색의 공기감"
+          },
+          "register_connection": {
+            "value": "PARTIAL",
+            "status": "PARTIAL",
+            "continuum": null,
+            "confidence": "medium",
+            "available": true,
+            "display": "보통",
+            "evidence_source": [
+              "dimension:STABLE_LIKE"
+            ],
+            "concept": "register_connection",
+            "ui_label": "성구 연결"
+          },
+          "stability": {
+            "value": "STABLE",
+            "status": "STABLE",
+            "continuum": 0.78,
+            "confidence": "medium",
+            "available": true,
+            "display": "안정적인 편",
+            "evidence_source": [
+              "phonation_regularity"
+            ],
+            "concept": "stability",
+            "ui_label": "안정성"
+          },
+          "resonance_presence": {
+            "value": "LOW",
+            "status": "LOW",
+            "continuum": 0.078,
+            "confidence": "medium",
+            "available": true,
+            "display": "낮은 편",
+            "evidence_source": [
+              "timbre_profile.presence"
+            ],
+            "concept": "resonance_presence",
+            "ui_label": "존재감"
+          },
+          "brightness": {
+            "value": "DARK",
+            "status": "DARK",
+            "continuum": 0.237,
+            "confidence": "medium",
+            "available": true,
+            "display": "어두운 편",
+            "evidence_source": [
+              "timbre_profile.brightness"
+            ],
+            "concept": "brightness",
+            "ui_label": "밝기"
+          },
+          "source_balance": {
+            "value": "CHEST_LEANING",
+            "status": "CHEST_LEANING",
+            "continuum": null,
+            "confidence": "medium",
+            "available": true,
+            "display": "흉성 쪽",
+            "evidence_source": [
+              "source_balance"
+            ],
+            "concept": "source_balance",
+            "ui_label": "흉성·두성 관련 음향 성향",
+            "show_ratio": true,
+            "chest_percent": 75,
+            "head_percent": 25,
+            "label": "흉성 쪽 음향 성향이 더 강한 편"
+          }
+        },
+        "reliable_axis_ids": [
+          "effort",
+          "contact",
+          "functional_breathiness",
+          "timbre_airiness",
+          "register_connection",
+          "stability",
+          "resonance_presence",
+          "brightness",
+          "source_balance"
+        ],
+        "reliable_count": 9
+      },
+      "confidence_label": "medium",
+      "evidence_summary": [
+        "source_balance:CHEST_LEANING"
+      ],
+      "canonical_register": {
+        "status": "PARTIAL",
+        "title": "부분적으로 연결",
+        "description": "성구 연결이 일부 구간에서만 확인됐어요.",
+        "profile_label": "보통",
+        "confidence_label": "medium",
+        "provenance": [
+          "dimension:STABLE_LIKE"
+        ],
+        "mode": "SONG_DETAIL",
+        "axis_value": "PARTIAL",
+        "available": true
+      },
+      "register_strategy_public": {
+        "status": "PARTIAL",
+        "title": "부분적으로 연결",
+        "description": "성구 연결이 일부 구간에서만 확인됐어요.",
+        "profile_label": "보통"
+      },
+      "source_balance_presentation": {
+        "balance_class": "CHEST_LEANING",
+        "label": "흉성 쪽 음향 성향이 더 강한 편",
+        "show_ratio": true,
+        "chest_percent": 75,
+        "head_percent": 25,
+        "conflicted": false
+      }
+    }
+  },
+  "main_finding_teaser": {
+    "none": true,
+    "title": "이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.",
+    "detail": ""
+  },
+  "premium_available": true,
+  "products_available": {
+    "song_detail": true,
+    "diagnostic": true
+  },
+  "premium_cta": {
+    "title": "정밀 발성 진단",
+    "body": "필요한 항목만 짧은 추가 녹음으로 더 정밀하게 확인할 수 있어요. 노래 상세 리포트는 별도 상품입니다."
+  },
+  "song_detail_cta": {
+    "title": "이 노래를 더 자세히 알고 싶나요?",
+    "body": "발성 프로필, 특징 구간 듣기, 음역별 구성, 분석 신뢰도를 추가 녹음 없이 확인할 수 있어요."
+  },
+  "diagnostic_cta": {
+    "title": "내 발성 자체를 더 정밀하게 알고 싶나요?",
+    "body": "노래만으로 구분하기 어려운 항목을 짧은 추가 녹음으로 다시 확인할 수 있어요."
+  },
+  "diagnostic_offer": {
+    "unresolved_count": 2,
+    "unresolved_labels": [
+      "숨 섞임",
+      "성구 연결"
+    ],
+    "selected_task_count": null,
+    "provisional_task_count": 2,
+    "planned_task_count": null,
+    "estimated_duration_text": "약 2분",
+    "required": true,
+    "required_tasks": true,
+    "precision_requires_recording": true
+  },
+  "disclaimer": "이 결과는 녹음된 음성의 음향적 특성을 바탕으로 발성 패턴을 분석한 발성 분석 참고 정보입니다. 성대의 실제 구조나 질환을 진단하는 검사가 아닙니다.",
+  "preview_available": false
+}

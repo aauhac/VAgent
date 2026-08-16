@@ -1,0 +1,14 @@
+{
+  "audio_id": "10d07cc48c55",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 10,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "10d07cc48c5598fbd2497f0391de54c659e0fafdd7133ad7c9678f3c11b93e6f",
+  "filename": "편안세게.m4a",
+  "display_name": "편안세게.m4a",
+  "path": "C:\\VocalAgent\\편안세게.m4a"
+}

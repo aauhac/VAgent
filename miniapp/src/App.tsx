@@ -14,6 +14,7 @@ import DiagnosticRecordingIntro from './pages/DiagnosticRecordingIntro';
 import DiagnosticTask from './pages/DiagnosticTask';
 import PremiumReport from './pages/PremiumReport';
 import DiagnosticResume from './pages/DiagnosticResume';
+import ProgressInsight from './pages/ProgressInsight';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/analyzing/:id" element={<Analyzing />} />
         <Route path="/result/:id" element={<Result />} />
         <Route path="/result/:id/detail" element={<SongDetailReport />} />
+        <Route path="/progress" element={<ProgressInsight />} />
         <Route path="/history" element={<History />} />
         <Route path="/premium" element={<PremiumUnlock />} />
         <Route path="/diagnostic/:sessionId/concerns" element={<ConcernIntake />} />

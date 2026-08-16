@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from audio_analyzer.env_utils import load_dotenv_if_available
 
 from .api.routes import router
+from .api.voice_profile_routes import router as voice_profile_router
 from .config import (
     artifact_storage_mode,
     database_url,
@@ -24,6 +25,7 @@ from .config import (
     is_production,
     log_startup_banner,
     runtime_writable,
+    singer_identity_enabled,
 )
 from .middleware.request_context import RequestContextMiddleware
 
@@ -53,6 +55,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(voice_profile_router)
 
 
 @app.on_event("startup")
@@ -111,6 +114,7 @@ def health() -> dict:
         payload["debug"] = {
             "runtime_dir": str(runtime),
             "multi_instance_safe": False,
+            "singer_identity_enabled": singer_identity_enabled(),
         }
     return payload
 

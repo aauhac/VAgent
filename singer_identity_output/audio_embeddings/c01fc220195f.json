@@ -1,0 +1,14 @@
+{
+  "audio_id": "c01fc220195f",
+  "embedding_dim": 192,
+  "segment_count": 2,
+  "used_segment_count": 2,
+  "quality": "FAIR",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "c01fc220195f24668f8242f622fcaed321c4835de32592ae478c8e34c588a3ca",
+  "filename": "upload.webm",
+  "display_name": "upload.webm · c01fc220",
+  "path": "C:\\VocalAgent\\runtime\\diagnostic_sessions\\9794b5ceaddf434d9fcec7115a9be1ea\\tasks\\sustain_a\\attempt_1\\upload.webm"
+}

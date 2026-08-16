@@ -1,0 +1,10 @@
+metric,value
+status,OK
+eer,0.06944444444444445
+roc_auc,0.9106481481481481
+same_singer_mean,0.6435272097587585
+same_singer_std,0.06925761900739699
+different_singer_mean,0.346707477419275
+different_singer_std,0.19206225612464933
+n_same,6
+n_diff,360

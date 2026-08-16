@@ -1,0 +1,117 @@
+{
+  "singer_id": "person_drowning_movie",
+  "profile_id": "person_drowning_movie_profile_v3",
+  "profile_version": 3,
+  "confirmed_recording_count": 11,
+  "model_name": "ECAPA-TDNN",
+  "model_version": "singer-id-baseline-v1",
+  "embedding_dim": 192,
+  "mean_centroid_method": "L2-normalize(mean(L2-normalized embeddings))",
+  "medoid_audio_id": "8156c1254947",
+  "medoid_filename": "요즘 바쁜가봐.m4a",
+  "medoid_mean_similarity_to_others": 0.7773108184337616,
+  "most_central_recording": "요즘 바쁜가봐.m4a",
+  "most_atypical_recording": "love again.m4a",
+  "within_similarity_statistics": {
+    "mean": 0.7270379835909063,
+    "median": 0.7392047643661499,
+    "min": 0.49501311779022217,
+    "max": 0.8596420288085938,
+    "std": 0.07430684168583286,
+    "p25": 0.6817997694015503,
+    "p75": 0.7840715050697327,
+    "n_pairs": 55,
+    "p10": 0.6283269643783569,
+    "p90": 0.8249814748764038
+  },
+  "hard_positive_cases": [
+    "love again.m4a",
+    "bluemoon.m4a",
+    "옥탑방.m4a"
+  ],
+  "default_strategy": "SINGLE_CENTROID",
+  "multi_prototype_production_enabled": false,
+  "strategy_verdict": "MULTI_PROTOTYPE_PROMISING_BUT_UNVALIDATED",
+  "false_accept_evaluation": "INSUFFICIENT_MULTI_SINGER_NEGATIVES",
+  "model_candidates_excluded_from_profile": true,
+  "created_at": "2026-08-16T12:38:20.368205+00:00",
+  "confirmed_recordings": [
+    {
+      "filename": "drowning.m4a",
+      "audio_id": "5fdfa9eb73e5",
+      "sha256": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "movie.m4a",
+      "audio_id": "6fb8c8208c80",
+      "sha256": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "거의동115.m4a",
+      "audio_id": "d5045bc290a1",
+      "sha256": "d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "거의동116.m4a",
+      "audio_id": "3ced1f723c5e",
+      "sha256": "3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "거의동117.m4a",
+      "audio_id": "1387ae324719",
+      "sha256": "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "좋은사람.m4a",
+      "audio_id": "a7c957603751",
+      "sha256": "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "요즘 바쁜가봐.m4a",
+      "audio_id": "8156c1254947",
+      "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "bluemoon.m4a",
+      "audio_id": "5e7819c3abb4",
+      "sha256": "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "I'llneverloveagain.m4a",
+      "audio_id": "0f26db696e8e",
+      "sha256": "0f26db696e8e0cb98243f8064176b11bfaeeea2eaf690ea5b4223f4e85967e4d",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "love again.m4a",
+      "audio_id": "aef8b974cfb0",
+      "sha256": "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    },
+    {
+      "filename": "옥탑방.m4a",
+      "audio_id": "ec93548d279f",
+      "sha256": "ec93548d279f509b476fc928b507301e8c6ab030d9084471f5c2d38419234187",
+      "cluster": "speaker_009",
+      "label_source": "USER_CONFIRMED"
+    }
+  ]
+}

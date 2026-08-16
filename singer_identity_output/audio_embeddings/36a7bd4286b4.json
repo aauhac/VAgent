@@ -1,0 +1,14 @@
+{
+  "audio_id": "36a7bd4286b4",
+  "embedding_dim": 192,
+  "segment_count": 9,
+  "used_segment_count": 9,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "36a7bd4286b4ba32a9d24ce246656607bde600e99da10babd2652b5a5dc9d2f1",
+  "filename": "upload.webm",
+  "display_name": "upload.webm · 36a7bd42",
+  "path": "C:\\VocalAgent\\runtime\\6bc317cde50945bb9b282824e3354301\\upload.webm"
+}

@@ -1,0 +1,4 @@
+filename,audio_id,mean_similarity_to_others,median_similarity_to_others,min_similarity_to_others,max_similarity_to_others,centrality_rank,reasons,hard_positive
+love again.m4a,aef8b974cfb0,0.6691285252571106,0.6653367877006531,0.49501311779022217,0.8317399024963379,11,previous_CONFLICT_now_USER_CONFIRMED;named_hard_positive;bottom_quartile_centrality;previous_v2_CONFLICT,True
+bluemoon.m4a,5e7819c3abb4,0.6883538424968719,0.7009289860725403,0.49501311779022217,0.7908432483673096,10,bottom_quartile_centrality,True
+옥탑방.m4a,ec93548d279f,0.6974489569664002,0.6942376792430878,0.616790771484375,0.827217698097229,9,bottom_quartile_centrality,True

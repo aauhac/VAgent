@@ -1,0 +1,554 @@
+{
+  "model": {
+    "encoder_name": "speechbrain_ecapa_tdnn",
+    "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+    "embedding_dim": 192,
+    "preprocessing_version": "vocal_segment_v1"
+  },
+  "audio": {
+    "qualifying": 73,
+    "embedded": 73,
+    "failures": 0,
+    "segment_count_total": 541,
+    "used_segment_count_total": 478
+  },
+  "clustering": {
+    "method": "agglomerative_cosine_distance",
+    "n_clusters": 25,
+    "unresolved": 0,
+    "stats": [
+      {
+        "cluster_id": "speaker_001",
+        "member_count": 3,
+        "members": [
+          "upload.webm · b960707a",
+          "upload.webm · d399575e",
+          "upload.webm · ed401e19"
+        ],
+        "member_indices": [
+          44,
+          59,
+          68
+        ],
+        "mean_within_similarity": 0.5802883008154468,
+        "min_within_similarity": 0.5299092911288223,
+        "nearest_external_similarity": 0.5906376826888047,
+        "separation_margin": -0.010349381873357877,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_002",
+        "member_count": 2,
+        "members": [
+          "upload.webm · c1815547",
+          "upload.webm · e67deea6"
+        ],
+        "member_indices": [
+          48,
+          64
+        ],
+        "mean_within_similarity": 0.5886940679016051,
+        "min_within_similarity": 0.5886940679016051,
+        "nearest_external_similarity": 0.4558327629391809,
+        "separation_margin": 0.13286130496242415,
+        "confidence": "MEDIUM"
+      },
+      {
+        "cluster_id": "speaker_003",
+        "member_count": 4,
+        "members": [
+          "upload.webm · a29f829e",
+          "upload.webm · aba38287",
+          "upload.webm · bdb75679",
+          "upload.webm · c8d4b24b"
+        ],
+        "member_indices": [
+          36,
+          41,
+          46,
+          53
+        ],
+        "mean_within_similarity": 0.6391179553862725,
+        "min_within_similarity": 0.4500066271763761,
+        "nearest_external_similarity": 0.6995909404460416,
+        "separation_margin": -0.06047298505976917,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_004",
+        "member_count": 2,
+        "members": [
+          "upload.webm · ee4a74e0",
+          "upload.webm · f17b7f4f"
+        ],
+        "member_indices": [
+          69,
+          70
+        ],
+        "mean_within_similarity": 0.6018899572694878,
+        "min_within_similarity": 0.6018899572694878,
+        "nearest_external_similarity": 0.6580907694332244,
+        "separation_margin": -0.056200812163736624,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_005",
+        "member_count": 16,
+        "members": [
+          "upload.webm · 16b7e83c",
+          "upload.webm · 1a0be83c",
+          "upload.wav · 442202fc",
+          "upload.wav · 7b8c45cd",
+          "upload.wav · 8b561778",
+          "upload.webm · 90147c98",
+          "upload.wav · 90ac5e34",
+          "upload.wav · 9e6b39da",
+          "upload.wav · a77ba822",
+          "upload.webm · a888cb14",
+          "upload.webm · c01fc220",
+          "upload.wav · c1f4910e",
+          "upload.wav · ca43bc2b",
+          "upload.wav · cfc6b206",
+          "upload.wav · d46938ba",
+          "upload.wav · e8b8aa37"
+        ],
+        "member_indices": [
+          8,
+          9,
+          16,
+          26,
+          29,
+          30,
+          31,
+          35,
+          38,
+          40,
+          47,
+          49,
+          54,
+          55,
+          60,
+          66
+        ],
+        "mean_within_similarity": 0.763993586395926,
+        "min_within_similarity": 0.4962955864363222,
+        "nearest_external_similarity": 0.7528095325575471,
+        "separation_margin": 0.011184053838378838,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_006",
+        "member_count": 8,
+        "members": [
+          "upload.webm · 357eeb64",
+          "편하게.m4a",
+          "upload.webm · 7436d634",
+          "upload.webm · 7abf49d0",
+          "호흡많고헤드.m4a",
+          "upload.webm · c3fca76b",
+          "upload.webm · c5cd93ed",
+          "upload.webm · e1c87ca2"
+        ],
+        "member_indices": [
+          11,
+          17,
+          24,
+          25,
+          34,
+          50,
+          52,
+          63
+        ],
+        "mean_within_similarity": 0.6973481645215013,
+        "min_within_similarity": 0.4499233983782566,
+        "nearest_external_similarity": 0.6995909404460416,
+        "separation_margin": -0.0022427759245403633,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_007",
+        "member_count": 2,
+        "members": [
+          "upload.webm · 40fb3383",
+          "upload.webm · 983379d1"
+        ],
+        "member_indices": [
+          15,
+          33
+        ],
+        "mean_within_similarity": 0.6213859735753694,
+        "min_within_similarity": 0.6213859735753694,
+        "nearest_external_similarity": 0.6053665262670878,
+        "separation_margin": 0.016019447308281642,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_008",
+        "member_count": 2,
+        "members": [
+          "upload.webm · b9ff5bf0",
+          "upload.webm · f19129f7"
+        ],
+        "member_indices": [
+          45,
+          71
+        ],
+        "mean_within_similarity": 0.7000041145437997,
+        "min_within_similarity": 0.7000041145437997,
+        "nearest_external_similarity": 0.5906376826888047,
+        "separation_margin": 0.10936643185499506,
+        "confidence": "MEDIUM"
+      },
+      {
+        "cluster_id": "speaker_009",
+        "member_count": 11,
+        "members": [
+          "I'llneverloveagain.m4a",
+          "거의동117.m4a",
+          "거의동116.m4a",
+          "bluemoon.m4a",
+          "drowning.m4a",
+          "movie.m4a",
+          "요즘 바쁜가봐.m4a",
+          "좋은사람.m4a",
+          "love again.m4a",
+          "거의동115.m4a",
+          "옥탑방.m4a"
+        ],
+        "member_indices": [
+          4,
+          6,
+          14,
+          19,
+          20,
+          22,
+          27,
+          39,
+          42,
+          61,
+          67
+        ],
+        "mean_within_similarity": 0.7270379820115404,
+        "min_within_similarity": 0.49501312165927175,
+        "nearest_external_similarity": 0.7071725414868008,
+        "separation_margin": 0.019865440524739597,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_010",
+        "member_count": 2,
+        "members": [
+          "기모그.m4a",
+          "가없너.m4a"
+        ],
+        "member_indices": [
+          57,
+          72
+        ],
+        "mean_within_similarity": 0.6294508080994798,
+        "min_within_similarity": 0.6294508080994798,
+        "nearest_external_similarity": 0.6929685037056718,
+        "separation_margin": -0.06351769560619192,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_011",
+        "member_count": 1,
+        "members": [
+          "upload.webm · 95b54db5"
+        ],
+        "member_indices": [
+          32
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5964028263457617,
+        "separation_margin": 0.4035971736542383,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_012",
+        "member_count": 2,
+        "members": [
+          "upload.webm · a69d81db",
+          "upload.webm · b4b7ce27"
+        ],
+        "member_indices": [
+          37,
+          43
+        ],
+        "mean_within_similarity": 0.6285769439952757,
+        "min_within_similarity": 0.6285769439952757,
+        "nearest_external_similarity": 0.634741077953348,
+        "separation_margin": -0.006164133958072249,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_013",
+        "member_count": 1,
+        "members": [
+          "upload.webm · 37db691d"
+        ],
+        "member_indices": [
+          13
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.45814168370364367,
+        "separation_margin": 0.5418583162963564,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_014",
+        "member_count": 1,
+        "members": [
+          "upload.webm · 70479ec6"
+        ],
+        "member_indices": [
+          23
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.4770157901242296,
+        "separation_margin": 0.5229842098757704,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_015",
+        "member_count": 1,
+        "members": [
+          "upload.webm · d395d6bc"
+        ],
+        "member_indices": [
+          58
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5119648174130398,
+        "separation_margin": 0.4880351825869602,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_016",
+        "member_count": 1,
+        "members": [
+          "upload.webm · c5b20be3"
+        ],
+        "member_indices": [
+          51
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5294714689722603,
+        "separation_margin": 0.4705285310277397,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_017",
+        "member_count": 1,
+        "members": [
+          "upload.webm · 882c5cd5"
+        ],
+        "member_indices": [
+          28
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5792386165966517,
+        "separation_margin": 0.42076138340334834,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_018",
+        "member_count": 1,
+        "members": [
+          "테스트.m4a"
+        ],
+        "member_indices": [
+          2
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.6074977222102353,
+        "separation_margin": 0.39250227778976465,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_019",
+        "member_count": 1,
+        "members": [
+          "upload.webm · 5662e809"
+        ],
+        "member_indices": [
+          18
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5786498704398368,
+        "separation_margin": 0.42135012956016316,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_020",
+        "member_count": 3,
+        "members": [
+          "목잡이.m4a",
+          "upload.webm · 07564b6d",
+          "편안세게.m4a"
+        ],
+        "member_indices": [
+          0,
+          1,
+          5
+        ],
+        "mean_within_similarity": 0.6636839287330384,
+        "min_within_similarity": 0.6097335784052067,
+        "nearest_external_similarity": 0.6750594944160656,
+        "separation_margin": -0.011375565683027222,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_021",
+        "member_count": 1,
+        "members": [
+          "upload.webm · d03ad168"
+        ],
+        "member_indices": [
+          56
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5298236088027549,
+        "separation_margin": 0.4701763911972451,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_022",
+        "member_count": 1,
+        "members": [
+          "Lyrics.mp3"
+        ],
+        "member_indices": [
+          7
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5734958552924388,
+        "separation_margin": 0.42650414470756115,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_023",
+        "member_count": 1,
+        "members": [
+          "upload.webm · 6b3aa0d0"
+        ],
+        "member_indices": [
+          21
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5705705721997207,
+        "separation_margin": 0.42942942780027926,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_024",
+        "member_count": 1,
+        "members": [
+          "upload.webm · 36a7bd42"
+        ],
+        "member_indices": [
+          12
+        ],
+        "mean_within_similarity": 1.0,
+        "min_within_similarity": 1.0,
+        "nearest_external_similarity": 0.5846815434178824,
+        "separation_margin": 0.41531845658211763,
+        "confidence": "LOW"
+      },
+      {
+        "cluster_id": "speaker_025",
+        "member_count": 4,
+        "members": [
+          "upload.webm · 0ea5487c",
+          "upload.webm · 2c9d61eb",
+          "upload.webm · d87efe3c",
+          "upload.webm · e8314e2d"
+        ],
+        "member_indices": [
+          3,
+          10,
+          62,
+          65
+        ],
+        "mean_within_similarity": 0.7217068500292735,
+        "min_within_similarity": 0.6433475571407845,
+        "nearest_external_similarity": 0.7528095325575471,
+        "separation_margin": -0.03110268252827364,
+        "confidence": "LOW"
+      }
+    ]
+  },
+  "known_same_singer": {
+    "groups": [
+      "person_controlled_v1"
+    ],
+    "pair_similarities": {
+      "54b972ad↔00ae450b": 0.6280401945114136,
+      "54b972ad↔99023e55": 0.7446818351745605,
+      "54b972ad↔10d07cc4": 0.67505943775177,
+      "00ae450b↔99023e55": 0.5738906860351562,
+      "00ae450b↔10d07cc4": 0.6950215101242065,
+      "99023e55↔10d07cc4": 0.5444695949554443
+    },
+    "same_mean": 0.6435272097587585,
+    "diff_mean": 0.3744155492458958
+  },
+  "labels": {
+    "n_singers": 1,
+    "n_labeled_recordings": 4,
+    "min_recordings": 4
+  },
+  "identification": {
+    "status": "INSUFFICIENT_SPEAKER_LABELS",
+    "n_singers": 1,
+    "min_recordings": 4
+  },
+  "verification": {
+    "status": "OK",
+    "eer": 0.06944444444444445,
+    "roc_auc": 0.9106481481481481,
+    "same_singer_mean": 0.6435272097587585,
+    "same_singer_std": 0.06925761900739699,
+    "different_singer_mean": 0.346707477419275,
+    "different_singer_std": 0.19206225612464933,
+    "n_same": 6,
+    "n_diff": 360
+  },
+  "unknown_rejection": {
+    "status": "INSUFFICIENT_DATA"
+  },
+  "enrollment": {
+    "singers": 1,
+    "recordings": 3
+  },
+  "integration_gate": {
+    "overall": "INSUFFICIENT_DATA",
+    "reasons": [
+      "min_speakers",
+      "heldout",
+      "identification",
+      "unknown_rejection"
+    ],
+    "gate": {
+      "min_speakers": 5,
+      "min_recordings_per_speaker": 3,
+      "require_heldout_test": true
+    }
+  },
+  "fine_tune": {
+    "ran": false,
+    "reason": "SKIPPED_INSUFFICIENT_DATA_OR_BASELINE_ONLY"
+  }
+}

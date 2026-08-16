@@ -1,0 +1,14 @@
+{
+  "audio_id": "9e6b39daf637",
+  "embedding_dim": 192,
+  "segment_count": 2,
+  "used_segment_count": 2,
+  "quality": "FAIR",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "9e6b39daf637fa2dcefa192385350b5123ad8601fae366ff47b58064d25f6816",
+  "filename": "upload.wav",
+  "display_name": "upload.wav · 9e6b39da",
+  "path": "C:\\VocalAgent\\runtime\\4532e16bdda743b99052bda7bb0fa469\\upload.wav"
+}

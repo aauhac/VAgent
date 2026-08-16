@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>Drowning/Movie Singer Review (local)</title>
+<style>
+body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 24px; background:#0f1216; color:#e8eaed; }
+h1,h2 { color:#fff; }
+.card { background:#1a1f27; border:1px solid #2a3340; border-radius:10px; padding:14px; margin:12px 0; }
+.muted { color:#9aa3af; }
+button { margin:4px; padding:8px 12px; border-radius:8px; border:1px solid #2a3340; background:#11151b; color:#e8eaed; cursor:pointer; }
+button.same { border-color:#3fb950; }
+button.diff { border-color:#ff7b72; }
+button.unk { border-color:#e3b341; }
+.nums.hidden { display:none; }
+audio { width:100%; margin-top:8px; }
+.row { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
+@media (max-width:900px) { .row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<h1>Drowning / Movie — Human Review</h1>
+<p class="muted">Local-only. HIGH/MEDIUM/CONFLICT는 사람 확인 전까지 ground truth가 아닙니다. Blind mode: 숫자 숨김 → 청취 → 판단.</p>
+<label><input type="checkbox" id="blind" checked/> Blind Review Mode (숫자 숨김)</label>
+<div class="card">
+  <h2>Confirmed Seeds</h2>
+  <div class="row">
+    <div><b id="dName"></b><audio id="dAud" controls></audio></div>
+    <div><b id="mName"></b><audio id="mAud" controls></audio></div>
+  </div>
+</div>
+<div id="list"></div>
+<script>
+const DATA = {"singer_id": "person_drowning_movie", "drowning": {"filename": "drowning.m4a", "path": "C:/VocalAgent/drowning.m4a", "sha256": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef", "audio_id": "5fdfa9eb73e5"}, "movie": {"filename": "movie.m4a", "path": "C:/VocalAgent/movie.m4a", "sha256": "6fb8c8208c80cf1d7fec7ac3671e04008636f9d2d416dc885e5fb655de95fd3e", "audio_id": "6fb8c8208c80"}, "candidates": [{"audio_id": "3ced1f723c5e", "sha256": "3ced1f723c5e225b8b0de41941de0a047f0e99a1633f4d6e4e7c966b763cd9ca", "filename": "거의동116.m4a", "path": "C:/VocalAgent/거의동116.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.8596, "sim_movie": 0.7255, "sim_prototype": 0.8729, "min_seed": 0.7255, "segment_support": 0.7083, "cluster": "speaker_009"}, {"audio_id": "8156c1254947", "sha256": "8156c1254947742d6f5b74402934ef8757727cc968fd6abbb78b56783711ae9f", "filename": "요즘 바쁜가봐.m4a", "path": "C:/VocalAgent/요즘 바쁜가봐.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.8216, "sim_movie": 0.7379, "sim_prototype": 0.8588, "min_seed": 0.7379, "segment_support": 0.875, "cluster": "speaker_009"}, {"audio_id": "a7c957603751", "sha256": "a7c957603751d4fddebdf858da37f0fd6a1e7463c14818aea221b56b0f7af181", "filename": "좋은사람.m4a", "path": "C:/VocalAgent/좋은사람.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.7834, "sim_movie": 0.7392, "sim_prototype": 0.8385, "min_seed": 0.7392, "segment_support": 0.5833, "cluster": "speaker_009"}, {"audio_id": "d5045bc290a1", "sha256": "d5045bc290a1db899886e391482c0077ddbedfe07f41c5a4bdb396fedc496ddc", "filename": "거의동115.m4a", "path": "C:/VocalAgent/거의동115.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.7486, "sim_movie": 0.7462, "sim_prototype": 0.8232, "min_seed": 0.7462, "segment_support": 0.5417, "cluster": "speaker_009"}, {"audio_id": "5e7819c3abb4", "sha256": "5e7819c3abb42ae14873c91ee99825d29ceaf6da01bc898aa396259cbc99c253", "filename": "bluemoon.m4a", "path": "C:/VocalAgent/bluemoon.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.693, "sim_movie": 0.688, "sim_prototype": 0.7605, "min_seed": 0.688, "segment_support": 0.7083, "cluster": "speaker_009"}, {"audio_id": "1387ae324719", "sha256": "1387ae32471971bc218ae0757b085555d8d2ba8a936169a0c556883b685c6361", "filename": "거의동117.m4a", "path": "C:/VocalAgent/거의동117.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.6598, "sim_movie": 0.7607, "sim_prototype": 0.7823, "min_seed": 0.6598, "segment_support": 1.0, "cluster": "speaker_009"}, {"audio_id": "0f26db696e8e", "sha256": "0f26db696e8e0cb98243f8064176b11bfaeeea2eaf690ea5b4223f4e85967e4d", "filename": "I'llneverloveagain.m4a", "path": "C:/VocalAgent/I'llneverloveagain.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.7259, "sim_movie": 0.6622, "sim_prototype": 0.7644, "min_seed": 0.6622, "segment_support": 0.5417, "cluster": "speaker_009"}, {"audio_id": "aef8b974cfb0", "sha256": "aef8b974cfb0b193165eb78edb8838c14dc1b74d9b31916284e6e166e7f69b24", "filename": "love again.m4a", "path": "C:/VocalAgent/love again.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.6433, "sim_movie": 0.714, "sim_prototype": 0.7474, "min_seed": 0.6433, "segment_support": 0.625, "cluster": "speaker_009"}, {"audio_id": "ec93548d279f", "sha256": "ec93548d279f509b476fc928b507301e8c6ab030d9084471f5c2d38419234187", "filename": "옥탑방.m4a", "path": "C:/VocalAgent/옥탑방.m4a", "status": "HIGH_CANDIDATE", "sim_drowning": 0.6168, "sim_movie": 0.7462, "sim_prototype": 0.7506, "min_seed": 0.6168, "segment_support": 0.7083, "cluster": "speaker_009"}, {"audio_id": "e8314e2d9fd3", "sha256": "e8314e2d9fd3aea07b95ae46ce1b342e1388cb465f048fa47d7954e0f3399e73", "filename": "upload.webm · e8314e2d", "path": "C:/VocalAgent/runtime/diagnostic_sessions/ba62f95fa43f43688d0dcd34aa0b336c/tasks/sustain_a/attempt_1/upload.webm", "status": "MEDIUM_CANDIDATE", "sim_drowning": 0.4991, "sim_movie": 0.5144, "sim_prototype": 0.5581, "min_seed": 0.4991, "segment_support": 0.6667, "cluster": "speaker_025"}, {"audio_id": "2c9d61ebb9da", "sha256": "2c9d61ebb9da411d4a3b8592d3fc0f7696b4c40a07a88bded722bfab4c114f11", "filename": "upload.webm · 2c9d61eb", "path": "C:/VocalAgent/runtime/diagnostic_sessions/f973bce50557481fad8ba55a40bcb21c/tasks/sustain_i/attempt_1/upload.webm", "status": "MEDIUM_CANDIDATE", "sim_drowning": 0.4964, "sim_movie": 0.521, "sim_prototype": 0.5603, "min_seed": 0.4964, "segment_support": 0.5, "cluster": "speaker_025"}, {"audio_id": "99023e55f0f5", "sha256": "99023e55f0f5940b7cde7dff7d8abbdf56da3a9903a768a392c02968d42a0ccc", "filename": "호흡많고헤드.m4a", "path": "C:/VocalAgent/호흡많고헤드.m4a", "status": "MEDIUM_CANDIDATE", "sim_drowning": 0.5712, "sim_movie": 0.4781, "sim_prototype": 0.5778, "min_seed": 0.4781, "segment_support": 0.125, "cluster": "speaker_006"}, {"audio_id": "ee4a74e09cc1", "sha256": "ee4a74e09cc1d3a84c8dd5f05069b2a31884a3f4bf5909010b4c42814462900f", "filename": "upload.webm · ee4a74e0", "path": "C:/VocalAgent/runtime/diagnostic_sessions/c84304fcb6b843d2a1e6eb5087134291/tasks/sustain_i/attempt_1/upload.webm", "status": "MEDIUM_CANDIDATE", "sim_drowning": 0.5418, "sim_movie": 0.4809, "sim_prototype": 0.5632, "min_seed": 0.4809, "segment_support": 0.3333, "cluster": "speaker_004"}, {"audio_id": "5662e8094f66", "sha256": "5662e8094f66d3fd27846cd64b216dd557acef7d5817025c677957bea94780f0", "filename": "upload.webm · 5662e809", "path": "C:/VocalAgent/runtime/diagnostic_sessions/e9039df1e37d44719bf930cf695ead64/tasks/high_note_sustain_a/attempt_1/upload.webm", "status": "MEDIUM_CANDIDATE", "sim_drowning": 0.5265, "sim_movie": 0.4636, "sim_prototype": 0.5452, "min_seed": 0.4636, "segment_support": 0.25, "cluster": "speaker_019"}, {"audio_id": "f17b7f4ff446", "sha256": "f17b7f4ff446eac9181094b557eeffb1a3bbb7779174569b763646b06eca7e41", "filename": "upload.webm · f17b7f4f", "path": "C:/VocalAgent/runtime/0ff873201e0f4ce8adeb1f176d39cb16/upload.webm", "status": "CONFLICT", "sim_drowning": 0.606, "sim_movie": 0.3905, "sim_prototype": 0.5487, "min_seed": 0.3905, "segment_support": 0.0, "cluster": "speaker_004"}]};
+const SAVE_HINT = "singer_identity_labels/reviews/drowning_movie_review.json";
+function fileUrl(p) {
+  if (!p) return "";
+  if (p.startsWith("file:")) return p;
+  // Windows path → file URL
+  if (/^[A-Za-z]:/.test(p)) return "file:///" + p.replace(/\\/g,"/");
+  return "file://" + p;
+}
+function loadLocal() {
+  try { return JSON.parse(localStorage.getItem("drowning_movie_review")||"{}"); }
+  catch { return {}; }
+}
+function saveLocal(obj) {
+  localStorage.setItem("drowning_movie_review", JSON.stringify(obj, null, 2));
+  document.getElementById("export").textContent = JSON.stringify(obj, null, 2);
+}
+document.getElementById("dName").textContent = DATA.drowning.filename;
+document.getElementById("mName").textContent = DATA.movie.filename;
+document.getElementById("dAud").src = fileUrl(DATA.drowning.path);
+document.getElementById("mAud").src = fileUrl(DATA.movie.path);
+const decisions = loadLocal();
+decisions.singer_id = DATA.singer_id;
+decisions.seeds = { drowning: DATA.drowning.sha256, movie: DATA.movie.sha256 };
+decisions.reviews = decisions.reviews || {};
+function render() {
+  const blind = document.getElementById("blind").checked;
+  const root = document.getElementById("list");
+  root.innerHTML = "";
+  DATA.candidates.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    const prev = (decisions.reviews[c.sha256]||{}).decision || "";
+    div.innerHTML = `
+      <h2>#${i+1} ${c.filename} <span class="muted">${c.status}</span></h2>
+      <div class="muted">cluster: ${c.cluster} · id: ${c.audio_id}</div>
+      <audio controls src="${fileUrl(c.path)}"></audio>
+      <div class="nums ${blind ? "hidden" : ""}">
+        Drowning: ${c.sim_drowning} · Movie: ${c.sim_movie} · Prototype: ${c.sim_prototype} ·
+        min: ${c.min_seed} · segment_support: ${c.segment_support}
+      </div>
+      <div>
+        <button class="same" data-d="SAME">같은 사람</button>
+        <button class="diff" data-d="DIFFERENT">다른 사람</button>
+        <button class="unk" data-d="UNKNOWN">모르겠음</button>
+        <button data-d="REVEAL">분석값 보기</button>
+        <span class="muted" id="dec-${c.sha256}">${prev}</span>
+      </div>`;
+    div.querySelectorAll("button").forEach(btn => {
+      btn.onclick = () => {
+        const d = btn.getAttribute("data-d");
+        if (d === "REVEAL") {
+          div.querySelector(".nums").classList.remove("hidden");
+          return;
+        }
+        decisions.reviews[c.sha256] = {
+          decision: d,
+          filename: c.filename,
+          audio_id: c.audio_id,
+          sha256: c.sha256,
+          model_status: c.status,
+          label_source: "HUMAN_REVIEW",
+          relationship: d === "SAME" ? "person_drowning_movie" : (d === "DIFFERENT" ? "NOT_person_drowning_movie" : "UNCERTAIN"),
+        };
+        document.getElementById("dec-"+c.sha256).textContent = d;
+        saveLocal(decisions);
+      };
+    });
+    root.appendChild(div);
+  });
+}
+document.getElementById("blind").onchange = render;
+render();
+</script>
+<div class="card">
+  <h2>Export (copy into singer_identity_labels/reviews/drowning_movie_review.json)</h2>
+  <pre id="export" style="white-space:pre-wrap;background:#11151b;padding:12px;border-radius:8px;"></pre>
+</div>
+</body>
+</html>

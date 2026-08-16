@@ -1,0 +1,14 @@
+{
+  "audio_id": "5fdfa9eb73e5",
+  "embedding_dim": 192,
+  "segment_count": 12,
+  "used_segment_count": 9,
+  "quality": "GOOD",
+  "model_version": "speechbrain-spkrec-ecapa-voxceleb-v1",
+  "encoder_name": "speechbrain_ecapa_tdnn",
+  "preprocessing_version": "vocal_segment_v1",
+  "sha256": "5fdfa9eb73e50c70eff34c180c535a4be063fa2e73ad475dbf59f531551431ef",
+  "filename": "drowning.m4a",
+  "display_name": "drowning.m4a",
+  "path": "C:\\VocalAgent\\drowning.m4a"
+}

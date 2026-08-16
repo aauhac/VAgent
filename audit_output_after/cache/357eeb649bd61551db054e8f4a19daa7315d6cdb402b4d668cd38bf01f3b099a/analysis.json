@@ -1,0 +1,3084 @@
+{
+  "analysis_version": "2.0",
+  "recording_id": "56d38088aeba4c2a87b4cd8f43b8a1fa",
+  "created_at": "2026-08-10T11:59:54.425307+00:00",
+  "analysis_status": "completed",
+  "feedback_status": "skipped",
+  "analysis_mode": "FUNCTIONAL",
+  "input_mode": "AUTO",
+  "input_mode_user_declared": false,
+  "separation_required": true,
+  "separation_used": true,
+  "analysis_time_origin_sec": 0.0,
+  "analysis_clip_start_sec": 0.0,
+  "analysis_clip_end_sec": 22.26,
+  "original_duration_sec": 22.26,
+  "time_context": {
+    "analysis_time_origin_sec": 0.0,
+    "analysis_clip_start_sec": 0.0,
+    "analysis_clip_end_sec": 22.26,
+    "original_duration_sec": 22.26,
+    "truncated": false,
+    "policy": "full"
+  },
+  "audio": {
+    "duration_sec": 22.26,
+    "score_duration_sec": 22.26,
+    "sample_rate": 44100,
+    "source_mode": "separated",
+    "original_path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\upload.webm",
+    "original_filename": "upload.webm",
+    "analysis_wav_path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\analysis.wav",
+    "preview_path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\preview.wav",
+    "separation": {
+      "used": true,
+      "source_mode": "separated",
+      "model": "htdemucs",
+      "vocals_path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\demucs\\vocals.wav",
+      "no_vocals_path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\demucs\\no_vocals.wav",
+      "skipped": false,
+      "separation_status": "success",
+      "failed": false,
+      "has_no_vocals": true
+    },
+    "separation_status": "success",
+    "duration_policy": {
+      "policy": "full",
+      "start_sec": 0.0,
+      "end_sec": 22.26,
+      "clip_sec": 22.26,
+      "voiced_density": null,
+      "truncated": false
+    },
+    "time_context": {
+      "analysis_time_origin_sec": 0.0,
+      "analysis_clip_start_sec": 0.0,
+      "analysis_clip_end_sec": 22.26,
+      "original_duration_sec": 22.26,
+      "truncated": false,
+      "policy": "full"
+    },
+    "content_sha256": "357eeb649bd61551db054e8f4a19daa7315d6cdb402b4d668cd38bf01f3b099a",
+    "analysis_waveform_sha256": "6bb37e0045a2099485da4daeaf3189fc18ce81637f280a2fda610ceb83afce95"
+  },
+  "fingerprints": {
+    "source_mode": "separated",
+    "source": {
+      "label": "source",
+      "path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\upload.webm",
+      "original_filename": "upload.webm",
+      "exists": true,
+      "size_bytes": 350818,
+      "sha256": "357eeb649bd61551db054e8f4a19daa7315d6cdb402b4d668cd38bf01f3b099a"
+    },
+    "analysis_wav": {
+      "label": "analysis_wav",
+      "path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\analysis.wav",
+      "original_filename": "analysis.wav",
+      "exists": true,
+      "size_bytes": 1963376,
+      "sha256": "ce04210053712a1d41c5360c8aa6e151310fc477ffe2ec51801274377f2ead92"
+    },
+    "vocals": {
+      "label": "vocals",
+      "path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\demucs\\vocals.wav",
+      "original_filename": "vocals.wav",
+      "exists": true,
+      "size_bytes": 3926744,
+      "sha256": "0ba42ca7f9a46ffa74d4aad4a7c4e74a58e018dccdc1a7e5930c18d2a505dd98"
+    },
+    "waveform": {
+      "n_samples": 981666,
+      "duration_sec": 22.26,
+      "sample_rate": 44100,
+      "rms": 0.05706382915377617,
+      "peak": 0.6165871620178223,
+      "full_sha256": "6bb37e0045a2099485da4daeaf3189fc18ce81637f280a2fda610ceb83afce95",
+      "first_1s_sha256": "b4baa2e98bb5246d2497f00d4b9826f9518e2a66ccdec9672f7d893e5ff6ab6a",
+      "last_1s_sha256": "9633530db8658b369d768e42c49cc598a421d8419ad31a22a2cc8bca7df4e724"
+    },
+    "duration_policy": {
+      "policy": "full",
+      "start_sec": 0.0,
+      "end_sec": 22.26,
+      "clip_sec": 22.26,
+      "voiced_density": null,
+      "truncated": false
+    },
+    "full_duration_sec": 22.26,
+    "score_duration_sec": 22.26,
+    "time_context": {
+      "analysis_time_origin_sec": 0.0,
+      "analysis_clip_start_sec": 0.0,
+      "analysis_clip_end_sec": 22.26,
+      "original_duration_sec": 22.26,
+      "truncated": false,
+      "policy": "full"
+    }
+  },
+  "user_info": {
+    "user_id": null,
+    "song_title": null,
+    "artist": null,
+    "section": null
+  },
+  "quality": {
+    "status": "warn",
+    "confidence": 0.65,
+    "reasons": [
+      "저역 잡음이 다소 높음 (12.7 dB)"
+    ],
+    "codes": [
+      "RUMBLE"
+    ],
+    "metrics": {
+      "duration_sec": 22.26,
+      "rms_dbfs": -24.87,
+      "clipping_ratio": 0.0,
+      "silent_ratio": 0.2638,
+      "voiced_ratio": 0.7341,
+      "voiced_duration_sec": 16.341,
+      "rumble_ratio_db": 12.66
+    },
+    "user_message": "분석은 가능하지만 녹음 조건이 완벽하지 않아요. 결과는 참고용으로 봐 주세요.",
+    "version": "quality-gate-v1.0",
+    "calibration_status": "uncalibrated"
+  },
+  "vocal_quality_profile": {
+    "available": true,
+    "engine_version": "vocal-quality-v1.0",
+    "calibration_status": "uncalibrated",
+    "headline": [
+      "숨이 섞이는 음질 경향 · 낮음",
+      "압착된 음질 경향 · 낮음",
+      "거칠고 불규칙한 음질 경향 · 중간",
+      "발성 시작 특성 · 부드러운 편"
+    ],
+    "dimensions": {
+      "breathy_like": {
+        "dimension_id": "breathy_like",
+        "display_name": "숨이 섞이는 음질 경향",
+        "status": "LOW",
+        "status_label": "낮음",
+        "prevalence": "not_observed",
+        "prevalence_label": "관찰되지 않음",
+        "confidence_label": "low",
+        "coverage": 1.0,
+        "valid_segment_count": 14,
+        "hit_segment_count": 0,
+        "summary": "숨이 섞이는 음질 경향은 낮게 관찰됐어요.",
+        "observations": [
+          "valid_segments=14",
+          "hit_segments=0"
+        ],
+        "focus_segments": [],
+        "what_it_may_mean": "숨이 섞이는 음질 경향은 뚜렷하지 않았어요.",
+        "what_we_cannot_know": "실제 성대 접촉·성문 상태를 직접 측정한 것은 아닙니다.",
+        "practice": [],
+        "hidden": false
+      },
+      "pressed_like": {
+        "dimension_id": "pressed_like",
+        "display_name": "압착된 음질 경향",
+        "status": "LOW",
+        "status_label": "낮음",
+        "prevalence": "not_observed",
+        "prevalence_label": "관찰되지 않음",
+        "confidence_label": "low",
+        "coverage": 1.0,
+        "valid_segment_count": 14,
+        "hit_segment_count": 0,
+        "summary": "압착된 음질 경향은 뚜렷하지 않았어요.",
+        "observations": [
+          "valid_segments=14",
+          "hit_segments=0"
+        ],
+        "focus_segments": [],
+        "what_it_may_mean": "압착된 음질 경향은 뚜렷하지 않았어요.",
+        "what_we_cannot_know": "실제 목 근육 긴장이나 후두 상태를 측정한 것은 아닙니다.",
+        "practice": [],
+        "hidden": false
+      },
+      "rough_like": {
+        "dimension_id": "rough_like",
+        "display_name": "거칠고 불규칙한 음질 경향",
+        "status": "MODERATE",
+        "status_label": "중간",
+        "prevalence": "occasional",
+        "prevalence_label": "일부",
+        "confidence_label": "medium",
+        "coverage": 1.0,
+        "valid_segment_count": 14,
+        "hit_segment_count": 3,
+        "summary": "3/14개 구간에서 불규칙한 주기성 패턴이 반복됐어요.",
+        "observations": [
+          "valid_segments=14",
+          "hit_segments=3"
+        ],
+        "focus_segments": [
+          {
+            "area_id": "rough_like",
+            "start_sec": 0.0,
+            "end_sec": 3.0,
+            "state": "MODERATE",
+            "headline": "거칠고 불규칙한 음질 경향",
+            "user_message": "3/14개 구간에서 불규칙한 주기성 패턴이 반복됐어요.",
+            "evidence_summary": "families≈1",
+            "confidence_label": "medium",
+            "what_user_may_hear": "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요.",
+            "limitation": "성대 병변 여부를 판단하지 않습니다.",
+            "practice_hint": "문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요.",
+            "time_label": "00:00–00:03"
+          },
+          {
+            "area_id": "rough_like",
+            "start_sec": 1.5,
+            "end_sec": 4.5,
+            "state": "MODERATE",
+            "headline": "거칠고 불규칙한 음질 경향",
+            "user_message": "3/14개 구간에서 불규칙한 주기성 패턴이 반복됐어요.",
+            "evidence_summary": "families≈1",
+            "confidence_label": "medium",
+            "what_user_may_hear": "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요.",
+            "limitation": "성대 병변 여부를 판단하지 않습니다.",
+            "practice_hint": "문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요.",
+            "time_label": "00:01–00:04"
+          },
+          {
+            "area_id": "rough_like",
+            "start_sec": 3.0,
+            "end_sec": 6.0,
+            "state": "MODERATE",
+            "headline": "거칠고 불규칙한 음질 경향",
+            "user_message": "3/14개 구간에서 불규칙한 주기성 패턴이 반복됐어요.",
+            "evidence_summary": "families≈1",
+            "confidence_label": "medium",
+            "what_user_may_hear": "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요.",
+            "limitation": "성대 병변 여부를 판단하지 않습니다.",
+            "practice_hint": "문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요.",
+            "time_label": "00:03–00:06"
+          }
+        ],
+        "what_it_may_mean": "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요.",
+        "what_we_cannot_know": "성대 병변 여부를 판단하지 않습니다.",
+        "practice": [
+          "문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요."
+        ],
+        "hidden": false
+      },
+      "resonance_timbre": {
+        "dimension_id": "resonance_timbre",
+        "display_name": "공명·음색 프로필",
+        "status": "UNKNOWN",
+        "status_label": "판단 어려움",
+        "prevalence": "unknown",
+        "prevalence_label": "판단 어려움",
+        "confidence_label": "low",
+        "summary": "보컬 분리 고역 손실 가능성으로 공명·음색 프로필을 확정하지 않았어요.",
+        "observations": [],
+        "focus_segments": [],
+        "what_it_may_mean": "",
+        "what_we_cannot_know": "인두·비강·후두 위치를 측정하지 않습니다.",
+        "practice": [],
+        "hidden": true,
+        "profile": {},
+        "valid_segment_count": 14,
+        "hit_segment_count": 0
+      },
+      "onset_behavior": {
+        "dimension_id": "onset_behavior",
+        "display_name": "발성 시작 특성",
+        "status": "SOFT_LIKE",
+        "status_label": "부드러운 편",
+        "prevalence": "not_observed",
+        "prevalence_label": "관찰되지 않음",
+        "confidence_label": "low",
+        "coverage": 1.0,
+        "valid_segment_count": 14,
+        "hit_segment_count": 0,
+        "summary": "발성 시작이 대체로 부드럽게 형성되는 편이었어요.",
+        "observations": [
+          "valid_segments=14",
+          "hit_segments=0"
+        ],
+        "focus_segments": [],
+        "what_it_may_mean": "소리 시작이 급하게 또는 부드럽게 형성되는 음향 패턴 설명입니다.",
+        "what_we_cannot_know": "성대 접촉 시작을 직접 측정한 것은 아닙니다.",
+        "practice": [],
+        "hidden": false
+      },
+      "register_transition": {
+        "dimension_id": "register_transition",
+        "display_name": "음역 전환 특성",
+        "status": "SMOOTH",
+        "status_label": "대체로 부드러움",
+        "prevalence": "not_observed",
+        "prevalence_label": "관찰되지 않음",
+        "confidence_label": "low",
+        "coverage": 1.0,
+        "valid_segment_count": 14,
+        "hit_segment_count": 0,
+        "summary": "큰 음역 전환에서 뚜렷한 붕괴 패턴은 관찰되지 않았어요.",
+        "observations": [
+          "valid_segments=14",
+          "hit_segments=0"
+        ],
+        "focus_segments": [],
+        "what_it_may_mean": "음역이 바뀌는 구간의 음향 변화 설명이며 pitch accuracy 평가가 아닙니다.",
+        "what_we_cannot_know": "TA/CT 전환이나 레지스터 생리를 직접 측정하지 않습니다.",
+        "practice": [],
+        "hidden": false
+      }
+    },
+    "focus_segments": [
+      {
+        "area_id": "rough_like",
+        "start_sec": 0.0,
+        "end_sec": 3.0,
+        "state": "MODERATE",
+        "headline": "거칠고 불규칙한 음질 경향",
+        "user_message": "3/14개 구간에서 불규칙한 주기성 패턴이 반복됐어요.",
+        "evidence_summary": "families≈1",
+        "confidence_label": "medium",
+        "what_user_may_hear": "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요.",
+        "limitation": "성대 병변 여부를 판단하지 않습니다.",
+        "practice_hint": "문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요.",
+        "time_label": "00:00–00:03"
+      },
+      {
+        "area_id": "rough_like",
+        "start_sec": 1.5,
+        "end_sec": 4.5,
+        "state": "MODERATE",
+        "headline": "거칠고 불규칙한 음질 경향",
+        "user_message": "3/14개 구간에서 불규칙한 주기성 패턴이 반복됐어요.",
+        "evidence_summary": "families≈1",
+        "confidence_label": "medium",
+        "what_user_may_hear": "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요.",
+        "limitation": "성대 병변 여부를 판단하지 않습니다.",
+        "practice_hint": "문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요.",
+        "time_label": "00:01–00:04"
+      },
+      {
+        "area_id": "rough_like",
+        "start_sec": 3.0,
+        "end_sec": 6.0,
+        "state": "MODERATE",
+        "headline": "거칠고 불규칙한 음질 경향",
+        "user_message": "3/14개 구간에서 불규칙한 주기성 패턴이 반복됐어요.",
+        "evidence_summary": "families≈1",
+        "confidence_label": "medium",
+        "what_user_may_hear": "일부 구간에서 주기성이 일시적으로 크게 떨어지는 패턴이 관찰됐어요.",
+        "limitation": "성대 병변 여부를 판단하지 않습니다.",
+        "practice_hint": "문제 구간만 낮은 음량·짧은 길이로 부드럽게 반복해보세요.",
+        "time_label": "00:03–00:06"
+      }
+    ],
+    "valid_segment_count": 14,
+    "total_segment_count": 14,
+    "warnings": [],
+    "disclaimer": "이 결과는 녹음된 음성의 음향적 특성을 바탕으로 발성 음질 경향을 관찰한 연습 참고 정보입니다. 성대 구조·질환·근육 상태를 진단하지 않습니다.",
+    "scientific_debug": {
+      "engine_version": "vocal-quality-v1.0",
+      "calibration_status": "uncalibrated",
+      "n_segments": 14,
+      "n_valid": 14,
+      "source_mode": "separated",
+      "spectral_blocked": true,
+      "metric_status": {
+        "cepstral_prominence_proxy_db": "PROXY",
+        "hnr_ac_proxy_db": "PROXY",
+        "raw_h1_h2_proxy_db": "PROXY",
+        "spectral_tilt_db_per_oct": "KEEP",
+        "spectral_centroid_hz": "KEEP",
+        "f0_frame_period_perturbation_proxy_percent": "RESTRICTED",
+        "onset_slope_db_per_sec": "PROXY",
+        "periodicity_establishment_ratio": "EXPERIMENTAL",
+        "residual_std_cents": "KEEP",
+        "spr_db": "RESTRICTED",
+        "weight_gap_db": "PROXY"
+      },
+      "segment_sample": [
+        {
+          "start_sec": 0.0,
+          "end_sec": 3.0,
+          "valid": true,
+          "observations": {
+            "periodicity_primary_db": 15.784072106070766,
+            "periodicity_source": "cepstral_prominence_proxy_db",
+            "cepstral_prominence_proxy_db": 15.784072106070766,
+            "hnr_ac_proxy_db": -5.104005222917323,
+            "raw_h1_h2_proxy_db": 15.467063909969106,
+            "spectral_tilt_db_per_oct": -6.531265627206514,
+            "spectral_centroid_hz": 3722.0453179300425,
+            "f0_frame_period_perturbation_proxy_percent": 2.5481221757273045,
+            "onset_slope_db_per_sec": -55.2993303565166,
+            "periodicity_establishment_ratio": 0.4834849624256349
+          }
+        },
+        {
+          "start_sec": 1.5,
+          "end_sec": 4.5,
+          "valid": true,
+          "observations": {
+            "periodicity_primary_db": 15.28678662816209,
+            "periodicity_source": "cepstral_prominence_proxy_db",
+            "cepstral_prominence_proxy_db": 15.28678662816209,
+            "hnr_ac_proxy_db": -59.99999565705301,
+            "raw_h1_h2_proxy_db": 9.900054388699203,
+            "spectral_tilt_db_per_oct": -4.378298578598977,
+            "spectral_centroid_hz": 1722.8663803984555,
+            "f0_frame_period_perturbation_proxy_percent": 4.311530012047405,
+            "onset_slope_db_per_sec": 21.177268802227925,
+            "periodicity_establishment_ratio": 0.5
+          }
+        },
+        {
+          "start_sec": 3.0,
+          "end_sec": 6.0,
+          "valid": true,
+          "observations": {
+            "periodicity_primary_db": 16.277540263037373,
+            "periodicity_source": "cepstral_prominence_proxy_db",
+            "cepstral_prominence_proxy_db": 16.277540263037373,
+            "hnr_ac_proxy_db": -0.22333488994307274,
+            "raw_h1_h2_proxy_db": 10.956226377591342,
+            "spectral_tilt_db_per_oct": -7.886044225720162,
+            "spectral_centroid_hz": 2366.1470715527607,
+            "f0_frame_period_perturbation_proxy_percent": 2.5741768191774574,
+            "onset_slope_db_per_sec": -10.255717359026864,
+            "periodicity_establishment_ratio": 0.5
+          }
+        },
+        {
+          "start_sec": 4.5,
+          "end_sec": 7.5,
+          "valid": true,
+          "observations": {
+            "periodicity_primary_db": 14.574404474941957,
+            "periodicity_source": "cepstral_prominence_proxy_db",
+            "cepstral_prominence_proxy_db": 14.574404474941957,
+            "hnr_ac_proxy_db": -3.626559525963287,
+            "raw_h1_h2_proxy_db": 21.948931185813166,
+            "spectral_tilt_db_per_oct": -6.84922382157808,
+            "spectral_centroid_hz": 1908.5583506309156,
+            "f0_frame_period_perturbation_proxy_percent": 1.3950707167240175,
+            "onset_slope_db_per_sec": -68.25605958729825,
+            "periodicity_establishment_ratio": 0.5
+          }
+        },
+        {
+          "start_sec": 6.0,
+          "end_sec": 9.0,
+          "valid": true,
+          "observations": {
+            "periodicity_primary_db": 13.952383529707596,
+            "periodicity_source": "cepstral_prominence_proxy_db",
+            "cepstral_prominence_proxy_db": 13.952383529707596,
+            "hnr_ac_proxy_db": 3.3867481998458153,
+            "raw_h1_h2_proxy_db": 21.418019068068887,
+            "spectral_tilt_db_per_oct": -4.814616048409572,
+            "spectral_centroid_hz": 4921.642640003128,
+            "f0_frame_period_perturbation_proxy_percent": 1.692049932315181,
+            "onset_slope_db_per_sec": 18.821503323350846,
+            "periodicity_establishment_ratio": 0.7224067501139326
+          }
+        }
+      ]
+    }
+  },
+  "vocal_function_profile": {
+    "available": true,
+    "engine_version": "vocal-function-v2.2",
+    "report_version": "vocal-coach-report-v2.2",
+    "functional_quality": "FULL_MIXED",
+    "quality_badge": "충분",
+    "input_mode": "AUTO",
+    "separation_note": null,
+    "calibration_status": "uncalibrated_directional",
+    "measurement_mode": "AUDIO_ONLY",
+    "headline": [
+      "이번 녹음에서 뚜렷한 기능 병목 후보는 제한적이에요. 잘 유지된 패턴을 확인하세요.",
+      "기류 누출·기식성 경향: 낮은 편",
+      "힘이 과하게 들어간 소리 경향: 안정",
+      "성대 진동 안정성: 비교적 규칙적",
+      "성구·음역 전환: 뚜렷한 전환 이슈 제한적"
+    ],
+    "dimensions": {
+      "glottal_contact_profile": {
+        "dimension_id": "glottal_contact_profile",
+        "display_name": "성대 접촉 관련 발성 경향",
+        "status": "UNKNOWN",
+        "status_label": "판단 어려움",
+        "continuum_0_to_1": null,
+        "continuum_label": "중간",
+        "prevalence": "not_observed",
+        "confidence_label": "low",
+        "summary": "판단 어려움",
+        "what_it_may_mean": "중간 정도의 접촉 관련 경향으로 해석될 수 있어요.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {
+          "lighter_segments": 0,
+          "firmer_segments": 0,
+          "continuum_0_light_1_firm": null,
+          "good_bad": null
+        },
+        "practice": [],
+        "hidden": true,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "air_leakage_breathiness": {
+        "dimension_id": "air_leakage_breathiness",
+        "display_name": "기류 누출·기식성 경향",
+        "status": "LOW",
+        "status_label": "낮은 편",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "not_observed",
+        "confidence_label": "medium",
+        "summary": "낮은 편",
+        "what_it_may_mean": "기식성·누출 경향은 뚜렷하지 않았어요.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {},
+        "practice": [],
+        "hidden": false,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "vocal_effort_strain": {
+        "dimension_id": "vocal_effort_strain",
+        "display_name": "힘이 과하게 들어간 소리 경향",
+        "status": "LOW",
+        "status_label": "안정",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "not_observed",
+        "confidence_label": "medium",
+        "summary": "안정",
+        "what_it_may_mean": "과도한 effort와 일치하는 복합 패턴은 뚜렷하지 않았어요.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {
+          "effort_hit_segments": 0,
+          "firm_without_effort_segments": 0,
+          "contact_vs_strain_note": "FIRM_CONTACT != STRAIN"
+        },
+        "practice": [],
+        "hidden": false,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "phonation_regularity": {
+        "dimension_id": "phonation_regularity",
+        "display_name": "성대 진동 안정성",
+        "status": "STABLE",
+        "status_label": "비교적 규칙적",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "not_observed",
+        "confidence_label": "medium",
+        "summary": "비교적 규칙적",
+        "what_it_may_mean": "진동 규칙성은 비교적 유지되는 편이에요.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {},
+        "practice": [],
+        "hidden": false,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "register_configuration": {
+        "dimension_id": "register_configuration",
+        "display_name": "성구·음역 전환",
+        "status": "STABLE_LIKE",
+        "status_label": "뚜렷한 전환 이슈 제한적",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "unknown",
+        "confidence_label": "medium",
+        "summary": "뚜렷한 전환 이슈 제한적",
+        "what_it_may_mean": "큰 음역 전환에서의 source 변화는 제한적이었어요.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {
+          "events": [],
+          "rejected_events": [],
+          "labels": "M1-like/M2-like are hypotheses only"
+        },
+        "practice": [],
+        "hidden": false,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "onset_offset_coordination": {
+        "dimension_id": "onset_offset_coordination",
+        "display_name": "소리 시작·마무리",
+        "status": "BALANCED_LIKE",
+        "status_label": "대체로 부드럽게 시작",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "unknown",
+        "confidence_label": "medium",
+        "summary": "대체로 부드럽게 시작",
+        "what_it_may_mean": "소리 시작·마무리 특성을 음향적으로 관찰한 결과예요.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {},
+        "practice": [],
+        "hidden": false,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "vibrato_control": {
+        "dimension_id": "vibrato_control",
+        "display_name": "비브라토 제어",
+        "status": "UNKNOWN",
+        "status_label": "이번 녹음에서 비브라토를 충분히 관찰하지 못했어요.",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "unknown",
+        "confidence_label": "low",
+        "summary": "이번 녹음에서 비브라토를 충분히 관찰하지 못했어요.",
+        "what_it_may_mean": "",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {},
+        "practice": [],
+        "hidden": true,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 0,
+        "hit_segment_count": 0
+      },
+      "resonance_formant_strategy": {
+        "dimension_id": "resonance_formant_strategy",
+        "display_name": "공명·음색 전략",
+        "status": "OBSERVED",
+        "status_label": "밝기 어두운 편 · 중역 낮은 편",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "unknown",
+        "confidence_label": "medium",
+        "summary": "밝기 어두운 편 · 중역 낮은 편",
+        "what_it_may_mean": "음색·공명 전략 설명이며 좋고 나쁨을 의미하지 않습니다.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {
+          "brightness": "어두운 편",
+          "mid_presence": "낮은 편",
+          "upper_harmonic_presence": "보통",
+          "descriptive_only": true,
+          "no_universal_target": true
+        },
+        "practice": [],
+        "hidden": false,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "respiratory_phonatory_coordination": {
+        "dimension_id": "respiratory_phonatory_coordination",
+        "display_name": "호흡과 발성의 협응",
+        "status": "STABLE_LIKE",
+        "status_label": "호흡-발성 협응 proxy는 비교적 안정적이에요.",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "unknown",
+        "confidence_label": "medium",
+        "summary": "호흡-발성 협응 proxy는 비교적 안정적이에요.",
+        "what_it_may_mean": "Audio-only respiratory_phonatory_coordination_proxy입니다.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {
+          "proxy_only": true,
+          "never_outputs_actual_pressure": true
+        },
+        "practice": [],
+        "hidden": false,
+        "restricted": false,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      },
+      "phonatory_economy_proxy": {
+        "dimension_id": "phonatory_economy_proxy",
+        "display_name": "발성 효율 경향",
+        "status": "OK_PROXY",
+        "status_label": "뚜렷한 비효율 proxy는 제한적이에요.",
+        "continuum_0_to_1": null,
+        "continuum_label": null,
+        "prevalence": "unknown",
+        "confidence_label": "low",
+        "summary": "뚜렷한 비효율 proxy는 제한적이에요.",
+        "what_it_may_mean": "physiological efficiency가 아닌 audio proxy입니다.",
+        "what_we_cannot_know": "",
+        "limitation_short": "",
+        "observations": [],
+        "evidence_graph": [],
+        "focus_segments": [],
+        "profile": {},
+        "practice": [],
+        "hidden": true,
+        "restricted": true,
+        "layer": "LEVEL_3_FUNCTIONAL_STATE_ESTIMATE",
+        "valid_segment_count": 5,
+        "hit_segment_count": 0
+      }
+    },
+    "high_note_events": [
+      {
+        "start_sec": 13.5,
+        "end_sec": 16.5,
+        "local_start_sec": 13.5,
+        "local_end_sec": 16.5,
+        "original_start_sec": 13.5,
+        "original_end_sec": 16.5,
+        "time_origin_sec": 0.0,
+        "episode_id": "HIGH_NOTE_13.5_16.5",
+        "concern": false,
+        "conclusion": "고음 구간 관찰.",
+        "n_merged_windows": 1,
+        "feature_matrix": {
+          "source": {
+            "contact_firmness": 0.0,
+            "air_leakage": null,
+            "estimated_naq": null,
+            "naq_pre": null,
+            "naq_during": null,
+            "naq_delta": null,
+            "estimated_oq_proxy": null,
+            "oq_pre": null,
+            "oq_during": null,
+            "oq_delta": null,
+            "estimated_mfdr_norm_proxy": null,
+            "mfdr_norm_delta": null,
+            "h1_h2_proxy": 13.714493256560907,
+            "h1_h2_delta": null,
+            "source_shift": 0.0
+          },
+          "effort": {
+            "strain_like": 0.0,
+            "intensity_pre_db": null,
+            "intensity_during_db": -21.939720423865992,
+            "intensity_delta_db": null,
+            "intensity_overshoot_proxy": null,
+            "onset_hardening": -77.81117915845664,
+            "persistence": 0.0,
+            "effort_shift": 0.0,
+            "intensity_overshoot": null
+          },
+          "regularity": {
+            "periodicity": 15.126731739182233,
+            "periodicity_pre": null,
+            "periodicity_during": 15.126731739182233,
+            "periodicity_delta": null,
+            "roughness": false,
+            "dropout": false
+          },
+          "register": {
+            "transition_strength": null,
+            "source_shift": 0.0,
+            "f0_continuity": "continuous",
+            "f0_delta_cents": null,
+            "register_shift": 0.0
+          },
+          "resonance": {
+            "brightness_before": null,
+            "brightness_during": 381.8582533157784,
+            "mid_presence_before": null,
+            "mid_presence_during": "낮은 편",
+            "energy_2_4k_before": null,
+            "energy_2_4k_pre": null,
+            "energy_2_4k_during": 0.0130480439189698,
+            "energy_2_4k_delta": null,
+            "brightness_delta": null,
+            "spectral_centroid_delta": null,
+            "f1_delta": null,
+            "f2_delta": null,
+            "formant_confidence": 0.4850649999999999,
+            "resonance_shift": 0.0
+          },
+          "onset": {
+            "abruptness": -77.81117915845664
+          },
+          "recovery": {
+            "returned_to_baseline": false,
+            "recovery_time_sec": 0.0,
+            "post_effort_delta": 0.0,
+            "post_contact_delta": null,
+            "post_periodicity_delta": -3.753644701814679,
+            "status": "OBSERVED"
+          },
+          "validity": {
+            "vocal_specific": true,
+            "n_windows": 1,
+            "pre_n": 0,
+            "post_n": 1
+          },
+          "shifts": {
+            "source_shift": 0.0,
+            "effort_shift": 0.0,
+            "resonance_shift": 0.0,
+            "register_shift": 0.0
+          },
+          "pre_context": {
+            "f0_hz": null,
+            "rms": null,
+            "rms_db": null,
+            "periodicity": null,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": null,
+            "energy_2_4k": null,
+            "spectral_centroid_hz": null,
+            "f1_hz": null,
+            "f2_hz": null,
+            "formant_confidence": null,
+            "onset_slope": null,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 0,
+            "mid_presence": null
+          },
+          "during_context": {
+            "f0_hz": 211.28,
+            "rms": 0.079986,
+            "rms_db": -21.939720423865992,
+            "periodicity": 15.126731739182233,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 13.714493256560907,
+            "energy_2_4k": 0.0130480439189698,
+            "spectral_centroid_hz": 381.8582533157784,
+            "f1_hz": 722.7737583350433,
+            "f2_hz": 3644.973609373556,
+            "formant_confidence": 0.4850649999999999,
+            "onset_slope": -77.81117915845664,
+            "contact_firmness": 0.0,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          },
+          "post_context": {
+            "f0_hz": 203.5,
+            "rms": 0.05356,
+            "rms_db": -25.42318863320057,
+            "periodicity": 11.373087037367554,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 10.130791907166838,
+            "energy_2_4k": 0.024605673431827856,
+            "spectral_centroid_hz": 715.4564403981797,
+            "f1_hz": 3439.335761580355,
+            "f2_hz": 4280.340139804175,
+            "formant_confidence": 0.48846874999999995,
+            "onset_slope": -232.86940091342782,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          },
+          "before_context": {
+            "f0_hz": null,
+            "rms": null,
+            "rms_db": null,
+            "periodicity": null,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": null,
+            "energy_2_4k": null,
+            "spectral_centroid_hz": null,
+            "f1_hz": null,
+            "f2_hz": null,
+            "formant_confidence": null,
+            "onset_slope": null,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 0,
+            "mid_presence": null
+          },
+          "after_context": {
+            "f0_hz": 203.5,
+            "rms": 0.05356,
+            "rms_db": -25.42318863320057,
+            "periodicity": 11.373087037367554,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 10.130791907166838,
+            "energy_2_4k": 0.024605673431827856,
+            "spectral_centroid_hz": 715.4564403981797,
+            "f1_hz": 3439.335761580355,
+            "f2_hz": 4280.340139804175,
+            "formant_confidence": 0.48846874999999995,
+            "onset_slope": -232.86940091342782,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          }
+        },
+        "phase_method": "PROVISIONAL",
+        "phase_confidence": "low",
+        "cause_hint": "UNCLEAR"
+      }
+    ],
+    "episodes": [
+      {
+        "episode_id": "HIGH_NOTE_13.5_16.5",
+        "type": "HIGH_NOTE",
+        "start_sec": 13.5,
+        "end_sec": 16.5,
+        "phases": {
+          "ENTRY": {
+            "start_sec": 13.5,
+            "end_sec": 14.1
+          },
+          "PEAK": {
+            "start_sec": 14.1,
+            "end_sec": 14.85
+          },
+          "SUSTAIN": {
+            "start_sec": 14.85,
+            "end_sec": 15.75
+          },
+          "EXIT": {
+            "start_sec": 15.75,
+            "end_sec": 16.2
+          },
+          "RECOVERY": {
+            "start_sec": 16.2,
+            "end_sec": 16.5
+          }
+        },
+        "phase_method": "PROVISIONAL",
+        "phase_confidence": "low",
+        "provisional_partition": true,
+        "feature_matrix": {
+          "source": {
+            "contact_firmness": 0.0,
+            "air_leakage": null,
+            "estimated_naq": null,
+            "naq_pre": null,
+            "naq_during": null,
+            "naq_delta": null,
+            "estimated_oq_proxy": null,
+            "oq_pre": null,
+            "oq_during": null,
+            "oq_delta": null,
+            "estimated_mfdr_norm_proxy": null,
+            "mfdr_norm_delta": null,
+            "h1_h2_proxy": 13.714493256560907,
+            "h1_h2_delta": null,
+            "source_shift": 0.0
+          },
+          "effort": {
+            "strain_like": 0.0,
+            "intensity_pre_db": null,
+            "intensity_during_db": -21.939720423865992,
+            "intensity_delta_db": null,
+            "intensity_overshoot_proxy": null,
+            "onset_hardening": -77.81117915845664,
+            "persistence": 0.0,
+            "effort_shift": 0.0,
+            "intensity_overshoot": null
+          },
+          "regularity": {
+            "periodicity": 15.126731739182233,
+            "periodicity_pre": null,
+            "periodicity_during": 15.126731739182233,
+            "periodicity_delta": null,
+            "roughness": false,
+            "dropout": false
+          },
+          "register": {
+            "transition_strength": null,
+            "source_shift": 0.0,
+            "f0_continuity": "continuous",
+            "f0_delta_cents": null,
+            "register_shift": 0.0
+          },
+          "resonance": {
+            "brightness_before": null,
+            "brightness_during": 381.8582533157784,
+            "mid_presence_before": null,
+            "mid_presence_during": "낮은 편",
+            "energy_2_4k_before": null,
+            "energy_2_4k_pre": null,
+            "energy_2_4k_during": 0.0130480439189698,
+            "energy_2_4k_delta": null,
+            "brightness_delta": null,
+            "spectral_centroid_delta": null,
+            "f1_delta": null,
+            "f2_delta": null,
+            "formant_confidence": 0.4850649999999999,
+            "resonance_shift": 0.0
+          },
+          "onset": {
+            "abruptness": -77.81117915845664
+          },
+          "recovery": {
+            "returned_to_baseline": false,
+            "recovery_time_sec": 0.0,
+            "post_effort_delta": 0.0,
+            "post_contact_delta": null,
+            "post_periodicity_delta": -3.753644701814679,
+            "status": "OBSERVED"
+          },
+          "validity": {
+            "vocal_specific": true,
+            "n_windows": 1,
+            "pre_n": 0,
+            "post_n": 1
+          },
+          "shifts": {
+            "source_shift": 0.0,
+            "effort_shift": 0.0,
+            "resonance_shift": 0.0,
+            "register_shift": 0.0
+          },
+          "pre_context": {
+            "f0_hz": null,
+            "rms": null,
+            "rms_db": null,
+            "periodicity": null,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": null,
+            "energy_2_4k": null,
+            "spectral_centroid_hz": null,
+            "f1_hz": null,
+            "f2_hz": null,
+            "formant_confidence": null,
+            "onset_slope": null,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 0,
+            "mid_presence": null
+          },
+          "during_context": {
+            "f0_hz": 211.28,
+            "rms": 0.079986,
+            "rms_db": -21.939720423865992,
+            "periodicity": 15.126731739182233,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 13.714493256560907,
+            "energy_2_4k": 0.0130480439189698,
+            "spectral_centroid_hz": 381.8582533157784,
+            "f1_hz": 722.7737583350433,
+            "f2_hz": 3644.973609373556,
+            "formant_confidence": 0.4850649999999999,
+            "onset_slope": -77.81117915845664,
+            "contact_firmness": 0.0,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          },
+          "post_context": {
+            "f0_hz": 203.5,
+            "rms": 0.05356,
+            "rms_db": -25.42318863320057,
+            "periodicity": 11.373087037367554,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 10.130791907166838,
+            "energy_2_4k": 0.024605673431827856,
+            "spectral_centroid_hz": 715.4564403981797,
+            "f1_hz": 3439.335761580355,
+            "f2_hz": 4280.340139804175,
+            "formant_confidence": 0.48846874999999995,
+            "onset_slope": -232.86940091342782,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          },
+          "before_context": {
+            "f0_hz": null,
+            "rms": null,
+            "rms_db": null,
+            "periodicity": null,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": null,
+            "energy_2_4k": null,
+            "spectral_centroid_hz": null,
+            "f1_hz": null,
+            "f2_hz": null,
+            "formant_confidence": null,
+            "onset_slope": null,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 0,
+            "mid_presence": null
+          },
+          "after_context": {
+            "f0_hz": 203.5,
+            "rms": 0.05356,
+            "rms_db": -25.42318863320057,
+            "periodicity": 11.373087037367554,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 10.130791907166838,
+            "energy_2_4k": 0.024605673431827856,
+            "spectral_centroid_hz": 715.4564403981797,
+            "f1_hz": 3439.335761580355,
+            "f2_hz": 4280.340139804175,
+            "formant_confidence": 0.48846874999999995,
+            "onset_slope": -232.86940091342782,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          }
+        },
+        "pre_context": {
+          "f0_hz": null,
+          "rms": null,
+          "rms_db": null,
+          "periodicity": null,
+          "naq": null,
+          "oq": null,
+          "mfdr_norm": null,
+          "h1_h2": null,
+          "energy_2_4k": null,
+          "spectral_centroid_hz": null,
+          "f1_hz": null,
+          "f2_hz": null,
+          "formant_confidence": null,
+          "onset_slope": null,
+          "contact_firmness": null,
+          "strain_like": 0.0,
+          "air_leakage": null,
+          "n": 0,
+          "mid_presence": null
+        },
+        "during_context": {
+          "f0_hz": 211.28,
+          "rms": 0.079986,
+          "rms_db": -21.939720423865992,
+          "periodicity": 15.126731739182233,
+          "naq": null,
+          "oq": null,
+          "mfdr_norm": null,
+          "h1_h2": 13.714493256560907,
+          "energy_2_4k": 0.0130480439189698,
+          "spectral_centroid_hz": 381.8582533157784,
+          "f1_hz": 722.7737583350433,
+          "f2_hz": 3644.973609373556,
+          "formant_confidence": 0.4850649999999999,
+          "onset_slope": -77.81117915845664,
+          "contact_firmness": 0.0,
+          "strain_like": 0.0,
+          "air_leakage": null,
+          "n": 1,
+          "mid_presence": "낮은 편"
+        },
+        "post_context": {
+          "f0_hz": 203.5,
+          "rms": 0.05356,
+          "rms_db": -25.42318863320057,
+          "periodicity": 11.373087037367554,
+          "naq": null,
+          "oq": null,
+          "mfdr_norm": null,
+          "h1_h2": 10.130791907166838,
+          "energy_2_4k": 0.024605673431827856,
+          "spectral_centroid_hz": 715.4564403981797,
+          "f1_hz": 3439.335761580355,
+          "f2_hz": 4280.340139804175,
+          "formant_confidence": 0.48846874999999995,
+          "onset_slope": -232.86940091342782,
+          "contact_firmness": null,
+          "strain_like": 0.0,
+          "air_leakage": null,
+          "n": 1,
+          "mid_presence": "낮은 편"
+        },
+        "context_quality": {
+          "pre_available": false,
+          "post_available": true,
+          "confidence": "medium"
+        },
+        "pre_context_segments": [],
+        "during_segments": [
+          {
+            "start_sec": 13.5,
+            "end_sec": 16.5
+          }
+        ],
+        "post_context_segments": [
+          {
+            "start_sec": 16.5,
+            "end_sec": 19.5
+          }
+        ],
+        "cause_hint": "UNCLEAR",
+        "concern": false,
+        "conclusion": "고음 구간 관찰.",
+        "n_merged_windows": 1,
+        "members": [
+          {
+            "start_sec": 13.5,
+            "end_sec": 16.5,
+            "f0_hz": 211.28,
+            "f0_percentile": 80,
+            "contact_profile_during": "lighter_or_mid",
+            "effort_during": "not_elevated",
+            "periodicity": 15.126731739182233,
+            "roughness": false,
+            "recovery_fast": true,
+            "concern": false,
+            "conclusion": "고음 구간 관찰.",
+            "limitation": "실제 후두 근육 긴장을 직접 측정한 것은 아닙니다.",
+            "validity": {
+              "vocal_specific": true,
+              "vocal_confidence": 0.91,
+              "vocal_dominance": 0.827,
+              "voicing_confidence": 1.0,
+              "f0_confidence": 1.0,
+              "periodicity_confidence": 1.0,
+              "vocal_energy": 0.079986,
+              "no_vocals_energy": 0.016697,
+              "vocal_vs_instrumental_ratio": 4.791,
+              "accompaniment_match": 0.276,
+              "artifact_risk": "high",
+              "separation_artifact_risk": "high",
+              "harmonic_vocal_confidence": 1.0,
+              "reject_reasons": []
+            },
+            "rejected": false,
+            "observations": {
+              "periodicity_primary_db": 15.126731739182233,
+              "periodicity_source": "cepstral_prominence_proxy_db",
+              "cepstral_prominence_proxy_db": 15.126731739182233,
+              "hnr_ac_proxy_db": 4.806339062728004,
+              "raw_h1_h2_proxy_db": 13.714493256560907,
+              "spectral_tilt_db_per_oct": -7.242222236785833,
+              "spectral_centroid_hz": 381.8582533157784,
+              "f0_frame_period_perturbation_proxy_percent": 1.315170983623599,
+              "onset_slope_db_per_sec": -77.81117915845664,
+              "periodicity_establishment_ratio": 0.5,
+              "rms": 0.079986,
+              "f0_hz": 211.28,
+              "f0_percentile_local": null,
+              "f0_trajectory": [
+                113.22,
+                144.31,
+                233.08,
+                223.85,
+                216.22,
+                212.51,
+                177.67,
+                200.58,
+                208.86
+              ],
+              "f0_derivative_mean": 0.6292105263157896,
+              "f0_dropout_ratio": 0.0,
+              "energy_1_2k": 0.02691086899638885,
+              "energy_2_4k": 0.0130480439189698,
+              "energy_4_8k": 0.0033218665594583847,
+              "alpha_ratio_db": -13.751551341606607,
+              "onset_rise_sec": 2.245124716553288,
+              "offset_decay_sec": 0.26303854875283444,
+              "snr_proxy_db": 41.2629935324873
+            },
+            "level2_proxies": {
+              "glottal_source": {
+                "valid": false,
+                "reason": "gif_validity_gate",
+                "gate": {
+                  "valid": false,
+                  "reasons": [
+                    "separation_artifact"
+                  ],
+                  "measurement_mode": "AUDIO_ONLY",
+                  "note": "GIF/source parameters set to UNKNOWN due to validity gate."
+                }
+              },
+              "gif_gate": {
+                "valid": false,
+                "reasons": [
+                  "separation_artifact"
+                ],
+                "measurement_mode": "AUDIO_ONLY",
+                "note": "GIF/source parameters set to UNKNOWN due to validity gate."
+              },
+              "formants": {
+                "valid": true,
+                "reason": null,
+                "formants_hz": [
+                  722.7737583350433,
+                  3644.973609373556,
+                  6745.684090792083,
+                  7943.645880636327,
+                  10944.991325051102
+                ],
+                "bandwidths_hz": [
+                  710.5588844916713,
+                  331.2772853831786,
+                  1265.3110778365503,
+                  1039.1049372848515,
+                  1396.66393359385
+                ],
+                "confidence": 0.4850649999999999,
+                "f1_hz": 722.7737583350433,
+                "f2_hz": 3644.973609373556,
+                "f3_hz": 6745.684090792083,
+                "f4_hz": 7943.645880636327,
+                "f5_hz": 10944.991325051102,
+                "grade": "B"
+              },
+              "harmonic_formant_alignment": {
+                "H1_to_nearest_formant_hz": 511.49375833504337,
+                "H1_nearest_formant": 722.7737583350433,
+                "H2_to_nearest_formant_hz": 300.21375833504334,
+                "H2_nearest_formant": 722.7737583350433,
+                "H3_to_nearest_formant_hz": 88.93375833504331,
+                "H3_nearest_formant": 722.7737583350433,
+                "available": true
+              },
+              "timbre": {
+                "brightness": "어두운 편",
+                "weight_or_warmth": "무게감 있는 편",
+                "mid_presence": "낮은 편",
+                "upper_harmonic_presence": "낮은 편",
+                "resonance_focus": "보통",
+                "flexibility": "UNKNOWN",
+                "descriptive_only": true,
+                "restricted": false,
+                "what_it_is_not": "음색 좋고 나쁨 / 실력 점수가 아닙니다."
+              }
+            },
+            "before": {
+              "firm": false,
+              "effort": false
+            },
+            "after": {
+              "firm": false,
+              "effort": false
+            },
+            "type": "HIGH_NOTE"
+          }
+        ],
+        "validity": {
+          "vocal_specific": true,
+          "vocal_confidence": 0.91,
+          "vocal_dominance": 0.827,
+          "voicing_confidence": 1.0,
+          "f0_confidence": 1.0,
+          "periodicity_confidence": 1.0,
+          "vocal_energy": 0.079986,
+          "no_vocals_energy": 0.016697,
+          "vocal_vs_instrumental_ratio": 4.791,
+          "accompaniment_match": 0.276,
+          "artifact_risk": "high",
+          "separation_artifact_risk": "high",
+          "harmonic_vocal_confidence": 1.0,
+          "reject_reasons": []
+        },
+        "local_start_sec": 13.5,
+        "local_end_sec": 16.5,
+        "time_origin_sec": 0.0,
+        "original_start_sec": 13.5,
+        "original_end_sec": 16.5
+      }
+    ],
+    "focus_episodes": {
+      "primary": [
+        {
+          "episode_id": "HIGH_NOTE_13.5_16.5",
+          "type": "HIGH_NOTE",
+          "start_sec": 13.5,
+          "end_sec": 16.5,
+          "phases": {
+            "ENTRY": {
+              "start_sec": 13.5,
+              "end_sec": 14.1
+            },
+            "PEAK": {
+              "start_sec": 14.1,
+              "end_sec": 14.85
+            },
+            "SUSTAIN": {
+              "start_sec": 14.85,
+              "end_sec": 15.75
+            },
+            "EXIT": {
+              "start_sec": 15.75,
+              "end_sec": 16.2
+            },
+            "RECOVERY": {
+              "start_sec": 16.2,
+              "end_sec": 16.5
+            }
+          },
+          "phase_method": "PROVISIONAL",
+          "phase_confidence": "low",
+          "provisional_partition": true,
+          "feature_matrix": {
+            "source": {
+              "contact_firmness": 0.0,
+              "air_leakage": null,
+              "estimated_naq": null,
+              "naq_pre": null,
+              "naq_during": null,
+              "naq_delta": null,
+              "estimated_oq_proxy": null,
+              "oq_pre": null,
+              "oq_during": null,
+              "oq_delta": null,
+              "estimated_mfdr_norm_proxy": null,
+              "mfdr_norm_delta": null,
+              "h1_h2_proxy": 13.714493256560907,
+              "h1_h2_delta": null,
+              "source_shift": 0.0
+            },
+            "effort": {
+              "strain_like": 0.0,
+              "intensity_pre_db": null,
+              "intensity_during_db": -21.939720423865992,
+              "intensity_delta_db": null,
+              "intensity_overshoot_proxy": null,
+              "onset_hardening": -77.81117915845664,
+              "persistence": 0.0,
+              "effort_shift": 0.0,
+              "intensity_overshoot": null
+            },
+            "regularity": {
+              "periodicity": 15.126731739182233,
+              "periodicity_pre": null,
+              "periodicity_during": 15.126731739182233,
+              "periodicity_delta": null,
+              "roughness": false,
+              "dropout": false
+            },
+            "register": {
+              "transition_strength": null,
+              "source_shift": 0.0,
+              "f0_continuity": "continuous",
+              "f0_delta_cents": null,
+              "register_shift": 0.0
+            },
+            "resonance": {
+              "brightness_before": null,
+              "brightness_during": 381.8582533157784,
+              "mid_presence_before": null,
+              "mid_presence_during": "낮은 편",
+              "energy_2_4k_before": null,
+              "energy_2_4k_pre": null,
+              "energy_2_4k_during": 0.0130480439189698,
+              "energy_2_4k_delta": null,
+              "brightness_delta": null,
+              "spectral_centroid_delta": null,
+              "f1_delta": null,
+              "f2_delta": null,
+              "formant_confidence": 0.4850649999999999,
+              "resonance_shift": 0.0
+            },
+            "onset": {
+              "abruptness": -77.81117915845664
+            },
+            "recovery": {
+              "returned_to_baseline": false,
+              "recovery_time_sec": 0.0,
+              "post_effort_delta": 0.0,
+              "post_contact_delta": null,
+              "post_periodicity_delta": -3.753644701814679,
+              "status": "OBSERVED"
+            },
+            "validity": {
+              "vocal_specific": true,
+              "n_windows": 1,
+              "pre_n": 0,
+              "post_n": 1
+            },
+            "shifts": {
+              "source_shift": 0.0,
+              "effort_shift": 0.0,
+              "resonance_shift": 0.0,
+              "register_shift": 0.0
+            },
+            "pre_context": {
+              "f0_hz": null,
+              "rms": null,
+              "rms_db": null,
+              "periodicity": null,
+              "naq": null,
+              "oq": null,
+              "mfdr_norm": null,
+              "h1_h2": null,
+              "energy_2_4k": null,
+              "spectral_centroid_hz": null,
+              "f1_hz": null,
+              "f2_hz": null,
+              "formant_confidence": null,
+              "onset_slope": null,
+              "contact_firmness": null,
+              "strain_like": 0.0,
+              "air_leakage": null,
+              "n": 0,
+              "mid_presence": null
+            },
+            "during_context": {
+              "f0_hz": 211.28,
+              "rms": 0.079986,
+              "rms_db": -21.939720423865992,
+              "periodicity": 15.126731739182233,
+              "naq": null,
+              "oq": null,
+              "mfdr_norm": null,
+              "h1_h2": 13.714493256560907,
+              "energy_2_4k": 0.0130480439189698,
+              "spectral_centroid_hz": 381.8582533157784,
+              "f1_hz": 722.7737583350433,
+              "f2_hz": 3644.973609373556,
+              "formant_confidence": 0.4850649999999999,
+              "onset_slope": -77.81117915845664,
+              "contact_firmness": 0.0,
+              "strain_like": 0.0,
+              "air_leakage": null,
+              "n": 1,
+              "mid_presence": "낮은 편"
+            },
+            "post_context": {
+              "f0_hz": 203.5,
+              "rms": 0.05356,
+              "rms_db": -25.42318863320057,
+              "periodicity": 11.373087037367554,
+              "naq": null,
+              "oq": null,
+              "mfdr_norm": null,
+              "h1_h2": 10.130791907166838,
+              "energy_2_4k": 0.024605673431827856,
+              "spectral_centroid_hz": 715.4564403981797,
+              "f1_hz": 3439.335761580355,
+              "f2_hz": 4280.340139804175,
+              "formant_confidence": 0.48846874999999995,
+              "onset_slope": -232.86940091342782,
+              "contact_firmness": null,
+              "strain_like": 0.0,
+              "air_leakage": null,
+              "n": 1,
+              "mid_presence": "낮은 편"
+            },
+            "before_context": {
+              "f0_hz": null,
+              "rms": null,
+              "rms_db": null,
+              "periodicity": null,
+              "naq": null,
+              "oq": null,
+              "mfdr_norm": null,
+              "h1_h2": null,
+              "energy_2_4k": null,
+              "spectral_centroid_hz": null,
+              "f1_hz": null,
+              "f2_hz": null,
+              "formant_confidence": null,
+              "onset_slope": null,
+              "contact_firmness": null,
+              "strain_like": 0.0,
+              "air_leakage": null,
+              "n": 0,
+              "mid_presence": null
+            },
+            "after_context": {
+              "f0_hz": 203.5,
+              "rms": 0.05356,
+              "rms_db": -25.42318863320057,
+              "periodicity": 11.373087037367554,
+              "naq": null,
+              "oq": null,
+              "mfdr_norm": null,
+              "h1_h2": 10.130791907166838,
+              "energy_2_4k": 0.024605673431827856,
+              "spectral_centroid_hz": 715.4564403981797,
+              "f1_hz": 3439.335761580355,
+              "f2_hz": 4280.340139804175,
+              "formant_confidence": 0.48846874999999995,
+              "onset_slope": -232.86940091342782,
+              "contact_firmness": null,
+              "strain_like": 0.0,
+              "air_leakage": null,
+              "n": 1,
+              "mid_presence": "낮은 편"
+            }
+          },
+          "pre_context": {
+            "f0_hz": null,
+            "rms": null,
+            "rms_db": null,
+            "periodicity": null,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": null,
+            "energy_2_4k": null,
+            "spectral_centroid_hz": null,
+            "f1_hz": null,
+            "f2_hz": null,
+            "formant_confidence": null,
+            "onset_slope": null,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 0,
+            "mid_presence": null
+          },
+          "during_context": {
+            "f0_hz": 211.28,
+            "rms": 0.079986,
+            "rms_db": -21.939720423865992,
+            "periodicity": 15.126731739182233,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 13.714493256560907,
+            "energy_2_4k": 0.0130480439189698,
+            "spectral_centroid_hz": 381.8582533157784,
+            "f1_hz": 722.7737583350433,
+            "f2_hz": 3644.973609373556,
+            "formant_confidence": 0.4850649999999999,
+            "onset_slope": -77.81117915845664,
+            "contact_firmness": 0.0,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          },
+          "post_context": {
+            "f0_hz": 203.5,
+            "rms": 0.05356,
+            "rms_db": -25.42318863320057,
+            "periodicity": 11.373087037367554,
+            "naq": null,
+            "oq": null,
+            "mfdr_norm": null,
+            "h1_h2": 10.130791907166838,
+            "energy_2_4k": 0.024605673431827856,
+            "spectral_centroid_hz": 715.4564403981797,
+            "f1_hz": 3439.335761580355,
+            "f2_hz": 4280.340139804175,
+            "formant_confidence": 0.48846874999999995,
+            "onset_slope": -232.86940091342782,
+            "contact_firmness": null,
+            "strain_like": 0.0,
+            "air_leakage": null,
+            "n": 1,
+            "mid_presence": "낮은 편"
+          },
+          "context_quality": {
+            "pre_available": false,
+            "post_available": true,
+            "confidence": "medium"
+          },
+          "pre_context_segments": [],
+          "during_segments": [
+            {
+              "start_sec": 13.5,
+              "end_sec": 16.5
+            }
+          ],
+          "post_context_segments": [
+            {
+              "start_sec": 16.5,
+              "end_sec": 19.5
+            }
+          ],
+          "cause_hint": "UNCLEAR",
+          "concern": false,
+          "conclusion": "고음 구간 관찰.",
+          "n_merged_windows": 1,
+          "members": [
+            {
+              "start_sec": 13.5,
+              "end_sec": 16.5,
+              "f0_hz": 211.28,
+              "f0_percentile": 80,
+              "contact_profile_during": "lighter_or_mid",
+              "effort_during": "not_elevated",
+              "periodicity": 15.126731739182233,
+              "roughness": false,
+              "recovery_fast": true,
+              "concern": false,
+              "conclusion": "고음 구간 관찰.",
+              "limitation": "실제 후두 근육 긴장을 직접 측정한 것은 아닙니다.",
+              "validity": {
+                "vocal_specific": true,
+                "vocal_confidence": 0.91,
+                "vocal_dominance": 0.827,
+                "voicing_confidence": 1.0,
+                "f0_confidence": 1.0,
+                "periodicity_confidence": 1.0,
+                "vocal_energy": 0.079986,
+                "no_vocals_energy": 0.016697,
+                "vocal_vs_instrumental_ratio": 4.791,
+                "accompaniment_match": 0.276,
+                "artifact_risk": "high",
+                "separation_artifact_risk": "high",
+                "harmonic_vocal_confidence": 1.0,
+                "reject_reasons": []
+              },
+              "rejected": false,
+              "observations": {
+                "periodicity_primary_db": 15.126731739182233,
+                "periodicity_source": "cepstral_prominence_proxy_db",
+                "cepstral_prominence_proxy_db": 15.126731739182233,
+                "hnr_ac_proxy_db": 4.806339062728004,
+                "raw_h1_h2_proxy_db": 13.714493256560907,
+                "spectral_tilt_db_per_oct": -7.242222236785833,
+                "spectral_centroid_hz": 381.8582533157784,
+                "f0_frame_period_perturbation_proxy_percent": 1.315170983623599,
+                "onset_slope_db_per_sec": -77.81117915845664,
+                "periodicity_establishment_ratio": 0.5,
+                "rms": 0.079986,
+                "f0_hz": 211.28,
+                "f0_percentile_local": null,
+                "f0_trajectory": [
+                  113.22,
+                  144.31,
+                  233.08,
+                  223.85,
+                  216.22,
+                  212.51,
+                  177.67,
+                  200.58,
+                  208.86
+                ],
+                "f0_derivative_mean": 0.6292105263157896,
+                "f0_dropout_ratio": 0.0,
+                "energy_1_2k": 0.02691086899638885,
+                "energy_2_4k": 0.0130480439189698,
+                "energy_4_8k": 0.0033218665594583847,
+                "alpha_ratio_db": -13.751551341606607,
+                "onset_rise_sec": 2.245124716553288,
+                "offset_decay_sec": 0.26303854875283444,
+                "snr_proxy_db": 41.2629935324873
+              },
+              "level2_proxies": {
+                "glottal_source": {
+                  "valid": false,
+                  "reason": "gif_validity_gate",
+                  "gate": {
+                    "valid": false,
+                    "reasons": [
+                      "separation_artifact"
+                    ],
+                    "measurement_mode": "AUDIO_ONLY",
+                    "note": "GIF/source parameters set to UNKNOWN due to validity gate."
+                  }
+                },
+                "gif_gate": {
+                  "valid": false,
+                  "reasons": [
+                    "separation_artifact"
+                  ],
+                  "measurement_mode": "AUDIO_ONLY",
+                  "note": "GIF/source parameters set to UNKNOWN due to validity gate."
+                },
+                "formants": {
+                  "valid": true,
+                  "reason": null,
+                  "formants_hz": [
+                    722.7737583350433,
+                    3644.973609373556,
+                    6745.684090792083,
+                    7943.645880636327,
+                    10944.991325051102
+                  ],
+                  "bandwidths_hz": [
+                    710.5588844916713,
+                    331.2772853831786,
+                    1265.3110778365503,
+                    1039.1049372848515,
+                    1396.66393359385
+                  ],
+                  "confidence": 0.4850649999999999,
+                  "f1_hz": 722.7737583350433,
+                  "f2_hz": 3644.973609373556,
+                  "f3_hz": 6745.684090792083,
+                  "f4_hz": 7943.645880636327,
+                  "f5_hz": 10944.991325051102,
+                  "grade": "B"
+                },
+                "harmonic_formant_alignment": {
+                  "H1_to_nearest_formant_hz": 511.49375833504337,
+                  "H1_nearest_formant": 722.7737583350433,
+                  "H2_to_nearest_formant_hz": 300.21375833504334,
+                  "H2_nearest_formant": 722.7737583350433,
+                  "H3_to_nearest_formant_hz": 88.93375833504331,
+                  "H3_nearest_formant": 722.7737583350433,
+                  "available": true
+                },
+                "timbre": {
+                  "brightness": "어두운 편",
+                  "weight_or_warmth": "무게감 있는 편",
+                  "mid_presence": "낮은 편",
+                  "upper_harmonic_presence": "낮은 편",
+                  "resonance_focus": "보통",
+                  "flexibility": "UNKNOWN",
+                  "descriptive_only": true,
+                  "restricted": false,
+                  "what_it_is_not": "음색 좋고 나쁨 / 실력 점수가 아닙니다."
+                }
+              },
+              "before": {
+                "firm": false,
+                "effort": false
+              },
+              "after": {
+                "firm": false,
+                "effort": false
+              },
+              "type": "HIGH_NOTE"
+            }
+          ],
+          "validity": {
+            "vocal_specific": true,
+            "vocal_confidence": 0.91,
+            "vocal_dominance": 0.827,
+            "voicing_confidence": 1.0,
+            "f0_confidence": 1.0,
+            "periodicity_confidence": 1.0,
+            "vocal_energy": 0.079986,
+            "no_vocals_energy": 0.016697,
+            "vocal_vs_instrumental_ratio": 4.791,
+            "accompaniment_match": 0.276,
+            "artifact_risk": "high",
+            "separation_artifact_risk": "high",
+            "harmonic_vocal_confidence": 1.0,
+            "reject_reasons": []
+          },
+          "local_start_sec": 13.5,
+          "local_end_sec": 16.5,
+          "time_origin_sec": 0.0,
+          "original_start_sec": 13.5,
+          "original_end_sec": 16.5
+        }
+      ],
+      "secondary": [],
+      "best_self_reference": null
+    },
+    "coaching_decision": {
+      "layer": "LEVEL_5_COACHING_DECISION",
+      "user_goal": "GENERAL_EASE_AND_CONTROL",
+      "style_context": "unspecified",
+      "headline": "이번 녹음에서 뚜렷한 기능 병목 후보는 제한적이에요. 잘 유지된 패턴을 확인하세요.",
+      "primary_bottleneck": null,
+      "secondary_bottlenecks": [],
+      "hypotheses": [],
+      "preserve": [
+        {
+          "id": "periodicity",
+          "label": "안정적인 주기성",
+          "action": "PRESERVE",
+          "why": "진동 규칙성이 비교적 유지됐어요."
+        }
+      ],
+      "modify": [],
+      "why": [
+        "유지: 안정적인 주기성"
+      ],
+      "why_structured": {
+        "supporting": [],
+        "preserved": [
+          "안정적인 주기성"
+        ],
+        "contradicting": []
+      },
+      "target_episode": null,
+      "best_self_reference": null,
+      "focus_ranked": [],
+      "exercise_plan": [],
+      "success_criteria": [],
+      "prefer_additional_measurement": true,
+      "measurement_candidates": [],
+      "needs_confirmation": [],
+      "inference_confidence": "low",
+      "coaching_confidence": "low",
+      "note": "goal/style은 priority만 바꾸며 raw measurement·confidence를 변경하지 않습니다.",
+      "no_primary_message": "이번 녹음에서는 우선적으로 교정해야 할 뚜렷한 기능적 병목은 찾지 못했어요."
+    },
+    "contact_effort_plane": {
+      "firm_segments": 0,
+      "effort_segments": 0,
+      "firm_effort_overlap_segments": 0,
+      "firm_effort_overlap_ratio": 0.0,
+      "firm_without_effort_ratio": 0.0,
+      "effort_without_firm_ratio": 0.0,
+      "episode_firm_effort_overlap": 0,
+      "firm_high_strain_low": false,
+      "firm_high_strain_high": false,
+      "firm_low_strain_low": true,
+      "distinguishes_firm_vs_strain": true,
+      "co_occurrence_method": "same_segment_or_episode"
+    },
+    "personal_baseline": {
+      "f0_hz": 203.5,
+      "rms": 0.051573,
+      "mfdr_norm": null
+    },
+    "style_goal": "unspecified",
+    "technique_goal": null,
+    "user_goal": "GENERAL_EASE_AND_CONTROL",
+    "valid_segment_count": 5,
+    "total_segment_count": 14,
+    "analysis_time_origin_sec": 0.0,
+    "warnings": [],
+    "layers": {
+      "0": "VOCAL_EVIDENCE_GATE",
+      "1": "DIRECT_ACOUSTIC_OBSERVATIONS",
+      "2": "GLOTTAL_SOURCE_VOCAL_TRACT_PROXIES",
+      "3": "FUNCTIONAL_STATE_ESTIMATE",
+      "4": "EPISODES_BOTTLENECKS",
+      "5": "COACHING_DECISION"
+    },
+    "disclaimer": "이 분석은 음향 기반 기능 추정이며 해부학적/의학적 진단이 아닙니다.",
+    "scientific_debug": {
+      "engine_version": "vocal-function-v2.2",
+      "n_segments": 14,
+      "n_valid": 5,
+      "baseline": {
+        "f0_hz": 203.5,
+        "rms": 0.051573,
+        "mfdr_norm": null
+      },
+      "user_goal": "GENERAL_EASE_AND_CONTROL",
+      "contact_effort_plane": {
+        "firm_segments": 0,
+        "effort_segments": 0,
+        "firm_effort_overlap_segments": 0,
+        "firm_effort_overlap_ratio": 0.0,
+        "firm_without_effort_ratio": 0.0,
+        "effort_without_firm_ratio": 0.0,
+        "episode_firm_effort_overlap": 0,
+        "firm_high_strain_low": false,
+        "firm_high_strain_high": false,
+        "firm_low_strain_low": true,
+        "distinguishes_firm_vs_strain": true,
+        "co_occurrence_method": "same_segment_or_episode"
+      },
+      "raw_high_note_windows": [
+        {
+          "start_sec": 13.5,
+          "end_sec": 16.5,
+          "f0_hz": 211.28,
+          "f0_percentile": 80,
+          "contact_profile_during": "lighter_or_mid",
+          "effort_during": "not_elevated",
+          "periodicity": 15.126731739182233,
+          "roughness": false,
+          "recovery_fast": true,
+          "concern": false,
+          "conclusion": "고음 구간 관찰.",
+          "limitation": "실제 후두 근육 긴장을 직접 측정한 것은 아닙니다.",
+          "validity": {
+            "vocal_specific": true,
+            "vocal_confidence": 0.91,
+            "vocal_dominance": 0.827,
+            "voicing_confidence": 1.0,
+            "f0_confidence": 1.0,
+            "periodicity_confidence": 1.0,
+            "vocal_energy": 0.079986,
+            "no_vocals_energy": 0.016697,
+            "vocal_vs_instrumental_ratio": 4.791,
+            "accompaniment_match": 0.276,
+            "artifact_risk": "high",
+            "separation_artifact_risk": "high",
+            "harmonic_vocal_confidence": 1.0,
+            "reject_reasons": []
+          },
+          "rejected": false,
+          "observations": {
+            "periodicity_primary_db": 15.126731739182233,
+            "periodicity_source": "cepstral_prominence_proxy_db",
+            "cepstral_prominence_proxy_db": 15.126731739182233,
+            "hnr_ac_proxy_db": 4.806339062728004,
+            "raw_h1_h2_proxy_db": 13.714493256560907,
+            "spectral_tilt_db_per_oct": -7.242222236785833,
+            "spectral_centroid_hz": 381.8582533157784,
+            "f0_frame_period_perturbation_proxy_percent": 1.315170983623599,
+            "onset_slope_db_per_sec": -77.81117915845664,
+            "periodicity_establishment_ratio": 0.5,
+            "rms": 0.079986,
+            "f0_hz": 211.28,
+            "f0_percentile_local": null,
+            "f0_trajectory": [
+              113.22,
+              144.31,
+              233.08,
+              223.85,
+              216.22,
+              212.51,
+              177.67,
+              200.58,
+              208.86
+            ],
+            "f0_derivative_mean": 0.6292105263157896,
+            "f0_dropout_ratio": 0.0,
+            "energy_1_2k": 0.02691086899638885,
+            "energy_2_4k": 0.0130480439189698,
+            "energy_4_8k": 0.0033218665594583847,
+            "alpha_ratio_db": -13.751551341606607,
+            "onset_rise_sec": 2.245124716553288,
+            "offset_decay_sec": 0.26303854875283444,
+            "snr_proxy_db": 41.2629935324873
+          },
+          "level2_proxies": {
+            "glottal_source": {
+              "valid": false,
+              "reason": "gif_validity_gate",
+              "gate": {
+                "valid": false,
+                "reasons": [
+                  "separation_artifact"
+                ],
+                "measurement_mode": "AUDIO_ONLY",
+                "note": "GIF/source parameters set to UNKNOWN due to validity gate."
+              }
+            },
+            "gif_gate": {
+              "valid": false,
+              "reasons": [
+                "separation_artifact"
+              ],
+              "measurement_mode": "AUDIO_ONLY",
+              "note": "GIF/source parameters set to UNKNOWN due to validity gate."
+            },
+            "formants": {
+              "valid": true,
+              "reason": null,
+              "formants_hz": [
+                722.7737583350433,
+                3644.973609373556,
+                6745.684090792083,
+                7943.645880636327,
+                10944.991325051102
+              ],
+              "bandwidths_hz": [
+                710.5588844916713,
+                331.2772853831786,
+                1265.3110778365503,
+                1039.1049372848515,
+                1396.66393359385
+              ],
+              "confidence": 0.4850649999999999,
+              "f1_hz": 722.7737583350433,
+              "f2_hz": 3644.973609373556,
+              "f3_hz": 6745.684090792083,
+              "f4_hz": 7943.645880636327,
+              "f5_hz": 10944.991325051102,
+              "grade": "B"
+            },
+            "harmonic_formant_alignment": {
+              "H1_to_nearest_formant_hz": 511.49375833504337,
+              "H1_nearest_formant": 722.7737583350433,
+              "H2_to_nearest_formant_hz": 300.21375833504334,
+              "H2_nearest_formant": 722.7737583350433,
+              "H3_to_nearest_formant_hz": 88.93375833504331,
+              "H3_nearest_formant": 722.7737583350433,
+              "available": true
+            },
+            "timbre": {
+              "brightness": "어두운 편",
+              "weight_or_warmth": "무게감 있는 편",
+              "mid_presence": "낮은 편",
+              "upper_harmonic_presence": "낮은 편",
+              "resonance_focus": "보통",
+              "flexibility": "UNKNOWN",
+              "descriptive_only": true,
+              "restricted": false,
+              "what_it_is_not": "음색 좋고 나쁨 / 실력 점수가 아닙니다."
+            }
+          },
+          "before": {
+            "firm": false,
+            "effort": false
+          },
+          "after": {
+            "firm": false,
+            "effort": false
+          }
+        }
+      ],
+      "rejected_register_events": [],
+      "has_no_vocals_contrast": true,
+      "time_origin_sec": 0.0,
+      "functional_quality": "FULL_MIXED",
+      "input_mode": "AUTO"
+    }
+  },
+  "features": {
+    "waveform": {
+      "rms_mean": 0.042231,
+      "rms_max": 0.18514,
+      "peak_amplitude": 0.616587,
+      "dynamic_range_db": 26.02,
+      "silent_ratio": 0.2367,
+      "envelope": [
+        {
+          "t": 0,
+          "rms": 0.053896
+        },
+        {
+          "t": 1,
+          "rms": 0.083904
+        },
+        {
+          "t": 2,
+          "rms": 0.024176
+        },
+        {
+          "t": 3,
+          "rms": 0.027333
+        },
+        {
+          "t": 4,
+          "rms": 0.072894
+        },
+        {
+          "t": 5,
+          "rms": 0.062671
+        },
+        {
+          "t": 6,
+          "rms": 0.070036
+        },
+        {
+          "t": 7,
+          "rms": 0.048512
+        },
+        {
+          "t": 8,
+          "rms": 0.026849
+        },
+        {
+          "t": 9,
+          "rms": 0.040673
+        },
+        {
+          "t": 10,
+          "rms": 0.037299
+        },
+        {
+          "t": 11,
+          "rms": 0.019436
+        },
+        {
+          "t": 12,
+          "rms": 0.01506
+        },
+        {
+          "t": 13,
+          "rms": 0.007599
+        },
+        {
+          "t": 14,
+          "rms": 0.026818
+        },
+        {
+          "t": 15,
+          "rms": 0.101896
+        },
+        {
+          "t": 16,
+          "rms": 0.093432
+        },
+        {
+          "t": 17,
+          "rms": 0.053573
+        },
+        {
+          "t": 18,
+          "rms": 0.057589
+        },
+        {
+          "t": 19,
+          "rms": 0.049488
+        },
+        {
+          "t": 20,
+          "rms": 0.092748
+        },
+        {
+          "t": 21,
+          "rms": 0.05409
+        }
+      ]
+    },
+    "spectral": {
+      "band_energy_db": {
+        "80_250": 23.27,
+        "250_500": 12.4,
+        "500_800": 14.33,
+        "800_1500": 6.37,
+        "1500_2500": -0.46,
+        "2500_4000": -3.67,
+        "4000_6000": -9.01,
+        "6000_10000": -10.24
+      },
+      "spectral_centroid_mean_hz": 2308.47,
+      "acoustic_metrics": {
+        "rumble_ratio_db": 12.662266731262207,
+        "weight_gap_db": 26.746484756469727,
+        "mouth_gap_db": 17.957053184509277,
+        "air_ratio_db": -8.964717864990234,
+        "spr_db": 27.456796646118164,
+        "spectral_slope_db_per_oct": -5.648563205353384,
+        "singer_formant_center_hz": 2799.31640625,
+        "singer_formant_prominence_db": -0.7271327972412109
+      }
+    },
+    "phonation": {
+      "sustained_regions": [
+        {
+          "start_sec": 6.339,
+          "end_sec": 7.141,
+          "duration_sec": 0.802,
+          "median_f0_hz": 217.47,
+          "residual_std_cents": 12.8,
+          "rms_variation_db": 3.1
+        },
+        {
+          "start_sec": 20.364,
+          "end_sec": 20.875,
+          "duration_sec": 0.511,
+          "median_f0_hz": 214.98,
+          "residual_std_cents": 11.09,
+          "rms_variation_db": 3.35
+        }
+      ],
+      "median_residual_std_cents": 11.95,
+      "median_rms_variation_db": 3.23,
+      "sustained_count": 2,
+      "legacy_pitch_stability_cents": 361.11,
+      "f0_mean_hz": 188.91,
+      "voiced_ratio": 0.7341
+    },
+    "timbre": {
+      "brightness_score": 0.291,
+      "warmth_score": 0.677,
+      "boxiness_score": 0.713,
+      "presence_score": 0.333,
+      "airiness_score": 0.217
+    }
+  },
+  "score": {
+    "available": true,
+    "version": "vocal-score-v3.0",
+    "calibration_status": "uncalibrated",
+    "overall": 67.4,
+    "label": "개선 여지가 있어요",
+    "overall_confidence": 0.724,
+    "overall_coverage": 0.604,
+    "provisional": true,
+    "areas": [
+      {
+        "area_id": "stability",
+        "display_name": "발성 안정성",
+        "score": 70.0,
+        "status": "normal",
+        "status_label": "보통 이상",
+        "confidence": 0.628,
+        "coverage": 0.219,
+        "submetrics": [
+          {
+            "submetric_id": "sustain_pitch_stability",
+            "display_name": "지속음 안정성",
+            "score": 93.4,
+            "status": "excellent",
+            "confidence": 0.85,
+            "coverage": 0.219,
+            "raw_value": 11.95,
+            "unit": "cents",
+            "temporal_consistency": null,
+            "worst_segment_score": 89.2,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "sustain_level_stability",
+            "display_name": "음량 유지",
+            "score": 82.8,
+            "status": "good",
+            "confidence": 0.8,
+            "coverage": 0.219,
+            "raw_value": 3.23,
+            "unit": "dB",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "region_consistency",
+            "display_name": "구간 일관성",
+            "score": 100.0,
+            "status": "excellent",
+            "confidence": 0.75,
+            "coverage": 0.667,
+            "raw_value": 0.49,
+            "unit": "",
+            "temporal_consistency": 1.0,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "unstable_region_ratio",
+            "display_name": "구간 안정 유지",
+            "score": 100.0,
+            "status": "excellent",
+            "confidence": 0.8,
+            "coverage": 0.219,
+            "raw_value": 0.0,
+            "unit": "ratio",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "stability_worst_region",
+            "display_name": "최악 구간",
+            "score": 89.2,
+            "status": "excellent",
+            "confidence": 0.7,
+            "coverage": 0.219,
+            "raw_value": 89.2,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          }
+        ],
+        "temporal": {
+          "median": 89.689,
+          "p25": 89.444,
+          "p75": 89.933,
+          "p90": 90.08,
+          "worst": 89.2,
+          "std": 0.489,
+          "iqr": 0.489,
+          "count": 2,
+          "bad_segment_ratio": 0.0
+        },
+        "segment_scores": [
+          {
+            "start_sec": 6.339,
+            "end_sec": 7.141,
+            "score": 89.2,
+            "confidence": 0.8
+          },
+          {
+            "start_sec": 20.364,
+            "end_sec": 20.875,
+            "score": 90.2,
+            "confidence": 0.8
+          }
+        ],
+        "score_ceiling": 70.0,
+        "ceiling_reasons": [
+          "coverage_ceiling:70.0"
+        ],
+        "weight": 0.3,
+        "evidence": {
+          "sustained_count": 2,
+          "total_sustain_sec": 1.31
+        },
+        "confidence_reason": "ok"
+      },
+      {
+        "area_id": "projection",
+        "display_name": "목소리 전달력",
+        "score": null,
+        "status": "unknown",
+        "status_label": "판단 어려움",
+        "confidence": 0.327,
+        "coverage": 1.0,
+        "submetrics": [
+          {
+            "submetric_id": "spectral_projection",
+            "display_name": "스펙트럼 전달",
+            "score": 62.0,
+            "status": "needs_work",
+            "confidence": 0.8,
+            "coverage": 1.0,
+            "raw_value": 27.456796646118164,
+            "unit": "dB",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "presence_prominence",
+            "display_name": "소리 선명도",
+            "score": 30.0,
+            "status": "needs_work",
+            "confidence": 0.8,
+            "coverage": 1.0,
+            "raw_value": -0.7271327972412109,
+            "unit": "dB",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "projection_consistency",
+            "display_name": "전달 일관성",
+            "score": 58.5,
+            "status": "needs_work",
+            "confidence": 0.7,
+            "coverage": 1.0,
+            "raw_value": null,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "weak_projection_segment_ratio",
+            "display_name": "전달 유지력",
+            "score": 33.4,
+            "status": "needs_work",
+            "confidence": 0.7,
+            "coverage": 1.0,
+            "raw_value": 0.5714285714285714,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "projection_worst_segment",
+            "display_name": "최악 전달 구간",
+            "score": 34.8,
+            "status": "needs_work",
+            "confidence": 0.65,
+            "coverage": 1.0,
+            "raw_value": null,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          }
+        ],
+        "temporal": {
+          "median": 52.441,
+          "p25": 49.33,
+          "p75": 69.012,
+          "p90": 77.611,
+          "worst": 34.83,
+          "std": 15.498,
+          "iqr": 19.682,
+          "count": 14,
+          "bad_segment_ratio": 0.571
+        },
+        "segment_scores": [
+          {
+            "start_sec": 0.0,
+            "end_sec": 3.0,
+            "score": 46.6,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 1.5,
+            "end_sec": 4.5,
+            "score": 71.0,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 3.0,
+            "end_sec": 6.0,
+            "score": 44.9,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 4.5,
+            "end_sec": 7.5,
+            "score": 50.5,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 6.0,
+            "end_sec": 9.0,
+            "score": 48.9,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 7.5,
+            "end_sec": 10.5,
+            "score": 51.4,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 9.0,
+            "end_sec": 12.0,
+            "score": 51.7,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 10.5,
+            "end_sec": 13.5,
+            "score": 53.2,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 12.0,
+            "end_sec": 15.0,
+            "score": 76.4,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 13.5,
+            "end_sec": 16.5,
+            "score": 63.2,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 15.0,
+            "end_sec": 18.0,
+            "score": 57.1,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 16.5,
+            "end_sec": 19.5,
+            "score": 94.7,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 18.0,
+            "end_sec": 21.0,
+            "score": 78.1,
+            "confidence": 0.75
+          },
+          {
+            "start_sec": 19.5,
+            "end_sec": 22.26,
+            "score": 34.8,
+            "confidence": 0.75
+          }
+        ],
+        "score_ceiling": 0.0,
+        "ceiling_reasons": [
+          "confidence_below_unknown"
+        ],
+        "weight": 0.28,
+        "evidence": {
+          "n_spectral_segments": 14,
+          "spr_db": 27.456796646118164,
+          "prominence": -0.7271327972412109
+        },
+        "confidence_reason": "insufficient_confidence"
+      },
+      {
+        "area_id": "resonance",
+        "display_name": "공명 균형",
+        "score": null,
+        "status": "unknown",
+        "status_label": "판단 어려움",
+        "confidence": 0.308,
+        "coverage": 1.0,
+        "submetrics": [
+          {
+            "submetric_id": "weight_balance",
+            "display_name": "저역–전달 균형",
+            "score": 30.0,
+            "status": "needs_work",
+            "confidence": 0.75,
+            "coverage": 1.0,
+            "raw_value": 26.746484756469727,
+            "unit": "dB",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "mid_resonance_balance",
+            "display_name": "중역 공명 균형",
+            "score": 30.0,
+            "status": "needs_work",
+            "confidence": 0.75,
+            "coverage": 1.0,
+            "raw_value": 17.957053184509277,
+            "unit": "dB",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "spectral_slope_balance",
+            "display_name": "스펙트럼 기울기 균형",
+            "score": 73.7,
+            "status": "normal",
+            "confidence": 0.75,
+            "coverage": 1.0,
+            "raw_value": -5.648563205353384,
+            "unit": "dB/oct",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "resonance_consistency",
+            "display_name": "공명 일관성",
+            "score": 92.9,
+            "status": "excellent",
+            "confidence": 0.7,
+            "coverage": 1.0,
+            "raw_value": null,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "extreme_resonance_ratio",
+            "display_name": "공명 균형 유지력",
+            "score": 30.0,
+            "status": "needs_work",
+            "confidence": 0.7,
+            "coverage": 1.0,
+            "raw_value": 0.7142857142857143,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "resonance_worst_segment",
+            "display_name": "최악 공명 구간",
+            "score": 42.9,
+            "status": "needs_work",
+            "confidence": 0.65,
+            "coverage": 1.0,
+            "raw_value": null,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          }
+        ],
+        "temporal": {
+          "median": 45.618,
+          "p25": 44.369,
+          "p75": 50.105,
+          "p90": 52.33,
+          "worst": 42.948,
+          "std": 4.128,
+          "iqr": 5.736,
+          "count": 14,
+          "bad_segment_ratio": 0.714
+        },
+        "segment_scores": [
+          {
+            "start_sec": 0.0,
+            "end_sec": 3.0,
+            "score": 46.9,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 1.5,
+            "end_sec": 4.5,
+            "score": 57.0,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 3.0,
+            "end_sec": 6.0,
+            "score": 45.1,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 4.5,
+            "end_sec": 7.5,
+            "score": 44.4,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 6.0,
+            "end_sec": 9.0,
+            "score": 42.9,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 7.5,
+            "end_sec": 10.5,
+            "score": 43.6,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 9.0,
+            "end_sec": 12.0,
+            "score": 44.4,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 10.5,
+            "end_sec": 13.5,
+            "score": 42.9,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 12.0,
+            "end_sec": 15.0,
+            "score": 46.1,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 13.5,
+            "end_sec": 16.5,
+            "score": 50.2,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 15.0,
+            "end_sec": 18.0,
+            "score": 49.9,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 16.5,
+            "end_sec": 19.5,
+            "score": 52.7,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 18.0,
+            "end_sec": 21.0,
+            "score": 51.4,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 19.5,
+            "end_sec": 22.26,
+            "score": 44.5,
+            "confidence": 0.7
+          }
+        ],
+        "score_ceiling": 0.0,
+        "ceiling_reasons": [
+          "confidence_below_unknown"
+        ],
+        "weight": 0.24,
+        "evidence": {
+          "n_spectral_segments": 14
+        },
+        "confidence_reason": "insufficient_confidence"
+      },
+      {
+        "area_id": "dynamic_control",
+        "display_name": "강약 컨트롤",
+        "score": 66.5,
+        "status": "needs_work",
+        "status_label": "개선 여지 있음",
+        "confidence": 0.82,
+        "coverage": 1.0,
+        "submetrics": [
+          {
+            "submetric_id": "global_dynamic_range",
+            "display_name": "전체 강약 폭",
+            "score": 69.9,
+            "status": "normal",
+            "confidence": 0.75,
+            "coverage": 1.0,
+            "raw_value": 26.02,
+            "unit": "dB",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "local_dynamic_variation",
+            "display_name": "구간 강약 변화",
+            "score": 90.8,
+            "status": "excellent",
+            "confidence": 0.75,
+            "coverage": 1.0,
+            "raw_value": 7.37,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "smoothness",
+            "display_name": "변화 부드러움",
+            "score": 69.4,
+            "status": "normal",
+            "confidence": 0.75,
+            "coverage": 1.0,
+            "raw_value": 0.1875,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "phrase_consistency",
+            "display_name": "구절 일관성",
+            "score": 75.8,
+            "status": "normal",
+            "confidence": 0.7,
+            "coverage": 1.0,
+            "raw_value": null,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "abrupt_change_ratio",
+            "display_name": "강약 변화 안정성",
+            "score": 69.4,
+            "status": "normal",
+            "confidence": 0.7,
+            "coverage": 1.0,
+            "raw_value": 0.1875,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          },
+          {
+            "submetric_id": "dynamic_worst_segment",
+            "display_name": "최악 강약 구간",
+            "score": 67.5,
+            "status": "needs_work",
+            "confidence": 0.65,
+            "coverage": 1.0,
+            "raw_value": null,
+            "unit": "",
+            "temporal_consistency": null,
+            "worst_segment_score": null,
+            "evidence": {},
+            "limitations": []
+          }
+        ],
+        "temporal": {
+          "median": 94.384,
+          "p25": 88.313,
+          "p75": 98.0,
+          "p90": 98.0,
+          "worst": 67.5,
+          "std": 9.725,
+          "iqr": 9.687,
+          "count": 8,
+          "bad_segment_ratio": 0.0
+        },
+        "segment_scores": [
+          {
+            "start_sec": 0.0,
+            "end_sec": 3.0,
+            "score": 98.0,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 3.0,
+            "end_sec": 6.0,
+            "score": 98.0,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 6.0,
+            "end_sec": 9.0,
+            "score": 97.5,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 9.0,
+            "end_sec": 12.0,
+            "score": 91.3,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 12.0,
+            "end_sec": 15.0,
+            "score": 98.0,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 15.0,
+            "end_sec": 18.0,
+            "score": 88.4,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 18.0,
+            "end_sec": 21.0,
+            "score": 88.0,
+            "confidence": 0.7
+          },
+          {
+            "start_sec": 21.0,
+            "end_sec": 22.0,
+            "score": 67.5,
+            "confidence": 0.7
+          }
+        ],
+        "score_ceiling": 95.0,
+        "ceiling_reasons": [
+          "confidence_ceiling:95.0"
+        ],
+        "weight": 0.18,
+        "evidence": {
+          "global_dynamic_range_db": 26.02,
+          "n_dynamic_segments": 8
+        },
+        "confidence_reason": "ok"
+      }
+    ],
+    "strengths": [],
+    "priority_issues": [
+      {
+        "area_id": "dynamic_control",
+        "display_name": "강약 컨트롤",
+        "score": 66.5,
+        "status": "needs_work"
+      }
+    ],
+    "reason": null,
+    "aggregation": {
+      "arithmetic": 67.26,
+      "geometric": 68.67,
+      "weakest_reliable": 66.5,
+      "formula": "0.7*arith + 0.3*geo, then (1-0.25)*blend + 0.25*weakest"
+    }
+  },
+  "optional_analysis": {
+    "vibrato": {
+      "available": false,
+      "rate_hz": null,
+      "depth_cents": null,
+      "regularity": null,
+      "regions_used": 0,
+      "note": "충분히 긴 지속음에서 규칙적인 비브라토가 측정되지 않았어요. 없어도 문제 없어요."
+    }
+  },
+  "issues": [
+    {
+      "type": "area_dynamic_control",
+      "area_id": "dynamic_control",
+      "severity": "medium",
+      "confidence": 0.7,
+      "user_message": "강약 컨트롤에서 개선 여지가 측정됐어요.",
+      "score": 66.5
+    }
+  ],
+  "timeline": [],
+  "strengths": [],
+  "analysis_notes": [
+    "분석은 가능하지만 녹음 조건이 완벽하지 않아요. 결과는 참고용으로 봐 주세요.",
+    "저역 잡음은 녹음 환경 영향일 수 있어 실력 점수에는 직접 반영하지 않았어요.",
+    "보컬 분리를 사용했어요. 스펙트럼 측정 신뢰도가 낮아질 수 있어요.",
+    "Demucs 고역 손실 가능성이 있어 일부 전달력/공명 측정은 unknown으로 처리될 수 있어요.",
+    "목소리 전달력은(는) 이번 녹음에서 신뢰하기 어려워 참고하지 않았어요.",
+    "공명 균형은(는) 이번 녹음에서 신뢰하기 어려워 참고하지 않았어요.",
+    "점수는 아직 보정되지 않은(uncalibrated) 잠정 기준입니다.",
+    "이 서비스는 의료 진단이 아니며, 발성 특성 분석과 연습 참고용입니다."
+  ],
+  "preview_path": "runtime\\56d38088aeba4c2a87b4cd8f43b8a1fa\\preview.wav",
+  "preview_report": {
+    "method": "legacy_preview",
+    "high_shelf_applied": true,
+    "high_shelf_freq_hz": 3500,
+    "high_shelf_gain_db": 4.0,
+    "air_shelf_freq_hz": 8000,
+    "air_shelf_gain_db": 2.0,
+    "compressor_threshold_db": -24.0,
+    "compressor_ratio": 2.0,
+    "limiter_ceiling": 0.98,
+    "used_for_analysis": false,
+    "used_for_preview": true,
+    "skipped": false,
+    "time_base": "original_file"
+  },
+  "artifact_flags": {
+    "demucs_high_band_loss_likely": true,
+    "high_band_loss_likely": true,
+    "relative_low_mid_inflation_likely": true,
+    "source_mode": "separated"
+  }
+}

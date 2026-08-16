@@ -1,0 +1,73 @@
+{
+  "method": "PCA",
+  "dimensions": 2,
+  "points": [
+    {
+      "audio_id": "5fdfa9eb73e5",
+      "filename": "drowning.m4a",
+      "x": -0.2100926637649536,
+      "y": 0.3061518967151642
+    },
+    {
+      "audio_id": "6fb8c8208c80",
+      "filename": "movie.m4a",
+      "x": 0.17773005366325378,
+      "y": -0.21481631696224213
+    },
+    {
+      "audio_id": "d5045bc290a1",
+      "filename": "거의동115.m4a",
+      "x": -0.13569168746471405,
+      "y": -0.1180548220872879
+    },
+    {
+      "audio_id": "3ced1f723c5e",
+      "filename": "거의동116.m4a",
+      "x": -0.25257065892219543,
+      "y": 0.05486531928181648
+    },
+    {
+      "audio_id": "1387ae324719",
+      "filename": "거의동117.m4a",
+      "x": 0.39350903034210205,
+      "y": 0.005427899770438671
+    },
+    {
+      "audio_id": "a7c957603751",
+      "filename": "좋은사람.m4a",
+      "x": -0.023081030696630478,
+      "y": 0.2167883962392807
+    },
+    {
+      "audio_id": "8156c1254947",
+      "filename": "요즘 바쁜가봐.m4a",
+      "x": -0.14715515077114105,
+      "y": 0.06338046491146088
+    },
+    {
+      "audio_id": "5e7819c3abb4",
+      "filename": "bluemoon.m4a",
+      "x": -0.35166135430336,
+      "y": -0.2565922439098358
+    },
+    {
+      "audio_id": "0f26db696e8e",
+      "filename": "I'llneverloveagain.m4a",
+      "x": -0.20520178973674774,
+      "y": -0.0007697921246290207
+    },
+    {
+      "audio_id": "aef8b974cfb0",
+      "filename": "love again.m4a",
+      "x": 0.454581081867218,
+      "y": 0.2519221901893616
+    },
+    {
+      "audio_id": "ec93548d279f",
+      "filename": "옥탑방.m4a",
+      "x": 0.29963424801826477,
+      "y": -0.3083028793334961
+    }
+  ],
+  "caption": "PCA 2D is a visualization aid only; it does not fully represent 192-D cosine relationships."
+}

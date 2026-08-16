@@ -98,3 +98,36 @@ def runtime_writable() -> bool:
         return True
     except OSError:
         return False
+
+
+def _env_bool(name: str, default: str = "false") -> bool:
+    return (os.environ.get(name) or default).strip().lower() in ("1", "true", "yes", "on")
+
+
+def singer_identity_enabled() -> bool:
+    """Master switch — production default OFF. When false, no Singer ID service calls."""
+    return _env_bool("SINGER_IDENTITY_ENABLED", "false")
+
+
+def singer_identity_enrollment_enabled() -> bool:
+    return singer_identity_enabled() and _env_bool("SINGER_IDENTITY_ENROLLMENT_ENABLED", "false")
+
+
+def personal_vocal_baseline_enabled() -> bool:
+    return _env_bool("PERSONAL_VOCAL_BASELINE_ENABLED", "false")
+
+
+def singer_identity_shadow_k2_enabled() -> bool:
+    """Shadow-only K2 scoring; never changes user-facing decision."""
+    return singer_identity_enabled() and _env_bool("SINGER_IDENTITY_SHADOW_K2_ENABLED", "false")
+
+
+def singer_identity_service_url() -> str:
+    return (os.environ.get("SINGER_IDENTITY_SERVICE_URL") or "http://127.0.0.1:8100").rstrip("/")
+
+
+def singer_identity_timeout_seconds() -> float:
+    try:
+        return float(os.environ.get("SINGER_IDENTITY_TIMEOUT_SECONDS") or "2.5")
+    except ValueError:
+        return 2.5

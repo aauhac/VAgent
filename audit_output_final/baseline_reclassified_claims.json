@@ -1,0 +1,2012 @@
+{
+  "classifier": "claim_lint_v1",
+  "counts": {
+    "FALSE_POSITIVE_LINT": 894,
+    "TRUE_POSITIVE": 53
+  },
+  "true_unsupported": 53,
+  "false_positive_lint": 894,
+  "trace_count": 947,
+  "traces_sample": [
+    {
+      "audio": "00ae450b11f1",
+      "concern": "HIGH_NOTE_CANNOT_REACH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 성구 전환을 단정하기는 어렵지만, 일부 구간에서 힘 사용이 커지는 경향이 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "HIGH_NOTE_CANNOT_REACH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 성구 전환을 단정하기는 어렵지만, 일부 구간에서 힘 사용이 커지는 경향이 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 일부 구간에서 힘 사용이 증가하는 편이에요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 일부 구간에서 힘 사용이 증가하는 편이에요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 일부 구간에서 힘 사용이 증가하는 편이에요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "TIMBRE_CHANGES_HIGH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "non_contradictory_HIGH_vs_MODERATE",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": "MODERATE",
+      "sentence": "이번 노래에서는 음역이 올라가는 과정에서 힘 사용이 커지는 구간이 보여요"
+    },
+    {
+      "audio": "00ae450b11f1",
+      "concern": "TIMBRE_CHANGES_HIGH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "non_contradictory_HIGH_vs_MODERATE",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": "MODERATE",
+      "sentence": "→ 이번 노래에서는 음역이 올라가는 과정에서 힘 사용이 커지는 구간이 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 밝기나 중역 존재감이 낮아 답답하게 느껴질 수 있는 패턴이 일부 확인됐어요."
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "07564b6df5b9",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 힘 사용이 높거나 숨이 많이 섞이는 패턴은 두드러지지 않았어요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 힘 사용이 높거나 숨이 많이 섞이는 패턴은 두드러지지 않았어요"
+    },
+    {
+      "audio": "0ada85fffc84",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 밝기나 중역 존재감이 낮아 답답하게 느껴질 수 있는 패턴이 일부 확인됐어요."
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "0ea5487c229a",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "HIGH",
+      "canonical_value": "HIGH",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 비교적 분명한 편, 밝기가 밝은 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 비교적 분명한 편, 밝기가 밝은 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 비교적 분명한 편, 밝기가 밝은 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 힘 사용이 높거나 숨이 많이 섞이는 패턴은 두드러지지 않았어요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 힘 사용이 높거나 숨이 많이 섞이는 패턴은 두드러지지 않았어요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "HIGH",
+      "canonical_value": "HIGH",
+      "sentence": "이번 노래에서는 밝기가 밝은 쪽에 가까운 편이라 날카로운 인상과 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "0f26db696e8e",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "HIGH",
+      "canonical_value": "HIGH",
+      "sentence": "→ 이번 노래에서는 밝기가 밝은 쪽에 가까운 편이라 날카로운 인상과 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 밝기나 중역 존재감이 낮아 답답하게 느껴질 수 있는 패턴이 일부 확인됐어요."
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "10d07cc48c55",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "HIGH_NOTE_CANNOT_REACH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 성구 전환을 단정하기는 어렵지만, 일부 구간에서 힘 사용이 커지는 경향이 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "HIGH_NOTE_CANNOT_REACH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 성구 전환을 단정하기는 어렵지만, 일부 구간에서 힘 사용이 커지는 경향이 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 일부 구간에서 힘 사용이 증가하는 편이에요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 숨이 많이 섞이는 패턴은 두드러지지 않았어요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "중역 존재감이 낮은 편이라 소리가 덜 또렷하고 답답하게 느껴지는 데 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 밝기나 중역 존재감이 낮아 답답하게 느껴질 수 있는 패턴이 일부 확인됐어요."
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "non_contradictory_HIGH_vs_MODERATE",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": "MODERATE",
+      "sentence": "이번 노래에서는 힘 사용이 커지는 구간이 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "non_contradictory_HIGH_vs_MODERATE",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": "MODERATE",
+      "sentence": "→ 이번 노래에서는 힘 사용이 커지는 구간이 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "TIMBRE_CHANGES_HIGH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "non_contradictory_HIGH_vs_MODERATE",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": "MODERATE",
+      "sentence": "이번 노래에서는 음역이 올라갈 때 힘 사용이 커지는 구간이 보여요"
+    },
+    {
+      "audio": "1387ae324719",
+      "concern": "TIMBRE_CHANGES_HIGH",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "non_contradictory_HIGH_vs_MODERATE",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": "MODERATE",
+      "sentence": "→ 이번 노래에서는 음역이 올라갈 때 힘 사용이 커지는 구간이 보여요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "15f8e161f598",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새는 패턴은 두드러지지 않아, 숨을 더 막는 방향은 우선이 아니에요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 힘 사용이 높거나 숨이 많이 섞이는 패턴은 두드러지지 않았어요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "effort",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 힘 사용이 높거나 숨이 많이 섞이는 패턴은 두드러지지 않았어요"
+    },
+    {
+      "audio": "16b7e83c0418",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "2c9d61ebb9da",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 밝기나 중역 존재감이 낮아 답답하게 느껴질 수 있는 패턴이 일부 확인됐어요."
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "357eeb649bd6",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "→ 숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "breathiness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 숨 섞임이 적은 편, 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "숨이 많이 새서 얇게 들리는 유형은 강하게 보이지 않았어요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 밝기나 중역 존재감이 낮아 답답하게 느껴질 수 있는 패턴이 일부 확인됐어요."
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_BREATHY",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "breathiness",
+      "claimed_state": "HIGH",
+      "canonical_value": null,
+      "sentence": "따라서 숨이 많이 새는 느낌보다는 다른 요소(구간·모음·음량)를 먼저 확인하는 편이 적절해 보여요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "36a7bd4286b4",
+      "concern": "VOICE_TOO_SHARP",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "negated_or_contrast",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": null,
+      "sentence": "→ 이번 노래에서는 밝기가 어두운 쪽에 가까워 날카로움의 주된 설명으로는 보이지 않아요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "HIGH_NOTE_THINS",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "TIMBRE_DISSATISFIED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "effort",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래의 음색은 발성 안정성이 유지되는 편, 중역 존재감이 다소 낮은 편, 밝기가 어두운 쪽에 가까운 편, 힘 사용이 낮은 편이에요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "VOICE_TOO_THIN",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 소리의 중심이 덜 또렷하게 느껴지면서 얇다는 인상을 줄 가능성이 있어 보여요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "brightness",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 밝기가 어두운 쪽에 가까운 편이라 소리가 답답하게 느껴지는 데 관련될 가능성이 있어 보여요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "VOICE_TOO_DARK_MUFFLED",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 밝기나 중역 존재감이 낮아 답답하게 느껴질 수 있는 패턴이 일부 확인됐어요."
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    },
+    {
+      "audio": "37db691d1416",
+      "concern": "VOICE_TOO_NASAL_PERCEPT",
+      "classification": "FALSE_POSITIVE_LINT",
+      "detail": "matches_canonical",
+      "axis": "presence",
+      "claimed_state": "LOW",
+      "canonical_value": "LOW",
+      "sentence": "→ 이번 노래에서는 중역 존재감이 낮은 편이라 콧소리처럼 들릴 수 있는 인상과 일부 관련될 수 있어 보여요"
+    }
+  ]
+}

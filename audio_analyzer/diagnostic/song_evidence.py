@@ -217,20 +217,79 @@ def build_song_evidence_snapshot(
         }
         availability["stability"] = bool(snap["stability"]["available"])
 
-    # --- register / vocal type ---
+    # --- register connection (canonical) + source balance (separate) ---
     vt = vf.get("vocal_type_profile") or {}
     reg = vt.get("register_strategy") or {}
     reg_dim = _dim(vf, "register_configuration")
-    if vt or reg or reg_dim:
+    canon = vt.get("canonical_register") if isinstance(vt.get("canonical_register"), dict) else {}
+    if not canon and (reg or reg_dim):
+        try:
+            from audio_analyzer.vocal_style.register_canonical import (
+                build_canonical_register_assessment,
+            )
+
+            dims = vf.get("dimensions") if isinstance(vf.get("dimensions"), dict) else None
+            if not dims and reg_dim:
+                dims = {"register_configuration": reg_dim}
+            canon = build_canonical_register_assessment(
+                register_strategy=reg or None,
+                dimensions=dims,
+            )
+        except Exception:
+            canon = {}
+    raw_strategy = str(reg.get("status") or reg_dim.get("status") or "").upper()
+    conn_status = str((canon or {}).get("status") or "").upper()
+    if not conn_status or conn_status == "UNKNOWN":
+        # Never expose source-tendency labels as connection status
+        if raw_strategy in (
+            "DISRUPTED",
+            "PARTIAL",
+            "CONNECTED",
+            "UNRESOLVED",
+            "CONFLICTED",
+            "TRANSITION_EVENTS",
+            "TRANSITION_UNSTABLE",
+            "UNSTABLE",
+        ):
+            if raw_strategy in ("TRANSITION_EVENTS", "TRANSITION_UNSTABLE", "UNSTABLE"):
+                conn_status = "DISRUPTED"
+            else:
+                conn_status = raw_strategy
+        else:
+            conn_status = "UNRESOLVED" if (vt or reg or reg_dim) else ""
+    if vt or reg or reg_dim or canon:
         snap["register"] = {
-            "available": bool(reg.get("status") or reg_dim.get("status")),
-            "status": reg.get("status") or reg_dim.get("status"),
+            "available": bool(conn_status) and conn_status not in ("", "UNKNOWN"),
+            "status": conn_status or "UNRESOLVED",
             "mix_evidence": reg.get("mix_evidence"),
-            "description": reg.get("description") or reg_dim.get("status_label"),
+            "description": (canon or {}).get("description")
+            or reg.get("description")
+            or reg_dim.get("status_label"),
             "modifiers": list(vt.get("modifiers") or []),
             "head_chest": vt.get("head_chest") or {},
+            "raw_strategy_status": raw_strategy or None,
+            "canonical": dict(canon) if canon else None,
         }
         availability["register"] = bool(snap["register"]["available"])
+
+    # Source balance is NOT register connection
+    sb = vt.get("source_balance") if isinstance(vt.get("source_balance"), dict) else {}
+    sb_status = str(sb.get("balance_class") or sb.get("status") or "").upper()
+    if not sb_status and raw_strategy in ("CHEST_DOMINANT", "HEAD_DOMINANT"):
+        sb_status = raw_strategy
+    if not sb_status:
+        hc = vt.get("head_chest") if isinstance(vt.get("head_chest"), dict) else {}
+        lean = str(hc.get("balance") or hc.get("lean") or "").upper()
+        if lean:
+            sb_status = lean
+    if sb_status or sb:
+        snap["source_balance"] = {
+            "available": bool(sb_status),
+            "status": sb_status or "UNKNOWN",
+            "balance_class": sb_status or None,
+            "profile": sb or None,
+        }
+        availability["source_balance"] = bool(snap["source_balance"]["available"])
 
     # --- timbre (prefer axes; fall back to resonance profile labels) ---
     tp = vf.get("timbre_profile") or {}

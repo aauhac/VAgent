@@ -34,7 +34,7 @@ COACHING_PRIMITIVES: dict[str, dict[str, Any]] = {
     "REGISTER_CONNECTION": {
         "id": "REGISTER_CONNECTION",
         "goal": "음역 전환을 끊김 없이 연결하기",
-        "base_instruction": "작은 강도로 중음에서 위쪽까지 glide하며 전환 직전 음량을 키우지 않기",
+        "base_instruction": "작은 강도로 중음에서 위쪽까지 이어 올리며 전환 직전 음량을 키우지 않기",
         "success_cues": ["끊김 감소", "갑작스러운 음색 변화 감소", "힘 증가 없음"],
         "avoid": ["끊기는 음을 세게 밀어 통과하기", "음량부터 키워 넘어가기"],
         "practice_ids": ["REGISTER_GLIDE_LIGHT", "SOVT_GLIDE"],
@@ -124,8 +124,8 @@ COACHING_PRIMITIVES: dict[str, dict[str, Any]] = {
     "TIMBRE_STYLE": {
         "id": "TIMBRE_STYLE",
         "goal": "원하는 음색 표현을 작은 강도로 탐색",
-        "base_instruction": "짧은 구절에서 원하는 느낌에 가깝게, 과하게 밀지 않고 비교",
-        "success_cues": ["원하는 느낌에 더 가깝고 불편 없음"],
+        "base_instruction": "짧은 구절에서 목표 음색을 음량 없이 만들어보기",
+        "success_cues": ["목표 음색에 더 가깝고 불편 없음"],
         "avoid": ["음색을 바꾸려고 세게 밀기"],
         "practice_ids": ["TIMBRE_PRESERVE"],
         "allowed_for": ["timbre"],
@@ -331,47 +331,66 @@ COMPARISON_FAMILIES: dict[str, dict[str, str]] = {
         "avoid": "접촉을 세게 붙여 밀기",
     },
     "TIMBRE_STYLE_COMPARE": {
-        "working_direction": "짧은 구절에서 원하는 느낌에 가까운 표현을 작은 강도로 비교",
-        "what_to_change": "짧은 구절에서 원하는 느낌에 가까운 표현을 비교해보세요.",
+        "working_direction": "같은 음량에서 발음·모음 연결을 또렷하게 한 짧은 구절 비교",
+        "what_to_change": (
+            "같은 음량에서 자음 시작을 조금 더 분명하게 하고 "
+            "모음을 오래 눌러 붙이지 않은 채 짧은 구절을 비교해보세요."
+        ),
         "baseline_label": "평소 표현",
         "baseline_instruction": "평소 부르는 방식으로 한 번",
         "variant_label": "비교 표현",
-        "variant_instruction": "같은 음량에서 원하는 느낌에 가깝게, 과하게 밀지 않고 한 번",
-        "success_condition": "원하는 느낌에 더 가깝고 불편이 없음",
-        "if_better": "그 표현을 유지하세요.",
-        "if_not_better": "차이가 거의 없다면, 원하는 느낌이 필요한 짧은 구절만 따로 비교해보세요.",
-        "lead": "원하는 음색에 가까워지려면 같은 짧은 구절을 표현 방식만 바꿔 비교해보세요.",
-        "avoid": "음색을 바꾸려고 세게 밀기",
+        "variant_instruction": (
+            "같은 음량에서 자음 시작을 조금 더 분명하게 하고 "
+            "모음 연결을 짧게 또렷하게 한 한 번"
+        ),
+        "success_condition": "원하는 음색 인상에 더 가깝고 힘·음량 증가 없음",
+        "if_better": "그 방향을 유지하세요.",
+        "if_not_better": "차이가 거의 없다면, 모음 형태만 바꾼 두 버전을 비교해보세요.",
+        "lead": "목표 음색은 세게 밀기보다, 같은 음량에서 발음·연결 방식으로 짧게 비교해보세요.",
+        "avoid": "원하는 느낌을 위해 음량·힘을 키우기",
     },
     "MUFFLED_COMPARE": {
-        "working_direction": "세게 바꾸기보다 작은 강도에서 소리 중심과 연결을 유지하며 비교",
-        "what_to_change": "짧은 구절에서 답답함이 줄면서 중심이 유지되는 쪽을 찾기",
-        "baseline_label": "평소 방식",
-        "baseline_instruction": "평소대로 한 번",
-        "variant_label": "비교 방식",
-        "variant_instruction": "같은 구절을 조금 더 작은 강도로 소리 중심과 연결을 유지하며 한 번",
-        "success_condition": "답답한 느낌은 줄고 소리 중심·안정성은 유지됨",
-        "if_better": "그 방향을 유지하세요.",
-        "if_not_better": "차이가 거의 없다면, 답답함이 큰 짧은 구간만 따로 비교해보세요.",
-        "lead": "답답하게 느껴지는 구간에서는 세게 바꾸기보다, 작은 강도에서 중심이 유지되는지 비교해보세요.",
-        "avoid": "답답함을 가리려고 세게 밀기",
-    },
-    "THIN_COMPARE": {
-        "working_direction": "숨을 더 막는 것보다 소리 중심이 유지되는 방식 탐색",
-        "what_to_change": "음역이 변해도 소리 중심이 갑자기 가벼워지지 않게 하기",
+        "working_direction": "세게 바꾸기보다 같은 음량에서 발음·모음 연결을 또렷하게 비교",
+        "what_to_change": (
+            "같은 음량에서 자음 시작을 조금 더 분명하게 하고 "
+            "모음을 오래 눌러 붙이지 않은 채 다음 음으로 또렷하게 연결해보세요."
+        ),
         "baseline_label": "평소 방식",
         "baseline_instruction": "평소대로 한 번",
         "variant_label": "비교 방식",
         "variant_instruction": (
+            "같은 음량에서 자음 시작을 조금 더 분명하게 하고 "
+            "모음 연결을 짧게 또렷하게 한 한 번"
+        ),
+        "success_condition": "답답한 느낌은 줄고 힘·음량 증가 없음",
+        "if_better": "그 방향을 유지하세요.",
+        "if_not_better": "차이가 거의 없다면, 모음 형태만 바꾼 두 버전을 비교해보세요.",
+        "lead": "답답하게 느껴지는 구간에서는 세게 바꾸기보다, 같은 음량에서 발음·연결을 비교해보세요.",
+        "avoid": "답답함을 가리려고 세게 밀기",
+    },
+    "THIN_COMPARE": {
+        "working_direction": "숨을 더 막지 않고 편한 모음으로 중음→위쪽 음역 연결",
+        "what_to_change": (
+            "얇게 느껴지는 구절에서 먼저 '우'처럼 편하게 이어지는 모음으로 "
+            "중음에서 위쪽 음역까지 3회 천천히 연결하기"
+        ),
+        "baseline_label": "평소 방식",
+        "baseline_instruction": "평소대로 한 번",
+        "variant_label": "연결 방식",
+        "variant_instruction": (
             "같은 음량을 유지하면서 숨을 더 섞지 않고, "
-            "음이 올라가도 더 크게 만들지 않은 채 연결을 일정하게 유지한 한 번"
+            "편한 모음으로 중음에서 위쪽까지 천천히 이어서 한 번"
         ),
         "success_condition": "얇게 느껴지는 인상이 줄고 힘 사용은 늘지 않음",
         "if_better": "그 방향이 현재 발성에 더 잘 맞습니다.",
-        "if_not_better": "차이가 거의 없다면, 얇게 느껴지는 음역·구간만 따로 비교해보세요.",
+        "if_not_better": (
+            "그래도 얇게 느껴지면 음역 범위를 조금 줄여 "
+            "편한 중음부터 다시 연결하세요."
+        ),
         "lead": (
-            "지금은 숨을 더 막거나 소리를 더 세게 만드는 것보다, "
-            "얇게 느껴지는 구간에서 소리 중심이 유지되는 방식을 찾는 게 좋아요."
+            "지금은 숨을 더 막거나 소리를 더 세게 만들기보다, "
+            "얇게 느껴지는 구절을 편한 모음으로 중음에서 위쪽까지 "
+            "천천히 연결해보는 게 좋아요."
         ),
         "avoid": "얇음을 가리려고 소리를 세게 밀기",
     },

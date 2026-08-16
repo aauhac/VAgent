@@ -1,0 +1,31 @@
+services:
+  singer-id:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.singer-id
+    ports:
+      - "8100:8100"
+    volumes:
+      - ./runtime/singer_identity:/data
+      - ./singer_identity_output:/output
+    environment:
+      - SINGER_ID_RUNTIME=/data
+      - PYTHONPATH=/app
+
+  singer-id-trainer:
+    profiles: ["training"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.singer-trainer
+    volumes:
+      - ./runtime/singer_identity:/data
+      - ./singer_identity_output:/output
+      - ./singer_identity_labels:/labels
+      - ./training/singer_identity:/app/training/singer_identity
+    environment:
+      - PYTHONPATH=/app
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]

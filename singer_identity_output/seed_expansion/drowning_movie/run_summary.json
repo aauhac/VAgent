@@ -1,0 +1,192 @@
+{
+  "seed_pair_similarity": 0.6487793922424316,
+  "same_cluster": true,
+  "counts": {
+    "HIGH_CANDIDATE": 9,
+    "MEDIUM_CANDIDATE": 5,
+    "LOW_CANDIDATE": 56,
+    "CONFLICT": 1,
+    "UNRESOLVED": 0
+  },
+  "top15": [
+    {
+      "rank": 1,
+      "filename": "거의동116.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.8596420288085938,
+      "movie": 0.7255123257637024,
+      "prototype": 0.8729216456413269,
+      "min_seed": 0.7255123257637024,
+      "segment_support": 0.7083333333333334,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 2,
+      "filename": "요즘 바쁜가봐.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.821627140045166,
+      "movie": 0.7379179000854492,
+      "prototype": 0.8588190078735352,
+      "min_seed": 0.7379179000854492,
+      "segment_support": 0.875,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 3,
+      "filename": "좋은사람.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.7834217548370361,
+      "movie": 0.7392047643661499,
+      "prototype": 0.8384884595870972,
+      "min_seed": 0.7392047643661499,
+      "segment_support": 0.5833333333333334,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 4,
+      "filename": "거의동115.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.7486469149589539,
+      "movie": 0.7462134957313538,
+      "prototype": 0.8231980800628662,
+      "min_seed": 0.7462134957313538,
+      "segment_support": 0.5416666666666667,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 5,
+      "filename": "bluemoon.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.6929867267608643,
+      "movie": 0.6880462169647217,
+      "prototype": 0.7605149745941162,
+      "min_seed": 0.6880462169647217,
+      "segment_support": 0.7083333333333334,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 6,
+      "filename": "거의동117.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.6598426699638367,
+      "movie": 0.760667085647583,
+      "prototype": 0.7822542786598206,
+      "min_seed": 0.6598426699638367,
+      "segment_support": 1.0,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 7,
+      "filename": "I'llneverloveagain.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.7259367108345032,
+      "movie": 0.6622277498245239,
+      "prototype": 0.7644422054290771,
+      "min_seed": 0.6622277498245239,
+      "segment_support": 0.5416666666666667,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 8,
+      "filename": "love again.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.6432746648788452,
+      "movie": 0.713957667350769,
+      "prototype": 0.7474082708358765,
+      "min_seed": 0.6432746648788452,
+      "segment_support": 0.625,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 9,
+      "filename": "옥탑방.m4a",
+      "cluster": "speaker_009",
+      "drowning": 0.616790771484375,
+      "movie": 0.7462307214736938,
+      "prototype": 0.750596284866333,
+      "min_seed": 0.616790771484375,
+      "segment_support": 0.7083333333333333,
+      "status": "HIGH_CANDIDATE"
+    },
+    {
+      "rank": 10,
+      "filename": "upload.webm · e8314e2d",
+      "cluster": "speaker_025",
+      "drowning": 0.4990786910057068,
+      "movie": 0.514394998550415,
+      "prototype": 0.5581054091453552,
+      "min_seed": 0.4990786910057068,
+      "segment_support": 0.6666666666666666,
+      "status": "MEDIUM_CANDIDATE"
+    },
+    {
+      "rank": 11,
+      "filename": "upload.webm · 2c9d61eb",
+      "cluster": "speaker_025",
+      "drowning": 0.4964224696159363,
+      "movie": 0.5209819674491882,
+      "prototype": 0.5602699518203735,
+      "min_seed": 0.4964224696159363,
+      "segment_support": 0.5,
+      "status": "MEDIUM_CANDIDATE"
+    },
+    {
+      "rank": 12,
+      "filename": "호흡많고헤드.m4a",
+      "cluster": "speaker_006",
+      "drowning": 0.5712445974349976,
+      "movie": 0.4780716896057129,
+      "prototype": 0.5778433680534363,
+      "min_seed": 0.4780716896057129,
+      "segment_support": 0.125,
+      "status": "MEDIUM_CANDIDATE"
+    },
+    {
+      "rank": 13,
+      "filename": "upload.webm · ee4a74e0",
+      "cluster": "speaker_004",
+      "drowning": 0.5417563319206238,
+      "movie": 0.4809437394142151,
+      "prototype": 0.5631861686706543,
+      "min_seed": 0.4809437394142151,
+      "segment_support": 0.3333333333333333,
+      "status": "MEDIUM_CANDIDATE"
+    },
+    {
+      "rank": 14,
+      "filename": "upload.webm · 983379d1",
+      "cluster": "speaker_007",
+      "drowning": 0.5953065156936646,
+      "movie": 0.449677050113678,
+      "prototype": 0.5754574537277222,
+      "min_seed": 0.449677050113678,
+      "segment_support": 0.125,
+      "status": "LOW_CANDIDATE"
+    },
+    {
+      "rank": 15,
+      "filename": "upload.webm · 5662e809",
+      "cluster": "speaker_019",
+      "drowning": 0.5264567136764526,
+      "movie": 0.4636395573616028,
+      "prototype": 0.5452316999435425,
+      "min_seed": 0.4636395573616028,
+      "segment_support": 0.25,
+      "status": "MEDIUM_CANDIDATE"
+    }
+  ],
+  "consensus_nn": [
+    "99023e55f0f5",
+    "aef8b974cfb0",
+    "0f26db696e8e",
+    "ec93548d279f",
+    "a7c957603751",
+    "8156c1254947",
+    "d5045bc290a1",
+    "5e7819c3abb4",
+    "ee4a74e09cc1",
+    "3ced1f723c5e",
+    "1387ae324719"
+  ],
+  "output": "C:\\VocalAgent\\singer_identity_output\\seed_expansion\\drowning_movie"
+}

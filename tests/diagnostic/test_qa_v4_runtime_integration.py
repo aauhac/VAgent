@@ -101,10 +101,10 @@ def test_nasal_with_partial_register_returns_actionable_guidance():
     )
     ans = ev.get("answer_hint") or ""
     assert "직접 확정할 음향 지표는 제한적이에요" not in ans
-    assert "①" in ans and "②" in ans
-    assert "평소" in ans
-    assert "모음" in ans
+    assert "비교해보기" not in ans
+    assert "모음" in (ev.get("what_to_change") or ans)
     assert ev.get("what_to_change")
+    assert ev.get("prescription")
     assert (ev.get("action") or {}).get("short_instruction")
     assert ev.get("success_cues")
     assert ev.get("comparison_protocol", {}).get("A")
@@ -123,7 +123,8 @@ def test_thin_low_breath_high_presence_partial_register_uses_register_action():
     )
     ans = ev.get("answer_hint") or ""
     assert "숨이 많이 새" in ans or "두드러지지" in ans or "막는 방향은 우선" in ans
-    assert "①" in ans and "②" in ans
+    assert "비교해보기" not in ans
+    assert (ev.get("comparison") or {}).get("B") or ev.get("prescription")
     assert ev.get("primary_focus") == "REGISTER_CONNECTION"
     assert ev.get("what_to_change")
     assert "얇지 않아요" not in ans
@@ -140,7 +141,8 @@ def test_high_timbre_change_partial_register_uses_register_connection():
     assert "하나로 좁히기" not in ans
     assert "한 원인으로 단정" not in ans
     assert "음역" in ans
-    assert "①" in ans and "②" in ans
+    assert "비교해보기" not in ans
+    assert (ev.get("comparison") or {}).get("B") or ev.get("prescription")
     assert "\n\n→ " in ans
     assert ev.get("primary_focus") == "REGISTER_CONNECTION"
     pid = (ev.get("action") or {}).get("practice_id") or (ev.get("practice") or {}).get("practice_id")
@@ -242,9 +244,9 @@ def test_related_available_evidence_prevents_terminal_unknown_answer():
 
 
 def test_report_contains_qa_guidance_version_constant():
-    assert QA_GUIDANCE_VERSION == "precision-coaching-generalization-v6"
-    assert REPORT_LOGIC_VERSION == "precision-report-v7"
-    assert GOAL_VERSION == "precision-goal-v1.1"
+    assert QA_GUIDANCE_VERSION == "precision-qa-coaching-ux-v9"
+    assert REPORT_LOGIC_VERSION == "precision-report-v10"
+    assert GOAL_VERSION == "precision-goal-v1.2"
 
 
 def test_canonical_fixture_matches_sample():

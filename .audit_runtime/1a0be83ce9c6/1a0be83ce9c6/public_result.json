@@ -1,0 +1,118 @@
+{
+  "analysis_version": "2.0",
+  "analysis_mode": "song",
+  "recording_id": "1a0be83ce9c6",
+  "analysis_status": "completed",
+  "feedback_status": "skipped",
+  "tier": "free",
+  "audio": {
+    "duration_sec": 4.38,
+    "sample_rate": 44100,
+    "source_mode": "raw",
+    "separation": {
+      "used": false
+    }
+  },
+  "quality": {
+    "status": "fail",
+    "confidence": 0.15,
+    "reasons": [
+      "유성음 비율이 너무 낮음 (0.00)",
+      "분석 가능한 유성음 구간이 부족함 (0.00s)",
+      "녹음 레벨이 너무 작음 (-200.0 dBFS)",
+      "녹음이 다소 짧음 (4.4s)",
+      "저역 잡음이 다소 높음 (0.0 dB)"
+    ],
+    "codes": [
+      "LOW_VOICED_RATIO",
+      "SHORT_VOICED_DURATION",
+      "LOW_LEVEL",
+      "SHORT_DURATION",
+      "RUMBLE"
+    ],
+    "metrics": {
+      "duration_sec": 4.38,
+      "rms_dbfs": -200.0,
+      "silent_ratio": 0.0,
+      "voiced_ratio": 0.0,
+      "voiced_duration_sec": 0.0,
+      "clipping_ratio": 0.0
+    },
+    "user_message": "정확한 분석이 어려운 녹음이에요. 더 조용한 곳에서 목소리를 조금 더 크게, 조금 더 길게 불러 다시 시도해 주세요."
+  },
+  "score": {
+    "available": false,
+    "version": "vocal-score-v3.0",
+    "calibration_status": "uncalibrated",
+    "overall": null,
+    "label": null,
+    "overall_display_state": "UNAVAILABLE",
+    "reliable_axis_count": 0,
+    "areas": [],
+    "best_area": null,
+    "focus_area": null,
+    "reason": "quality_gate_failed"
+  },
+  "short_summary": "정확한 분석이 어려운 녹음이에요. 더 조용한 곳에서 목소리를 조금 더 크게, 조금 더 길게 불러 다시 시도해 주세요.",
+  "vocal_quality_teaser": [],
+  "vocal_function_teaser": [],
+  "vocal_type_teaser": {
+    "available": false,
+    "display_name": "발성 성향 판단 보류",
+    "description": "이번 녹음에서는 발성 성향을 충분히 구분하지 못했어요.",
+    "confidence": null,
+    "confidence_label": null,
+    "style_id": null,
+    "head_chest": {
+      "available": false,
+      "chest_ratio": null,
+      "head_ratio": null,
+      "broad_label": null,
+      "show_ratio": false
+    },
+    "source_balance": {
+      "balance_class": "UNKNOWN",
+      "label": null,
+      "show_ratio": false,
+      "chest_percent": null,
+      "head_percent": null
+    },
+    "key_traits": [],
+    "vocal_style_profile": {}
+  },
+  "main_finding_teaser": {
+    "none": true,
+    "title": "이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.",
+    "detail": ""
+  },
+  "premium_available": true,
+  "products_available": {
+    "song_detail": true,
+    "diagnostic": true
+  },
+  "premium_cta": {
+    "title": "정밀 발성 진단",
+    "body": "필요한 항목만 짧은 추가 녹음으로 더 정밀하게 확인할 수 있어요. 노래 상세 리포트는 별도 상품입니다."
+  },
+  "song_detail_cta": {
+    "title": "이 노래를 더 자세히 알고 싶나요?",
+    "body": "발성 프로필, 특징 구간 듣기, 음역별 구성, 분석 신뢰도를 추가 녹음 없이 확인할 수 있어요."
+  },
+  "diagnostic_cta": {
+    "title": "내 발성 자체를 더 정밀하게 알고 싶나요?",
+    "body": "노래만으로 구분하기 어려운 항목을 짧은 추가 녹음으로 다시 확인할 수 있어요."
+  },
+  "diagnostic_offer": {
+    "unresolved_count": 0,
+    "unresolved_labels": [],
+    "selected_task_count": null,
+    "provisional_task_count": 0,
+    "planned_task_count": null,
+    "estimated_duration_text": "짧은 추가 녹음",
+    "required": true,
+    "required_tasks": true,
+    "precision_requires_recording": true
+  },
+  "disclaimer": "이 결과는 녹음된 음성의 음향적 특성을 바탕으로 발성 패턴을 분석한 발성 분석 참고 정보입니다. 성대의 실제 구조나 질환을 진단하는 검사가 아닙니다.",
+  "preview_available": false
+}
