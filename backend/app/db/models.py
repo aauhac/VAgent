@@ -42,8 +42,11 @@ class User(Base):
     external_subject: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    auth_revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     analyses: Mapped[list["Analysis"]] = relationship(back_populates="user")
+    payment_intents: Mapped[list["PaymentIntent"]] = relationship(back_populates="user")
+    auth_sessions: Mapped[list["AuthSession"]] = relationship(back_populates="user")
 
 
 class Analysis(Base):
@@ -231,15 +234,63 @@ class Entitlement(Base):
 
 class PurchaseOrder(Base):
     __tablename__ = "purchase_orders"
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_order_id", name="uq_purchase_orders_provider_order"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False, index=True)
     toss_order_id: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False, default="TOSS")
+    provider_order_id: Mapped[str] = mapped_column(String(128), nullable=False)
     sku: Mapped[str | None] = mapped_column(String(64), nullable=True)
     product_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    resource_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    resource_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    amount: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    currency: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    provider_status: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="CREATED")
     status_determined_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     granted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     refunded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+
+
+class PaymentIntent(Base):
+    """Pre-purchase intent bound to verified user + product + resource. TTL: INTENT_TTL_SECONDS."""
+
+    __tablename__ = "payment_intents"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False, index=True)
+    product_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    sku: Mapped[str] = mapped_column(String(128), nullable=False)
+    resource_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    resource_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="PENDING")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    toss_order_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+
+    user: Mapped[User] = relationship(back_populates="payment_intents")
+
+
+class AuthSession(Base):
+    """VAgent session after server-side Toss token exchange. Never stores Toss tokens."""
+
+    __tablename__ = "auth_sessions"
+    __table_args__ = (UniqueConstraint("jti", name="uq_auth_sessions_jti"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=False, index=True)
+    jti: Mapped[str] = mapped_column(String(64), nullable=False)
+    toss_user_key: Mapped[str] = mapped_column(String(128), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    user: Mapped[User] = relationship(back_populates="auth_sessions")

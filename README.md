@@ -100,7 +100,7 @@ npm run build:toss   # build:web + ait build (.ait for Apps in Toss)
 
 - MVP is **single-process / single-worker** (`ThreadPoolExecutor(max_workers=1)`).
 - `uvicorn --workers > 1` splits the in-memory job registry — avoid until a shared store exists.
-- CORS: set `CORS_ORIGINS` (default localhost:5173). No `allow_origins=*`.
+- CORS: development default localhost:5173. Production default is the verified vocalfb Toss origins. No `allow_origins=*`.
 
 ---
 

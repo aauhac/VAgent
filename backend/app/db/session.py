@@ -15,13 +15,28 @@ _engine: Optional[Engine] = None
 _SessionLocal: Optional[sessionmaker] = None
 
 
+def reset_engine() -> None:
+    """Test helper — drop cached engine after DATABASE_URL changes."""
+    global _engine, _SessionLocal
+    if _engine is not None:
+        try:
+            _engine.dispose()
+        except Exception:
+            pass
+    _engine = None
+    _SessionLocal = None
+
+
 def get_engine() -> Optional[Engine]:
     global _engine, _SessionLocal
     url = database_url()
     if not url:
         return None
     if _engine is None:
-        _engine = create_engine(url, pool_pre_ping=True)
+        kwargs: dict = {"pool_pre_ping": True}
+        if url.startswith("postgresql"):
+            kwargs["connect_args"] = {"connect_timeout": 5}
+        _engine = create_engine(url, **kwargs)
         _SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False)
     return _engine
 

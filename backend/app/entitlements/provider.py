@@ -226,7 +226,12 @@ class MockEntitlementProvider(EntitlementProvider):
 
 
 class TossIAPEntitlementProvider(EntitlementProvider):
-    """Production stub — wire Apps in Toss IAP verification here."""
+    """
+    Production must not grant from this class.
+
+    Real grants go through verified IAP (backend/app/payments) + DatabaseEntitlementProvider.
+    Any direct grant here is fail-closed.
+    """
 
     def __init__(self, store_path: Path) -> None:
         self._fallback = MockEntitlementProvider(store_path)
@@ -253,16 +258,7 @@ class TossIAPEntitlementProvider(EntitlementProvider):
         product_id: Optional[str] = None,
         meta: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
-        # TODO: verify IAP receipt via Apps in Toss server API before grant
-        return self._fallback.grant_unlock(
-            user_id,
-            resource_type,
-            resource_id,
-            entitlement_type,
-            entitlement_id,
-            product_id=product_id,
-            meta=meta,
-        )
+        raise RuntimeError("UNVERIFIED_PAYMENT_PROVIDER")
 
     def _user_blob(self, user_id: str) -> dict[str, Any]:
         return self._fallback._user_blob(user_id)
@@ -274,25 +270,26 @@ class TossIAPEntitlementProvider(EntitlementProvider):
 
 
 def get_entitlement_provider(runtime_dir: Path | None = None) -> EntitlementProvider:
-    from ..config import database_url, get_environment, get_runtime_dir
+    from ..config import database_url, get_environment, get_runtime_dir, is_production
 
-    # PostgreSQL is SoT whenever DATABASE_URL is configured
     if database_url():
         from ..db.entitlements_db import DatabaseEntitlementProvider
 
+        # Lookup is cross-provider; new unverified rows stay DEV.
+        # Verified Toss users are created as provider=TOSS by the payment/auth layer.
         return DatabaseEntitlementProvider(provider_name="DEV")
 
     env = get_environment()
     base = runtime_dir if runtime_dir is not None else get_runtime_dir()
     store = Path(base) / "entitlements.json"
-    if env == "production":
-        # Production without DATABASE_URL should fail at startup; keep Toss stub for safety
+    if env == "production" or is_production():
         return TossIAPEntitlementProvider(store)
     return MockEntitlementProvider(store)
 
 
 def allow_dev_bypass() -> bool:
-    env = (os.environ.get("VAGENT_ENV") or "development").lower()
-    if env == "production":
+    from ..config import is_production
+
+    if is_production():
         return False
     return (os.environ.get("ALLOW_MOCK_PREMIUM") or "true").lower() in ("1", "true", "yes")

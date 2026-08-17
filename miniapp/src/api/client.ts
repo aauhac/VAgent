@@ -1,6 +1,6 @@
 import { ensureIdentityHeaders } from '../lib/userIdentity';
-
-const API_BASE = import.meta.env.VITE_API_BASE || '';
+import { getVagentSessionToken, setVagentSessionToken } from '../lib/tossAuth';
+import { apiUrl } from './base';
 
 export type AnalysisJob = {
   analysis_id: string;
@@ -14,7 +14,13 @@ export type AnalysisJob = {
 };
 
 async function headers(extra?: HeadersInit): Promise<HeadersInit> {
-  return ensureIdentityHeaders(extra);
+  const base = await ensureIdentityHeaders(extra);
+  const token = getVagentSessionToken();
+  if (!token) return base;
+  return {
+    ...base,
+    Authorization: `Bearer ${token}`,
+  };
 }
 
 export async function createAnalysis(
@@ -45,20 +51,25 @@ export async function createAnalysis(
   form.append('include_feedback', 'false');
   let res: Response;
   try {
-    res = await fetch(`${API_BASE}/v1/analyses`, {
+    res = await fetch(apiUrl(`/v1/analyses`), {
       method: 'POST',
       headers: await headers(),
       body: form,
     });
-  } catch {
+  } catch (e) {
+    if (e instanceof Error && e.message === 'API_BASE_NOT_CONFIGURED') throw e;
     throw new Error(
-      '서버에 연결할 수 없어요. backend(http://127.0.0.1:8000)가 실행 중인지 확인해 주세요.',
+      import.meta.env.DEV
+        ? '서버에 연결할 수 없어요. 로컬 backend가 실행 중인지 확인해 주세요.'
+        : '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.',
     );
   }
   if (!res.ok) {
     if (res.status >= 500) {
       throw new Error(
-        '분석 요청이 서버에서 실패했어요. backend 로그와 Vite proxy(/v1 → :8000)를 확인해 주세요.',
+        import.meta.env.DEV
+          ? '분석 요청이 서버에서 실패했어요. 로컬 backend 로그를 확인해 주세요.'
+          : '분석 요청이 서버에서 실패했어요. 잠시 후 다시 시도해 주세요.',
       );
     }
     throw new Error(await res.text());
@@ -67,24 +78,39 @@ export async function createAnalysis(
 }
 
 export async function getAnalysis(id: string): Promise<AnalysisJob> {
-  const res = await fetch(`${API_BASE}/v1/analyses/${id}`, { headers: await headers() });
+  const res = await fetch(apiUrl(`/v1/analyses/${id}`), { headers: await headers() });
   if (!res.ok) throw new Error('not found');
   return res.json();
 }
 
+export async function deleteAnalysis(id: string): Promise<void> {
+  const res = await fetch(apiUrl(`/v1/analyses/${id}`), {
+    method: 'DELETE',
+    headers: await headers(),
+  });
+  if (res.status === 401) {
+    const err = new Error('LOGIN_REQUIRED');
+    err.name = 'LOGIN_REQUIRED';
+    throw err;
+  }
+  if (!res.ok) {
+    throw new Error('DELETE_FAILED');
+  }
+}
+
 export function getPreviewUrl(id: string): string {
-  return `${API_BASE}/v1/analyses/${id}/preview`;
+  return apiUrl(`/v1/analyses/${id}/preview`);
 }
 
 export async function getProducts(analysisId?: string) {
   const q = analysisId ? `?analysis_id=${encodeURIComponent(analysisId)}` : '';
-  const res = await fetch(`${API_BASE}/v1/products${q}`, { headers: await headers() });
+  const res = await fetch(apiUrl(`/v1/products${q}`), { headers: await headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function getAnalysisAccess(analysisId: string) {
-  const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/access`, {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/access`), {
     headers: await headers(),
   });
   if (res.status === 404) {
@@ -97,7 +123,7 @@ export async function getAnalysisAccess(analysisId: string) {
   return res.json();
 }
 
-export async function getServerHistory(limit = 50): Promise<{
+export async function getServerHistory(limit = 20, offset = 0): Promise<{
   items: Array<{
     analysis_id: string;
     created_at?: string | null;
@@ -107,19 +133,107 @@ export async function getServerHistory(limit = 50): Promise<{
     song_detail_unlocked?: boolean;
     diagnostic_unlocked?: boolean;
     diagnostic_session_id?: string | null;
+    diagnostic_sessions?: Array<{
+      session_id: string;
+      status?: string | null;
+      created_at?: string | null;
+      completed_at?: string | null;
+    }>;
     artifact_missing?: boolean;
     error_code?: string | null;
   }>;
+  unlinked_diagnostics?: Array<{
+    session_id: string;
+    status?: string | null;
+    created_at?: string | null;
+    completed_at?: string | null;
+  }>;
+  has_more?: boolean;
+  total_analyses?: number;
 }> {
-  const res = await fetch(`${API_BASE}/v1/history?limit=${limit}`, {
+  const res = await fetch(apiUrl(`/v1/history?limit=${limit}&offset=${offset}`), {
     headers: await headers(),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
+export async function exchangeTossLogin(authorizationCode: string, referrer: string) {
+  const res = await fetch(apiUrl(`/v1/auth/toss/login`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      authorization_code: authorizationCode,
+      referrer,
+    }),
+  });
+  if (!res.ok) {
+    const err: any = new Error('AUTH_FAILED');
+    err.code = 'AUTH_FAILED';
+    throw err;
+  }
+  const data = await res.json();
+  if (data?.session_token) setVagentSessionToken(String(data.session_token));
+  if (data?.accessToken || data?.refreshToken || data?.access_token || data?.refresh_token) {
+    throw new Error('AUTH_FAILED');
+  }
+  return data;
+}
+
+function paymentError(res: Response, payload: any) {
+  const code = payload?.error?.code || payload?.detail?.error?.code || `HTTP_${res.status}`;
+  const message = payload?.error?.message || payload?.detail?.error?.message || '결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.';
+  const err: any = new Error(message);
+  err.code = code;
+  err.status = res.status;
+  return err;
+}
+
+export async function createIapIntent(input: {
+  product_id: string;
+  analysis_id?: string;
+  session_id?: string;
+}) {
+  const res = await fetch(apiUrl(`/v1/payments/iap/intents`), {
+    method: 'POST',
+    headers: await headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(input),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) throw paymentError(res, payload);
+  return payload as {
+    intent_id: string;
+    sku: string;
+    product_id: string;
+    resource_id: string;
+    expires_in: number;
+  };
+}
+
+export async function grantIapOrder(input: { intent_id: string; order_id: string }) {
+  const res = await fetch(apiUrl(`/v1/payments/iap/grant`), {
+    method: 'POST',
+    headers: await headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(input),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) throw paymentError(res, payload);
+  return payload as { granted: boolean; complete_product_grant?: boolean };
+}
+
+export async function recoverIapOrder(input: { order_id: string; sku?: string }) {
+  const res = await fetch(apiUrl(`/v1/payments/iap/recover`), {
+    method: 'POST',
+    headers: await headers({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(input),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) throw paymentError(res, payload);
+  return payload as { granted?: boolean };
+}
+
 export async function mockUnlockSongDetail(analysisId: string) {
-  const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/mock-unlock-detail`, {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/mock-unlock-detail`), {
     method: 'POST',
     headers: await headers(),
   });
@@ -128,7 +242,7 @@ export async function mockUnlockSongDetail(analysisId: string) {
 }
 
 export async function getSongDetailedReport(analysisId: string) {
-  const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/detailed-report`, {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/detailed-report`), {
     headers: await headers(),
   });
   if (res.status === 402) {
@@ -140,7 +254,7 @@ export async function getSongDetailedReport(analysisId: string) {
 
 export async function createDiagnosticSession(sourceAnalysisId?: string) {
   const q = sourceAnalysisId ? `?source_analysis_id=${encodeURIComponent(sourceAnalysisId)}` : '';
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions${q}`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions${q}`), {
     method: 'POST',
     headers: await headers(),
   });
@@ -149,7 +263,7 @@ export async function createDiagnosticSession(sourceAnalysisId?: string) {
 }
 
 export async function mockPaySession(sessionId: string, productId?: string) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/mock-pay`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/mock-pay`), {
     method: 'POST',
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(productId ? { product_id: productId } : {}),
@@ -164,7 +278,7 @@ export async function submitConcerns(
   diagnosticMode?: 'CONCERN_FOCUSED' | 'GENERAL_DISCOVERY',
   timbreGoal?: { id: string; source?: string } | null,
 ) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/concerns`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/concerns`), {
     method: 'POST',
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({
@@ -178,13 +292,13 @@ export async function submitConcerns(
 }
 
 export async function getDiagnosticProtocol() {
-  const res = await fetch(`${API_BASE}/v1/diagnostic/protocol`, { headers: await headers() });
+  const res = await fetch(apiUrl(`/v1/diagnostic/protocol`), { headers: await headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function submitSafety(sessionId: string, answers: Record<string, boolean>) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/safety`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/safety`), {
     method: 'POST',
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ answers }),
@@ -194,7 +308,7 @@ export async function submitSafety(sessionId: string, answers: Record<string, bo
 }
 
 export async function ensureDiagnosticPlan(sessionId: string) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/ensure-plan`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/ensure-plan`), {
     method: 'POST',
     headers: await headers(),
   });
@@ -203,7 +317,7 @@ export async function ensureDiagnosticPlan(sessionId: string) {
 }
 
 export async function getDiagnosticSession(sessionId: string) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}`), {
     headers: await headers(),
   });
   if (res.status === 404) throw new Error('SESSION_NOT_FOUND');
@@ -215,7 +329,7 @@ export async function getDiagnosticSession(sessionId: string) {
 export async function uploadDiagnosticTask(sessionId: string, taskId: string, file: Blob, filename: string) {
   const form = new FormData();
   form.append('file', file, filename);
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/tasks/${taskId}`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/tasks/${taskId}`), {
     method: 'POST',
     headers: await headers(),
     body: form,
@@ -225,7 +339,7 @@ export async function uploadDiagnosticTask(sessionId: string, taskId: string, fi
 }
 
 export async function skipDiagnosticTask(sessionId: string, taskId: string) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/tasks/${taskId}/skip`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/tasks/${taskId}/skip`), {
     method: 'POST',
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ reason: 'USER_CHOICE' }),
@@ -235,7 +349,7 @@ export async function skipDiagnosticTask(sessionId: string, taskId: string) {
 }
 
 export async function startControlledRecordings(sessionId: string) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/start-controlled-recordings`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/start-controlled-recordings`), {
     method: 'POST',
     headers: await headers(),
   });
@@ -244,7 +358,7 @@ export async function startControlledRecordings(sessionId: string) {
 }
 
 export async function skipControlledRecordings(sessionId: string, opts?: { remainingOnly?: boolean }) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/skip-controlled-recordings`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/skip-controlled-recordings`), {
     method: 'POST',
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ remaining_only: opts?.remainingOnly !== false }),
@@ -254,7 +368,7 @@ export async function skipControlledRecordings(sessionId: string, opts?: { remai
 }
 
 export async function analyzeDiagnosticSession(sessionId: string) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/analyze`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/analyze`), {
     method: 'POST',
     headers: await headers(),
   });
@@ -263,7 +377,7 @@ export async function analyzeDiagnosticSession(sessionId: string) {
 }
 
 export async function regenerateDiagnosticReport(sessionId: string) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/regenerate-report`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/regenerate-report`), {
     method: 'POST',
     headers: await headers(),
   });
@@ -272,7 +386,7 @@ export async function regenerateDiagnosticReport(sessionId: string) {
 }
 
 export async function getDiagnosticReport(sessionId: string, opts?: { debug?: boolean }) {
-  const res = await fetch(`${API_BASE}/v1/diagnostic-sessions/${sessionId}/report`, {
+  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/report`), {
     headers: await headers(opts?.debug ? { 'X-VAgent-Debug': '1' } : undefined),
   });
   if (res.status === 402) {
@@ -383,7 +497,10 @@ export async function getVocalProgressInsight(opts?: {
   if (opts?.exclude_analysis_id) q.set('exclude_analysis_id', opts.exclude_analysis_id);
   const qs = q.toString();
   try {
-    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/insight${qs ? `?${qs}` : ''}`, {
+    const insightPath = qs
+      ? `/v1/me/vocal-progress/insight?${qs}`
+      : '/v1/me/vocal-progress/insight';
+    const res = await fetch(apiUrl(insightPath), {
       headers: await headers(),
     });
     if (res.status === 404) return null;
@@ -402,7 +519,7 @@ export async function postVocalProgressInsight(body: {
   today_highlights?: { axis: string; title: string; label: string }[];
 }): Promise<any | null> {
   try {
-    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/insight`, {
+    const res = await fetch(apiUrl(`/v1/me/vocal-progress/insight`), {
       method: 'POST',
       headers: await headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),
@@ -424,7 +541,7 @@ export async function postVocalSnapshot(body: {
   goal_focus_at_analysis?: string | null;
 }): Promise<any | null> {
   try {
-    const res = await fetch(`${API_BASE}/v1/me/vocal-snapshots`, {
+    const res = await fetch(apiUrl(`/v1/me/vocal-snapshots`), {
       method: 'POST',
       headers: await headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),
@@ -439,7 +556,7 @@ export async function postVocalSnapshot(body: {
 
 export async function getVocalGoals(): Promise<{ active: any; history: any[] } | null> {
   try {
-    const res = await fetch(`${API_BASE}/v1/me/vocal-goals`, { headers: await headers() });
+    const res = await fetch(apiUrl(`/v1/me/vocal-goals`), { headers: await headers() });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -455,7 +572,7 @@ export async function putActiveVocalGoal(body: {
   style_id?: string | null;
 }): Promise<any | null> {
   try {
-    const res = await fetch(`${API_BASE}/v1/me/vocal-goals/active`, {
+    const res = await fetch(apiUrl(`/v1/me/vocal-goals/active`), {
       method: 'PUT',
       headers: await headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),
@@ -476,7 +593,10 @@ export async function getVocalGoalProgress(opts?: {
   if (opts?.exclude_analysis_id) q.set('exclude_analysis_id', opts.exclude_analysis_id);
   const qs = q.toString();
   try {
-    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/goal${qs ? `?${qs}` : ''}`, {
+    const goalPath = qs
+      ? `/v1/me/vocal-progress/goal?${qs}`
+      : '/v1/me/vocal-progress/goal';
+    const res = await fetch(apiUrl(goalPath), {
       headers: await headers(),
     });
     if (!res.ok) return null;
@@ -493,7 +613,7 @@ export async function postVocalGoalProgress(body: {
   goal?: any;
 }): Promise<any | null> {
   try {
-    const res = await fetch(`${API_BASE}/v1/me/vocal-progress/goal`, {
+    const res = await fetch(apiUrl(`/v1/me/vocal-progress/goal`), {
       method: 'POST',
       headers: await headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),

@@ -76,6 +76,10 @@ class LocalArtifactStore(ArtifactStore):
         return True
 
     def delete_analysis(self, analysis_id: str) -> bool:
+        from ..jobs.runner import validate_analysis_id
+
+        if not validate_analysis_id(analysis_id):
+            return False
         import shutil
 
         path = (self.root / analysis_id).resolve()
@@ -83,10 +87,12 @@ class LocalArtifactStore(ArtifactStore):
             path.relative_to(self.root)
         except ValueError:
             return False
+        if path == self.root:
+            return False
         if not path.exists():
             return False
-        shutil.rmtree(path, ignore_errors=True)
-        return True
+        shutil.rmtree(path)
+        return not path.exists()
 
 
 class ObjectStorageArtifactStore(ArtifactStore):

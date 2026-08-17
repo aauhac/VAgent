@@ -26,6 +26,11 @@ class DatabaseEntitlementProvider(EntitlementProvider):
         self.provider_name = provider_name
 
     def _resolve_user(self, session, user_id: str):
+        from .analysis_repo import get_user_by_subject
+
+        existing = get_user_by_subject(session, user_id)
+        if existing is not None:
+            return existing
         return get_or_create_user(session, provider=self.provider_name, subject=user_id)
 
     def has_unlock(
@@ -111,18 +116,42 @@ class DatabaseEntitlementProvider(EntitlementProvider):
         diagnostic_unlocked = False
         with session_scope() as session:
             user = self._resolve_user(session, user_id)
-            from .models import Analysis
+            from .models import Analysis, DiagnosticSession
 
             row = session.get(Analysis, analysis_id)
             if row and isinstance(row.public_summary, dict):
                 linked = row.public_summary.get("diagnostic_session_id")
-            if linked:
+            sessions = session.scalars(
+                select(DiagnosticSession)
+                .where(
+                    DiagnosticSession.user_id == user.id,
+                    DiagnosticSession.source_analysis_id == analysis_id,
+                )
+                .order_by(DiagnosticSession.created_at.desc())
+            ).all()
+            if sessions:
+                linked = sessions[0].id or linked
+                diagnostic_unlocked = True
+            if linked and not diagnostic_unlocked:
                 diagnostic_unlocked = (
                     session.scalar(
                         select(Entitlement).where(
                             Entitlement.user_id == user.id,
                             Entitlement.resource_type == RESOURCE_DIAGNOSTIC_SESSION,
                             Entitlement.resource_id == str(linked),
+                            Entitlement.entitlement_type == ENTITLEMENT_DIAGNOSTIC,
+                            Entitlement.status == "ACTIVE",
+                        )
+                    )
+                    is not None
+                )
+            if not diagnostic_unlocked:
+                diagnostic_unlocked = (
+                    session.scalar(
+                        select(Entitlement).where(
+                            Entitlement.user_id == user.id,
+                            Entitlement.resource_type == RESOURCE_ANALYSIS,
+                            Entitlement.resource_id == analysis_id,
                             Entitlement.entitlement_type == ENTITLEMENT_DIAGNOSTIC,
                             Entitlement.status == "ACTIVE",
                         )

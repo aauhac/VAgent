@@ -1,0 +1,14 @@
+{
+  "DEPLOYMENT_READY": false,
+  "PAYMENT_IMPLEMENTATION": "READY",
+  "PRODUCTION_DEPLOYMENT": "BLOCKED",
+  "reason": "P1 blockers: Postgres live path not verified (Docker daemon down); Toss mTLS/SKU/login credentials missing; official sandbox IAP not run; visual browser smoke not run.",
+  "P0": 0,
+  "P1": 4,
+  "pytest": "1274 passed / 1 skipped",
+  "tsc": "PASS",
+  "build_web": "PASS",
+  "build_toss": "PASS",
+  "real_production_charge": false,
+  "analyzer_logic_changed": false
+}

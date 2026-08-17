@@ -1,0 +1,22 @@
+# Disposable QA PostgreSQL for production release gate.
+# Does NOT reuse docker-compose.dev.yml volume or the vagent-postgres-dev container.
+services:
+  postgres-qa-gate:
+    image: postgres:16-alpine
+    container_name: vagent-postgres-qa-gate
+    environment:
+      POSTGRES_USER: vagent_qa
+      POSTGRES_PASSWORD: vagent_qa
+      POSTGRES_DB: vagent_qa
+    ports:
+      - "55432:5432"
+    volumes:
+      - vagent_pg_qa_gate:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vagent_qa -d vagent_qa"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  vagent_pg_qa_gate:

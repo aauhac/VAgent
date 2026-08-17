@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import {
   getAnalysis,
   getProducts,
@@ -7,13 +7,13 @@ import {
   patchHistory,
   postVocalProgressInsight,
   postVocalSnapshot,
-  removeHistory,
   saveSongDetailUnlock,
 } from '../api/client';
 import ProgressInsightSheet from '../components/progress/ProgressInsightSheet';
 import TodayPhonationSummary from '../components/progress/TodayPhonationSummary';
 import VocalTypeHero from '../components/report/VocalTypeHero';
 import PremiumProductCard from '../components/ui/PremiumProductCard';
+import SubPageHeader from '../components/ui/SubPageHeader';
 import {
   classifyDiagnosticOffer,
   diagnosticDurationNote,
@@ -33,10 +33,21 @@ import {
   type ProgressInsightPayload,
 } from '../lib/progressPresentation';
 import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '../lib/reportPresentation';
+import { buyProduct, getIapProductMap } from '../lib/tossIap';
+import { resolveSubPageBack } from '../lib/subPageNav';
 
 export default function Result() {
   const { id } = useParams();
   const nav = useNavigate();
+  const navigationType = useNavigationType();
+  function onBack() {
+    const target = resolveSubPageBack(navigationType);
+    if (target.mode === 'history') {
+      nav(-1);
+      return;
+    }
+    nav('/');
+  }
   const location = useLocation();
   const [data, setData] = useState<any>(null);
   const [products, setProducts] = useState<any>(null);
@@ -45,6 +56,7 @@ export default function Result() {
   const [busyDetail, setBusyDetail] = useState(false);
   const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
   const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
+  const [iapPrices, setIapPrices] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!id) return;
@@ -73,6 +85,25 @@ export default function Result() {
         setError('분석 기록이 만료됐어요.');
       });
   }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const prodMap = products?.products || {};
+    getIapProductMap()
+      .then((map) => {
+        if (cancelled) return;
+        const next: Record<string, string> = {};
+        for (const p of Object.values(prodMap) as any[]) {
+          const sku = p?.sku;
+          if (sku && map[sku]?.displayAmount) next[p.product_id] = map[sku].displayAmount;
+        }
+        setIapPrices(next);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [products]);
 
   useEffect(() => {
     const st = location.state as { focusOffer?: string } | null;
@@ -181,11 +212,27 @@ export default function Result() {
     setBusyDetail(true);
     setError(null);
     try {
-      await mockUnlockSongDetail(id);
-      saveSongDetailUnlock(id);
-      nav(`/result/${id}/detail`);
+      const iap = await buyProduct({ productId: 'song_detail', resourceId: id });
+      if (iap.ok) {
+        saveSongDetailUnlock(id);
+        nav(`/result/${id}/detail`);
+        return;
+      }
+      if (iap.state === 'CANCELLED') {
+        setError(iap.message || '결제가 취소됐어요.');
+        setBusyDetail(false);
+        return;
+      }
+      if (!import.meta.env.PROD && (iap.message || '').includes('토스 앱')) {
+        await mockUnlockSongDetail(id);
+        saveSongDetailUnlock(id);
+        nav(`/result/${id}/detail`);
+        return;
+      }
+      setError(iap.message || '결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
+      setBusyDetail(false);
     } catch (e: any) {
-      setError(e?.message || '상세 리포트 해제 실패');
+      setError(e?.message || '결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
       setBusyDetail(false);
     }
   }
@@ -201,16 +248,9 @@ export default function Result() {
         <h1 className="brand" style={{ fontSize: '1.6rem' }}>분석 기록이 만료됐어요</h1>
         <p className="lead">서버에서 결과를 찾을 수 없어요. 다시 녹음해 주세요.</p>
         {id && (
-          <button
-            className="btn secondary"
-            style={{ marginBottom: 12, width: '100%' }}
-            onClick={() => {
-              removeHistory(id);
-              window.location.href = '/history';
-            }}
-          >
-            기록에서 삭제
-          </button>
+          <Link className="btn secondary" to="/history" style={{ marginBottom: 12, width: '100%' }}>
+            분석 기록으로
+          </Link>
         )}
         <Link className="btn" to="/record">다시 녹음</Link>
       </main>
@@ -238,9 +278,9 @@ export default function Result() {
   const score = data.score || {};
   const access = data.access || {};
   const prodMap = products?.products || {};
-  const songPrice = prodMap.song_detail?.display_amount || '₩1,000';
+  const songPrice = iapPrices.song_detail || (import.meta.env.PROD ? (prodMap.song_detail?.display_amount || '—') : (prodMap.song_detail?.display_amount || '₩1,000'));
   const diagOfferKey = products?.offers?.diagnostic || 'diagnostic_full';
-  const diagPrice = prodMap[diagOfferKey]?.display_amount || '₩2,000';
+  const diagPrice = iapPrices[diagOfferKey] || (import.meta.env.PROD ? (prodMap[diagOfferKey]?.display_amount || '—') : (prodMap[diagOfferKey]?.display_amount || '₩2,000'));
   const songUnlocked = !!access.song_detail_unlocked;
   const diagUnlocked = !!access.diagnostic_unlocked;
   const sessionId = access.diagnostic_session_id || null;
@@ -283,9 +323,8 @@ export default function Result() {
 
   return (
     <main>
-      <Link className="muted" to="/">‹ 홈</Link>
-      <p className="page-kicker" style={{ marginTop: 14 }}>무료 보컬 리포트</p>
-      <h1 className="brand" style={{ fontSize: '1.4rem', marginBottom: 4 }}>
+      <SubPageHeader title="무료 보컬 리포트" onBack={onBack} />
+      <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 12, marginBottom: 4 }}>
         오늘의 발성
       </h1>
 

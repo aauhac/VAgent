@@ -95,24 +95,20 @@ class JobRunner:
                 return dict(job)
         return self._load_from_disk(analysis_id)
 
+    def mark_deleted(self, analysis_id: str) -> None:
+        with self._lock:
+            self._jobs.pop(analysis_id, None)
+            self._deleted.add(analysis_id)
+
     def delete(self, analysis_id: str) -> bool:
         if not validate_analysis_id(analysis_id):
             return False
-        with self._lock:
-            existed = analysis_id in self._jobs
-            self._jobs.pop(analysis_id, None)
-            self._deleted.add(analysis_id)
-        path = self.runtime_dir / analysis_id
-        disk_existed = path.exists()
-        if disk_existed:
-            shutil.rmtree(path, ignore_errors=True)
-        try:
-            from ..db.analysis_repo import soft_delete_analysis
+        from ..services.deletion import delete_analysis_content
 
-            soft_delete_analysis(analysis_id)
-        except Exception:
-            pass
-        return existed or disk_existed
+        result = delete_analysis_content(self.runtime_dir, analysis_id)
+        if result.ok:
+            self.mark_deleted(analysis_id)
+        return result.ok
 
     def resolve_preview_path(self, analysis_id: str) -> Optional[Path]:
         """Safe path resolution — never take user-supplied filesystem paths."""

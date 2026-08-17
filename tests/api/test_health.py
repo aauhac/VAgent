@@ -11,7 +11,20 @@ client = TestClient(app)
 def test_health():
     r = client.get("/health")
     assert r.status_code == 200
-    assert r.json()["status"] == "ok"
+    body = r.json()
+    assert body["status"] == "ok"
+    assert body["service"] == "vocalfb"
+    assert "database" not in body
+
+
+def test_ready_does_not_require_toss():
+    r = client.get("/ready")
+    assert r.status_code in (200, 503)
+    body = r.json()
+    assert "ready" in body
+    assert "database" in body
+    assert "payments" in body
+    assert body.get("multi_instance_safe") is False
 
 
 def test_create_rejects_bad_ext(tmp_path):

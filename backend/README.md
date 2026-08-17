@@ -13,7 +13,8 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 ### Endpoints
 
-- `GET /health`
+- `GET /health` — liveness
+- `GET /ready` — runtime + PostgreSQL
 - `POST /v1/analyses` multipart `file`, optional `separate`, `include_feedback`
 - `GET /v1/analyses/{analysis_id}`
 - `DELETE /v1/analyses/{analysis_id}`

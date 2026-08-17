@@ -1,0 +1,15 @@
+{
+  "P0": [],
+  "P1": [
+    "LIVE_IAP_NOT_VERIFIED_CREDENTIALS_MISSING",
+    "OFFICIAL_TOSS_SANDBOX_NOT_RUN"
+  ],
+  "P2": [
+    "npm_audit_transitive_babel_via_apps_in_toss_sdk",
+    "pip_audit_not_installed",
+    "bandit_not_installed"
+  ],
+  "P3": [
+    "some_diagnostic_inner_pages_still_use_custom_headers"
+  ]
+}

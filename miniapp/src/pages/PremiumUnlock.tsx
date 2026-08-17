@@ -18,6 +18,7 @@ import {
   pickDiagnosticOffer,
   type DiagnosticOffer,
 } from '../lib/diagnosticOffer';
+import { buyProduct } from '../lib/tossIap';
 
 /**
  * Diagnostic unlock — after mock pay / existing entitlement → ConcernIntake.
@@ -136,6 +137,26 @@ export default function PremiumUnlock() {
       const sid = session?.session_id;
       if (!sid) {
         throw new Error('진단 세션을 만들지 못했어요. 잠시 후 다시 시도해주세요.');
+      }
+      if (analysisId) {
+        const iap = await buyProduct({ productId, resourceId: analysisId });
+        if (iap.ok) {
+          saveUnlockedSession(sid);
+          saveSongDetailUnlock(analysisId);
+          patchHistory(analysisId, { songDetailUnlocked: true, sessionId: sid });
+          nav(`/diagnostic/${sid}/concerns`);
+          return;
+        }
+        if (iap.state === 'CANCELLED') {
+          setError(iap.message || '결제가 취소됐어요.');
+          setBusy(false);
+          return;
+        }
+        if (import.meta.env.PROD || !(iap.message || '').includes('토스 앱')) {
+          setError(iap.message || '결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
+          setBusy(false);
+          return;
+        }
       }
       await mockPaySession(sid, productId);
       saveUnlockedSession(sid);

@@ -96,7 +96,7 @@ export default function HighNoteFunctionSection({ profile }: Props) {
           })}
         </div>
       ) : null}
-      {(profile.summary || []).slice(0, 2).map((s: string) => (
+      {(Array.isArray(profile.summary) ? profile.summary : []).slice(0, 2).map((s: string) => (
         <p key={s} className="body-text muted">{s}</p>
       ))}
     </section>

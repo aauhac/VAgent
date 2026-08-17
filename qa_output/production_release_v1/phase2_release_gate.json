@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "DEPLOYMENT_READY": false,
+  "PAYMENT_IMPLEMENTATION": "READY",
+  "PRODUCTION_DEPLOYMENT": "BLOCKED",
+  "reason": "Postgres live gate PASS. Remaining: Apps in Toss sandbox/login/mTLS/SKU live verification; live React Detail/Progress/Precision visual.",
+  "P0": 0,
+  "P1": [
+    "LIVE_IAP_NOT_VERIFIED_CREDENTIALS_MISSING",
+    "OFFICIAL_TOSS_SANDBOX_NOT_RUN"
+  ],
+  "cleared_p1": ["BLOCKED_POSTGRES_NOT_VERIFIED", "BROWSER_VISUAL_SMOKE_NOT_RUN_HISTORY_HOME_RECORD_UPLOAD"],
+  "pytest": "1284 passed / 6 skipped",
+  "tsc": "PASS",
+  "build_web": "PASS",
+  "build_toss": "PASS",
+  "postgres_live": "PASS",
+  "real_production_charge": false,
+  "analyzer_logic_changed": false
+}

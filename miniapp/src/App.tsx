@@ -15,6 +15,7 @@ import DiagnosticTask from './pages/DiagnosticTask';
 import PremiumReport from './pages/PremiumReport';
 import DiagnosticResume from './pages/DiagnosticResume';
 import ProgressInsight from './pages/ProgressInsight';
+import { LegalPrivacy, LegalPrivacyConsent, LegalTerms } from './pages/Legal';
 
 export default function App() {
   return (
@@ -30,6 +31,9 @@ export default function App() {
         <Route path="/progress" element={<ProgressInsight />} />
         <Route path="/history" element={<History />} />
         <Route path="/premium" element={<PremiumUnlock />} />
+        <Route path="/legal/terms" element={<LegalTerms />} />
+        <Route path="/legal/privacy" element={<LegalPrivacy />} />
+        <Route path="/legal/privacy-consent" element={<LegalPrivacyConsent />} />
         <Route path="/diagnostic/:sessionId/concerns" element={<ConcernIntake />} />
         <Route path="/diagnostic/:sessionId/safety" element={<SafetyCheck />} />
         <Route path="/diagnostic/:sessionId/recordings" element={<DiagnosticRecordingIntro />} />

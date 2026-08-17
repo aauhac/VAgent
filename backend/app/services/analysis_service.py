@@ -35,6 +35,7 @@ class AnalysisService:
         analysis_mode: str = "QUICK",
         input_mode: str = "AUTO",
         user_id: str = "anon",
+        user_provider: str = "DEV",
     ) -> str:
         filename = file.filename or "upload.bin"
         ext = Path(filename).suffix.lower()
@@ -87,6 +88,7 @@ class AnalysisService:
             self._maybe_persist_db_row(
                 analysis_id=analysis_id,
                 user_id=user_id or "anon",
+                user_provider=user_provider or "DEV",
                 filename=filename,
                 mode=mode,
                 in_mode=in_mode,
@@ -110,6 +112,7 @@ class AnalysisService:
         *,
         analysis_id: str,
         user_id: str,
+        user_provider: str = "DEV",
         filename: str,
         mode: str,
         in_mode: str,
@@ -119,12 +122,16 @@ class AnalysisService:
 
         if not database_url():
             return
+        from ..db.analysis_repo import get_user_by_subject
         from ..db.models import Analysis
         from ..db.session import session_scope
         from ..db.users import get_or_create_user
 
         with session_scope() as session:
-            user = get_or_create_user(session, provider="DEV", subject=user_id)
+            user = get_user_by_subject(session, user_id)
+            if user is None:
+                provider = (user_provider or "DEV").strip().upper() or "DEV"
+                user = get_or_create_user(session, provider=provider, subject=user_id)
             if session.get(Analysis, analysis_id):
                 return
             session.add(
@@ -150,7 +157,12 @@ class AnalysisService:
     def delete_job(self, analysis_id: str) -> bool:
         if not validate_analysis_id(analysis_id):
             return False
-        return self.runner.delete(analysis_id)
+        from .deletion import delete_analysis_content
+
+        result = delete_analysis_content(self.runtime_dir, analysis_id)
+        if result.ok:
+            self.runner.mark_deleted(analysis_id)
+        return result.ok
 
     def preview_path(self, analysis_id: str) -> Optional[Path]:
         return self.runner.resolve_preview_path(analysis_id)

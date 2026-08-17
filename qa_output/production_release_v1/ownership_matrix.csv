@@ -1,0 +1,10 @@
+endpoint,resource,other_user,expected,notes
+GET /v1/analyses/{id},analysis,404,PASS,owner gate
+GET /v1/analyses/{id}/audio,analysis,404,PASS,owner gate
+GET /v1/analyses/{id}/detailed-report,analysis,404/402,PASS,owner then entitlement
+GET /v1/products?analysis_id=,analysis,404,PASS,no entitlement probe
+POST /v1/diagnostic-sessions?source_analysis_id=,analysis,404,PASS,source analysis not found
+GET /v1/diagnostic-sessions/{id},session,404,PASS,owner mismatch hidden
+POST /v1/payments/iap/intents,analysis,401/404,PASS,auth then owner
+POST /v1/payments/iap/recover,order,409/401,PASS,no arbitrary unlock
+DELETE /v1/analyses/{id},analysis,404,PASS,owner gate

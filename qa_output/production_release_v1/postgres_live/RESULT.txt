@@ -1,0 +1,8 @@
+PASS
+fresh migration PASS
+existing upgrade PASS
+payment persistence PASS
+restart PASS
+refund PASS
+replay PASS
+DB outage fail-closed PASS

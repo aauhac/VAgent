@@ -81,7 +81,7 @@ export default function TimbreProfileSection({ profile, omitPresence = false }: 
           />
         );
       })}
-      {(profile.summary || []).slice(0, 2).map((s: string) => (
+      {(Array.isArray(profile.summary) ? profile.summary : []).slice(0, 2).map((s: string) => (
         <p key={s} className="body-text muted">{s}</p>
       ))}
     </section>

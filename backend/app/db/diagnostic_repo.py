@@ -40,13 +40,23 @@ def upsert_session_from_dict(session_dict: dict[str, Any], *, provider: str = "D
     with session_scope() as session:
         user = get_or_create_user(session, provider=provider, subject=subject)
         src = session_dict.get("source_analysis_id")
-        if src and not session.get(Analysis, str(src)):
-            # Source may be missing in isolated tests — null the FK to avoid IntegrityError
+        explicit_src = str(src).strip() if src else None
+        if explicit_src and not session.get(Analysis, explicit_src):
+            # FK cannot point at a missing analysis row. Keep the explicit id
+            # in plan_rationale so history can restore it later if the analysis appears.
             src = None
+        else:
+            src = explicit_src
 
         row = session.get(DiagnosticSession, sid)
         now = datetime.now(timezone.utc)
         rationale = dict(session_dict.get("plan_rationale") or {})
+        prev_ext = {}
+        if isinstance(rationale.get("_session_ext"), dict):
+            prev_ext = dict(rationale.get("_session_ext") or {})
+        if row and isinstance(row.plan_rationale, dict) and isinstance(row.plan_rationale.get("_session_ext"), dict):
+            prev_ext = {**dict(row.plan_rationale.get("_session_ext") or {}), **prev_ext}
+        persisted_src = explicit_src or prev_ext.get("persisted_source_analysis_id")
         rationale["_session_ext"] = {
             "diagnostic_mode": session_dict.get("diagnostic_mode"),
             "diagnostic_status": session_dict.get("diagnostic_status"),
@@ -55,6 +65,7 @@ def upsert_session_from_dict(session_dict: dict[str, Any], *, provider: str = "D
             "planned_task_count": session_dict.get("planned_task_count"),
             "provisional_task_count": session_dict.get("provisional_task_count"),
             "safety_flag_pain": session_dict.get("safety_flag_pain"),
+            "persisted_source_analysis_id": persisted_src,
         }
         payload = {
             "user_id": user.id,
@@ -116,7 +127,8 @@ def load_session_dict(session_id: str) -> Optional[dict[str, Any]]:
         return {
             "session_id": row.id,
             "user_id": subject,
-            "source_analysis_id": row.source_analysis_id,
+            "persisted_source_analysis_id": ext.get("persisted_source_analysis_id"),
+            "source_analysis_id": row.source_analysis_id or ext.get("persisted_source_analysis_id"),
             "analysis_mode": "diagnostic",
             "protocol_version": row.protocol_version,
             "planner_version": row.planner_version,

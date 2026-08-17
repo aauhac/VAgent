@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>History expanded fixture</title>
+  <link rel="stylesheet" href="file:///C:/VocalAgent/miniapp/src/styles/app.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <main>
+      <header class="sub-page-header">
+        <button type="button" class="sub-page-header__action sub-page-header__back">‹ 뒤로</button>
+        <h1 class="sub-page-header__title">분석 기록</h1>
+        <a class="sub-page-header__action sub-page-header__home" href="#">홈</a>
+      </header>
+      <section class="section history-feed" style="border-bottom:0;margin-top:12px">
+        <div class="history-day">
+          <p class="history-day-label">08.17</p>
+          <article class="history-card">
+            <p class="history-title">t.wav</p>
+            <p class="history-status">상세 리포트 이용 가능</p>
+            <div class="history-actions">
+              <a class="btn chip" href="#">상세 리포트</a>
+              <a class="btn chip secondary" href="#">무료 결과</a>
+            </div>
+            <div class="history-precision"><span>정밀 발성 진단 · 완료</span><a href="#">보기</a></div>
+          </article>
+        </div>
+        <section class="history-legacy">
+          <button type="button" class="history-legacy-toggle">이전 정밀 진단 7건 <span>˄</span></button>
+          <article class="history-card history-legacy-card">
+            <p class="history-date">08.16</p>
+            <p class="history-title">정밀 진단 완료</p>
+            <div class="history-actions"><a class="btn chip" href="#">보기</a></div>
+          </article>
+          <article class="history-card history-legacy-card">
+            <p class="history-date">08.15</p>
+            <p class="history-title">정밀 진단 완료</p>
+            <div class="history-actions"><a class="btn chip" href="#">보기</a></div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

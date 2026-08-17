@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.app.api import routes as routes_mod
+from backend.app.payments.session_tokens import issue_session
 from backend.app.services.analysis_service import AnalysisService
 
 
@@ -37,10 +38,10 @@ def _wav_bytes(duration=3.5, amp=0.25, freq=220.0, sr=22050) -> bytes:
     return buf.getvalue()
 
 
-def _wait_done(client: TestClient, analysis_id: str, timeout=60.0):
+def _wait_done(client: TestClient, analysis_id: str, headers=None, timeout=60.0):
     deadline = time.time() + timeout
     while time.time() < deadline:
-        r = client.get(f"/v1/analyses/{analysis_id}")
+        r = client.get(f"/v1/analyses/{analysis_id}", headers=headers)
         assert r.status_code == 200
         body = r.json()
         if body["status"] in ("completed", "failed"):
@@ -105,17 +106,19 @@ def test_unknown_id(client):
 def test_delete_then_404_and_preview_404(client):
     c, _ = client
     data = _wav_bytes()
-    r = c.post("/v1/analyses", files={"file": ("tone.wav", data, "audio/wav")})
+    token, _ = issue_session(toss_user_key="anon")
+    h = {"Authorization": f"Bearer {token}"}
+    r = c.post("/v1/analyses", files={"file": ("tone.wav", data, "audio/wav")}, headers=h)
     aid = r.json()["analysis_id"]
-    body = _wait_done(c, aid)
+    body = _wait_done(c, aid, h)
     assert body["status"] == "completed"
-    prev = c.get(f"/v1/analyses/{aid}/preview")
+    prev = c.get(f"/v1/analyses/{aid}/preview", headers=h)
     assert prev.status_code == 200
     assert prev.headers["content-type"].startswith("audio/")
-    d = c.delete(f"/v1/analyses/{aid}")
+    d = c.delete(f"/v1/analyses/{aid}", headers=h)
     assert d.status_code == 200
-    assert c.get(f"/v1/analyses/{aid}").status_code == 404
-    assert c.get(f"/v1/analyses/{aid}/preview").status_code == 404
+    assert c.get(f"/v1/analyses/{aid}", headers=h).status_code == 404
+    assert c.get(f"/v1/analyses/{aid}/preview", headers=h).status_code == 404
 
 
 def test_quality_fail_score_unavailable(client):

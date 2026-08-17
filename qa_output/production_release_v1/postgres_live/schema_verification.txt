@@ -1,0 +1,34 @@
+                     List of relations
+ Schema |             Name              | Type  |   Owner   
+--------+-------------------------------+-------+-----------
+ public | alembic_version               | table | vagent_qa
+ public | analyses                      | table | vagent_qa
+ public | auth_sessions                 | table | vagent_qa
+ public | diagnostic_sessions           | table | vagent_qa
+ public | diagnostic_task_attempts      | table | vagent_qa
+ public | entitlements                  | table | vagent_qa
+ public | payment_intents               | table | vagent_qa
+ public | personal_vocal_snapshots      | table | vagent_qa
+ public | purchase_orders               | table | vagent_qa
+ public | singer_identity_shadow_events | table | vagent_qa
+ public | user_voice_profiles           | table | vagent_qa
+ public | users                         | table | vagent_qa
+ public | voice_profile_enrollments     | table | vagent_qa
+(13 rows)
+
+             indexname             
+-----------------------------------
+ diagnostic_sessions_pkey
+ entitlements_pkey
+ ix_diagnostic_sessions_user_id
+ ix_entitlements_user_id
+ ix_payment_intents_user_id
+ ix_purchase_orders_user_id
+ payment_intents_pkey
+ purchase_orders_pkey
+ uq_entitlement_resource
+ uq_payment_intents_active
+ uq_purchase_orders_provider_order
+ uq_purchase_orders_toss_order_id
+(12 rows)
+

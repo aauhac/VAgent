@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>History fixture</title>
+  <link rel="stylesheet" href="file:///C:/VocalAgent/miniapp/src/styles/app.css" />
+  <style>
+    body { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <main>
+      <header class="sub-page-header" data-testid="sub-page-header">
+        <button type="button" class="sub-page-header__action sub-page-header__back">‹ 뒤로</button>
+        <h1 class="sub-page-header__title">분석 기록</h1>
+        <a class="sub-page-header__action sub-page-header__home" href="#">홈</a>
+      </header>
+      <section class="section history-feed" style="border-bottom:0;margin-top:12px">
+        <div class="history-day">
+          <p class="history-day-label">08.17</p>
+          <article class="history-card" data-testid="history-analysis-card">
+            <p class="history-title">t.wav</p>
+            <p class="history-subtitle">발성 성향 판단 보류</p>
+            <p class="history-status">상세 리포트 이용 가능</p>
+            <div class="history-actions">
+              <a class="btn chip" href="#">상세 리포트</a>
+              <a class="btn chip secondary" href="#">무료 결과</a>
+            </div>
+            <div class="history-precision" data-testid="history-linked-precision">
+              <span>정밀 발성 진단 · 완료</span>
+              <a href="#">보기</a>
+            </div>
+          </article>
+          <article class="history-card">
+            <p class="history-title">movie.m4a</p>
+            <p class="history-subtitle">낮은 힘 사용 · 적은 숨 섞임</p>
+            <p class="history-status">무료 분석 완료</p>
+            <div class="history-actions">
+              <a class="btn chip" href="#">무료 결과</a>
+            </div>
+          </article>
+        </div>
+        <div class="history-day">
+          <p class="history-day-label">08.16</p>
+          <article class="history-card">
+            <p class="history-title">이전 분석</p>
+            <p class="history-status">무료 분석 완료</p>
+            <div class="history-actions">
+              <a class="btn chip" href="#">무료 결과</a>
+            </div>
+          </article>
+        </div>
+        <section class="history-legacy" data-testid="history-orphan-precision">
+          <button type="button" class="history-legacy-toggle" data-testid="history-legacy-toggle">
+            이전 정밀 진단 7건 <span>›</span>
+          </button>
+        </section>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

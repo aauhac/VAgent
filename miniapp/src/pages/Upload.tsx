@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useNavigationType } from 'react-router-dom';
 import { createAnalysis } from '../api/client';
 import AccompanimentToggle, {
   analysisOptsFromAccompaniment,
 } from '../components/ui/AccompanimentToggle';
 import AudioReadyPanel from '../components/ui/AudioReadyPanel';
+import SubPageHeader from '../components/ui/SubPageHeader';
+import { resolveSubPageBack } from '../lib/subPageNav';
 
 type ReadyFile = {
   file: File;
@@ -13,6 +15,15 @@ type ReadyFile = {
 
 export default function Upload() {
   const nav = useNavigate();
+  const navigationType = useNavigationType();
+  function onBack() {
+    const target = resolveSubPageBack(navigationType);
+    if (target.mode === 'history') {
+      nav(-1);
+      return;
+    }
+    nav('/');
+  }
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [hasAccompaniment, setHasAccompaniment] = useState(false);
@@ -54,9 +65,8 @@ export default function Upload() {
 
   return (
     <main>
-      <Link className="muted" to="/">← 홈</Link>
-      <p className="page-kicker" style={{ marginTop: 16 }}>업로드</p>
-      <h1 className="brand" style={{ fontSize: '1.7rem' }}>파일로 분석하기</h1>
+      <SubPageHeader title="파일 업로드" onBack={onBack} />
+      <h1 className="brand" style={{ fontSize: '1.7rem', marginTop: 16 }}>파일로 분석하기</h1>
       <p className="lead">
         파일을 올린 뒤 미리듣기로 확인한 다음 분석해요. 기본은 무반주(순수 보컬) 분석입니다.
       </p>

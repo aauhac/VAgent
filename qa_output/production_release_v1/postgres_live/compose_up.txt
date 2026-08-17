@@ -1,0 +1,2 @@
+time="2026-08-17T21:55:40+09:00" level=warning msg="Found orphan containers ([vagent-postgres-dev]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container vagent-postgres-qa-gate Running 

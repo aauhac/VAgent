@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useNavigationType } from 'react-router-dom';
 import { createAnalysis } from '../api/client';
 import AccompanimentToggle, {
   analysisOptsFromAccompaniment,
 } from '../components/ui/AccompanimentToggle';
 import AudioReadyPanel from '../components/ui/AudioReadyPanel';
+import SubPageHeader from '../components/ui/SubPageHeader';
+import { resolveSubPageBack } from '../lib/subPageNav';
 
 const MIN_SEC = 15;
 const MAX_SEC = 60;
@@ -29,6 +31,15 @@ function pickMime(): { mime?: string; ext: string } {
 
 export default function Record() {
   const nav = useNavigate();
+  const navigationType = useNavigationType();
+  function onBack() {
+    const target = resolveSubPageBack(navigationType);
+    if (target.mode === 'history') {
+      nav(-1);
+      return;
+    }
+    nav('/');
+  }
   const [phase, setPhase] = useState<Phase>('idle');
   const [seconds, setSeconds] = useState(0);
   const [levels, setLevels] = useState<number[]>(Array(24).fill(4));
@@ -195,9 +206,8 @@ export default function Record() {
 
   return (
     <main>
-      <Link className="muted" to="/">← 홈</Link>
-      <p className="page-kicker" style={{ marginTop: 16 }}>녹음</p>
-      <h1 className="brand" style={{ fontSize: '1.7rem' }}>노래를 불러주세요</h1>
+      <SubPageHeader title="녹음" onBack={onBack} />
+      <h1 className="brand" style={{ fontSize: '1.7rem', marginTop: 16 }}>노래를 불러주세요</h1>
       <p className="lead">
         분석 전에 녹음을 한 번 들어볼 수 있어요. 권장 길이는 15~60초예요.
       </p>

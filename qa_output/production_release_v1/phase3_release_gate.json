@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "DEPLOYMENT_READY": false,
+  "PAYMENT_IMPLEMENTATION": "READY",
+  "PRODUCTION_DEPLOYMENT": "BLOCKED",
+  "reason": "Local full mobile visual smoke PASS. Remaining: Apps in Toss sandbox/login/mTLS/SKU live verification. No commit/push.",
+  "DID_FULL_375x812_PRODUCT_VISUAL_SMOKE_PASS": true,
+  "TOSS_HUMAN_HANDOFF_READY": true,
+  "RESTORED_LINKED_DIAGNOSTICS": 692,
+  "P0": 0,
+  "P1": [
+    "LIVE_IAP_NOT_VERIFIED_CREDENTIALS_MISSING",
+    "OFFICIAL_TOSS_SANDBOX_NOT_RUN"
+  ],
+  "NOT_RUN_UNTIL_APPS_IN_TOSS": [
+    "live_sandbox_login",
+    "real_userKey",
+    "real_mtls_handshake",
+    "product_catalog",
+    "DETAIL_purchase",
+    "DIAGNOSTIC_FULL_purchase",
+    "DIAGNOSTIC_UPGRADE_purchase",
+    "cancel",
+    "pending_recovery",
+    "refund",
+    "ait_qr_actual_toss_app"
+  ],
+  "postgres_live": "PASS",
+  "real_production_charge": false,
+  "analyzer_logic_changed": false,
+  "git_commit": false,
+  "git_push": false
+}

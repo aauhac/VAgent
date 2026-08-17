@@ -1104,7 +1104,7 @@ class DiagnosticSessionService:
         owner = session.get("user_id") or "anon"
         if owner != user_id:
             raise KeyError("session not found")
-        if not self.entitlements.has_session_unlock(user_id, session_id):
+        if not self._is_unlocked(session, user_id):
             return {
                 "error": "REPORT_LOCKED",
                 "message": "상세 발성 진단이 아직 해제되지 않았어요.",
@@ -1157,7 +1157,7 @@ class DiagnosticSessionService:
         if owner != user_id:
             return None
         pub = self.public_session(session)
-        pub["unlocked"] = self.entitlements.has_session_unlock(user_id, session_id)
+        pub["unlocked"] = self._is_unlocked(session, user_id)
         return pub
 
     def protocol(self) -> dict[str, Any]:
@@ -1183,9 +1183,20 @@ class DiagnosticSessionService:
             raise KeyError("session not found")
         return session
 
+    def _is_unlocked(self, session: dict[str, Any], user_id: str) -> bool:
+        sid = str(session.get("session_id") or "")
+        if sid and self.entitlements.has_session_unlock(user_id, sid):
+            return True
+        src = session.get("source_analysis_id")
+        if src and self.entitlements.has_unlock(
+            user_id, "ANALYSIS", str(src), "DIAGNOSTIC"
+        ):
+            return True
+        return False
+
     def _require_unlocked(self, session_id: str, user_id: str) -> dict[str, Any]:
         session = self._require_owner(session_id, user_id)
-        if not self.entitlements.has_session_unlock(user_id, session_id):
+        if not self._is_unlocked(session, user_id):
             raise PermissionError("REPORT_LOCKED")
         return session
 

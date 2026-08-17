@@ -180,7 +180,7 @@ def test_analysis_and_preview_ownership(app_client):
     assert client.get(f"/v1/analyses/{aid}", headers=hb).status_code == 404
     assert client.get(f"/v1/analyses/{aid}/access", headers=hb).status_code == 404
     assert client.get(f"/v1/analyses/{aid}/preview", headers=hb).status_code == 404
-    assert client.delete(f"/v1/analyses/{aid}", headers=hb).status_code == 404
+    assert client.delete(f"/v1/analyses/{aid}", headers=hb).status_code == 401
 
 
 def test_diagnostic_session_ownership(app_client):

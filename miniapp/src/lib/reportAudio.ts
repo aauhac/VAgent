@@ -1,12 +1,11 @@
 import { ensureIdentityHeaders } from './userIdentity';
-
-const API_BASE = import.meta.env.VITE_API_BASE || '';
+import { apiUrl } from '../api/base';
 
 /** Fetch preview WAV with auth headers — `<audio src>` cannot send identity headers. */
 export async function fetchAuthenticatedPreviewBlobUrl(
   analysisId: string,
 ): Promise<{ url: string; revoke: () => void }> {
-  const res = await fetch(`${API_BASE}/v1/analyses/${analysisId}/preview`, {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/preview`), {
     headers: await ensureIdentityHeaders(),
   });
   if (!res.ok) {

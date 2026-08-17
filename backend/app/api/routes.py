@@ -8,12 +8,12 @@ import os
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Body, File, Form, Header, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Body, File, Form, Header, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse
 
 from audio_analyzer.song_detail import build_song_detailed_report
 
-from ..config import get_runtime_dir
+from ..config import get_runtime_dir, is_production
 from ..diagnostic import DiagnosticSessionService, validate_session_id
 from ..entitlements import allow_dev_bypass, get_entitlement_provider
 from ..jobs.runner import validate_analysis_id
@@ -28,14 +28,34 @@ service = AnalysisService()
 diag = DiagnosticSessionService(get_runtime_dir())
 
 
-from ..identity import resolve_identity_from_headers
+from ..identity import resolve_identity_from_headers, resolve_verified_session
 
 
-def _user_id(x_user_id: str | None = None, x_vagent_user_key: str | None = None) -> str:
+def _ident(
+    request: Request | None = None,
+    x_user_id: str | None = None,
+    x_vagent_user_key: str | None = None,
+):
+    if request is None:
+        from ..middleware.request_context import current_request
+
+        request = current_request()
+    if request is not None:
+        session_ident = resolve_verified_session(request)
+        if session_ident is not None:
+            return session_ident
     return resolve_identity_from_headers(
         x_user_id=x_user_id,
         x_vagent_user_key=x_vagent_user_key,
-    ).subject
+    )
+
+
+def _user_id(
+    x_user_id: str | None = None,
+    x_vagent_user_key: str | None = None,
+    request: Request | None = None,
+) -> str:
+    return _ident(request, x_user_id, x_vagent_user_key).subject
 
 
 def _ents():
@@ -47,8 +67,9 @@ def _require_analysis_owner(
     analysis_id: str,
     x_user_id: str | None = None,
     x_vagent_user_key: str | None = None,
+    request: Request | None = None,
 ) -> str:
-    uid = _user_id(x_user_id, x_vagent_user_key)
+    uid = _user_id(x_user_id, x_vagent_user_key, request)
     if not can_access_analysis(uid, analysis_id, service.runtime_dir):
         raise HTTPException(status_code=404, detail="analysis not found")
     return uid
@@ -56,17 +77,23 @@ def _require_analysis_owner(
 
 @router.get("/products")
 def get_products(
+    request: Request,
     analysis_id: str | None = Query(default=None),
     x_user_id: str | None = Header(default=None),
+    x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> dict:
     song_owned = False
     if analysis_id and validate_analysis_id(analysis_id):
-        song_owned = _ents().has_song_detail(_user_id(x_user_id), analysis_id)
+        uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
+        song_owned = _ents().has_song_detail(uid, analysis_id)
+    elif analysis_id:
+        raise HTTPException(status_code=404, detail="analysis not found")
     return product_catalog(song_detail_owned=song_owned)
 
 
 @router.post("/analyses", response_model=AnalysisCreateResponse)
 async def create_analysis(
+    request: Request,
     file: UploadFile = File(...),
     separate: bool = Form(False),
     include_feedback: bool = Form(False),
@@ -88,6 +115,7 @@ async def create_analysis(
     # Backend policy: FUNCTIONAL + AUTO/MIXED forces separate; VOCAL_ONLY skips
     if mode == "FUNCTIONAL":
         separate = in_mode != "VOCAL_ONLY"
+    ident = _ident(request, x_user_id, x_vagent_user_key)
     try:
         analysis_id = await service.enqueue_upload(
             file=file,
@@ -95,7 +123,8 @@ async def create_analysis(
             include_feedback=False,
             analysis_mode=mode,
             input_mode=in_mode,
-            user_id=_user_id(x_user_id, x_vagent_user_key),
+            user_id=ident.subject,
+            user_provider=ident.provider,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -104,13 +133,20 @@ async def create_analysis(
 
 @router.get("/history")
 def get_history(
-    limit: int = Query(default=50, ge=1, le=200),
+    request: Request,
+    limit: int = Query(default=20, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
     x_user_id: str | None = Header(default=None),
     x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> dict:
     """Server-side analysis history with access summary (avoids N× /access)."""
-    uid = _user_id(x_user_id, x_vagent_user_key)
-    return {"items": list_user_history(uid, limit=limit, runtime_dir=service.runtime_dir)}
+    uid = _user_id(x_user_id, x_vagent_user_key, request)
+    payload = list_user_history(
+        uid, limit=limit, offset=offset, runtime_dir=service.runtime_dir
+    )
+    if isinstance(payload, list):
+        return {"items": payload, "unlinked_diagnostics": [], "has_more": False}
+    return payload
 
 
 @router.get("/analyses/{analysis_id}", response_model=AnalysisStatusResponse)
@@ -269,14 +305,18 @@ def get_detailed_report(
     return report
 
 
+def _forbid_mock() -> None:
+    if is_production() or not allow_dev_bypass():
+        raise HTTPException(status_code=403, detail="mock unlock disabled in production")
+
+
 @router.post("/analyses/{analysis_id}/mock-unlock-detail")
 def mock_unlock_song_detail(
     analysis_id: str,
     x_user_id: str | None = Header(default=None),
     x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> dict:
-    if not allow_dev_bypass():
-        raise HTTPException(status_code=403, detail="mock unlock disabled in production")
+    _forbid_mock()
     if not validate_analysis_id(analysis_id):
         raise HTTPException(status_code=404, detail="analysis not found")
     uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key)
@@ -329,16 +369,31 @@ def get_audio_alias(
 
 @router.delete("/analyses/{analysis_id}")
 def delete_analysis(
+    request: Request,
     analysis_id: str,
     x_user_id: str | None = Header(default=None),
     x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> dict:
+    from ..identity import resolve_verified_session
+
     if not validate_analysis_id(analysis_id):
         raise HTTPException(status_code=404, detail="analysis not found")
-    _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key)
+    ident = resolve_verified_session(request)
+    if ident is None or not ident.authenticated:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error": {
+                    "code": "AUTH_REQUIRED",
+                    "message": "로그인이 필요해요.",
+                }
+            },
+        )
+    if not can_access_analysis(ident.subject, analysis_id, service.runtime_dir):
+        raise HTTPException(status_code=404, detail="analysis not found")
     ok = service.delete_job(analysis_id)
     if not ok:
-        raise HTTPException(status_code=404, detail="analysis not found")
+        raise HTTPException(status_code=500, detail="analysis delete failed")
     return {"deleted": True, "analysis_id": analysis_id}
 
 
@@ -354,14 +409,18 @@ def diagnostic_protocol() -> dict:
 def create_diagnostic_session(
     source_analysis_id: str | None = Query(default=None),
     x_user_id: str | None = Header(default=None),
+    x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> dict:
     try:
         return diag.create(
-            user_id=_user_id(x_user_id),
+            user_id=_user_id(x_user_id, x_vagent_user_key),
             source_analysis_id=source_analysis_id,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        msg = str(exc)
+        if "not found" in msg:
+            raise HTTPException(status_code=404, detail="analysis not found") from exc
+        raise HTTPException(status_code=400, detail=msg) from exc
 
 
 @router.post("/diagnostic-sessions/{session_id}/mock-pay")
@@ -372,6 +431,7 @@ def mock_pay_session(
 ) -> dict:
     if not validate_session_id(session_id):
         raise HTTPException(status_code=404, detail="session not found")
+    _forbid_mock()
     body = payload or {}
     product_id = body.get("product_id") if isinstance(body, dict) else None
     try:
@@ -561,6 +621,8 @@ def regenerate_report(
     x_user_id: str | None = Header(default=None),
 ) -> dict:
     """DEV only. Rebuild QA/goal presentation from stored evidence. Production → 403."""
+    if is_production():
+        raise HTTPException(status_code=403, detail="REGENERATE_DISABLED")
     if not validate_session_id(session_id):
         raise HTTPException(status_code=404, detail="session not found")
     try:

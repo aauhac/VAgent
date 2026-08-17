@@ -1,0 +1,11 @@
+                id                | original_filename 
+----------------------------------+-------------------
+ cccccccccccccccccccccccccccccccc | keep.wav
+(1 row)
+
+    tablename    
+-----------------
+ payment_intents
+ auth_sessions
+(2 rows)
+

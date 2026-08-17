@@ -1,0 +1,17 @@
+scenario,expected,result
+same order same user/resource,idempotent grant,PASS (sqlite unit)
+same order different user,DENY 409,PASS
+same order different resource,DENY,PASS
+same order different product,DENY,PASS
+fake order UUID,DENY,PASS (NOT_FOUND)
+MINIAPP_MISMATCH,DENY 403,PASS
+resultType != SUCCESS,DENY,PASS
+refunded order grant,DENY / revoke,PASS
+client fake refund,DENY,PASS
+pending 0 intents,NEEDS_MANUAL_RESTORE,PASS
+pending 2 intents same SKU,AMBIGUOUS_PENDING_PURCHASE,PASS
+unverified client header purchase,401,PASS
+env flag verifies headers,NO,PASS
+concurrent unique order,1 entitlement,PASS (unique + IntegrityError)
+live Postgres purchase,PASS live,NOT_RUN (Docker daemon down)
+official Toss sandbox,PASS sandbox,NOT_RUN (credentials missing)

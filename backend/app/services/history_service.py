@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from ..config import database_url, get_runtime_dir, is_production
+from ..diagnostic.service import validate_session_id
 from ..entitlements import get_entitlement_provider
 from ..jobs.runner import validate_analysis_id
 
@@ -55,12 +56,24 @@ def write_analysis_meta(
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _empty_history(limit: int, offset: int) -> dict[str, Any]:
+    return {
+        "items": [],
+        "unlinked_diagnostics": [],
+        "has_more": False,
+        "offset": offset,
+        "limit": limit,
+        "total_analyses": 0,
+    }
+
+
 def list_user_history(
     user_id: str,
     *,
-    limit: int = 50,
+    limit: int = 20,
+    offset: int = 0,
     runtime_dir: Path | None = None,
-) -> list[dict[str, Any]]:
+) -> dict[str, Any]:
     """
     Production / DATABASE_URL: PostgreSQL only (no runtime history fallback).
     Development without DB: runtime directory scan.
@@ -68,27 +81,52 @@ def list_user_history(
     if database_url():
         from ..db.analysis_repo import list_analyses_for_subject
 
-        return list_analyses_for_subject(user_id, limit=limit)
+        return list_analyses_for_subject(user_id, limit=limit, offset=offset)
 
     if is_production():
         raise RuntimeError("production history requires DATABASE_URL")
 
-    return _list_from_runtime(user_id, limit=limit, runtime_dir=runtime_dir)
+    return _list_from_runtime(user_id, limit=limit, offset=offset, runtime_dir=runtime_dir)
+
+
+def _vocal_type_from_public(pub: dict[str, Any] | None) -> str | None:
+    if not isinstance(pub, dict):
+        return None
+    vt = pub.get("vocal_type_teaser") or pub.get("vocal_type_profile") or pub.get("vocal_type")
+    if isinstance(vt, dict):
+        name = vt.get("display_name")
+        return str(name).strip() if name else None
+    if isinstance(vt, str) and vt.strip():
+        return vt.strip()
+    return None
+
+
+def _serialize_file_session(sid: str, blob: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "session_id": sid,
+        "status": blob.get("status"),
+        "created_at": blob.get("created_at"),
+        "completed_at": blob.get("completed_at"),
+    }
 
 
 def _list_from_runtime(
     user_id: str,
     *,
-    limit: int = 50,
+    limit: int = 20,
+    offset: int = 0,
     runtime_dir: Path | None = None,
-) -> list[dict[str, Any]]:
+) -> dict[str, Any]:
     base = runtime_dir or get_runtime_dir()
     ents = get_entitlement_provider(base)
     items: list[dict[str, Any]] = []
+    cap = max(1, min(limit, 200))
+    skip = max(0, offset)
 
     if not base.exists():
-        return []
+        return _empty_history(cap, skip)
 
+    analysis_ids: list[str] = []
     for child in base.iterdir():
         if not child.is_dir():
             continue
@@ -101,7 +139,34 @@ def _list_from_runtime(
             continue
         if not owner and user_id not in ("demo-user", "anon", "dev-user"):
             continue
+        analysis_ids.append(analysis_id)
 
+    linked: dict[str, list[dict[str, Any]]] = {aid: [] for aid in analysis_ids}
+    unlinked: list[dict[str, Any]] = []
+    sess_root = base / "diagnostic_sessions"
+    if sess_root.exists():
+        for child in sess_root.iterdir():
+            if not child.is_dir():
+                continue
+            sid = child.name
+            if not validate_session_id(sid):
+                continue
+            blob = _read_json(child / "session.json") or {}
+            owner = blob.get("user_id")
+            if owner and owner != user_id:
+                continue
+            if not owner and user_id not in ("demo-user", "anon", "dev-user"):
+                continue
+            src = blob.get("source_analysis_id")
+            rec = _serialize_file_session(sid, blob)
+            if src and str(src) in linked:
+                linked[str(src)].append(rec)
+            else:
+                unlinked.append(rec)
+
+    for analysis_id in analysis_ids:
+        child = base / analysis_id
+        meta = _read_json(_meta_path(base, analysis_id)) or {}
         status_doc = _read_json(child / "job_status.json") or {}
         pub = _read_json(child / "public_result.json") or {}
         status = status_doc.get("status") or ("completed" if pub else None)
@@ -124,19 +189,41 @@ def _list_from_runtime(
                 "diagnostic_unlocked": False,
                 "diagnostic_session_id": None,
             }
-        vt = (pub.get("vocal_type_teaser") or pub.get("vocal_type_profile") or {}) if pub else {}
+        pointer = access.get("diagnostic_session_id")
+        sessions = list(linked.get(analysis_id) or [])
+        if pointer and not any(s.get("session_id") == pointer for s in sessions):
+            sessions.append(
+                {
+                    "session_id": pointer,
+                    "status": "COMPLETED",
+                    "created_at": None,
+                    "completed_at": None,
+                }
+            )
+            unlinked = [u for u in unlinked if u.get("session_id") != pointer]
+        sessions.sort(key=lambda s: str(s.get("completed_at") or s.get("created_at") or ""), reverse=True)
+        primary = None
+        completed = [s for s in sessions if str(s.get("status") or "").upper() == "COMPLETED"]
+        if completed:
+            primary = completed[0].get("session_id")
+        elif sessions:
+            primary = sessions[0].get("session_id")
+
         items.append(
             {
                 "analysis_id": analysis_id,
                 "created_at": meta.get("created_at") or status_doc.get("updated_at"),
                 "filename": meta.get("original_filename"),
                 "status": status,
-                "vocal_type": vt.get("display_name") if isinstance(vt, dict) else None,
+                "vocal_type": _vocal_type_from_public(pub),
                 "song_detail_unlocked": bool(access.get("song_detail_unlocked")),
-                "diagnostic_unlocked": bool(access.get("diagnostic_unlocked")),
-                "diagnostic_session_id": access.get("diagnostic_session_id"),
+                "diagnostic_unlocked": bool(sessions) or bool(access.get("diagnostic_unlocked")),
+                "diagnostic_session_id": primary,
+                "diagnostic_sessions": sessions,
                 "error_code": error_code,
-                "artifact_missing": bool(status == "completed" and not pub and not (child / "analysis.json").exists()),
+                "artifact_missing": bool(
+                    status == "completed" and not pub and not (child / "analysis.json").exists()
+                ),
             }
         )
 
@@ -144,4 +231,12 @@ def _list_from_runtime(
         return str(row.get("created_at") or row.get("analysis_id") or "")
 
     items.sort(key=_sort_key, reverse=True)
-    return items[: max(1, min(limit, 200))]
+    page = items[skip : skip + cap]
+    return {
+        "items": page,
+        "unlinked_diagnostics": unlinked,
+        "has_more": skip + cap < len(items),
+        "offset": skip,
+        "limit": cap,
+        "total_analyses": len(items),
+    }
