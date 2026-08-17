@@ -1,0 +1,4 @@
+state,song_detail,precision,notes
+FREE,LOCKED,LOCKED,access flags false; detailed-report 402; diagnostic report 402
+DETAIL_PURCHASED_MOCK,UNLOCKED,LOCKED,mock-unlock-detail only; offers.diagnostic=upgrade
+PRECISION_PURCHASED_MOCK,UNLOCKED_OR_BUNDLE,UNLOCKED,mock-pay; session report 200; restart preserves

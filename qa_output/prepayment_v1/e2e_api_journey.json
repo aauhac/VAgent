@@ -1,0 +1,156 @@
+{
+  "steps": [
+    {
+      "name": "create_analysis",
+      "ok": true,
+      "detail": "{\"analysis_id\":\"5ebe0a18652f40dbab8f0944d158bd3a\",\"status\":\"queued\"}"
+    },
+    {
+      "name": "analysis_complete",
+      "ok": true,
+      "detail": "completed"
+    },
+    {
+      "name": "free_detail_locked",
+      "ok": true,
+      "detail": "{'analysis_id': '5ebe0a18652f40dbab8f0944d158bd3a', 'song_detail_unlocked': False, 'diagnostic_unlocked': False, 'diagnostic_session_id': None, 'offers': {'song_detail': 'song_detail', 'diagnostic': 'diagnostic_full'}, 'products': {'song_detail': {'product_id': 'song_detail', 'entitlement_type': 'SONG_DETAIL', 'display_name': '상세 리포트', 'description': '현재 노래의 4축 상세·타임라인·연습 가이드 (추가 녹음 없음)', 'sku': 'vagent.song_detail', 'includes_song_detail': True, 'requires_diagnostic_tasks': False, 'mock_display_amount': '₩1,000', 'mock_amount_krw': 1000, 'display_amount': '₩1,000', 'amount_source': 'mock'}, 'diagnostic_full': {'product_id': 'diagnostic_full', 'entitlement_type': 'DIAGNOSTIC', 'display_name': '정밀 발성 진단', 'description': '표준 Diagnostic Task + 생리학 기반 리포트 (상세 리포트 포함)', 'sku': 'vagent.diagnostic_full', 'includes_song_detail': True, 'requires_diagnostic_tasks': True, 'mock_display_amount': '₩3,000', 'mock_amount_krw': 3000, 'display_amount': '₩3,000', 'amount_source': 'mock'}, 'diagnostic_upgrade': {'product_id': 'diagnostic_upgrade', 'entitlement_type': 'DIAGNOSTIC', 'display_name': '정밀 발성 진단 업그레이드', 'description': '상세 리포트 보유 시 Diagnostic Task 진단으로 업그레이드', 'sku': 'vagent.diagnostic_upgrade', 'includes_song_detail': True, 'requires_diagnostic_tasks': True, 'mock_display_amount': '₩2,000', 'mock_amount_krw': 2000, 'display_amount': '₩2,000', 'amount_source': 'mock'}}}"
+    },
+    {
+      "name": "direct_detail_url_blocked",
+      "ok": true,
+      "detail": "402 {\"detail\":\"SONG_DETAIL_LOCKED\"}"
+    },
+    {
+      "name": "detail_mock_unlock",
+      "ok": true,
+      "detail": "{\"unlocked\":true,\"analysis_id\":\"5ebe0a18652f40dbab8f0944d158bd3a\",\"entitlement_type\":\"SONG_DETAIL\",\"permanent\":true,\"red"
+    },
+    {
+      "name": "detail_unlock_idempotent",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "detail_report_after_unlock",
+      "ok": true,
+      "detail": "keys=['report_kind', 'report_version', 'analysis_version', 'score_version', 'function_engine_version', 'analysis_id', 'tier', 'summary']"
+    },
+    {
+      "name": "detail_only_not_precision",
+      "ok": true,
+      "detail": "{'analysis_id': '5ebe0a18652f40dbab8f0944d158bd3a', 'song_detail_unlocked': True, 'diagnostic_unlocked': False, 'diagnostic_session_id': None, 'offers': {'song_detail': None, 'diagnostic': 'diagnostic_upgrade'}, 'products': {'song_detail': {'product_id': 'song_detail', 'entitlement_type': 'SONG_DETAIL', 'display_name': '상세 리포트', 'description': '현재 노래의 4축 상세·타임라인·연습 가이드 (추가 녹음 없음)', 'sku': 'vagent.song_detail', 'includes_song_detail': True, 'requires_diagnostic_tasks': False, 'mock_display_amount': '₩1,000', 'mock_amount_krw': 1000, 'display_amount': '₩1,000', 'amount_source': 'mock'}, 'diagnostic_full': {'product_id': 'diagnostic_full', 'entitlement_type': 'DIAGNOSTIC', 'display_name': '정밀 발성 진단', 'description': '표준 Diagnostic Task + 생리학 기반 리포트 (상세 리포트 포함)', 'sku': 'vagent.diagnostic_full', 'includes_song_detail': True, 'requires_diagnostic_tasks': True, 'mock_display_amount': '₩3,000', 'mock_amount_krw': 3000, 'display_amount': '₩3,000', 'amount_source': 'mock'}, 'diagnostic_upgrade': {'product_id': 'diagnostic_upgrade', 'entitlement_type': 'DIAGNOSTIC', 'display_name': '정밀 발성 진단 업그레이드', 'description': '상세 리포트 보유 시 Diagnostic Task 진단으로 업그레이드', 'sku': 'vagent.diagnostic_upgrade', 'includes_song_detail': True, 'requires_diagnostic_tasks': True, 'mock_display_amount': '₩2,000', 'mock_amount_krw': 2000, 'display_amount': '₩2,000', 'amount_source': 'mock'}}}"
+    },
+    {
+      "name": "goal_set",
+      "ok": true,
+      "detail": "{\"status\":\"ACTIVE\",\"goal\":{\"id\":\"732147a3-6653-41bd-b833-ef10f7a5a8ff\",\"external_subject\":\"prepay_e2e_user\",\"goal_type\":\"FUNCTIONAL\",\"goal_focus\":\"REGISTER_CONN"
+    },
+    {
+      "name": "goal_get_active",
+      "ok": true,
+      "detail": "{'id': '732147a3-6653-41bd-b833-ef10f7a5a8ff', 'external_subject': 'prepay_e2e_user', 'goal_type': 'FUNCTIONAL', 'goal_focus': 'REGISTER_CONNECTION', 'goal_labe"
+    },
+    {
+      "name": "second_analysis",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "progress_insight_goal_aware",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "name": "diagnostic_session_create",
+      "ok": true,
+      "detail": "{\"session_id\":\"73a19de31e024eaaaff254a74a1118e8\",\"user_id\":\"prepay_e2e_user\",\"source_analysis_id\":\"05bc24ec490449cf86750"
+    },
+    {
+      "name": "precision_report_locked_before_pay",
+      "ok": true,
+      "detail": "402"
+    },
+    {
+      "name": "precision_mock_pay",
+      "ok": true,
+      "detail": "{\"session_id\":\"73a19de31e024eaaaff254a74a1118e8\",\"user_id\":\"prepay_e2e_user\",\"source_analysis_id\":\"05bc24ec490449cf86750"
+    },
+    {
+      "name": "precision_pay_idempotent",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "concerns_general_discovery",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "start_controlled_recordings",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "has_selected_tasks",
+      "ok": true,
+      "detail": "['sustain_a', 'sustain_i', 'siren', 'dynamic_swell']"
+    },
+    {
+      "name": "upload_one_task",
+      "ok": true,
+      "detail": "{\"session\":{\"session_id\":\"73a19de31e024eaaaff254a74a1118e8\",\"user_id\":\"prepay_e2e_user\",\"source_analysis_id\":\"05bc24ec490449cf8675039079b3ff00\",\"analysis_mode\":"
+    },
+    {
+      "name": "skip_remaining_tasks",
+      "ok": true,
+      "detail": "{\"session_id\":\"73a19de31e024eaaaff254a74a1118e8\",\"user_id\":\"prepay_e2e_user\",\"source_analysis_id\":\"05bc24ec490449cf8675039079b3ff00\",\"analysis_mode\":\"diagnostic"
+    },
+    {
+      "name": "precision_analyze",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "precision_report_has_sections",
+      "ok": true,
+      "detail": "['report_version', 'inference_version', 'literature_registry_version', 'session_id', 'summary', 'reliable_findings', 'uncertain_findings', 'supporting_observations', 'training_plan', 'safety', 'mechanism_coverage', 'retry_recommendation']"
+    },
+    {
+      "name": "precision_report_get",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "restart_detail_entitlement",
+      "ok": true,
+      "detail": "{'analysis_id': '5ebe0a18652f40dbab8f0944d158bd3a', 'song_detail_unlocked': True, 'diagnostic_unlocked': False, 'diagnostic_session_id': None, 'offers': {'song_detail': None, 'diagnostic': 'diagnostic_upgrade'}, 'products': {'song_detail': {'product_id': 'song_detail', 'entitlement_type': 'SONG_DETAIL', 'display_name': '상세 리포트', 'description': '현재 노래의 4축 상세·타임라인·연습 가이드 (추가 녹음 없음)', 'sku': 'vagent.song_detail', 'includes_song_detail': True, 'requires_diagnostic_tasks': False, 'mock_display_amount': '₩1,000', 'mock_amount_krw': 1000, 'display_amount': '₩1,000', 'amount_source': 'mock'}, 'diagnostic_full': {'product_id': 'diagnostic_full', 'entitlement_type': 'DIAGNOSTIC', 'display_name': '정밀 발성 진단', 'description': '표준 Diagnostic Task + 생리학 기반 리포트 (상세 리포트 포함)', 'sku': 'vagent.diagnostic_full', 'includes_song_detail': True, 'requires_diagnostic_tasks': True, 'mock_display_amount': '₩3,000', 'mock_amount_krw': 3000, 'display_amount': '₩3,000', 'amount_source': 'mock'}, 'diagnostic_upgrade': {'product_id': 'diagnostic_upgrade', 'entitlement_type': 'DIAGNOSTIC', 'display_name': '정밀 발성 진단 업그레이드', 'description': '상세 리포트 보유 시 Diagnostic Task 진단으로 업그레이드', 'sku': 'vagent.diagnostic_upgrade', 'includes_song_detail': True, 'requires_diagnostic_tasks': True, 'mock_display_amount': '₩2,000', 'mock_amount_krw': 2000, 'display_amount': '₩2,000', 'amount_source': 'mock'}}}"
+    },
+    {
+      "name": "restart_detail_report",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "restart_goal",
+      "ok": true,
+      "detail": "{'id': '732147a3-6653-41bd-b833-ef10f7a5a8ff', 'external_subject': 'prepay_e2e_user', 'goal_type': 'FUNCTIONAL', 'goal_focus': 'REGISTER_CONNECTION', 'goal_labe"
+    },
+    {
+      "name": "restart_diagnostic_session",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "name": "restart_diagnostic_report",
+      "ok": true,
+      "detail": "200"
+    },
+    {
+      "name": "backend_blocks_unpaid_detail",
+      "ok": true,
+      "detail": "402"
+    }
+  ],
+  "ok": true,
+  "errors": []
+}

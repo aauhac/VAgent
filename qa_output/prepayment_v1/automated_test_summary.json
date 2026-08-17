@@ -1,0 +1,5 @@
+{
+  "full_pytest": {"passed": 1252, "skipped": 1, "failed": 0},
+  "prepayment_suite": {"passed": 16, "file": "tests/product/test_prepayment_payment_readiness.py"},
+  "e2e_journey": {"passed": true, "artifact": "e2e_api_journey.json"}
+}

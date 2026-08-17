@@ -817,10 +817,8 @@ a { color: inherit; }
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
+  display: block;
+  line-height: 1.35;
 }
 .diag-tone {
   font-size: 0.85rem;
@@ -964,6 +962,18 @@ a { color: inherit; }
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.45;
+}
+.report-disclaimer {
+  margin: 8px 0 4px;
+  padding: 0;
+}
+.report-disclaimer__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  letter-spacing: -0.01em;
 }
 
 .meter {
@@ -1190,6 +1200,71 @@ a { color: inherit; }
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* —— Sub-page header (Progress etc.) —— */
+.sub-page-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 0 4px;
+  padding: 4px 0 8px;
+}
+.sub-page-header__action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sub-page-header__back {
+  justify-self: start;
+  text-align: left;
+}
+.sub-page-header__home {
+  justify-self: end;
+  text-align: right;
+}
+.sub-page-header__title {
+  margin: 0;
+  justify-self: center;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Compact no-goal card on /progress */
+.goal-empty-card {
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.goal-empty-card__title {
+  margin: 0 0 6px;
+  font-size: 0.98rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+.goal-empty-card__body {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
 /* —— Goal-aware progress —— */
 .goal-card {
   padding: 16px;
@@ -1294,8 +1369,21 @@ a { color: inherit; }
   border: 1px solid var(--line);
   background: var(--surface);
 }
-.goal-history-label {
-  margin: 0 0 4px;
+.sheet-seq-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sheet-chip {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef1f5;
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
   font-weight: 700;
-  font-size: 0.95rem;
+  color: var(--text);
+}
+.goal-card-actions--single {
+  grid-template-columns: 1fr;
 }

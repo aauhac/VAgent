@@ -1,0 +1,22 @@
+{
+  "work": "VAgent Pre-Payment Full Product QA v1",
+  "date": "2026-08-17",
+  "payment_readiness": "READY",
+  "real_payment_performed": false,
+  "p0_count": 0,
+  "p1_count": 0,
+  "p2_count": 0,
+  "p3_count": 0,
+  "entitlement_source_of_truth": "backend",
+  "frontend_can_self_unlock": false,
+  "duplicate_unlock_safe": true,
+  "provider_boundary": "Payment success must call backend entitlement grant APIs; frontend only refreshes access",
+  "modes_verified": {
+    "file_entitlements": true,
+    "postgres_entitlements": "NOT_RUN_DOCKER_UNAVAILABLE"
+  },
+  "integration_hooks": [
+    "POST /v1/analyses/{id}/mock-unlock-detail → replace with verified payment callback → grant_song_detail",
+    "POST /v1/diagnostic-sessions/{id}/mock-pay → replace with verified payment callback → diagnostic unlock"
+  ]
+}

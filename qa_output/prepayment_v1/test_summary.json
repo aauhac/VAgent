@@ -1,0 +1,17 @@
+{
+  "pytest": {"status": "PASS", "passed": 1252, "skipped": 1},
+  "prepayment_readiness_tests": {"status": "PASS", "file": "tests/product/test_prepayment_payment_readiness.py"},
+  "e2e_api_journey": {"status": "PASS", "script": "scripts/e2e_pre_payment_full_product.py"},
+  "frontend": {
+    "tsc": "PASS",
+    "build_web": "PASS",
+    "build_toss": "PASS"
+  },
+  "ux_scripts": {
+    "check_goal_surface": "PASS",
+    "check_progress_nav_ux": "PASS",
+    "check_precision_readability": "PASS"
+  },
+  "docker": "UNAVAILABLE",
+  "database_url": "UNSET_FILE_MODE"
+}

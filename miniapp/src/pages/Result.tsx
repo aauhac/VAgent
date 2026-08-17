@@ -1,36 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   getAnalysis,
   getProducts,
   mockUnlockSongDetail,
   patchHistory,
-  postVocalGoalProgress,
   postVocalProgressInsight,
   postVocalSnapshot,
-  putActiveVocalGoal,
   removeHistory,
   saveSongDetailUnlock,
 } from '../api/client';
-import GoalSelectorSheet from '../components/progress/GoalSelectorSheet';
 import ProgressInsightSheet from '../components/progress/ProgressInsightSheet';
 import TodayPhonationSummary from '../components/progress/TodayPhonationSummary';
 import VocalTypeHero from '../components/report/VocalTypeHero';
-import VocalProfile from '../components/report/VocalProfile';
 import PremiumProductCard from '../components/ui/PremiumProductCard';
 import {
   classifyDiagnosticOffer,
+  diagnosticDurationNote,
   diagnosticOfferBullets,
   pickDiagnosticOffer,
 } from '../lib/diagnosticOffer';
-import {
-  buildLocalGoalProgress,
-  type GoalProgressPayload,
-} from '../lib/goalProgress';
-import {
-  getLocalActiveGoal,
-  setLocalActiveGoal,
-} from '../lib/localGoalStore';
+import { getLocalActiveGoal } from '../lib/localGoalStore';
 import {
   listLocalVocalSnapshots,
   upsertLocalVocalSnapshot,
@@ -47,6 +37,7 @@ import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '..
 export default function Result() {
   const { id } = useParams();
   const nav = useNavigate();
+  const location = useLocation();
   const [data, setData] = useState<any>(null);
   const [products, setProducts] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +45,6 @@ export default function Result() {
   const [busyDetail, setBusyDetail] = useState(false);
   const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
   const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
-  const [goalProgress, setGoalProgress] = useState<GoalProgressPayload | null>(null);
-  const [sheetMode, setSheetMode] = useState<'card' | 'goal'>('card');
-  const [goalPickerOpen, setGoalPickerOpen] = useState(false);
-  const [goalTick, setGoalTick] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -88,6 +75,18 @@ export default function Result() {
   }, [id]);
 
   useEffect(() => {
+    const st = location.state as { focusOffer?: string } | null;
+    if (st?.focusOffer !== 'song_detail' || !data) return;
+    const t = window.setTimeout(() => {
+      document.getElementById('offer-song-detail')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }, 120);
+    return () => window.clearTimeout(t);
+  }, [location.state, data]);
+
+  useEffect(() => {
     if (!id || !data?.score?.available) return;
     const canonical = extractCanonicalFromResult(data);
     if (!Object.keys(canonical).length) {
@@ -100,7 +99,6 @@ export default function Result() {
         maintained: [],
         note: '이번 녹음의 핵심 축을 아직 충분히 읽지 못했어요.',
       });
-      setGoalProgress({ status: 'NO_GOAL', uses_fake_percent: false });
       return;
     }
 
@@ -147,15 +145,22 @@ export default function Result() {
       });
       if (cancelled) return;
 
-      const histSnaps = listLocalVocalSnapshots(id);
-      const hist = histSnaps.map((s) => ({
+      const hist = listLocalVocalSnapshots(id).map((s) => ({
         canonical: s.canonical,
         created_at: s.created_at,
         goal_id: s.goal_id || undefined,
       }));
 
       if (server?.insight_available) {
-        setInsight({ ...server, source: 'server', today: server.today?.length ? server.today : today });
+        setInsight({
+          ...server,
+          source: 'server',
+          today: server.today?.length ? server.today : today,
+          // Cap free progress cards
+          improved: (server.improved || []).slice(0, 1),
+          changed: (server.changed || []).slice(0, 1),
+          maintained: (server.maintained || []).slice(0, 1),
+        });
       } else {
         setInsight(
           buildLocalProgressInsight(canonical, hist.map((h) => ({ canonical: h.canonical })), {
@@ -164,57 +169,12 @@ export default function Result() {
           }),
         );
       }
-
-      const serverGp = server?.goal_progress;
-      if (serverGp && serverGp.status !== 'NO_GOAL' && serverGp.window) {
-        setGoalProgress(serverGp);
-      } else if (active) {
-        const posted = await postVocalGoalProgress({
-          current_canonical: canonical,
-          historical: histSnaps.map((s) => ({
-            canonical_json: s.canonical,
-            created_at: s.created_at,
-            goal_id_at_analysis: s.goal_id || undefined,
-          })),
-          recent_n: 5,
-          goal: active,
-        });
-        setGoalProgress(
-          posted && posted.status !== 'NO_GOAL'
-            ? posted
-            : buildLocalGoalProgress(active, hist, { recentN: 5, current: canonical }),
-        );
-      } else {
-        setGoalProgress({ status: 'NO_GOAL', uses_fake_percent: false });
-      }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [id, data, goalTick]);
-
-  async function onSelectGoal(
-    focus: string,
-    label: string,
-    extra?: { target?: string; style_id?: string; kind?: string },
-  ) {
-    setLocalActiveGoal({
-      focus,
-      label,
-      source: 'USER_SELECTED',
-      target: extra?.target,
-      style_id: extra?.style_id,
-    });
-    void putActiveVocalGoal({
-      focus,
-      label,
-      source: 'USER_SELECTED',
-      target: extra?.target,
-      style_id: extra?.style_id,
-    });
-    setGoalTick((n) => n + 1);
-  }
+  }, [id, data]);
 
   async function buySongDetail() {
     if (!id) return;
@@ -230,14 +190,9 @@ export default function Result() {
     }
   }
 
-  const freeDims = useMemo(() => {
-    if (!data) return null;
-    return (
-      data.vocal_function_teaser_dimensions
-      || data.vocal_function_profile?.dimensions
-      || data.dimensions
-      || null
-    );
+  const coreAxes = useMemo(() => {
+    if (!data) return [];
+    return buildTodayHighlights(extractCanonicalFromResult(data)).slice(0, 3);
   }, [data]);
 
   if (expired) {
@@ -291,9 +246,9 @@ export default function Result() {
   const sessionId = access.diagnostic_session_id || null;
 
   const diagOffer = pickDiagnosticOffer(data);
-  const diagDecision = classifyDiagnosticOffer(diagOffer);
-  const needsDiagnostic = diagDecision === 'required';
+  const needsDiagnostic = classifyDiagnosticOffer(diagOffer) === 'required';
   const diagBullets = diagnosticOfferBullets(diagOffer);
+  const diagDuration = diagnosticDurationNote(diagOffer);
 
   const vocalType =
     data.vocal_type_teaser
@@ -309,7 +264,7 @@ export default function Result() {
   const mapped = diagnosisFromPrimary(primaryForUi);
   const noPrimaryTitle =
     findingTeaser?.none
-      ? (findingTeaser.title || '이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.')
+      ? (findingTeaser.title || NO_PRIMARY_MESSAGE)
       : null;
 
   let fallbackFinding: { title: string; detail: string } | null = null;
@@ -323,6 +278,9 @@ export default function Result() {
     }
   }
 
+  const coreFinding = mapped || fallbackFinding;
+  const coreTitle = coreFinding?.title || noPrimaryTitle || NO_PRIMARY_MESSAGE;
+
   return (
     <main>
       <Link className="muted" to="/">‹ 홈</Link>
@@ -330,9 +288,6 @@ export default function Result() {
       <h1 className="brand" style={{ fontSize: '1.4rem', marginBottom: 4 }}>
         오늘의 발성
       </h1>
-      <p className="lead" style={{ marginBottom: 8 }}>
-        현재 상태를 보고, 이전과 달라진 점과 다음 연습을 이어가요.
-      </p>
 
       {!score.available ? (
         <section className="section">
@@ -344,130 +299,113 @@ export default function Result() {
         <>
           <VocalTypeHero profile={vocalType || { available: false }} compact />
 
-          {mapped || fallbackFinding ? (
-            <section className="section">
-              <h3 className="section-title">가장 두드러진 특징</h3>
-              <div className="card">
-                <p className="finding-title">
-                  {(mapped || fallbackFinding)!.title}
-                </p>
-                {(mapped || fallbackFinding)!.detail ? (
-                  <p className="body-text muted">{(mapped || fallbackFinding)!.detail}</p>
-                ) : null}
-              </div>
-            </section>
-          ) : (
-            <section className="section">
-              <h3 className="section-title">가장 두드러진 특징</h3>
-              <div className="card">
-                <p className="finding-title" style={{ fontSize: '1.05rem' }}>
-                  {noPrimaryTitle || NO_PRIMARY_MESSAGE}
-                </p>
-              </div>
-            </section>
-          )}
+          <section className="section" data-testid="core-finding">
+            <h3 className="section-title">이번 노래 핵심</h3>
+            <p className="finding-title" style={{ marginBottom: coreAxes.length ? 14 : 0 }}>
+              {coreTitle}
+            </p>
+            {coreFinding?.detail ? (
+              <p className="body-text muted" style={{ marginTop: 0 }}>{coreFinding.detail}</p>
+            ) : null}
+            {coreAxes.length > 0 ? (
+              <ul className="progress-today-list" style={{ marginTop: 12 }}>
+                {coreAxes.map((row) => (
+                  <li key={row.axis} className="progress-today-row">
+                    <span className="progress-today-axis">{row.title}</span>
+                    <span className="progress-today-label">{row.label}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
 
           {insight ? (
             <TodayPhonationSummary
               insight={insight}
-              onOpenCard={(card) => {
-                setSheetMode('card');
-                setSheetCard(card);
-              }}
-              goalProgress={goalProgress}
-              onOpenGoalInsight={() => {
-                setSheetMode('goal');
-                setSheetCard(null);
-              }}
-              onSetGoal={() => setGoalPickerOpen(true)}
-              onChangeGoal={() => setGoalPickerOpen(true)}
-            />
-          ) : null}
-
-          {freeDims ? (
-            <VocalProfile
-              dimensions={freeDims}
-              criteriaMatrix={data.criteria_matrix || []}
-              title="발성 프로필"
-              showConfidence={false}
+              onOpenCard={(card) => setSheetCard(card)}
             />
           ) : null}
 
           <section className="section" style={{ borderBottom: 0 }}>
-            <h3 className="section-title">더 자세히 볼까요?</h3>
+            <h3 className="section-title">더 알고 싶다면</h3>
             <div className="upsell-stack">
               {songUnlocked ? (
-                <PremiumProductCard
-                  badge="이용 가능"
-                  title="상세 리포트"
-                  description="이미 분석된 노래를 더 자세히 살펴봅니다."
-                  bullets={['5축 발성 프로필', '추가 관찰 특징', '직접 들어볼 주요 구간']}
-                  ctaLabel="상세 리포트 보기"
-                  to={`/result/${id}/detail`}
-                />
+                <div id="offer-song-detail" data-testid="offer-song-detail">
+                  <PremiumProductCard
+                    badge="열람 가능"
+                    title="상세 리포트"
+                    description="이 노래에서 어떤 부분이 잘 되고, 어디에서 변화가 나타나는지 실제 구간과 함께 확인해요."
+                    bullets={[
+                      '전체 발성 프로필과 고음·음색 분석',
+                      '특징이 나타난 실제 노래 구간 듣기',
+                      '내 연습 목표 설정',
+                    ]}
+                    ctaLabel="상세 리포트 보기"
+                    to={`/result/${id}/detail`}
+                  />
+                </div>
               ) : (
-                <PremiumProductCard
-                  badge="상세 분석"
-                  title="상세 리포트"
-                  description="이미 분석된 노래를 더 자세히 살펴봅니다."
-                  priceLabel={songPrice}
-                  bullets={['5축 발성 프로필', '추가 관찰 특징', '직접 들어볼 주요 구간']}
-                  ctaLabel={`상세 리포트 보기 · ${songPrice}`}
-                  onClick={buySongDetail}
-                  busy={busyDetail}
-                />
+                <div id="offer-song-detail" data-testid="offer-song-detail">
+                  <PremiumProductCard
+                    badge="이 노래 더 자세히"
+                    title="상세 리포트"
+                    description="이 노래에서 어떤 부분이 잘 되고, 어디에서 변화가 나타나는지 실제 구간과 함께 확인해요."
+                    priceLabel={songPrice}
+                    bullets={[
+                      '전체 발성 프로필과 고음·음색 분석',
+                      '특징이 나타난 실제 노래 구간 듣기',
+                      '내 연습 목표 설정',
+                    ]}
+                    ctaLabel={`상세 리포트 보기 · ${songPrice}`}
+                    onClick={buySongDetail}
+                    busy={busyDetail}
+                  />
+                </div>
               )}
 
               {diagUnlocked && sessionId ? (
                 <PremiumProductCard
-                  badge="이용 가능"
+                  badge="열람 가능"
                   featured={needsDiagnostic}
                   title="정밀 발성 진단"
-                  description="추가 녹음으로 확인한 정밀 진단 결과를 볼 수 있어요."
+                  description="추가 녹음으로 확인한 결과와 연습 방향을 볼 수 있어요."
                   bullets={diagBullets.length ? diagBullets : ['정밀 진단 결과 열람']}
                   ctaLabel="정밀 진단 보기"
                   to={`/diagnostic/${sessionId}/report`}
                 />
               ) : (
                 <PremiumProductCard
-                  badge="가장 정밀한 분석"
+                  badge={needsDiagnostic ? '추가 확인 추천' : '추가 녹음으로 더 정밀하게'}
                   featured={needsDiagnostic}
                   title="정밀 발성 진단"
-                  description="현재 노래와 짧은 추가 녹음을 함께 분석해 발성 특성을 더 정밀하게 확인해요."
+                  description="노래만으로 애매했던 부분을 짧은 추가 녹음으로 다시 확인하고, 무엇부터 어떻게 연습할지 정리해요."
                   priceLabel={diagPrice}
                   bullets={
                     diagBullets.length
                       ? diagBullets
                       : [
-                          '몇 가지 짧은 추가 녹음',
-                          '고민이 있으면 고민 중심, 없으면 전체 발성 특성',
-                          diagOfferKey === 'diagnostic_upgrade'
-                            ? '상세 리포트 보유 시 업그레이드'
-                            : '상세 리포트 포함',
+                          '확인이 필요한 발성 항목을 추가 녹음으로 다시 비교해요',
+                          '무엇부터 연습할지 우선순위를 정리해요',
+                          '내 결과에 맞는 단계별 연습 방법을 안내해요',
                         ]
                   }
                   ctaLabel={`정밀 진단 시작 · ${diagPrice}`}
                   to={`/premium?analysis=${id || ''}&product=${diagOfferKey}`}
-                  footer="상세 리포트는 이 노래만의 분석이에요. 정밀 진단은 추가 녹음이 포함됩니다."
+                  footer={diagDuration || undefined}
                 />
               )}
             </div>
+            <p className="muted" style={{ marginTop: 14, fontSize: '0.82rem', lineHeight: 1.45 }}>
+              상세 리포트는 현재 노래를 깊게 분석해요.
+              <br />
+              정밀 진단은 추가 녹음으로 확인 범위를 넓혀요.
+            </p>
           </section>
 
           <ProgressInsightSheet
-            open={sheetMode === 'goal' ? !!goalProgress?.goal : !!sheetCard}
+            open={!!sheetCard}
             card={sheetCard}
-            goalProgress={goalProgress}
-            mode={sheetMode}
-            onClose={() => {
-              setSheetCard(null);
-              setSheetMode('card');
-            }}
-          />
-          <GoalSelectorSheet
-            open={goalPickerOpen}
-            onClose={() => setGoalPickerOpen(false)}
-            onSelect={onSelectGoal}
+            onClose={() => setSheetCard(null)}
           />
         </>
       )}

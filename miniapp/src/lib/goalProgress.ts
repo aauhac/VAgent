@@ -303,11 +303,18 @@ export function buildLocalGoalProgress(
   };
 }
 
-/** Text for count line — never returns a percent string. */
+/** Text for count line — never returns a percent string; uses actual history length. */
 export function goalCountLabel(gp: GoalProgressPayload): string {
   const w = gp.window;
   if (!w) return '';
-  return `목표 방향 결과 ${w.goal_aligned_count} / ${w.size}회`;
+  const actual = w.recording_count ?? w.evaluable_count ?? w.size;
+  if (actual <= 1) {
+    return w.goal_aligned_count > 0
+      ? '이전 기록에서도 목표 방향에 가까운 편'
+      : '기록이 조금 더 필요해요';
+  }
+  const denom = Math.min(actual, w.size || 5);
+  return `목표 방향 결과 ${w.goal_aligned_count} / ${denom}회`;
 }
 
 export function hasFakePercent(text: string): boolean {

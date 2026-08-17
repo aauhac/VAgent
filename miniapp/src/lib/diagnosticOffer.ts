@@ -1,5 +1,7 @@
 /** Adaptive diagnostic offer helpers — frontend display only, no recompute. */
 
+import { unresolvedLabelKo } from './userFacingLabels';
+
 export type DiagnosticOffer = {
   unresolved_count?: number;
   unresolved_labels?: string[];
@@ -25,10 +27,8 @@ export function pickDiagnosticOffer(source: any): DiagnosticOffer | null {
 export function classifyDiagnosticOffer(
   offer: DiagnosticOffer | null | undefined,
 ): DiagnosticOfferDecision {
-  // Precision product always offers controlled recording — never hide CTA for song-only sufficiency
   if (!offer) return 'required';
   if ((offer as any).precision_requires_recording) return 'required';
-  // Legacy fields kept for compatibility but do not skip Precision
   return 'required';
 }
 
@@ -39,18 +39,24 @@ export function diagnosticTasksRequired(offer: DiagnosticOffer | null | undefine
 
 export function diagnosticOfferBullets(offer: DiagnosticOffer | null | undefined): string[] {
   if (!offer) return [];
-  const labels = (offer.unresolved_labels || []).filter(Boolean).slice(0, 3);
+  const labels = (offer.unresolved_labels || [])
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((l) => unresolvedLabelKo(String(l)));
   const bullets: string[] = [];
-  if (labels.length) bullets.push(`확인하면 좋은 항목 · ${labels.join(' · ')}`);
-  // Do not show provisional exact task counts as final planned recordings
-  const planned = (offer as any).planned_task_count;
-  if (typeof planned === 'number' && planned > 0) {
-    bullets.push(`짧은 추가 녹음 ${planned}개`);
+  if (labels.length) {
+    bullets.push(`${labels.join('·')}을 추가 녹음으로 더 확인해요`);
   } else {
-    bullets.push('몇 가지 짧은 추가 녹음');
+    bullets.push('확인이 필요한 발성 항목을 추가 녹음으로 다시 비교해요');
   }
-  if (offer.estimated_duration_text && !String(offer.estimated_duration_text).includes('없음')) {
-    bullets.push(`예상 시간 · ${offer.estimated_duration_text}`);
-  }
-  return bullets;
+  bullets.push('무엇부터 연습할지 우선순위를 정리해요');
+  bullets.push('내 결과에 맞는 단계별 연습 방법을 안내해요');
+  return bullets.slice(0, 4);
+}
+
+export function diagnosticDurationNote(offer: DiagnosticOffer | null | undefined): string | null {
+  if (!offer?.estimated_duration_text) return null;
+  const t = String(offer.estimated_duration_text);
+  if (t.includes('없음')) return null;
+  return `약 ${t.replace(/^약\s*/, '')} · 짧은 추가 녹음`;
 }

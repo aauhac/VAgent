@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   getAnalysisAccess,
   getProducts,
   getSongDetailedReport,
   patchHistory,
+  putActiveVocalGoal,
 } from '../api/client';
 import { formatSecRange, useIsDebug } from '../lib/reportPresentation';
 import VocalTypeHero from '../components/report/VocalTypeHero';
@@ -16,6 +17,96 @@ import AudioCompare from '../components/report/AudioCompare';
 import MoreDetails from '../components/report/MoreDetails';
 import DiagnosticCTA from '../components/report/DiagnosticCTA';
 import ReportAudioPlayer, { type ClipRange } from '../components/report/ReportAudioPlayer';
+import GoalSelectorSheet from '../components/progress/GoalSelectorSheet';
+import { GoalEmptyCta } from '../components/progress/GoalProgressCard';
+import { setLocalActiveGoal } from '../lib/localGoalStore';
+import {
+  goalFromLocalSync,
+  resolveActiveGoalLoadState,
+  type GoalLoadState,
+} from '../lib/goalHydration';
+
+function DetailPracticeGoal() {
+  const location = useLocation();
+  const [goalState, setGoalState] = useState<GoalLoadState>(() => goalFromLocalSync());
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const resolved = await resolveActiveGoalLoadState();
+      if (cancelled) return;
+      setGoalState(resolved);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const st = location.state as { focusGoalSetting?: boolean } | null;
+    if (!st?.focusGoalSetting) return;
+    const t = window.setTimeout(() => {
+      document.getElementById('goal-setting')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }, 150);
+    return () => window.clearTimeout(t);
+  }, [location.state]);
+
+  function onSelect(
+    focus: string,
+    label: string,
+    extra?: { target?: string; style_id?: string; kind?: string },
+  ) {
+    const row = setLocalActiveGoal({
+      focus,
+      label,
+      source: 'USER_SELECTED',
+      target: extra?.target,
+      style_id: extra?.style_id,
+    });
+    setGoalState({ status: 'ready', goal: row });
+    void putActiveVocalGoal({
+      focus,
+      label,
+      source: 'USER_SELECTED',
+      target: extra?.target,
+      style_id: extra?.style_id,
+    });
+  }
+
+  return (
+    <section
+      id="goal-setting"
+      className="section"
+      data-testid="detail-practice-goal"
+    >
+      <h3 className="section-title">내 연습 목표</h3>
+      {goalState.status === 'loading' ? (
+        <div className="card" data-testid="detail-goal-loading" aria-busy="true">
+          <div className="skeleton" style={{ height: 18, width: '40%', marginBottom: 10 }} />
+          <div className="skeleton" style={{ height: 14, width: '85%' }} />
+        </div>
+      ) : goalState.status === 'ready' ? (
+        <div className="card" data-testid="detail-goal-active">
+          <p className="page-kicker" style={{ marginTop: 0 }}>현재 목표</p>
+          <p className="finding-title" style={{ marginBottom: 8 }}>{goalState.goal.goal_label}</p>
+          <p className="muted" style={{ margin: '0 0 12px', fontSize: '0.85rem' }}>
+            이후 녹음에서 이 부분이 어떻게 달라지는지도 함께 살펴볼게요.
+          </p>
+          <button type="button" className="btn secondary" style={{ width: '100%' }} onClick={() => setOpen(true)}>
+            목표 바꾸기
+          </button>
+        </div>
+      ) : (
+        <GoalEmptyCta onSetGoal={() => setOpen(true)} />
+      )}
+      <GoalSelectorSheet open={open} onClose={() => setOpen(false)} onSelect={onSelect} />
+    </section>
+  );
+}
 
 export default function SongDetailReport() {
   const { id } = useParams();
@@ -174,6 +265,8 @@ export default function SongDetailReport() {
         canonicalRegister={canonicalRegister}
         canonicalAcoustic={canonicalAcoustic}
       />
+
+      <DetailPracticeGoal />
 
       <HighNoteFunctionSection
         profile={report.high_note_function_profile || vf.high_note_function_profile}

@@ -1,0 +1,11 @@
+{
+  "backend": "TestClient + AnalysisService/DiagnosticSessionService",
+  "frontend": "miniapp Vite build (dev server not required for API E2E)",
+  "database": "UNSET — file entitlements",
+  "migration": "NOT_APPLIED_LIVE (Docker down)",
+  "docker": "UNAVAILABLE",
+  "runtime_mode": "file",
+  "singer_identity": "OFF",
+  "allow_mock_premium": true,
+  "vagent_env": "development"
+}

@@ -6,14 +6,18 @@ import QAComparisonBlock from '../components/report/QAComparisonBlock';
 import PrescriptionBlock from '../components/report/PrescriptionBlock';
 import CoachingProtocolCard from '../components/report/CoachingProtocolCard';
 import {
+  buildCompactReportDisclaimer,
+  buildUncertainUserCopy,
+  presentAnalysisScope,
+  presentCoreFinding,
+  presentSupportingList,
+} from '../lib/precisionPresentation';
+import {
   buildDiagnosticHeroText,
   buildTaskResultSummary,
-  formatAnalysisConfidence,
   mapEvidenceTokenForUser,
-  sanitizeDisclaimer,
   scrubUserText,
   translateDiagnosticFinding,
-  translateMechanismTitle,
 } from '../lib/reportPresentation';
 import { QA_GUIDANCE_VERSION } from '../lib/reportVersions';
 
@@ -29,7 +33,12 @@ function AccordionRow({
   const [open, setOpen] = useState(false);
   return (
     <div className="accordion-item">
-      <button type="button" className="detail-row" onClick={() => setOpen((v) => !v)}>
+      <button
+        type="button"
+        className="detail-row"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
         <span className="detail-label">{title}</span>
         <span className="detail-meta">
           {meta ? <span className="meta-count">{meta}</span> : null}
@@ -193,6 +202,18 @@ export default function PremiumReport() {
     topFindings.length > 0
       ? topFindings.map((f: DistinctFinding) => ({ kind: 'finding' as const, finding: f }))
       : songKeyFeatures.slice(0, 3).map((text: string) => ({ kind: 'canonical' as const, text }));
+  const analysisScope = presentAnalysisScope(report);
+  const supportingShown = presentSupportingList(supporting, 3);
+  const uncertainShown: { title: string; body: string }[] = (uncertain || []).map((m: any) =>
+    buildUncertainUserCopy(m.mechanism_id, m.summary || m.why_not_judged?.[0], m),
+  );
+  const compactDisclaimer = buildCompactReportDisclaimer(
+    (report.safety || {}).disclaimer
+      || sections.H_disclaimer?.text
+      || report.disclaimer,
+  );
+  const hasMoreExplore =
+    analysisScope.visible || supportingShown.length > 0 || uncertainShown.length > 0;
   const coaching = report.coaching || pqa.coaching || {};
   const goal = report.coaching_goal || pqa.coaching_goal || {};
   const rawProtocol = report.coaching_protocol || goal.coaching_protocol || pqa.coaching_protocol;
@@ -336,7 +357,7 @@ export default function PremiumReport() {
 
       {goal.goal_title ? (
         <section className="section" data-testid="coaching-goal">
-          <h3 className="section-title">이번 목표</h3>
+          <h3 className="section-title">먼저 연습할 부분</h3>
           <p className="body-text" style={{ fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
             {scrubUserText(goal.goal_title)}
           </p>
@@ -591,118 +612,100 @@ export default function PremiumReport() {
         />
       ) : null}
 
-      <section className="section">
-        <h3 className="section-title">가장 뚜렷한 특징</h3>
+      <section className="section" data-testid="precision-core-findings">
+        <h3 className="section-title">확인된 핵심 특징</h3>
         {distinctFeatures.length === 0 ? (
           <p className="muted body-text">이번 진단에서 특별히 강하게 나타난 특징은 제한적이에요.</p>
         ) : (
-          distinctFeatures.map((item, i) => (
-            item.kind === 'finding' ? (
-              <div key={`${item.finding.title}-${i}`} className="diag-finding" style={{ marginBottom: 8 }}>
+          distinctFeatures.map((item, i) => {
+            if (item.kind === 'finding') {
+              const shown = presentCoreFinding(item.finding);
+              return (
+                <div key={`${shown.title}-${i}`} className="diag-finding" style={{ marginBottom: 12 }}>
+                  <p className="diag-finding-title" style={{ margin: 0 }}>{shown.title}</p>
+                  {shown.body ? (
+                    <p className="muted body-text" style={{ margin: '6px 0 0', lineHeight: 1.45 }}>
+                      {shown.body}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            }
+            return (
+              <div key={`${item.text}-${i}`} className="diag-finding" style={{ marginBottom: 12 }}>
                 <p className="diag-finding-title" style={{ margin: 0 }}>
-                  {String(i + 1).padStart(2, '0')} · {item.finding.title}
-                  <span className="diag-tone">{item.finding.tone}</span>
+                  {scrubUserText(item.text)}
                 </p>
               </div>
-            ) : (
-              <div key={`${item.text}-${i}`} className="diag-finding" style={{ marginBottom: 8 }}>
-                <p className="diag-finding-title" style={{ margin: 0 }}>
-                  {String(i + 1).padStart(2, '0')} · {scrubUserText(item.text)}
-                </p>
-              </div>
-            )
-          ))
+            );
+          })
         )}
       </section>
 
-      <section className="section">
-        <h3 className="section-title">더 자세히</h3>
+      {hasMoreExplore || (showDebug && report.scientific_debug) ? (
+        <section className="section" data-testid="precision-more-explore">
+          <h3 className="section-title">더 살펴보기</h3>
 
-        {(report.user_skipped_task_count > 0
-          || report.evidence_mode === 'CONCERN_ONLY'
-          || report.evidence_mode === 'PARTIAL_PRECISION'
-          || report.evidence_mode_label) && (
-          <AccordionRow title="분석 범위">
-            <p className="body-text muted" style={{ marginTop: 0, lineHeight: 1.5 }}>
-              {scrubUserText(
-                report.evidence_mode_label
-                || (report.evidence_mode === 'CONCERN_ONLY'
-                  ? '기존 노래에서 확인된 발성 특징을 바탕으로 선택한 고민을 분석했어요.'
-                  : report.evidence_mode === 'PARTIAL_PRECISION'
-                    ? '노래와 완료한 추가 발성 과제를 함께 분석했어요.'
-                    : '노래와 추가 발성 과제를 함께 분석했어요.'),
-              )}
-            </p>
-            {(report.completed_task_count != null || report.user_skipped_task_count != null) && (
-              <p className="muted" style={{ fontSize: '0.9rem' }}>
-                노래 분석 사용함
-                {report.evidence_mode === 'CONCERN_ONLY'
-                  ? ' · 추가 발성 과제 진행하지 않음'
-                  : (
-                    <>
-                      {report.completed_task_count != null
-                        ? ` · 추가 발성 과제 ${report.completed_task_count}개 완료`
-                        : ''}
-                      {report.user_skipped_task_count
-                        ? ` · ${report.user_skipped_task_count}개 건너뜀`
-                        : ''}
-                    </>
-                  )}
+          {analysisScope.visible ? (
+            <AccordionRow title={analysisScope.title}>
+              <p className="body-text muted" style={{ marginTop: 0, lineHeight: 1.5 }}>
+                {analysisScope.body}
               </p>
-            )}
-          </AccordionRow>
-        )}
-
-        {supporting.length > 0 && (
-          <AccordionRow title="추가로 관찰된 특징" meta={`${supporting.length}개`}>
-            {supporting.map((m: any) => (
-              <div key={m.mechanism_id || m.display_name} style={{ marginBottom: 12 }}>
-                <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
-                  {translateMechanismTitle(m.mechanism_id, m.display_name)}
+              {analysisScope.detail ? (
+                <p className="muted" style={{ fontSize: '0.9rem', lineHeight: 1.45 }}>
+                  {analysisScope.detail}
                 </p>
-                <p className="muted" style={{ margin: 0 }}>
-                  {scrubUserText(m.observation || m.summary)
-                    || '관련 음향 특성은 관찰됐지만 이번 진단에서는 별도 점수로 표시하지 않아요.'}
-                </p>
-              </div>
-            ))}
-          </AccordionRow>
-        )}
+              ) : null}
+            </AccordionRow>
+          ) : null}
 
-        {uncertain.length > 0 && (
-          <AccordionRow title="추가 확인이 필요한 항목" meta={`${uncertain.length}개`}>
-            {uncertain.map((m: any) => (
-              <div key={m.mechanism_id || m.display_name} style={{ marginBottom: 12 }}>
-                <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
-                  {translateMechanismTitle(m.mechanism_id, m.display_name)}
-                </p>
-                <p className="muted" style={{ margin: 0 }}>
-                  {scrubUserText(m.summary)
-                    || '이번 과제에서는 비교할 수 있는 구간이 충분하지 않았어요.'}
-                </p>
-              </div>
-            ))}
-          </AccordionRow>
-        )}
+          {supportingShown.length > 0 ? (
+            <AccordionRow title="참고로 확인된 변화" meta={`${supportingShown.length}개`}>
+              {supportingShown.map((m) => (
+                <div key={m.mechanismId || m.title} style={{ marginBottom: 12 }}>
+                  <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
+                    {m.title}
+                  </p>
+                  <p className="muted" style={{ margin: 0, lineHeight: 1.45 }}>
+                    {m.body}
+                  </p>
+                </div>
+              ))}
+            </AccordionRow>
+          ) : null}
 
-        <AccordionRow title="분석 방법과 한계">
-          <p style={{ marginTop: 0 }}>
-            {sanitizeDisclaimer(
-              (report.safety || {}).disclaimer
-                || sections.H_disclaimer?.text
-                || report.disclaimer,
-            )}
-          </p>
-        </AccordionRow>
+          {uncertainShown.length > 0 ? (
+            <AccordionRow title="이번에 확정하지 않은 부분" meta={`${uncertainShown.length}개`}>
+              {uncertainShown.map((m) => (
+                <div key={m.title} style={{ marginBottom: 12 }}>
+                  <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
+                    {m.title}
+                  </p>
+                  <p className="muted" style={{ margin: 0, lineHeight: 1.45 }}>
+                    {m.body}
+                  </p>
+                </div>
+              ))}
+              <p className="muted" style={{ marginTop: 8, fontSize: '0.85rem', lineHeight: 1.45 }}>
+                정보가 부족하거나 결과가 서로 다를 때는 억지로 한 방향으로 판단하지 않아요.
+              </p>
+            </AccordionRow>
+          ) : null}
 
-        {showDebug && report.scientific_debug && (
-          <AccordionRow title="[debug] scientific_debug">
-            <pre style={{ overflow: 'auto', fontSize: 11 }}>
-              {JSON.stringify(report.scientific_debug, null, 2)}
-            </pre>
-          </AccordionRow>
-        )}
-      </section>
+          {showDebug && report.scientific_debug ? (
+            <AccordionRow title="[debug] scientific_debug">
+              <pre style={{ overflow: 'auto', fontSize: 11 }}>
+                {JSON.stringify(report.scientific_debug, null, 2)}
+              </pre>
+            </AccordionRow>
+          ) : null}
+        </section>
+      ) : null}
+
+      <p className="footer-note report-disclaimer" data-testid="precision-disclaimer">
+        <span className="report-disclaimer__label">참고</span>
+        {compactDisclaimer}
+      </p>
 
       <section className="section" style={{ borderBottom: 0 }}>
         <div className="cta-row">

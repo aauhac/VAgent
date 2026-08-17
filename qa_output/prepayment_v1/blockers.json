@@ -1,0 +1,10 @@
+{
+  "p0": [],
+  "p1": [],
+  "p2": [
+    "Docker daemon unavailable during QA — Postgres entitlement path not re-validated live (file mode PASS)"
+  ],
+  "p3": [
+    "Full browser/mobile viewport matrix not re-run with Playwright in this session (static + prior UX PASS)"
+  ]
+}

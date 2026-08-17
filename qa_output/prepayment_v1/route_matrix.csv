@@ -1,0 +1,9 @@
+route,free,detail_unlocked,precision_unlocked,notes
+GET /v1/analyses/{id},OK,OK,OK,free result payload
+GET /v1/analyses/{id}/detailed-report,402,200,200,backend gate
+POST /v1/analyses/{id}/mock-unlock-detail,dev_only,idempotent,idempotent,ALLOW_MOCK_PREMIUM
+GET /v1/diagnostic-sessions/{id}/report,402,402_until_pay,200,REPORT_LOCKED
+POST .../mock-pay,dev_only,dev_only,idempotent,diagnostic entitlement
+GET /v1/me/vocal-goals,,OK,OK,file store under RUNTIME_DIR
+/result/{id}/detail (frontend),must_not_leak,OK,OK,backend still required
+/diagnostic/.../report (frontend),must_not_leak,must_not_leak,OK,backend still required

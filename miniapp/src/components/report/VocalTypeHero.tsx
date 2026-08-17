@@ -74,15 +74,15 @@ export default function VocalTypeHero({ profile, styleProfile, compact }: Props)
   return (
     <section className="section">
       <div className={compact ? undefined : 'card'}>
-        <p className="eyebrow">내 발성 스타일</p>
-        <h2 className="type-title">{title}</h2>
+        <p className="eyebrow">{compact ? '발성 스타일' : '내 발성 스타일'}</p>
+        <h2 className="type-title" style={compact ? { fontSize: '1.25rem' } : undefined}>{title}</h2>
         {description ? (
-          <p className="body-text" style={{ marginTop: 14 }}>
+          <p className="body-text" style={{ marginTop: compact ? 8 : 14 }}>
             {description}
           </p>
         ) : null}
 
-        {traits.length > 0 ? (
+        {traits.length > 0 && !compact ? (
           <div style={{ marginTop: 16 }}>
             <p className="eyebrow">주요 특징</p>
             <ul className="body-text" style={{ paddingLeft: 18, margin: '8px 0 0' }}>
@@ -93,6 +93,10 @@ export default function VocalTypeHero({ profile, styleProfile, compact }: Props)
               ))}
             </ul>
           </div>
+        ) : traits.length > 0 && compact ? (
+          <p className="muted" style={{ marginTop: 10, fontSize: '0.88rem', lineHeight: 1.45 }}>
+            {traits.slice(0, 3).map((t) => t.value).filter(Boolean).join(' · ')}
+          </p>
         ) : null}
       </div>
 

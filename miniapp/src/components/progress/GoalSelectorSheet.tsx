@@ -19,9 +19,9 @@ export default function GoalSelectorSheet({ open, onClose, onSelect }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sheet-handle" aria-hidden />
-        <h2 className="sheet-title">이번 목표</h2>
+        <h2 className="sheet-title">연습 목표 선택</h2>
         <p className="muted" style={{ marginTop: 0, marginBottom: 14, fontSize: '0.88rem' }}>
-          이전 목표는 기록으로 남고, 새 목표부터 다시 변화를 세어요.
+          이전 목표는 기록으로 남고, 새 목표부터 다시 변화를 살펴볼게요.
         </p>
         <ul className="goal-option-list">
           {USER_GOAL_OPTIONS.map((opt) => (

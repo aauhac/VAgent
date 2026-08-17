@@ -3,8 +3,8 @@ import {
   buildAdditionalFindings,
   buildConfidenceEvidenceRows,
   formatAnalysisConfidence,
-  sanitizeDisclaimer,
 } from '../../lib/reportPresentation';
+import { buildCompactReportDisclaimer } from '../../lib/precisionPresentation';
 
 function AccordionRow({
   title,
@@ -20,7 +20,12 @@ function AccordionRow({
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="accordion-item">
-      <button type="button" className="detail-row" onClick={() => setOpen((v) => !v)}>
+      <button
+        type="button"
+        className="detail-row"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
         <span className="detail-label">{title}</span>
         <span className="detail-meta">
           {meta ? <span className="meta-count">{meta}</span> : null}
@@ -132,10 +137,6 @@ export default function MoreDetails({
         </AccordionRow>
       )}
 
-      <AccordionRow title="분석 방법과 한계">
-        <p style={{ marginTop: 0 }}>{sanitizeDisclaimer(disclaimer)}</p>
-      </AccordionRow>
-
       {debug && candidateComparison.length > 0 && (
         <AccordionRow title="[debug] candidate comparison" defaultOpen>
           <pre style={{ overflow: 'auto', fontSize: 11 }}>
@@ -151,6 +152,11 @@ export default function MoreDetails({
           </pre>
         </AccordionRow>
       )}
+
+      <p className="footer-note report-disclaimer" data-testid="detail-disclaimer">
+        <span className="report-disclaimer__label">참고</span>
+        {buildCompactReportDisclaimer(disclaimer)}
+      </p>
     </section>
   );
 }

@@ -152,13 +152,13 @@ export function formatSecRange(start?: number | null, end?: number | null): stri
 }
 
 const PRIMARY_DIAGNOSIS: Record<string, { title: string; detail?: string }> = {
-  EXCESS_EFFORT_HIGH_NOTE: {
-    title: '고음에서 힘이 증가하는 경향',
-    detail: '일부 고음에서 발성 무게와 힘이 함께 증가했어요.',
-  },
   GENERAL_EXCESS_EFFORT: {
-    title: '여러 구간에서 힘이 크게 증가하는 경향',
-    detail: '여러 구간에서 힘을 밀어붙이는 패턴이 관찰됐어요.',
+    title: '전반적으로 힘이 많이 들어가는 경향',
+    detail: '노래의 여러 구간에서 힘이 과도하게 들어가는 패턴이 반복해서 나타났어요.',
+  },
+  EXCESS_EFFORT_HIGH_NOTE: {
+    title: '고음에서 힘이 많이 들어가는 경향',
+    detail: '고음으로 올라갈 때 힘을 더 많이 사용하는 구간이 나타났어요.',
   },
   AIR_LEAKAGE: {
     title: '숨이 섞이는 발성 경향',
@@ -227,14 +227,14 @@ export function diagnosisFromPrimary(primary: any, effortAssessment?: any): { ti
     const note = scrubUserText(assessment.context_note || '');
     if (primary.id === 'EXCESS_EFFORT_HIGH_NOTE' || (sev === 'LOW' && assessment.high_note_severity === 'HIGH')) {
       return {
-        title: '고음에서 힘이 증가하는 경향',
-        detail: note || '전반적으로는 편안하지만, 고음에서만 힘이 크게 증가해요.',
+        title: '고음에서 힘이 많이 들어가는 경향',
+        detail: note || '고음으로 올라갈 때 힘을 더 많이 사용하는 구간이 나타났어요.',
       };
     }
     if (sev === 'HIGH') {
       return {
-        title: '여러 구간에서 힘이 크게 증가하는 경향',
-        detail: note || '강한 음과 높은 음을 낼 때 힘을 밀어붙이는 패턴이 반복됐어요.',
+        title: '전반적으로 힘이 많이 들어가는 경향',
+        detail: note || '노래의 여러 구간에서 힘이 과도하게 들어가는 패턴이 반복해서 나타났어요.',
       };
     }
     if (sev === 'MODERATE') {
@@ -242,19 +242,19 @@ export function diagnosisFromPrimary(primary: any, effortAssessment?: any): { ti
       return {
         title:
           hits <= 1
-            ? '특정 구간에서 힘이 크게 증가하는 경향'
-            : '여러 구간에서 힘이 크게 증가하는 경향',
+            ? '특정 구간에서 힘이 많이 들어가는 경향'
+            : '전반적으로 힘이 많이 들어가는 경향',
         detail:
           note
           || (hits <= 1
-            ? '강한 음과 높은 음을 낼 때 힘을 밀어붙이는 패턴이 관찰됐어요.'
-            : '여러 구간에서 힘을 밀어붙이는 패턴이 관찰됐어요.'),
+            ? '일부 구간에서 힘을 많이 사용하는 패턴이 나타났어요.'
+            : '여러 구간에서 힘을 많이 사용하는 패턴이 반복해서 나타났어요.'),
       };
     }
     if (sev === 'MILD') {
       return {
-        title: '일부 구간에서 힘이 증가하는 경향',
-        detail: note || '일부 구간에서 힘이 늘어나는 패턴이 관찰됐어요.',
+        title: '일부 구간에서 힘이 많이 들어가는 경향',
+        detail: note || '일부 구간에서 힘을 많이 사용하는 패턴이 나타났어요.',
       };
     }
   }
@@ -293,6 +293,9 @@ export function scrubUserText(text: string): string {
     .replace(/\bglide\b/gi, '이어 올리기')
     .replace(/\bsustain\b/gi, '한 음 유지')
     .replace(/\bonset\b/gi, '소리 시작')
+    .replace(/\beffort\b/gi, '힘 사용')
+    .replace(/\bSOURCE[_\s-]?BALANCE\b/gi, '흉성·두성 음향 성향')
+    .replace(/\bREGISTER[_\s-]?CONNECTION\b/gi, '성구 연결')
     .replace(/연습 참고/g, '발성 분석 참고')
     .replace(/훈련 참고/g, '발성 분석 참고')
     .replace(new RegExp(lack, 'g'), '추가 확인 필요')
