@@ -1,0 +1,218 @@
+[
+  {
+    "route": "detail",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "상세 리포트",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "detail-1axis",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "상세 리포트",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "unlock",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "concern",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "safety",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "recordings",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "task",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "precision",
+    "viewport": "375x812",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "detail",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "상세 리포트",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "detail-1axis",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "상세 리포트",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "unlock",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "concern",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "safety",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "recordings",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "task",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "precision",
+    "viewport": "390x844",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "detail",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "상세 리포트",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "detail-1axis",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "상세 리포트",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "unlock",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "concern",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "safety",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "recordings",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "task",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  },
+  {
+    "route": "precision",
+    "viewport": "430x932",
+    "header": 1,
+    "overflow": 0,
+    "title": "정밀 발성 진단",
+    "bannedHits": [],
+    "pass": true
+  }
+]

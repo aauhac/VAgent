@@ -45,12 +45,14 @@ export function diagnosticOfferBullets(offer: DiagnosticOffer | null | undefined
     .map((l) => unresolvedLabelKo(String(l)));
   const bullets: string[] = [];
   if (labels.length) {
-    bullets.push(`${labels.join('·')}을 추가 녹음으로 더 확인해요`);
+    bullets.push(
+      `현재 노래에서 확인하기 어려웠던 ${labels.join('·')} 등을 짧은 추가 녹음으로 다시 확인해요`,
+    );
   } else {
-    bullets.push('확인이 필요한 발성 항목을 추가 녹음으로 다시 비교해요');
+    bullets.push('현재 노래에서 확인하기 어려운 발성 특성을 추가 녹음으로 다시 확인해요');
   }
-  bullets.push('무엇부터 연습할지 우선순위를 정리해요');
-  bullets.push('내 결과에 맞는 단계별 연습 방법을 안내해요');
+  bullets.push('표준 과제를 통해 발성 특성을 더 정밀하게 비교해요');
+  bullets.push('선택한 고민과 현재 분석 결과에 맞는 항목을 확인해요');
   return bullets.slice(0, 4);
 }
 

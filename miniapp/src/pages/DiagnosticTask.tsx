@@ -15,6 +15,7 @@ import {
   resolveTaskMeta,
   taskProgressLabel,
 } from '../lib/diagnosticTaskState';
+import { MIC_PRE_CONSENT, microphoneErrorMessage } from '../lib/userFacingErrors';
 
 type Phase = 'idle' | 'recording' | 'ready';
 
@@ -255,8 +256,8 @@ export default function DiagnosticTask() {
         rafRef.current = requestAnimationFrame(tick);
       };
       rafRef.current = requestAnimationFrame(tick);
-    } catch {
-      setMsg('마이크 권한을 확인해 주세요.');
+    } catch (e) {
+      setMsg(microphoneErrorMessage(e));
       cleanup();
     }
   }
@@ -379,7 +380,7 @@ export default function DiagnosticTask() {
   if (pageState === 'loading') {
     return (
       <main>
-        <p className="muted">Task 불러오는 중…</p>
+        <p className="muted">녹음 준비 중…</p>
       </main>
     );
   }
@@ -387,7 +388,6 @@ export default function DiagnosticTask() {
   if (pageState === 'error') {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.4rem' }}>정밀 발성 진단</h1>
         <p className="fail">{loadError}</p>
         <button className="btn" type="button" onClick={() => void loadPlan({ replan: true })}>
           다시 시도
@@ -399,7 +399,7 @@ export default function DiagnosticTask() {
   if (pageState === 'safety-limited') {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.4rem' }}>안전상 추가 녹음을 진행하지 않아요</h1>
+        <h2 className="brand" style={{ fontSize: '1.35rem', marginTop: 12 }}>안전상 추가 녹음을 진행하지 않아요</h2>
         <p className="lead">
           현재 불편감이 있어 강한 고음·큰 소리 검사는 제한했어요.
           지금까지의 분석으로 리포트를 이어갈 수 있어요.
@@ -429,7 +429,6 @@ export default function DiagnosticTask() {
   if (pageState === 'loaded-empty' || pageState === 'loaded-missing-task') {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.4rem' }}>정밀 발성 진단</h1>
         <p className="fail">
           {pageState === 'loaded-missing-task'
             ? '이 추가 녹음 안내를 불러오지 못했어요.'
@@ -449,7 +448,7 @@ export default function DiagnosticTask() {
 
   return (
     <main>
-      <p className="page-kicker">정밀 진단 · {progressLabel}</p>
+      <p className="page-kicker">정밀 발성 진단 · {progressLabel}</p>
       {unresolvedLabels.length > 0 && (
         <p className="muted" style={{ marginTop: 4 }}>이번에 확인할 항목 · {unresolvedLabels.join(' · ')}</p>
       )}
@@ -464,6 +463,9 @@ export default function DiagnosticTask() {
 
         {phase === 'idle' && (
           <>
+            <p className="muted" style={{ marginTop: 12, marginBottom: 0 }}>
+              {MIC_PRE_CONSENT}
+            </p>
             <button className="btn" style={{ width: '100%', marginTop: 12 }} onClick={start} disabled={busy}>
               녹음 시작
             </button>

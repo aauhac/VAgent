@@ -204,7 +204,7 @@ def test_diagnostic_upgrade_keeps_song_detail(client):
         json={"product_id": "diagnostic_upgrade"},
     )
     assert c.get(f"/v1/analyses/{aid}/detailed-report", headers=headers).status_code == 200
-    assert offers["products"]["diagnostic_upgrade"]["mock_amount_krw"] == 2000
+    assert offers["products"]["diagnostic_upgrade"]["mock_amount_krw"] == 990
 
 
 def test_free_api_no_detail_leak(client):
@@ -246,9 +246,12 @@ def test_mock_disabled_in_production(client, monkeypatch):
 
 def test_product_catalog_mock_amounts():
     cat = product_catalog(song_detail_owned=False)
-    assert cat["products"]["song_detail"]["mock_amount_krw"] == 1000
-    assert cat["products"]["diagnostic_full"]["mock_amount_krw"] == 3000
-    assert cat["products"]["diagnostic_upgrade"]["mock_amount_krw"] == 2000
+    assert cat["products"]["song_detail"]["mock_amount_krw"] == 990
+    assert cat["products"]["diagnostic_full"]["mock_amount_krw"] == 1980
+    assert cat["products"]["diagnostic_upgrade"]["mock_amount_krw"] == 990
+    assert cat["products"]["song_detail"]["mock_display_amount"] == "₩990"
+    assert cat["products"]["diagnostic_full"]["mock_display_amount"] == "₩1,980"
+    assert cat["products"]["diagnostic_upgrade"]["mock_display_amount"] == "₩990"
     assert cat["offers"]["diagnostic"] == "diagnostic_full"
     cat2 = product_catalog(song_detail_owned=True)
     assert cat2["offers"]["diagnostic"] == "diagnostic_upgrade"

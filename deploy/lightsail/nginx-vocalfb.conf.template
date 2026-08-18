@@ -1,0 +1,22 @@
+# HTTP reverse proxy template for later hostname/TLS setup.
+# Replace __BACKEND_HOSTNAME__ after a domain is chosen.
+# Do not enable SSL in this file with a fake hostname.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __BACKEND_HOSTNAME__;
+
+    client_max_body_size 32m;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+    }
+}

@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useNavigationType } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createAnalysis } from '../api/client';
 import AccompanimentToggle, {
   analysisOptsFromAccompaniment,
 } from '../components/ui/AccompanimentToggle';
 import AudioReadyPanel from '../components/ui/AudioReadyPanel';
-import SubPageHeader from '../components/ui/SubPageHeader';
-import { resolveSubPageBack } from '../lib/subPageNav';
+import { MIC_PRE_CONSENT, microphoneErrorMessage } from '../lib/userFacingErrors';
 
 const MIN_SEC = 15;
 const MAX_SEC = 60;
@@ -31,15 +30,6 @@ function pickMime(): { mime?: string; ext: string } {
 
 export default function Record() {
   const nav = useNavigate();
-  const navigationType = useNavigationType();
-  function onBack() {
-    const target = resolveSubPageBack(navigationType);
-    if (target.mode === 'history') {
-      nav(-1);
-      return;
-    }
-    nav('/');
-  }
   const [phase, setPhase] = useState<Phase>('idle');
   const [seconds, setSeconds] = useState(0);
   const [levels, setLevels] = useState<number[]>(Array(24).fill(4));
@@ -61,9 +51,12 @@ export default function Record() {
   const stoppingRef = useRef(false);
   const levelSnapRef = useRef<number[]>([]);
 
+  const previewUrlRef = useRef<string | null>(null);
+  previewUrlRef.current = previewUrl;
+
   useEffect(() => () => {
     stopCapture();
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
   }, []);
 
   function stopCapture() {
@@ -137,7 +130,7 @@ export default function Record() {
       };
       tick();
     } catch (e: any) {
-      setError(e?.message || '마이크 권한이 필요해요.');
+      setError(microphoneErrorMessage(e));
       stopCapture();
       setPhase('idle');
     }
@@ -206,8 +199,7 @@ export default function Record() {
 
   return (
     <main>
-      <SubPageHeader title="녹음" onBack={onBack} />
-      <h1 className="brand" style={{ fontSize: '1.7rem', marginTop: 16 }}>노래를 불러주세요</h1>
+      <h1 className="brand" style={{ fontSize: '1.7rem' }}>노래를 불러주세요</h1>
       <p className="lead">
         분석 전에 녹음을 한 번 들어볼 수 있어요. 권장 길이는 15~60초예요.
       </p>
@@ -223,6 +215,7 @@ export default function Record() {
         {phase === 'idle' && (
           <>
             <ul className="record-idle-tips">
+              <li>{MIC_PRE_CONSENT}</li>
               <li>한 구절 정도가 가장 좋아요</li>
               <li>조용한 환경에서 녹음해 주세요</li>
               <li>반주를 틀어 부를 때는 이어폰을 권장해요</li>
@@ -230,6 +223,9 @@ export default function Record() {
             <button className="btn" style={{ width: '100%' }} onClick={start}>
               녹음 시작
             </button>
+            <p className="muted" style={{ marginTop: 10, marginBottom: 0, fontSize: '0.82rem' }}>
+              마이크를 쓸 수 없으면 <Link to="/upload">음성 파일로 분석</Link>할 수 있어요.
+            </p>
           </>
         )}
 

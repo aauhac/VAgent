@@ -1,0 +1,85 @@
+{
+  "analysis_id": "9dff792efb0e44f59e4dd49882ed4ef2",
+  "root_cause": "A+C",
+  "notes": "Other functional estimates were not displayable; register had status STABLE_LIKE but was confidence-gated (hidden/low). No canonical_acoustic_axes. Voiced duration ~12.9s — do not use duration-generic copy.",
+  "quality": {
+    "duration_sec": 21.8,
+    "voiced_duration_sec": 12.9
+  },
+  "canonical_acoustic_axes": null,
+  "vocal_function_profile": {
+    "dimensions": {
+      "air_leakage_breathiness": {
+        "dimension_id": "air_leakage_breathiness",
+        "status": "LOW",
+        "hidden": false,
+        "evaluable_segments": 14,
+        "total_segments": 14,
+        "confidence_label": "high"
+      },
+      "glottal_contact_profile": {
+        "dimension_id": "glottal_contact_profile",
+        "status": "UNKNOWN",
+        "hidden": true,
+        "continuum_0_to_1": null,
+        "evaluable_segments": 2,
+        "total_segments": 14,
+        "confidence_label": "low"
+      },
+      "vocal_effort_strain": {
+        "dimension_id": "vocal_effort_strain",
+        "status": "UNKNOWN",
+        "hidden": true,
+        "evaluable_segments": 1,
+        "total_segments": 14
+      },
+      "register_configuration": {
+        "dimension_id": "register_configuration",
+        "status": "STABLE_LIKE",
+        "hidden": true,
+        "confidence_label": "low",
+        "evaluable_segments": 1,
+        "total_segments": 14
+      },
+      "resonance_formant_strategy": {
+        "dimension_id": "resonance_formant_strategy",
+        "status": "OBSERVED",
+        "hidden": true,
+        "evaluable_segments": 1,
+        "total_segments": 14
+      }
+    },
+    "criteria_matrix": [
+      {
+        "dimension_id": "air_leakage_breathiness",
+        "measurement_sufficiency": "SUFFICIENT",
+        "evaluable_segments": 14,
+        "total_segments": 14
+      },
+      {
+        "dimension_id": "glottal_contact_profile",
+        "measurement_sufficiency": "PARTIAL",
+        "evaluable_segments": 2,
+        "total_segments": 14
+      },
+      {
+        "dimension_id": "vocal_effort_strain",
+        "measurement_sufficiency": "INSUFFICIENT",
+        "evaluable_segments": 1,
+        "total_segments": 14
+      },
+      {
+        "dimension_id": "register_configuration",
+        "measurement_sufficiency": "INSUFFICIENT",
+        "evaluable_segments": 1,
+        "total_segments": 14
+      },
+      {
+        "dimension_id": "resonance_formant_strategy",
+        "measurement_sufficiency": "INSUFFICIENT",
+        "evaluable_segments": 1,
+        "total_segments": 14
+      }
+    ]
+  }
+}

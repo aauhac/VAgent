@@ -10,6 +10,8 @@ import '../styles/app.css';
 import {
   SMOKE_ANALYSIS_ID,
   SMOKE_SESSION_ID,
+  SMOKE_SPARSE_ID,
+  SMOKE_ZERO_ID,
   analysisAccess,
   detailReport,
   diagnosticProtocol,
@@ -18,6 +20,8 @@ import {
   precisionReport,
   productsCatalog,
   progressInsight,
+  sparseDetailReport,
+  zeroDetailReport,
 } from './visualSmokeFixtures';
 
 window.addEventListener('error', (ev) => {
@@ -69,23 +73,55 @@ const originalFetch = window.fetch.bind(window);
 window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url);
   const path = url.replace(/^https?:\/\/[^/]+/, '');
+  const method = (init?.method || 'GET').toUpperCase();
+  const hash = String(window.location.hash || '');
 
+  if (path.includes(`/v1/analyses/${SMOKE_SPARSE_ID}/detailed-report`)) return json(sparseDetailReport);
+  if (path.includes(`/v1/analyses/${SMOKE_ZERO_ID}/detailed-report`)) return json(zeroDetailReport);
   if (path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}/detailed-report`)) return json(detailReport);
+  if (path.includes(`/v1/analyses/${SMOKE_SPARSE_ID}/access`) || path.includes(`/v1/analyses/${SMOKE_ZERO_ID}/access`)) {
+    return json(analysisAccess);
+  }
   if (path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}/access`)) return json(analysisAccess);
-  if (path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}/preview`) || path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}/audio`)) {
+  if (path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}/preview`) || path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}/audio`)
+      || path.includes(`/v1/analyses/${SMOKE_SPARSE_ID}/preview`) || path.includes(`/v1/analyses/${SMOKE_ZERO_ID}/preview`)) {
     return new Response(silentWav(), { status: 200, headers: { 'Content-Type': 'audio/wav' } });
   }
   if (path.startsWith('/v1/products')) return json(productsCatalog);
   if (path.startsWith('/v1/me/vocal-progress/insight')) return json(progressInsight);
   if (path.startsWith('/v1/me/vocal-goals')) return json({ active: null, history: [] });
   if (path.includes(`/v1/diagnostic-sessions/${SMOKE_SESSION_ID}/report`)) return json(precisionReport);
-  if (path.includes(`/v1/diagnostic-sessions/${SMOKE_SESSION_ID}`) && (!init?.method || init.method === 'GET')) {
-    return json(diagnosticSession);
+  if (path.includes(`/v1/diagnostic-sessions/${SMOKE_SESSION_ID}`) && method === 'GET') {
+    const sess = {
+      ...diagnosticSession,
+      session_id: SMOKE_SESSION_ID,
+      status: hash.includes('/recordings')
+        ? 'RECORDING_CHOICE'
+        : hash.includes('/task/')
+          ? 'TASKS_IN_PROGRESS'
+          : hash.includes('/safety')
+            ? 'SAFETY_CHECK'
+            : hash.includes('/concerns')
+              ? 'PAID'
+              : hash.includes('/report')
+                ? 'COMPLETED'
+                : diagnosticSession.status,
+    };
+    return json(sess);
   }
   if (path.startsWith('/v1/diagnostic/protocol')) return json(diagnosticProtocol);
   if (path.startsWith('/v1/history')) return json(historyPayload);
-  if (path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}`) && init?.method === 'DELETE') {
+  if (path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}`) && method === 'DELETE') {
     return json({ deleted: true, analysis_id: SMOKE_ANALYSIS_ID });
+  }
+  if (path.includes(`/v1/analyses/${SMOKE_SPARSE_ID}`) && method === 'GET') {
+    return json({ analysis_id: SMOKE_SPARSE_ID, status: 'completed', result: sparseDetailReport });
+  }
+  if (path.includes(`/v1/analyses/${SMOKE_ZERO_ID}`) && method === 'GET') {
+    return json({ analysis_id: SMOKE_ZERO_ID, status: 'completed', result: zeroDetailReport });
+  }
+  if (path.includes(`/v1/analyses/${SMOKE_ANALYSIS_ID}`) && method === 'GET') {
+    return json({ analysis_id: SMOKE_ANALYSIS_ID, status: 'completed', result: detailReport });
   }
 
   if (path.startsWith('/v1/')) {

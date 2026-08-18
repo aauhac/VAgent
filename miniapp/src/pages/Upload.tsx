@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useNavigationType } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createAnalysis } from '../api/client';
 import AccompanimentToggle, {
   analysisOptsFromAccompaniment,
 } from '../components/ui/AccompanimentToggle';
 import AudioReadyPanel from '../components/ui/AudioReadyPanel';
-import SubPageHeader from '../components/ui/SubPageHeader';
-import { resolveSubPageBack } from '../lib/subPageNav';
+import { validateUploadFile } from '../lib/uploadValidation';
+import { UPLOAD_TOO_LARGE, UPLOAD_UNSUPPORTED } from '../lib/userFacingErrors';
 
 type ReadyFile = {
   file: File;
@@ -15,15 +15,6 @@ type ReadyFile = {
 
 export default function Upload() {
   const nav = useNavigate();
-  const navigationType = useNavigationType();
-  function onBack() {
-    const target = resolveSubPageBack(navigationType);
-    if (target.mode === 'history') {
-      nav(-1);
-      return;
-    }
-    nav('/');
-  }
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [hasAccompaniment, setHasAccompaniment] = useState(false);
@@ -35,6 +26,11 @@ export default function Upload() {
 
   function onPick(file: File | null) {
     if (!file) return;
+    const check = validateUploadFile(file);
+    if (!check.ok) {
+      setError(check.reason === 'too_large' ? UPLOAD_TOO_LARGE : UPLOAD_UNSUPPORTED);
+      return;
+    }
     setError(null);
     if (ready?.url) URL.revokeObjectURL(ready.url);
     setReady({ file, url: URL.createObjectURL(file) });
@@ -65,8 +61,7 @@ export default function Upload() {
 
   return (
     <main>
-      <SubPageHeader title="파일 업로드" onBack={onBack} />
-      <h1 className="brand" style={{ fontSize: '1.7rem', marginTop: 16 }}>파일로 분석하기</h1>
+      <h1 className="brand" style={{ fontSize: '1.7rem' }}>파일로 분석하기</h1>
       <p className="lead">
         파일을 올린 뒤 미리듣기로 확인한 다음 분석해요. 기본은 무반주(순수 보컬) 분석입니다.
       </p>
@@ -82,7 +77,7 @@ export default function Upload() {
         {!ready ? (
           <>
             <ul className="record-idle-tips">
-              <li>지원 형식: m4a, mp3, wav, flac, aac, webm</li>
+              <li>지원 형식: mp3, wav, m4a, flac, ogg, aac, webm, mp4 · 최대 30MB</li>
               <li>권장 길이 15~60초 · 한 구절 정도가 좋아요</li>
               <li>반주가 섞여 있으면 위 체크박스를 켜 주세요</li>
             </ul>
@@ -90,7 +85,7 @@ export default function Upload() {
               파일 선택
               <input
                 type="file"
-                accept="audio/*,.m4a,.mp3,.wav,.flac,.aac,.webm"
+                accept="audio/*,.m4a,.mp3,.wav,.flac,.ogg,.aac,.webm,.mp4,.m4v"
                 disabled={busy}
                 style={{ display: 'none' }}
                 onChange={(e) => onPick(e.target.files?.[0] || null)}

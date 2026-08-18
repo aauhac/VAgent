@@ -25,6 +25,9 @@ export default defineConfig({
       build: 'vite build',
     },
   },
-  permissions: [],
+  navigationBar: {
+    theme: 'light',
+  },
+  permissions: [{ name: 'microphone', access: 'access' }],
   outdir: 'dist',
 });

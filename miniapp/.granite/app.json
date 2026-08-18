@@ -1,4 +1,9 @@
 {
   "appName": "vocalfb",
-  "permissions": []
+  "permissions": [
+    {
+      "name": "microphone",
+      "access": "access"
+    }
+  ]
 }

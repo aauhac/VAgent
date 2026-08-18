@@ -24,6 +24,10 @@ function finiteDuration(value: number | null | undefined): number {
   return value;
 }
 
+function hasAudioSource(src: string): boolean {
+  return typeof src === 'string' && src.trim().length > 0;
+}
+
 /** Preview: visual strip + seekable scrubber + play / clear / analyze. */
 export default function AudioReadyPanel({
   src,
@@ -39,19 +43,21 @@ export default function AudioReadyPanel({
 }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const wasPlayingBeforeScrubRef = useRef(false);
+  const elementPlayableRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [dur, setDur] = useState(finiteDuration(durationSec));
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [scrubTime, setScrubTime] = useState(0);
-  const [previewError, setPreviewError] = useState(false);
+  const [previewUnusable, setPreviewUnusable] = useState(false);
 
   useEffect(() => {
+    elementPlayableRef.current = false;
     setPlaying(false);
     setCurrent(0);
     setScrubTime(0);
     setIsScrubbing(false);
-    setPreviewError(false);
+    setPreviewUnusable(false);
     setDur(finiteDuration(durationSec));
     const a = audioRef.current;
     if (a) {
@@ -64,23 +70,45 @@ export default function AudioReadyPanel({
     }
   }, [src, durationSec]);
 
+  function markElementPlayable() {
+    elementPlayableRef.current = true;
+    if (previewUnusable) setPreviewUnusable(false);
+  }
+
+  function markPreviewUnusable() {
+    const a = audioRef.current;
+    if (elementPlayableRef.current) return;
+    if (a && !a.paused) {
+      markElementPlayable();
+      return;
+    }
+    setPreviewUnusable(true);
+    setPlaying(false);
+  }
+
   const displayTime = isScrubbing ? scrubTime : current;
-  const seekable = dur > 0 && !analyzing && !previewError;
+  const controlsEnabled = hasAudioSource(src) && !analyzing && !previewUnusable;
+  const seekable = controlsEnabled && dur > 0;
   const progressPct = dur > 0 ? Math.min(100, Math.max(0, (displayTime / dur) * 100)) : 0;
   const bars = levels && levels.length ? levels : Array.from({ length: 28 }, (_, i) => 8 + ((i * 7) % 28));
 
   function togglePlay() {
     const a = audioRef.current;
-    if (!a || analyzing || previewError) return;
+    if (!a || analyzing || previewUnusable) return;
     if (a.paused) {
       if (dur > 0 && a.currentTime >= Math.max(0, dur - 0.05)) {
         a.currentTime = 0;
         setCurrent(0);
       }
-      void a.play().catch(() => {
-        setPreviewError(true);
-        setPlaying(false);
-      });
+      void a.play().then(
+        () => {
+          markElementPlayable();
+          setPlaying(true);
+        },
+        () => {
+          markPreviewUnusable();
+        },
+      );
       setPlaying(true);
     } else {
       a.pause();
@@ -117,10 +145,15 @@ export default function AudioReadyPanel({
     setIsScrubbing(false);
     const a = audioRef.current;
     if (wasPlayingBeforeScrubRef.current && a) {
-      void a.play().catch(() => {
-        setPreviewError(true);
-        setPlaying(false);
-      });
+      void a.play().then(
+        () => {
+          markElementPlayable();
+          setPlaying(true);
+        },
+        () => {
+          markPreviewUnusable();
+        },
+      );
       setPlaying(true);
     } else {
       setPlaying(false);
@@ -145,7 +178,7 @@ export default function AudioReadyPanel({
   }
 
   return (
-    <div className="audio-ready">
+    <div className="audio-ready" data-testid="audio-ready-panel">
       <div className="audio-ready-head">
         <div>
           <p className="audio-ready-title">{title}</p>
@@ -179,6 +212,7 @@ export default function AudioReadyPanel({
           step={0.1}
           value={seekable ? displayTime : 0}
           disabled={!seekable}
+          data-testid="audio-ready-seek"
           aria-label="재생 위치"
           aria-valuemin={0}
           aria-valuemax={Math.round(dur)}
@@ -206,11 +240,20 @@ export default function AudioReadyPanel({
         ref={audioRef}
         src={src}
         preload="metadata"
+        playsInline
         onLoadedMetadata={(e) => {
           const d = e.currentTarget.duration;
           if (Number.isFinite(d) && d > 0) setDur(d);
+          markElementPlayable();
+        }}
+        onCanPlay={() => markElementPlayable()}
+        onLoadedData={() => markElementPlayable()}
+        onPlaying={() => {
+          markElementPlayable();
+          setPlaying(true);
         }}
         onTimeUpdate={(e) => {
+          markElementPlayable();
           if (isScrubbing) return;
           setCurrent(e.currentTarget.currentTime || 0);
         }}
@@ -221,15 +264,14 @@ export default function AudioReadyPanel({
         onPause={() => {
           if (!isScrubbing) setPlaying(false);
         }}
-        onPlay={() => setPlaying(true)}
-        onError={() => {
-          setPreviewError(true);
-          setPlaying(false);
+        onPlay={() => {
+          markElementPlayable();
+          setPlaying(true);
         }}
       />
 
-      {previewError ? (
-        <p className="muted" style={{ margin: 0, fontSize: '0.85rem' }}>
+      {previewUnusable ? (
+        <p className="muted" data-testid="audio-preview-unavailable" style={{ margin: 0, fontSize: '0.85rem' }}>
           이 브라우저에서는 미리듣기를 지원하지 않아요. 분석은 계속할 수 있어요.
         </p>
       ) : null}
@@ -239,7 +281,8 @@ export default function AudioReadyPanel({
           type="button"
           className="btn secondary"
           onClick={togglePlay}
-          disabled={analyzing || previewError}
+          disabled={!controlsEnabled}
+          data-testid="audio-ready-play"
         >
           {playing ? '일시정지' : '재생'}
         </button>

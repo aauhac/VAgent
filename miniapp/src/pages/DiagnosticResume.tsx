@@ -41,7 +41,7 @@ export default function DiagnosticResume() {
 
   return (
     <main>
-      <h1 className="brand" style={{ fontSize: '1.4rem' }}>정밀 발성 진단</h1>
+      <p className="page-kicker">정밀 발성 진단</p>
       <p className="muted">{error || '진단 진행 상태를 확인하고 있어요…'}</p>
       {error && sessionId ? (
         <button

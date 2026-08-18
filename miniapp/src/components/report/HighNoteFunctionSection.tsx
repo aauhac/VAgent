@@ -2,6 +2,7 @@ import SpectrumAxis from './SpectrumAxis';
 
 type Props = {
   profile: any;
+  embedded?: boolean;
 };
 
 function statusLabel(axis: any): string {
@@ -22,7 +23,7 @@ function statusLabel(axis: any): string {
   return map[s] || axis?.summary || '참고';
 }
 
-export default function HighNoteFunctionSection({ profile }: Props) {
+export default function HighNoteFunctionSection({ profile, embedded = false }: Props) {
   if (!profile) return null;
 
   const availability = String(profile.availability || (profile.available ? 'FULL' : 'UNAVAILABLE')).toUpperCase();
@@ -34,23 +35,7 @@ export default function HighNoteFunctionSection({ profile }: Props) {
       : null);
 
   if (!profile.available && availability === 'UNAVAILABLE') {
-    const obs = ctx.highest_observed_f0_hz;
-    const thr = ctx.high_threshold_hz;
-    return (
-      <section className="section">
-        <h3 className="section-title">고음 수행</h3>
-        <p className="body-text muted">{reasonUser}</p>
-        {obs != null && thr != null && String(profile.reason || '').includes('PITCH_RANGE') ? (
-          <p className="body-text muted" style={{ marginTop: 8, fontSize: '0.9rem' }}>
-            이번 녹음 기준 음역 폭이 좁아 고음 구간 비교를 만들지 않았어요.
-          </p>
-        ) : obs != null && thr != null ? (
-          <p className="body-text muted" style={{ marginTop: 8, fontSize: '0.9rem' }}>
-            관찰 최고 {Math.round(Number(obs))} Hz · 이 녹음 고음 문턱 {Math.round(Number(thr))} Hz
-          </p>
-        ) : null}
-      </section>
-    );
+    return null;
   }
 
   const axes = profile.axes || {};
@@ -67,8 +52,8 @@ export default function HighNoteFunctionSection({ profile }: Props) {
   const observed = ctx.highest_observed_f0_hz;
 
   return (
-    <section className="section">
-      <h3 className="section-title">고음 수행</h3>
+    <section className={embedded ? undefined : 'section'}>
+      {embedded ? null : <h3 className="section-title">고음 수행</h3>}
       {availability === 'PARTIAL' && reasonUser ? (
         <p className="body-text muted">{reasonUser}</p>
       ) : null}

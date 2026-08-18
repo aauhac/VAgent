@@ -3,6 +3,9 @@
  * processProductGrant returns true only after VAgent backend VERIFIED grant.
  */
 
+import { pauseAllMediaPlayback } from './mediaPlayback';
+import { ensureTossLogin, tossLoginUserMessage } from './tossAuth';
+
 export type PurchaseState =
   | 'IDLE'
   | 'PREPARING'
@@ -89,6 +92,16 @@ export async function buyProduct(input: BuyProductInput): Promise<BuyProductResu
     return { ok: false, state: 'FAILED', message: '결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.' };
   }
   buying = true;
+  pauseAllMediaPlayback();
+  const login = await ensureTossLogin();
+  if (!login.ok) {
+    buying = false;
+    const message = tossLoginUserMessage(login.stage);
+    if (!message) {
+      return { ok: false, state: 'CANCELLED' };
+    }
+    return { ok: false, state: 'FAILED', message };
+  }
   const { createIapIntent, grantIapOrder } = await import('../api/client');
   try {
     const IAP = await loadIap();
@@ -171,6 +184,8 @@ export async function buyProduct(input: BuyProductInput): Promise<BuyProductResu
 }
 
 export async function recoverPendingPurchases(): Promise<void> {
+  const { getVagentSessionToken } = await import('./tossAuth');
+  if (!getVagentSessionToken()) return;
   const IAP = await loadIap();
   if (!IAP?.getPendingOrders) return;
   let pending: { orders?: Array<{ orderId?: string; sku?: string }> } | undefined;

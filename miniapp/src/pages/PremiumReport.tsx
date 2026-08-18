@@ -137,7 +137,7 @@ export default function PremiumReport() {
   if (error === 'REPORT_LOCKED') {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.5rem' }}>상세 결과 잠금</h1>
+        <h2 className="brand" style={{ fontSize: '1.35rem', marginTop: 12 }}>상세 결과 잠금</h2>
         <p className="lead">이 진단 세션이 아직 해제되지 않았어요.</p>
         <Link className="btn" to={`/premium?session=${sessionId}`}>영구 해제하기</Link>
       </main>
@@ -242,6 +242,22 @@ export default function PremiumReport() {
   const canonicalAcoustic =
     report.canonical_acoustic_axes
     || vocalStyle?.canonical_acoustic_axes;
+  const dims =
+    report.dimensions
+    || report.vocal_function_profile?.dimensions
+    || [];
+  const criteriaMatrix =
+    report.criteria_matrix
+    || report.vocal_function_profile?.criteria_matrix
+    || [];
+  const dimCount = Array.isArray(dims) ? dims.length : Object.keys(dims || {}).length;
+  const remainingRaw =
+    report.unresolved_dimensions
+    || report.final_diagnostic_profile?.remaining_uncertainties
+    || [];
+  const remainingUncertainties = Array.isArray(remainingRaw)
+    ? remainingRaw
+    : Object.keys(remainingRaw || {});
 
   function qaAnswerOnly(answer: string) {
     let text = answer;
@@ -281,21 +297,17 @@ export default function PremiumReport() {
     };
   }
 
+  const reportTitle = scrubUserText(
+    report.report_title || (report.evidence_mode === 'CONCERN_ONLY' ? '고민 중심 분석' : '정밀 발성 진단'),
+  );
+
   return (
     <main>
-      <Link className="muted" to="/">‹ 홈</Link>
-      {report.source_analysis_id || report.final_diagnostic_profile?.source_analysis_id ? (
-        <p className="muted" style={{ marginTop: 8 }}>
-          <Link
-            to={`/result/${report.source_analysis_id || report.final_diagnostic_profile?.source_analysis_id}/detail`}
-          >
-            상세 리포트로 돌아가기
-          </Link>
-        </p>
+      {reportTitle && reportTitle !== '정밀 발성 진단' ? (
+        <h2 className="brand" style={{ fontSize: '1.25rem', marginTop: 12 }}>
+          {reportTitle}
+        </h2>
       ) : null}
-      <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 12 }}>
-        {scrubUserText(report.report_title || (report.evidence_mode === 'CONCERN_ONLY' ? '고민 중심 분석' : '정밀 발성 진단'))}
-      </h1>
       {report.report_subtitle ? (
         <p className="muted body-text" style={{ marginTop: 8, lineHeight: 1.45 }}>
           {scrubUserText(report.report_subtitle)}
@@ -355,7 +367,7 @@ export default function PremiumReport() {
         </section>
       ) : null}
 
-      {goal.goal_title ? (
+      {showDebug && goal.goal_title ? (
         <section className="section" data-testid="coaching-goal">
           <h3 className="section-title">먼저 연습할 부분</h3>
           <p className="body-text" style={{ fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
@@ -369,7 +381,7 @@ export default function PremiumReport() {
         </section>
       ) : null}
 
-      {goal.primary_focus_label || goal.primary_focus ? (
+      {showDebug && (goal.primary_focus_label || goal.primary_focus) ? (
         <section className="section" data-testid="priority-change">
           <p className="body-text muted" style={{ margin: 0, fontSize: '0.95rem' }}>
             우선 포인트 · {scrubUserText(goal.primary_focus_label || goal.primary_focus)}
@@ -377,7 +389,7 @@ export default function PremiumReport() {
         </section>
       ) : null}
 
-      {goal.why_this_first ? (
+      {showDebug && goal.why_this_first ? (
         <section className="section" data-testid="why-this-first">
           <h3 className="section-title">왜 이 연습?</h3>
           <p className="body-text" style={{ margin: 0, lineHeight: 1.55 }}>
@@ -386,7 +398,7 @@ export default function PremiumReport() {
         </section>
       ) : null}
 
-      <CoachingProtocolCard protocol={coachingProtocol} />
+      {showDebug ? <CoachingProtocolCard protocol={coachingProtocol} /> : null}
 
       {pqa.show_qa_section !== false && (pqa.questions?.length > 0 || pqa.question) ? (
         <section className="section" data-testid="qa-section">
@@ -440,7 +452,8 @@ export default function PremiumReport() {
                 const nextStep = scrubUserText(qa.what_to_change || '');
                 const prescription = qa.prescription;
                 const showNext =
-                  Boolean(nextStep)
+                  showDebug
+                  && Boolean(nextStep)
                   && !body.includes(nextStep)
                   && !prescription?.instruction;
                 const comparison = qa.comparison || qa.comparison_protocol;
@@ -456,7 +469,9 @@ export default function PremiumReport() {
                     >
                       A. {body}
                     </p>
-                    <PrescriptionBlock prescription={prescription} testIdPrefix={`qa-rx-${i}`} />
+                    {showDebug ? (
+                      <PrescriptionBlock prescription={prescription} testIdPrefix={`qa-rx-${i}`} />
+                    ) : null}
                     {showDebug ? (
                       <QAComparisonBlock comparison={comparison} testIdPrefix={`qa-compare-${i}`} />
                     ) : null}
@@ -510,7 +525,7 @@ export default function PremiumReport() {
         </section>
       )}
 
-      {practices.filter((g: any) => g && (g.mode || '') !== 'MAINTAIN').length > 0 && !hasProtocolSteps ? (
+      {showDebug && practices.filter((g: any) => g && (g.mode || '') !== 'MAINTAIN').length > 0 && !hasProtocolSteps ? (
         <section className="section" data-testid="practice-section">
           <h3 className="section-title">맞춤 연습 방향</h3>
           {practices
@@ -588,7 +603,7 @@ export default function PremiumReport() {
 
       {taskSummary.length > 0 && (
         <section className="section" data-testid="task-result-section">
-          <h3 className="section-title">실제로 완료한 추가 발성 결과</h3>
+          <h3 className="section-title">표준 과제에서 본 결과</h3>
           {taskSummary.map((t) => (
             <div key={t.task} style={{ marginBottom: 16 }}>
               <p style={{ margin: '0 0 8px', fontWeight: 700 }}>{t.task}</p>
@@ -603,17 +618,20 @@ export default function PremiumReport() {
         </section>
       )}
 
-      {(canonicalRegister?.status || (canonicalAcoustic?.axes && Object.keys(canonicalAcoustic.axes).length > 0)) ? (
+      {(canonicalRegister?.status || (canonicalAcoustic?.axes && Object.keys(canonicalAcoustic.axes).length > 0) || dimCount > 0 || remainingUncertainties.length > 0) ? (
         <VocalProfile
-          dimensions={[]}
-          title="정밀 발성 프로필"
+          dimensions={dims}
+          criteriaMatrix={criteriaMatrix}
           canonicalRegister={canonicalRegister}
           canonicalAcoustic={canonicalAcoustic}
+          context="precision"
+          remainingUncertainties={remainingUncertainties}
+          quality={report.quality}
         />
       ) : null}
 
       <section className="section" data-testid="precision-core-findings">
-        <h3 className="section-title">확인된 핵심 특징</h3>
+        <h3 className="section-title">가장 뚜렷한 특징</h3>
         {distinctFeatures.length === 0 ? (
           <p className="muted body-text">이번 진단에서 특별히 강하게 나타난 특징은 제한적이에요.</p>
         ) : (
@@ -642,7 +660,7 @@ export default function PremiumReport() {
         )}
       </section>
 
-      {hasMoreExplore || (showDebug && report.scientific_debug) ? (
+      {hasMoreExplore || compactDisclaimer || (showDebug && report.scientific_debug) ? (
         <section className="section" data-testid="precision-more-explore">
           <h3 className="section-title">더 살펴보기</h3>
 
@@ -660,7 +678,7 @@ export default function PremiumReport() {
           ) : null}
 
           {supportingShown.length > 0 ? (
-            <AccordionRow title="참고로 확인된 변화" meta={`${supportingShown.length}개`}>
+            <AccordionRow title="추가 관찰" meta={`${supportingShown.length}개`}>
               {supportingShown.map((m) => (
                 <div key={m.mechanismId || m.title} style={{ marginBottom: 12 }}>
                   <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
@@ -675,7 +693,7 @@ export default function PremiumReport() {
           ) : null}
 
           {uncertainShown.length > 0 ? (
-            <AccordionRow title="이번에 확정하지 않은 부분" meta={`${uncertainShown.length}개`}>
+            <AccordionRow title="추가 확인이 필요한 항목" meta={`${uncertainShown.length}개`}>
               {uncertainShown.map((m) => (
                 <div key={m.title} style={{ marginBottom: 12 }}>
                   <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text)' }}>
@@ -688,6 +706,14 @@ export default function PremiumReport() {
               ))}
               <p className="muted" style={{ marginTop: 8, fontSize: '0.85rem', lineHeight: 1.45 }}>
                 정보가 부족하거나 결과가 서로 다를 때는 억지로 한 방향으로 판단하지 않아요.
+              </p>
+            </AccordionRow>
+          ) : null}
+
+          {compactDisclaimer ? (
+            <AccordionRow title="분석 방법과 한계">
+              <p className="body-text muted" style={{ marginTop: 0, lineHeight: 1.5 }}>
+                {compactDisclaimer}
               </p>
             </AccordionRow>
           ) : null}

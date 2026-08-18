@@ -149,6 +149,7 @@ export default function SafetyCheck() {
   if (booting) {
     return (
       <main>
+        <p className="page-kicker">정밀 발성 진단</p>
         <p className="muted">안전 확인 준비 중…</p>
       </main>
     );
@@ -157,7 +158,7 @@ export default function SafetyCheck() {
   if (phase === 'analyzing') {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.5rem' }}>정밀 발성 진단</h1>
+        <p className="page-kicker">정밀 발성 진단</p>
         <p className="lead" style={{ marginTop: 10 }}>
           현재 통증이 있다고 답해 주셔서
           추가 발성 녹음은 진행하지 않아요.
@@ -174,10 +175,11 @@ export default function SafetyCheck() {
 
   return (
     <main>
-      <h1 className="brand" style={{ fontSize: '1.6rem' }}>안전 확인</h1>
+      <p className="page-kicker">정밀 발성 진단</p>
+      <h2 className="brand" style={{ fontSize: '1.35rem' }}>안전 확인</h2>
       <p className="lead">
-        질환을 진단하는 문진이 아니에요. 정밀 진단을 진행하기 전 안전 관련 증상을 확인합니다.
-        통증이 있으면 추가 발성 녹음은 하지 않고, 심한 불편·피로만 있으면 강한 검사만 제한해요.
+        정밀 진단 전에 불편한 증상이 있는지만 확인해요.
+        통증이 있으면 추가 녹음은 하지 않아요.
       </p>
       <div className="card">
         {QUESTIONS.map((q) => (

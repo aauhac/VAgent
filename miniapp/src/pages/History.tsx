@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useNavigationType } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { deleteAnalysis, getServerHistory, removeHistory } from '../api/client';
-import SubPageHeader from '../components/ui/SubPageHeader';
-import { resolveSubPageBack } from '../lib/subPageNav';
-import { loginWithTossApp } from '../lib/tossAuth';
+import { ensureTossLogin, tossLoginUserMessage } from '../lib/tossAuth';
+import { SESSION_CLEARED_EVENT } from '../lib/clientSession';
 
 type DiagnosticBrief = {
   session_id: string;
@@ -70,8 +69,6 @@ function mapItems(serverItems: Array<Record<string, unknown>>): Row[] {
 }
 
 export default function History() {
-  const nav = useNavigate();
-  const navigationType = useNavigationType();
   const [items, setItems] = useState<Row[]>([]);
   const [unlinked, setUnlinked] = useState<DiagnosticBrief[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -82,15 +79,6 @@ export default function History() {
   const [pendingDelete, setPendingDelete] = useState<Row | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
-
-  function onBack() {
-    const target = resolveSubPageBack(navigationType);
-    if (target.mode === 'history') {
-      nav(-1);
-      return;
-    }
-    nav('/');
-  }
 
   async function loadPage(nextOffset: number, append: boolean) {
     const server = await getServerHistory(PAGE_SIZE, nextOffset);
@@ -126,6 +114,17 @@ export default function History() {
     };
   }, []);
 
+  useEffect(() => {
+    const onCleared = () => {
+      setItems([]);
+      setUnlinked([]);
+      setHasMore(false);
+      setPendingDelete(null);
+    };
+    window.addEventListener(SESSION_CLEARED_EVENT, onCleared);
+    return () => window.removeEventListener(SESSION_CLEARED_EVENT, onCleared);
+  }, []);
+
   const groups = useMemo(() => {
     const out: Array<{ date: string; rows: Row[] }> = [];
     for (const row of items) {
@@ -151,11 +150,11 @@ export default function History() {
       setPendingDelete(null);
     } catch (e: any) {
       if (e?.name === 'LOGIN_REQUIRED') {
-        const ok = await loginWithTossApp();
-        if (ok) {
+        const login = await ensureTossLogin();
+        if (login.ok) {
           setDeleteError('로그인 후 다시 삭제를 눌러주세요.');
         } else {
-          setDeleteError('로그인 후 삭제할 수 있어요.');
+          setDeleteError(tossLoginUserMessage(login.stage) || '');
         }
       } else {
         setDeleteError('삭제하지 못했어요. 잠시 후 다시 시도해주세요.');
@@ -167,9 +166,9 @@ export default function History() {
 
   return (
     <main>
-      <SubPageHeader title="분석 기록" onBack={onBack} />
+      <h1 className="brand page-screen-title">분석 기록</h1>
 
-      <section className="section history-feed" style={{ borderBottom: 0, marginTop: 12 }}>
+      <section className="section history-feed" style={{ borderBottom: 0, marginTop: 8 }}>
         {loading && <p className="muted">불러오는 중…</p>}
         {!loading && items.length === 0 && (
           <div className="history-empty" data-testid="history-empty">

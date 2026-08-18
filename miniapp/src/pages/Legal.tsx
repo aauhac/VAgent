@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router-dom';
-import SubPageHeader from '../components/ui/SubPageHeader';
 import LegalMarkdown from '../legal/LegalMarkdown';
 import termsMd from '../legal/TERMS_OF_SERVICE.ko.md?raw';
 import privacyMd from '../legal/PRIVACY_POLICY.ko.md?raw';
@@ -14,11 +12,9 @@ const DOCS = {
 type LegalSlug = keyof typeof DOCS;
 
 export default function LegalPage({ slug }: { slug: LegalSlug }) {
-  const nav = useNavigate();
   const doc = DOCS[slug];
   return (
-    <main className="legal-page" data-testid={`legal-${slug}`}>
-      <SubPageHeader title={doc.title} onBack={() => nav('/')} />
+    <main className="legal-page" data-testid={`legal-${slug}`} aria-label={doc.title}>
       <LegalMarkdown source={doc.source} />
     </main>
   );

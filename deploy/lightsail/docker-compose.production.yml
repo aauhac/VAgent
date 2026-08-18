@@ -1,0 +1,85 @@
+# Lightsail production compose.
+# Bind backend to loopback only. Postgres has no host port.
+# Run from repo root with:
+#   docker compose --env-file /etc/vocalfb/vocalfb.env -f deploy/lightsail/docker-compose.production.yml ...
+
+name: vocalfb
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - /etc/vocalfb/vocalfb.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-vocalfb}
+    volumes:
+      - /var/lib/vocalfb/postgres:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - max_connections=40
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - work_mem=2MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - effective_cache_size=256MB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$${POSTGRES_DB:-vocalfb}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: deploy/lightsail/Dockerfile.backend
+    image: vocalfb-backend:local
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - /etc/vocalfb/vocalfb.env
+    environment:
+      VAGENT_ENV: production
+      RUNTIME_DIR: /var/lib/vocalfb/runtime
+      ARTIFACT_STORAGE_MODE: LOCAL_PERSISTENT
+      BACKEND_REPLICAS: "1"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - /var/lib/vocalfb/runtime:/var/lib/vocalfb/runtime
+      - /etc/vocalfb/secrets:/etc/vocalfb/secrets:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  default:
+    name: vocalfb_internal

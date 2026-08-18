@@ -75,7 +75,7 @@ export default function SpectrumAxis({
                 aria-controls={tipId}
                 onClick={() => setOpen((v) => !v)}
               >
-                ?
+                <span aria-hidden="true">ⓘ</span>
               </button>
               {open ? (
                 <span id={tipId} role="tooltip" className="spectrum-help-tip">

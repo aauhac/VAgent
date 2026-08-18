@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getVocalProgressInsight } from '../api/client';
 import ProgressInsightSheet from '../components/progress/ProgressInsightSheet';
-import SubPageHeader from '../components/ui/SubPageHeader';
 import { getLocalActiveGoal } from '../lib/localGoalStore';
 import { listLocalVocalSnapshots } from '../lib/localVocalHistory';
-import { resolveProgressBackTarget } from '../lib/progressNavigation';
 import {
   buildLocalProgressInsight,
   type ProgressCard,
@@ -17,9 +15,6 @@ import {
  * Active goal (if any) only influences improved/changed classification internally.
  */
 export default function ProgressInsightPage() {
-  const nav = useNavigate();
-  const location = useLocation();
-  const navigationType = useNavigationType();
   const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
   const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
   const localCount = useMemo(() => listLocalVocalSnapshots().length, []);
@@ -58,21 +53,6 @@ export default function ProgressInsightPage() {
     };
   }, []);
 
-  function onBack() {
-    const resolved = resolveProgressBackTarget(location.state, {
-      navigationType,
-    });
-    if (resolved.mode === 'path') {
-      nav(resolved.path);
-      return;
-    }
-    if (resolved.mode === 'history') {
-      nav(-1);
-      return;
-    }
-    nav('/');
-  }
-
   const improved = insight?.improved || [];
   const changed = insight?.changed || [];
   const maintained = insight?.maintained || [];
@@ -110,9 +90,9 @@ export default function ProgressInsightPage() {
 
   return (
     <main>
-      <SubPageHeader title="내 변화" onBack={onBack} />
+      <h1 className="brand page-screen-title">내 변화 보기</h1>
 
-      <p className="lead" style={{ marginTop: 16, marginBottom: 8 }}>
+      <p className="lead" style={{ marginTop: 0, marginBottom: 8 }}>
         이전보다 뭐가 달라졌을까요
       </p>
       <p className="muted" style={{ marginTop: 0, marginBottom: 16, fontSize: '0.88rem' }}>

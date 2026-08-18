@@ -1,0 +1,48 @@
+HEAD=40407e77467298523bf9ce1e8d5832825df2d1dc
+origin/main...HEAD=0	0
+git status --short:
+M .env.production.example
+ M backend/app/diagnostic/service.py
+ M backend/app/products/catalog.py
+ M miniapp/src/components/report/DiagnosticCTA.tsx
+ M miniapp/src/components/report/HighNoteFunctionSection.tsx
+ M miniapp/src/components/report/MoreDetails.tsx
+ M miniapp/src/components/report/SpectrumAxis.tsx
+ M miniapp/src/components/report/TimbreProfileSection.tsx
+ M miniapp/src/components/report/VocalProfile.tsx
+ M miniapp/src/lib/diagnosticOffer.ts
+ M miniapp/src/lib/reportPresentation.ts
+ M miniapp/src/pages/ConcernIntake.tsx
+ M miniapp/src/pages/DiagnosticRecordingIntro.tsx
+ M miniapp/src/pages/DiagnosticResume.tsx
+ M miniapp/src/pages/DiagnosticTask.tsx
+ M miniapp/src/pages/Home.tsx
+ M miniapp/src/pages/PremiumReport.tsx
+ M miniapp/src/pages/PremiumUnlock.tsx
+ M miniapp/src/pages/Result.tsx
+ M miniapp/src/pages/SafetyCheck.tsx
+ M miniapp/src/pages/SongDetailReport.tsx
+ M miniapp/src/qa/visualSmokeFixtures.ts
+ M miniapp/src/qa/visualSmokeMain.tsx
+ M miniapp/src/styles/app.css
+ M miniapp/tsconfig.tsbuildinfo
+ M tests/entitlements/test_song_detail_split.py
+ M tests/product/test_goal_surface_simplification.py
+ M tests/product/test_precision_report_readability.py
+ M tests/product/test_progress_navigation_ux.py
+?? .dockerignore
+?? deploy/
+?? miniapp/src/lib/unavailableAxisReason.ts
+?? miniapp/src/qa/vocalProfileFixtures.ts
+?? qa_output/detail_precision_ux/
+?? qa_output/production_release_v1/DEPLOY_DIFF_STAT.txt
+?? qa_output/production_release_v1/DEPLOY_GIT_STATUS.txt
+?? qa_output/production_release_v1/DEPLOY_HEAD.txt
+?? qa_output/production_release_v1/lightsail/
+?? scripts/package_lightsail_release.ps1
+?? scripts/package_lightsail_release.py
+?? scripts/qa_detail_precision_visual.mjs
+?? tests/product/fixtures/
+?? tests/product/test_detail_precision_ux.py
+?? tests/product/test_lightsail_and_home_copy.py
+packaged_at_utc=2026-08-17T18:01:37.495939+00:00

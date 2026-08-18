@@ -192,6 +192,7 @@ export default function ConcernIntake() {
   if (loading) {
     return (
       <main>
+        <p className="page-kicker">정밀 발성 진단</p>
         <p className="muted">고민 체크리스트 준비 중…</p>
         <div className="skeleton" style={{ height: 28, width: '55%' }} />
         <div className="skeleton" style={{ height: 120 }} />
@@ -202,7 +203,7 @@ export default function ConcernIntake() {
   if (loadError) {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.5rem' }}>정밀 발성 진단</h1>
+        <p className="page-kicker">정밀 발성 진단</p>
         <p className="fail">{loadError}</p>
         {sourceAnalysisId ? (
           <Link className="btn" to={`/result/${sourceAnalysisId}/detail`}>상세 리포트로 돌아가기</Link>
@@ -214,9 +215,7 @@ export default function ConcernIntake() {
   if (step === 'timbre') {
     return (
       <main data-testid="timbre-goal-step">
-        {sourceAnalysisId ? (
-          <Link className="muted" to={`/result/${sourceAnalysisId}/detail`}>‹ 상세 리포트</Link>
-        ) : null}
+        <p className="page-kicker">정밀 발성 진단</p>
         <h1 className="brand" style={{ fontSize: '1.6rem' }}>{timbrePrompt}</h1>
         <p className="lead">{timbreHelper}</p>
         {timbreOptions.map((opt) => {
@@ -280,10 +279,7 @@ export default function ConcernIntake() {
 
   return (
     <main>
-      {sourceAnalysisId ? (
-        <Link className="muted" to={`/result/${sourceAnalysisId}/detail`}>‹ 상세 리포트</Link>
-      ) : null}
-      <h1 className="brand" style={{ fontSize: '1.6rem' }}>정밀 발성 진단</h1>
+      <p className="page-kicker">정밀 발성 진단</p>
       <p className="lead">
         현재 특별히 고민되는 부분이 있나요?
         <br />
@@ -365,10 +361,14 @@ export default function ConcernIntake() {
           </div>
         ))}
 
-      <p className="muted" style={{ fontSize: '0.85rem' }}>
-        고민은 방향을 정하는 신호일 뿐, 음향 분석 결과를 대체하지 않아요.
-        정밀 진단에서는 짧은 추가 녹음을 통해 더 많은 근거를 확인합니다.
-      </p>
+      <details className="profile-missing" style={{ margin: '12px 0' }}>
+        <summary className="profile-missing__toggle" style={{ listStyle: 'none' }}>
+          고민 선택이 분석에 어떻게 쓰이나요?
+        </summary>
+        <p className="muted" style={{ fontSize: '0.85rem', margin: '8px 0 0' }}>
+          고민은 확인할 방향을 정하는 신호예요. 음향 분석 결과를 바꾸지는 않아요.
+        </p>
+      </details>
       {plannedHint ? <p className="body-text">{plannedHint}</p> : null}
 
       <button

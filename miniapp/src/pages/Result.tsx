@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   getAnalysis,
   getProducts,
@@ -13,7 +13,6 @@ import ProgressInsightSheet from '../components/progress/ProgressInsightSheet';
 import TodayPhonationSummary from '../components/progress/TodayPhonationSummary';
 import VocalTypeHero from '../components/report/VocalTypeHero';
 import PremiumProductCard from '../components/ui/PremiumProductCard';
-import SubPageHeader from '../components/ui/SubPageHeader';
 import {
   classifyDiagnosticOffer,
   diagnosticDurationNote,
@@ -34,20 +33,10 @@ import {
 } from '../lib/progressPresentation';
 import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '../lib/reportPresentation';
 import { buyProduct, getIapProductMap } from '../lib/tossIap';
-import { resolveSubPageBack } from '../lib/subPageNav';
 
 export default function Result() {
   const { id } = useParams();
   const nav = useNavigate();
-  const navigationType = useNavigationType();
-  function onBack() {
-    const target = resolveSubPageBack(navigationType);
-    if (target.mode === 'history') {
-      nav(-1);
-      return;
-    }
-    nav('/');
-  }
   const location = useLocation();
   const [data, setData] = useState<any>(null);
   const [products, setProducts] = useState<any>(null);
@@ -219,7 +208,7 @@ export default function Result() {
         return;
       }
       if (iap.state === 'CANCELLED') {
-        setError(iap.message || '결제가 취소됐어요.');
+        if (iap.message) setError(iap.message);
         setBusyDetail(false);
         return;
       }
@@ -278,9 +267,10 @@ export default function Result() {
   const score = data.score || {};
   const access = data.access || {};
   const prodMap = products?.products || {};
-  const songPrice = iapPrices.song_detail || (import.meta.env.PROD ? (prodMap.song_detail?.display_amount || '—') : (prodMap.song_detail?.display_amount || '₩1,000'));
+  const songPrice = iapPrices.song_detail || prodMap.song_detail?.display_amount || (import.meta.env.PROD ? '—' : '₩990');
   const diagOfferKey = products?.offers?.diagnostic || 'diagnostic_full';
-  const diagPrice = iapPrices[diagOfferKey] || (import.meta.env.PROD ? (prodMap[diagOfferKey]?.display_amount || '—') : (prodMap[diagOfferKey]?.display_amount || '₩2,000'));
+  const diagFallback = diagOfferKey === 'diagnostic_upgrade' ? '₩990' : '₩1,980';
+  const diagPrice = iapPrices[diagOfferKey] || prodMap[diagOfferKey]?.display_amount || (import.meta.env.PROD ? '—' : diagFallback);
   const songUnlocked = !!access.song_detail_unlocked;
   const diagUnlocked = !!access.diagnostic_unlocked;
   const sessionId = access.diagnostic_session_id || null;
@@ -323,8 +313,7 @@ export default function Result() {
 
   return (
     <main>
-      <SubPageHeader title="무료 보컬 리포트" onBack={onBack} />
-      <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 12, marginBottom: 4 }}>
+      <h1 className="brand" style={{ fontSize: '1.4rem', marginBottom: 4 }}>
         오늘의 발성
       </h1>
 
@@ -377,7 +366,7 @@ export default function Result() {
                     bullets={[
                       '전체 발성 프로필과 고음·음색 분석',
                       '특징이 나타난 실제 노래 구간 듣기',
-                      '내 연습 목표 설정',
+                      '이번 녹음에서 확인된 발성 특성 정리',
                     ]}
                     ctaLabel="상세 리포트 보기"
                     to={`/result/${id}/detail`}
@@ -393,7 +382,7 @@ export default function Result() {
                     bullets={[
                       '전체 발성 프로필과 고음·음색 분석',
                       '특징이 나타난 실제 노래 구간 듣기',
-                      '내 연습 목표 설정',
+                      '이번 녹음에서 확인된 발성 특성 정리',
                     ]}
                     ctaLabel={`상세 리포트 보기 · ${songPrice}`}
                     onClick={buySongDetail}
@@ -407,7 +396,7 @@ export default function Result() {
                   badge="열람 가능"
                   featured={needsDiagnostic}
                   title="정밀 발성 진단"
-                  description="추가 녹음으로 확인한 결과와 연습 방향을 볼 수 있어요."
+                  description="추가 녹음으로 확인한 발성 특성을 더 정밀하게 볼 수 있어요."
                   bullets={diagBullets.length ? diagBullets : ['정밀 진단 결과 열람']}
                   ctaLabel="정밀 진단 보기"
                   to={`/diagnostic/${sessionId}/report`}
@@ -417,15 +406,15 @@ export default function Result() {
                   badge={needsDiagnostic ? '추가 확인 추천' : '추가 녹음으로 더 정밀하게'}
                   featured={needsDiagnostic}
                   title="정밀 발성 진단"
-                  description="노래만으로 애매했던 부분을 짧은 추가 녹음으로 다시 확인하고, 무엇부터 어떻게 연습할지 정리해요."
+                  description="짧은 추가 녹음으로 노래만으로 확인하기 어려웠던 발성 특성을 다시 측정하고, 내 고민에 맞춘 발성 피드백을 받아요."
                   priceLabel={diagPrice}
                   bullets={
                     diagBullets.length
                       ? diagBullets
                       : [
                           '확인이 필요한 발성 항목을 추가 녹음으로 다시 비교해요',
-                          '무엇부터 연습할지 우선순위를 정리해요',
-                          '내 결과에 맞는 단계별 연습 방법을 안내해요',
+                          '표준 과제를 통해 발성 특성을 더 정밀하게 비교해요',
+                          '선택한 고민과 현재 분석 결과에 맞는 항목을 확인해요',
                         ]
                   }
                   ctaLabel={`정밀 진단 시작 · ${diagPrice}`}
@@ -435,9 +424,9 @@ export default function Result() {
               )}
             </div>
             <p className="muted" style={{ marginTop: 14, fontSize: '0.82rem', lineHeight: 1.45 }}>
-              상세 리포트는 현재 노래를 깊게 분석해요.
+              상세 리포트는 이 노래의 고음·음색과 발성 프로필을 자세히 보여 줘요.
               <br />
-              정밀 진단은 추가 녹음으로 확인 범위를 넓혀요.
+              정밀 진단은 추가 녹음으로 다시 측정하고, 고민에 맞춘 발성 피드백을 드려요.
             </p>
           </section>
 

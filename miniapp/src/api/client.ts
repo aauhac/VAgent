@@ -1,4 +1,16 @@
-import { ensureIdentityHeaders } from '../lib/userIdentity';
+import { handleUnauthorizedSession } from '../lib/clientSession';
+import {
+  ANALYSIS_FAILED,
+  LOGIN_REQUIRED,
+  NETWORK_UNAVAILABLE,
+  RESULT_UNAVAILABLE,
+  uploadApiErrorMessage,
+} from '../lib/userFacingErrors';
+import {
+  ensureIdentityHeaders,
+  IdentityUnavailableError,
+  isIdentityUnavailableError,
+} from '../lib/userIdentity';
 import { getVagentSessionToken, setVagentSessionToken } from '../lib/tossAuth';
 import { apiUrl } from './base';
 
@@ -13,14 +25,31 @@ export type AnalysisJob = {
   feedback_status?: string;
 };
 
+function throwIfAuthLost(res: Response): void {
+  if (res.status !== 401) return;
+  handleUnauthorizedSession();
+  const err = new Error(LOGIN_REQUIRED);
+  err.name = 'LOGIN_REQUIRED';
+  throw err;
+}
+
 async function headers(extra?: HeadersInit): Promise<HeadersInit> {
-  const base = await ensureIdentityHeaders(extra);
-  const token = getVagentSessionToken();
-  if (!token) return base;
-  return {
-    ...base,
-    Authorization: `Bearer ${token}`,
-  };
+  try {
+    const base = await ensureIdentityHeaders(extra);
+    const token = getVagentSessionToken();
+    if (!token) return base;
+    return {
+      ...base,
+      Authorization: `Bearer ${token}`,
+    };
+  } catch (err) {
+    if (isIdentityUnavailableError(err)) {
+      throw err instanceof IdentityUnavailableError
+        ? err
+        : new IdentityUnavailableError('USER_IDENTITY_UNAVAILABLE');
+    }
+    throw err;
+  }
 }
 
 export async function createAnalysis(
@@ -49,37 +78,62 @@ export async function createAnalysis(
   form.append('analysis_mode', mode);
   form.append('input_mode', inputMode);
   form.append('include_feedback', 'false');
+  let reqHeaders: HeadersInit;
+  try {
+    reqHeaders = await headers();
+  } catch (e) {
+    if (e instanceof Error && e.message === 'API_BASE_NOT_CONFIGURED') throw e;
+    if (isIdentityUnavailableError(e)) {
+      throw e instanceof IdentityUnavailableError
+        ? e
+        : new IdentityUnavailableError('USER_IDENTITY_UNAVAILABLE');
+    }
+    throw e;
+  }
   let res: Response;
   try {
     res = await fetch(apiUrl(`/v1/analyses`), {
       method: 'POST',
-      headers: await headers(),
+      headers: reqHeaders,
       body: form,
     });
   } catch (e) {
     if (e instanceof Error && e.message === 'API_BASE_NOT_CONFIGURED') throw e;
+    if (isIdentityUnavailableError(e)) {
+      throw e instanceof IdentityUnavailableError
+        ? e
+        : new IdentityUnavailableError('USER_IDENTITY_UNAVAILABLE');
+    }
     throw new Error(
       import.meta.env.DEV
         ? '서버에 연결할 수 없어요. 로컬 backend가 실행 중인지 확인해 주세요.'
-        : '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.',
+        : NETWORK_UNAVAILABLE,
     );
   }
+  throwIfAuthLost(res);
   if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    const uploadMsg = uploadApiErrorMessage(res.status, body);
+    if (uploadMsg) throw new Error(uploadMsg);
     if (res.status >= 500) {
       throw new Error(
         import.meta.env.DEV
-          ? '분석 요청이 서버에서 실패했어요. 로컬 backend 로그를 확인해 주세요.'
-          : '분석 요청이 서버에서 실패했어요. 잠시 후 다시 시도해 주세요.',
+          ? '분석 요청 처리 중 문제가 발생했어요. 로컬 backend 로그를 확인해 주세요.'
+          : ANALYSIS_FAILED,
       );
     }
-    throw new Error(await res.text());
+    if (import.meta.env.PROD) {
+      throw new Error(ANALYSIS_FAILED);
+    }
+    throw new Error(body || ANALYSIS_FAILED);
   }
   return res.json();
 }
 
 export async function getAnalysis(id: string): Promise<AnalysisJob> {
   const res = await fetch(apiUrl(`/v1/analyses/${id}`), { headers: await headers() });
-  if (!res.ok) throw new Error('not found');
+  throwIfAuthLost(res);
+  if (!res.ok) throw new Error(RESULT_UNAVAILABLE);
   return res.json();
 }
 
@@ -88,11 +142,7 @@ export async function deleteAnalysis(id: string): Promise<void> {
     method: 'DELETE',
     headers: await headers(),
   });
-  if (res.status === 401) {
-    const err = new Error('LOGIN_REQUIRED');
-    err.name = 'LOGIN_REQUIRED';
-    throw err;
-  }
+  throwIfAuthLost(res);
   if (!res.ok) {
     throw new Error('DELETE_FAILED');
   }
@@ -105,6 +155,7 @@ export function getPreviewUrl(id: string): string {
 export async function getProducts(analysisId?: string) {
   const q = analysisId ? `?analysis_id=${encodeURIComponent(analysisId)}` : '';
   const res = await fetch(apiUrl(`/v1/products${q}`), { headers: await headers() });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -113,6 +164,7 @@ export async function getAnalysisAccess(analysisId: string) {
   const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/access`), {
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (res.status === 404) {
     const err: any = new Error('ANALYSIS_NOT_FOUND');
     err.code = 'ANALYSIS_NOT_FOUND';
@@ -154,8 +206,24 @@ export async function getServerHistory(limit = 20, offset = 0): Promise<{
   const res = await fetch(apiUrl(`/v1/history?limit=${limit}&offset=${offset}`), {
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+
+export async function getAuthMe(): Promise<boolean> {
+  const token = getVagentSessionToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(apiUrl(`/v1/auth/me`), { headers: await headers() });
+    if (res.status === 401) {
+      handleUnauthorizedSession();
+      return false;
+    }
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 export async function exchangeTossLogin(authorizationCode: string, referrer: string) {
@@ -200,6 +268,7 @@ export async function createIapIntent(input: {
     body: JSON.stringify(input),
   });
   const payload = await res.json().catch(() => ({}));
+  throwIfAuthLost(res);
   if (!res.ok) throw paymentError(res, payload);
   return payload as {
     intent_id: string;
@@ -217,6 +286,7 @@ export async function grantIapOrder(input: { intent_id: string; order_id: string
     body: JSON.stringify(input),
   });
   const payload = await res.json().catch(() => ({}));
+  throwIfAuthLost(res);
   if (!res.ok) throw paymentError(res, payload);
   return payload as { granted: boolean; complete_product_grant?: boolean };
 }
@@ -228,6 +298,7 @@ export async function recoverIapOrder(input: { order_id: string; sku?: string })
     body: JSON.stringify(input),
   });
   const payload = await res.json().catch(() => ({}));
+  throwIfAuthLost(res);
   if (!res.ok) throw paymentError(res, payload);
   return payload as { granted?: boolean };
 }
@@ -237,6 +308,7 @@ export async function mockUnlockSongDetail(analysisId: string) {
     method: 'POST',
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -248,6 +320,7 @@ export async function getSongDetailedReport(analysisId: string) {
   if (res.status === 402) {
     return { error: 'SONG_DETAIL_LOCKED' };
   }
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -258,6 +331,7 @@ export async function createDiagnosticSession(sourceAnalysisId?: string) {
     method: 'POST',
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -268,6 +342,7 @@ export async function mockPaySession(sessionId: string, productId?: string) {
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(productId ? { product_id: productId } : {}),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -287,12 +362,14 @@ export async function submitConcerns(
       ...(timbreGoal ? { timbre_goal: timbreGoal } : {}),
     }),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function getDiagnosticProtocol() {
   const res = await fetch(apiUrl(`/v1/diagnostic/protocol`), { headers: await headers() });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -303,6 +380,7 @@ export async function submitSafety(sessionId: string, answers: Record<string, bo
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ answers }),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -312,6 +390,7 @@ export async function ensureDiagnosticPlan(sessionId: string) {
     method: 'POST',
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -322,6 +401,7 @@ export async function getDiagnosticSession(sessionId: string) {
   });
   if (res.status === 404) throw new Error('SESSION_NOT_FOUND');
   if (res.status === 403) throw new Error('SESSION_FORBIDDEN');
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -334,6 +414,7 @@ export async function uploadDiagnosticTask(sessionId: string, taskId: string, fi
     headers: await headers(),
     body: form,
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -344,6 +425,7 @@ export async function skipDiagnosticTask(sessionId: string, taskId: string) {
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ reason: 'USER_CHOICE' }),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -353,6 +435,7 @@ export async function startControlledRecordings(sessionId: string) {
     method: 'POST',
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -363,6 +446,7 @@ export async function skipControlledRecordings(sessionId: string, opts?: { remai
     headers: await headers({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ remaining_only: opts?.remainingOnly !== false }),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -372,6 +456,7 @@ export async function analyzeDiagnosticSession(sessionId: string) {
     method: 'POST',
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -381,6 +466,7 @@ export async function regenerateDiagnosticReport(sessionId: string) {
     method: 'POST',
     headers: await headers(),
   });
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -396,6 +482,7 @@ export async function getDiagnosticReport(sessionId: string, opts?: { debug?: bo
     const body = await res.json().catch(() => ({}));
     return { error: 'REPORT_GENERATING', ...(body || {}) };
   }
+  throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -504,6 +591,7 @@ export async function getVocalProgressInsight(opts?: {
       headers: await headers(),
     });
     if (res.status === 404) return null;
+    throwIfAuthLost(res);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -525,6 +613,7 @@ export async function postVocalProgressInsight(body: {
       body: JSON.stringify(body),
     });
     if (res.status === 404) return null;
+    throwIfAuthLost(res);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -547,6 +636,7 @@ export async function postVocalSnapshot(body: {
       body: JSON.stringify(body),
     });
     if (res.status === 404) return null;
+    throwIfAuthLost(res);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -557,6 +647,7 @@ export async function postVocalSnapshot(body: {
 export async function getVocalGoals(): Promise<{ active: any; history: any[] } | null> {
   try {
     const res = await fetch(apiUrl(`/v1/me/vocal-goals`), { headers: await headers() });
+    throwIfAuthLost(res);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -577,6 +668,7 @@ export async function putActiveVocalGoal(body: {
       headers: await headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),
     });
+    throwIfAuthLost(res);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -599,6 +691,7 @@ export async function getVocalGoalProgress(opts?: {
     const res = await fetch(apiUrl(goalPath), {
       headers: await headers(),
     });
+    throwIfAuthLost(res);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -618,6 +711,7 @@ export async function postVocalGoalProgress(body: {
       headers: await headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body),
     });
+    throwIfAuthLost(res);
     if (!res.ok) return null;
     return res.json();
   } catch {

@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Record from './pages/Record';
 import Upload from './pages/Upload';
@@ -16,10 +17,59 @@ import PremiumReport from './pages/PremiumReport';
 import DiagnosticResume from './pages/DiagnosticResume';
 import ProgressInsight from './pages/ProgressInsight';
 import { LegalPrivacy, LegalPrivacyConsent, LegalTerms } from './pages/Legal';
+import { SESSION_CLEARED_EVENT } from './lib/clientSession';
+import { bootstrapTossSession, getVagentSessionToken, resumeTossSession } from './lib/tossAuth';
+import { recoverPendingPurchases } from './lib/tossIap';
+import { getUserIdentity } from './lib/userIdentity';
+
+function afterFirstPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => resolve());
+    });
+  });
+}
+
+function MiniappRuntime() {
+  const nav = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    const boot = async () => {
+      await afterFirstPaint();
+      if (cancelled) return;
+      await getUserIdentity().catch(() => undefined);
+      await bootstrapTossSession();
+      if (cancelled) return;
+      if (getVagentSessionToken()) {
+        await recoverPendingPurchases().catch(() => undefined);
+      }
+    };
+    void boot();
+
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      void resumeTossSession().catch(() => undefined);
+    };
+    const onCleared = () => {
+      nav('/', { replace: true });
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener(SESSION_CLEARED_EVENT, onCleared);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener(SESSION_CLEARED_EVENT, onCleared);
+    };
+  }, [nav]);
+
+  return null;
+}
 
 export default function App() {
   return (
     <div className="app-shell">
+      <MiniappRuntime />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/record" element={<Record />} />

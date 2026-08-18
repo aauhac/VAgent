@@ -1,112 +1,19 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   getAnalysisAccess,
   getProducts,
   getSongDetailedReport,
   patchHistory,
-  putActiveVocalGoal,
 } from '../api/client';
 import { formatSecRange, useIsDebug } from '../lib/reportPresentation';
 import VocalTypeHero from '../components/report/VocalTypeHero';
 import MainDiagnosis from '../components/report/MainDiagnosis';
 import VocalProfile from '../components/report/VocalProfile';
-import HighNoteFunctionSection from '../components/report/HighNoteFunctionSection';
-import TimbreProfileSection from '../components/report/TimbreProfileSection';
 import AudioCompare from '../components/report/AudioCompare';
 import MoreDetails from '../components/report/MoreDetails';
 import DiagnosticCTA from '../components/report/DiagnosticCTA';
 import ReportAudioPlayer, { type ClipRange } from '../components/report/ReportAudioPlayer';
-import GoalSelectorSheet from '../components/progress/GoalSelectorSheet';
-import { GoalEmptyCta } from '../components/progress/GoalProgressCard';
-import { setLocalActiveGoal } from '../lib/localGoalStore';
-import {
-  goalFromLocalSync,
-  resolveActiveGoalLoadState,
-  type GoalLoadState,
-} from '../lib/goalHydration';
-
-function DetailPracticeGoal() {
-  const location = useLocation();
-  const [goalState, setGoalState] = useState<GoalLoadState>(() => goalFromLocalSync());
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const resolved = await resolveActiveGoalLoadState();
-      if (cancelled) return;
-      setGoalState(resolved);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    const st = location.state as { focusGoalSetting?: boolean } | null;
-    if (!st?.focusGoalSetting) return;
-    const t = window.setTimeout(() => {
-      document.getElementById('goal-setting')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }, 150);
-    return () => window.clearTimeout(t);
-  }, [location.state]);
-
-  function onSelect(
-    focus: string,
-    label: string,
-    extra?: { target?: string; style_id?: string; kind?: string },
-  ) {
-    const row = setLocalActiveGoal({
-      focus,
-      label,
-      source: 'USER_SELECTED',
-      target: extra?.target,
-      style_id: extra?.style_id,
-    });
-    setGoalState({ status: 'ready', goal: row });
-    void putActiveVocalGoal({
-      focus,
-      label,
-      source: 'USER_SELECTED',
-      target: extra?.target,
-      style_id: extra?.style_id,
-    });
-  }
-
-  return (
-    <section
-      id="goal-setting"
-      className="section"
-      data-testid="detail-practice-goal"
-    >
-      <h3 className="section-title">내 연습 목표</h3>
-      {goalState.status === 'loading' ? (
-        <div className="card" data-testid="detail-goal-loading" aria-busy="true">
-          <div className="skeleton" style={{ height: 18, width: '40%', marginBottom: 10 }} />
-          <div className="skeleton" style={{ height: 14, width: '85%' }} />
-        </div>
-      ) : goalState.status === 'ready' ? (
-        <div className="card" data-testid="detail-goal-active">
-          <p className="page-kicker" style={{ marginTop: 0 }}>현재 목표</p>
-          <p className="finding-title" style={{ marginBottom: 8 }}>{goalState.goal.goal_label}</p>
-          <p className="muted" style={{ margin: '0 0 12px', fontSize: '0.85rem' }}>
-            이후 녹음에서 이 부분이 어떻게 달라지는지도 함께 살펴볼게요.
-          </p>
-          <button type="button" className="btn secondary" style={{ width: '100%' }} onClick={() => setOpen(true)}>
-            목표 바꾸기
-          </button>
-        </div>
-      ) : (
-        <GoalEmptyCta onSetGoal={() => setOpen(true)} />
-      )}
-      <GoalSelectorSheet open={open} onClose={() => setOpen(false)} onSelect={onSelect} />
-    </section>
-  );
-}
 
 export default function SongDetailReport() {
   const { id } = useParams();
@@ -126,50 +33,46 @@ export default function SongDetailReport() {
     if (!id) return;
     getSongDetailedReport(id)
       .then((r) => {
-        if (r.error === 'SONG_DETAIL_LOCKED') {
-          setError('SONG_DETAIL_LOCKED');
+        if (r?.error === 'SONG_DETAIL_LOCKED') {
+          setError('LOCKED');
           return;
         }
         setReport(r);
-        const vt = r.vocal_type_profile || r.vocal_function_profile?.vocal_type_profile;
+        const vt = r?.vocal_type_profile || r?.vocal_function_profile?.vocal_type_profile;
         patchHistory(id, {
-          songDetailUnlocked: true,
           vocalType: vt?.display_name || vt?.headline || undefined,
-          filename: sessionStorage.getItem('vocalfb_last_filename') || undefined,
         });
-        if (r.access) setAccessState(r.access);
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(e?.message || 'failed'));
     getProducts(id)
       .then((cat) => {
-        const offer = cat.offers?.diagnostic || 'diagnostic_full';
-        setDiagProduct(offer);
-        setDiagPrice(cat.products?.[offer]?.display_amount || '—');
+        const pid = cat.offers?.diagnostic || 'diagnostic_upgrade';
+        setDiagProduct(pid);
+        setDiagPrice(cat.products?.[pid]?.display_amount || '—');
       })
       .catch(() => undefined);
     getAnalysisAccess(id)
       .then((a) =>
-        setAccessState((prev) => ({
-          ...prev,
+        setAccessState({
           diagnostic_unlocked: a.diagnostic_unlocked,
           diagnostic_session_id: a.diagnostic_session_id,
-        })),
+        }),
       )
       .catch(() => undefined);
   }, [id]);
 
-  if (error === 'SONG_DETAIL_LOCKED') {
+  if (error === 'LOCKED') {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.5rem' }}>상세 리포트 잠금</h1>
-        <p className="lead">이 노래의 상세 리포트가 아직 해제되지 않았어요.</p>
-        <Link className="btn" to={`/result/${id}`}>결과로 돌아가기</Link>
+        <h1 className="brand page-screen-title">상세 리포트</h1>
+        <p className="fail">상세 리포트가 잠겨 있어요.</p>
       </main>
     );
   }
   if (error) {
     return (
       <main>
+        <h1 className="brand page-screen-title">상세 리포트</h1>
         <p className="fail">{error}</p>
       </main>
     );
@@ -177,25 +80,28 @@ export default function SongDetailReport() {
   if (!report) {
     return (
       <main>
-        <p className="muted">리포트 불러오는 중…</p>
-        <div className="skeleton" style={{ height: 28, width: '55%' }} />
-        <div className="skeleton" style={{ height: 120 }} />
-        <div className="skeleton" style={{ height: 80 }} />
+        <h1 className="brand page-screen-title">상세 리포트</h1>
+        <p className="muted">불러오는 중…</p>
       </main>
     );
   }
 
-  const decision = report.coaching_decision || report.vocal_function_profile?.coaching_decision || {};
   const vf = report.vocal_function_profile || {};
-  const dims = vf.dimensions || [];
-  const observationFocus = report.observation_segments || [];
+  const decision =
+    report.coaching_decision
+    || vf.coaching_decision
+    || report.decision
+    || vf.decision
+    || {};
+  const dims = report.dimensions || vf.dimensions || [];
+  const observationFocus = report.observation_segments || report.observation_focus || vf.observation_focus || [];
   const supplement = report.performance_supplement || {};
-  const suppAreas = supplement.areas || report.areas || [];
-  const primary = decision.primary_bottleneck;
-  const preserve = decision.preserve || [];
-  const bestSelf = decision.best_self_reference;
+  const suppAreas = supplement.areas || report.areas || report.supporting_performance_areas || [];
+  const primary = decision.primary_bottleneck || decision.primary || report.primary_diagnosis || vf.primary_diagnosis;
+  const preserve = decision.preserve || report.preserve || vf.preserve || [];
+  const bestSelf = decision.best_self_reference || report.best_self_comparison;
   const targetEp = decision.target_episode;
-  const coreSpan = targetEp?.core_evidence_span;
+  const coreSpan = targetEp?.core_evidence_span || report.core_span || decision.core_span || null;
   const criteriaMatrix = report.criteria_matrix || vf.criteria_matrix || [];
   const candidateComparison = decision.candidate_comparison || [];
   const vocalType = report.vocal_type_profile || vf.vocal_type_profile;
@@ -214,6 +120,9 @@ export default function SongDetailReport() {
     || (Array.isArray(dims)
       ? dims.find((d: any) => d?.dimension_id === 'vocal_effort_strain')?.effort_assessment
       : (dims as any)?.vocal_effort_strain?.effort_assessment);
+  const highNoteProfile = report.high_note_function_profile || vf.high_note_function_profile;
+  const timbreProfile = report.timbre_profile || vf.timbre_profile;
+  const quality = report.quality || report.quality_gate || vf.quality;
 
   function playEpisode(ev: any) {
     const start = Number(ev?.original_start_sec ?? ev?.start_sec);
@@ -234,12 +143,9 @@ export default function SongDetailReport() {
 
   return (
     <main style={{ paddingBottom: clip ? 28 : 12 }}>
-      <Link className="muted" to={`/result/${id}`}>‹ 무료 결과</Link>
-      <p className="page-kicker" style={{ marginTop: 14 }}>상세 리포트</p>
-      <h1 className="brand" style={{ fontSize: '1.4rem', marginTop: 0, marginBottom: 0 }}>
-        더 자세히 살펴보기
-      </h1>
-      <p className="muted body-text" style={{ marginTop: 6 }}>
+      <h1 className="brand page-screen-title">상세 리포트</h1>
+
+      <p className="muted body-text" style={{ marginTop: 4 }}>
         현재 노래를 더 자세히 분석한 결과예요. 추가 녹음은 없어요.
       </p>
 
@@ -264,14 +170,10 @@ export default function SongDetailReport() {
         criteriaMatrix={criteriaMatrix}
         canonicalRegister={canonicalRegister}
         canonicalAcoustic={canonicalAcoustic}
+        quality={quality}
+        highNoteProfile={highNoteProfile}
+        showPrecisionHints
       />
-
-      <DetailPracticeGoal />
-
-      <HighNoteFunctionSection
-        profile={report.high_note_function_profile || vf.high_note_function_profile}
-      />
-      <TimbreProfileSection profile={report.timbre_profile || vf.timbre_profile} omitPresence />
 
       <AudioCompare
         featureClip={coreSpan || null}
@@ -289,6 +191,8 @@ export default function SongDetailReport() {
         disclaimer={report.disclaimer}
         debug={debug}
         candidateComparison={candidateComparison}
+        highNoteProfile={highNoteProfile}
+        timbreProfile={timbreProfile}
       />
 
       <DiagnosticCTA
@@ -302,6 +206,12 @@ export default function SongDetailReport() {
           report.vocal_function_profile?.diagnostic_offer ||
           null
         }
+        dimensions={dims}
+        criteriaMatrix={criteriaMatrix}
+        canonicalRegister={canonicalRegister}
+        canonicalAcoustic={canonicalAcoustic}
+        quality={quality}
+        highNoteProfile={highNoteProfile}
       />
 
       {id ? (

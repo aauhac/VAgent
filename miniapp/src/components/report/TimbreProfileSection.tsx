@@ -5,6 +5,7 @@ type Props = {
   profile: any;
   /** When true, omit presence axis (already shown in VocalProfile). */
   omitPresence?: boolean;
+  embedded?: boolean;
 };
 
 const REASON_COPY: Record<string, string> = {
@@ -12,7 +13,7 @@ const REASON_COPY: Record<string, string> = {
   MIXED_CONTAMINATION: '반주 영향이 큰 구간이 많아 음색 특성을 안정적으로 분리하지 못했어요.',
 };
 
-export default function TimbreProfileSection({ profile, omitPresence = false }: Props) {
+export default function TimbreProfileSection({ profile, omitPresence = false, embedded = false }: Props) {
   if (!profile) return null;
 
   const availability = String(profile.availability || (profile.available ? 'FULL' : 'UNAVAILABLE')).toUpperCase();
@@ -23,17 +24,7 @@ export default function TimbreProfileSection({ profile, omitPresence = false }: 
   const disclaimer = '음색은 좋고 나쁨이 아니라 관찰된 특징으로 설명합니다.';
 
   if (!profile.available && availability === 'UNAVAILABLE') {
-    return (
-      <section className="section">
-        <h3 className="section-title">음색 프로필</h3>
-        <p className="body-text muted">
-          {reasonUser || '이번 녹음에서는 음색 프로필을 안정적으로 구성하지 못했어요.'}
-        </p>
-        <p className="body-text muted" style={{ marginTop: 8, fontSize: '0.9rem' }}>
-          {disclaimer}
-        </p>
-      </section>
-    );
+    return null;
   }
 
   const axes = profile.axes || {};
@@ -55,8 +46,8 @@ export default function TimbreProfileSection({ profile, omitPresence = false }: 
   };
 
   return (
-    <section className="section">
-      <h3 className="section-title">음색 프로필</h3>
+    <section className={embedded ? undefined : 'section'}>
+      {embedded ? null : <h3 className="section-title">음색 프로필</h3>}
       {availability === 'PARTIAL' && reasonUser ? (
         <p className="body-text muted" style={{ marginTop: 0 }}>{reasonUser}</p>
       ) : null}

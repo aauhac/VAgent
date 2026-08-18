@@ -107,19 +107,19 @@ export const productsCatalog = {
     song_detail: {
       product_id: 'song_detail',
       display_name: '상세 리포트',
-      display_amount: '₩1,100',
+      display_amount: '₩990',
       amount_source: 'toss_iap',
     },
     diagnostic_full: {
       product_id: 'diagnostic_full',
       display_name: '정밀 발성 진단',
-      display_amount: '₩3,300',
+      display_amount: '₩1,980',
       amount_source: 'toss_iap',
     },
     diagnostic_upgrade: {
       product_id: 'diagnostic_upgrade',
-      display_name: '정밀 발성 진단 업그레이드',
-      display_amount: '₩2,200',
+      display_name: '정밀 발성 진단',
+      display_amount: '₩990',
       amount_source: 'toss_iap',
     },
   },
@@ -216,6 +216,28 @@ export const precisionReport = {
       summary: '성구 전환은 이번 과제만으로 단정하기 어려워요.',
     },
   ],
+  dimensions: [
+    {
+      dimension_id: 'vocal_effort_strain',
+      status: 'LOW',
+      confidence_label: 'medium',
+      continuum_0_to_1: 0.28,
+      hidden: false,
+    },
+    {
+      dimension_id: 'air_leakage_breathiness',
+      status: 'LOW',
+      confidence_label: 'medium',
+      hidden: false,
+    },
+    {
+      dimension_id: 'glottal_contact_profile',
+      status: 'MODERATE',
+      continuum_0_to_1: 0.52,
+      hidden: false,
+    },
+  ],
+  unresolved_dimensions: ['register'],
   supporting_observations: [{ summary: '낮은 음에서는 소리가 비교적 고르게 유지됐어요.' }],
   completed_tasks: [SMOKE_TASK_ID],
   canonical_register: {
@@ -283,6 +305,22 @@ export const diagnosticSession = {
 
 export const diagnosticProtocol = {
   tasks: diagnosticSession.task_plan,
+  concern_catalog: {
+    max_concerns: 3,
+    groups: [
+      {
+        category_id: 'high_note',
+        category_label: '고음',
+        concerns: [{ id: 'HIGH_NOTE_CANNOT_REACH', label: '고음이 잘 안 올라가요' }],
+      },
+      {
+        category_id: 'effort',
+        category_label: '힘',
+        concerns: [{ id: 'TOO_MUCH_EFFORT', label: '힘이 너무 들어가요' }],
+      },
+    ],
+    follow_up_options: {},
+  },
 };
 
 export const historyPayload = {
@@ -309,3 +347,90 @@ export const historyPayload = {
   unlinked_diagnostics: [],
   has_more: false,
 };
+
+export const SMOKE_SPARSE_ID = 'cccccccccccccccccccccccccccccccc';
+export const SMOKE_ZERO_ID = 'dddddddddddddddddddddddddddddddd';
+
+/** 1-axis profile (breathiness only) — visual smoke for intentional sparse UX. */
+export const sparseDetailReport = {
+  ...detailReport,
+  vocal_type_profile: {
+    ...detailReport.vocal_type_profile,
+    canonical_register: undefined,
+    head_chest: { available: true, chest_ratio: 85, head_ratio: 15, show_ratio: true },
+  },
+  vocal_style_profile: {
+    ...detailReport.vocal_style_profile,
+    canonical_register: undefined,
+  },
+  vocal_function_profile: {
+    dimensions: [
+      {
+        dimension_id: 'air_leakage_breathiness',
+        status: 'LOW',
+        hidden: false,
+        confidence_label: 'high',
+        evaluable_segments: 14,
+        total_segments: 14,
+      },
+      {
+        dimension_id: 'glottal_contact_profile',
+        status: 'UNKNOWN',
+        hidden: true,
+        continuum_0_to_1: null,
+        evaluable_segments: 2,
+        total_segments: 14,
+      },
+      {
+        dimension_id: 'vocal_effort_strain',
+        status: 'UNKNOWN',
+        hidden: true,
+        evaluable_segments: 1,
+        total_segments: 14,
+      },
+      {
+        dimension_id: 'register_configuration',
+        status: 'STABLE_LIKE',
+        hidden: true,
+        confidence_label: 'low',
+        evaluable_segments: 1,
+        total_segments: 14,
+      },
+      {
+        dimension_id: 'resonance_formant_strategy',
+        status: 'OBSERVED',
+        hidden: true,
+        evaluable_segments: 1,
+        total_segments: 14,
+      },
+    ],
+    criteria_matrix: [
+      { dimension_id: 'air_leakage_breathiness', measurement_sufficiency: 'SUFFICIENT', evaluable_segments: 14, total_segments: 14 },
+      { dimension_id: 'glottal_contact_profile', measurement_sufficiency: 'PARTIAL', evaluable_segments: 2, total_segments: 14 },
+      { dimension_id: 'vocal_effort_strain', measurement_sufficiency: 'INSUFFICIENT', evaluable_segments: 1, total_segments: 14 },
+      { dimension_id: 'register_configuration', measurement_sufficiency: 'INSUFFICIENT', evaluable_segments: 1, total_segments: 14 },
+      { dimension_id: 'resonance_formant_strategy', measurement_sufficiency: 'INSUFFICIENT', evaluable_segments: 1, total_segments: 14 },
+    ],
+    coaching_decision: detailReport.vocal_function_profile.coaching_decision,
+    high_note_function_profile: { available: false, availability: 'UNAVAILABLE', reason: 'INSUFFICIENT_HIGH_RANGE' },
+    timbre_profile: { available: false, availability: 'UNAVAILABLE', reason: 'INSUFFICIENT_VOCAL_SEGMENTS' },
+  },
+  canonical_acoustic_axes: { axes: {} },
+  diagnostic_offer: {
+    unresolved_labels: ['접촉감', '성구 연결', '힘'],
+    recommended_task_count: 2,
+  },
+};
+
+export const zeroDetailReport = {
+  ...sparseDetailReport,
+  vocal_function_profile: {
+    ...sparseDetailReport.vocal_function_profile,
+    dimensions: (sparseDetailReport.vocal_function_profile.dimensions as any[]).map((d) => ({
+      ...d,
+      hidden: true,
+      status: d.dimension_id === 'air_leakage_breathiness' ? 'UNKNOWN' : d.status,
+    })),
+  },
+};
+

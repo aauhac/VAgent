@@ -13,13 +13,10 @@ def _read(rel: str) -> str:
     return (MINI / rel).read_text(encoding="utf-8")
 
 
-def test_progress_header_has_back_left_and_home_right():
-    header = _read("components/ui/SubPageHeader.tsx")
+def test_progress_page_has_content_title_without_internal_header():
     page = _read("pages/ProgressInsight.tsx")
-    assert "이전 화면으로 돌아가기" in header
-    assert "홈으로 이동" in header
-    assert 'title="내 변화"' in page
-    assert "SubPageHeader" in page
+    assert "SubPageHeader" not in page
+    assert "내 변화 보기" in page
 
 
 def test_progress_back_resolution_prefers_return_to():
@@ -43,16 +40,17 @@ def test_progress_has_no_goal_management_ui():
     assert "현재 목표" not in page
 
 
-def test_detail_still_allows_goal_setting():
+def test_detail_uses_shared_header_without_goal_ui():
     detail = _read("pages/SongDetailReport.tsx")
-    assert "GoalSelectorSheet" in detail
-    assert "goal-setting" in detail
-    assert "GoalEmptyCta" in detail or "목표 정하기" in detail
+    assert "GoalSelectorSheet" not in detail
+    assert "goal-setting" not in detail
+    assert "내 연습 목표" not in detail
+    assert "SubPageHeader" not in detail
 
 
-def test_detail_still_allows_goal_change():
+def test_detail_has_no_goal_change_cta():
     detail = _read("pages/SongDetailReport.tsx")
-    assert "목표 바꾸기" in detail
+    assert "목표 바꾸기" not in detail
 
 
 def test_progress_shows_change_groups():
@@ -78,10 +76,11 @@ def test_free_result_still_has_no_goal_selector():
     assert "GoalSelectorSheet" not in result
 
 
-def test_detail_goal_history_preserved():
+def test_detail_goal_apis_not_required_on_detail_page():
     detail = _read("pages/SongDetailReport.tsx")
-    assert "putActiveVocalGoal" in detail
-    assert "setLocalActiveGoal" in detail
+    assert "putActiveVocalGoal" not in detail
+    assert "setLocalActiveGoal" not in detail
+    assert "SubPageHeader" not in detail
 
 
 def test_progress_insight_sheet_still_opens():
@@ -90,8 +89,6 @@ def test_progress_insight_sheet_still_opens():
     assert "setSheetCard" in page
 
 
-def test_sub_page_header_grid_css():
+def test_sub_page_header_not_in_production_css():
     css = (ROOT / "miniapp" / "src" / "styles" / "app.css").read_text(encoding="utf-8")
-    assert "sub-page-header" in css
-    assert "1fr auto 1fr" in css
-    assert "min-height: 44px" in css
+    assert "sub-page-header" not in css

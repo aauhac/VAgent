@@ -3,6 +3,12 @@
  * Does not recompute analysis thresholds; only maps existing fields.
  */
 
+import {
+  listMissingProfileAxes,
+  type AxisUnavailableReason,
+  type ProfileAxisId,
+} from './unavailableAxisReason';
+
 export type DisplayConfidence = {
   confidence_percent: number | null;
   confidence_label: string;
@@ -710,8 +716,10 @@ export function buildVocalAxes(
     right: string,
     dim: any,
     estimate: { value: number; display: string; description?: string } | null,
+    sourcedFromCanonical = false,
   ): DisplayAxis | null {
-    if (dim?.hidden) return null;
+    // Hidden raw dimensions stay hidden unless a canonical estimate is actually present.
+    if (dim?.hidden && !sourcedFromCanonical) return null;
     if (!estimate || estimate.value == null) return null;
     const conf = dim ? getDisplayConfidence(dim, crit[dim.dimension_id]) : {
       confidence_percent: undefined,
@@ -734,15 +742,26 @@ export function buildVocalAxes(
     };
   }
 
+  function canonicalEstimate(
+    key: string,
+  ): { value: number; display: string; description?: string } | null {
+    const ax = cAxes[key];
+    if (!ax || ax.available === false || ax.continuum == null) return null;
+    return {
+      value: Number(ax.continuum),
+      display: String(ax.display || ax.status || ''),
+    };
+  }
+
   function fromCanonical(
     key: string,
     fallback: { value: number; display: string; description?: string } | null,
   ): { value: number; display: string; description?: string } | null {
-    const ax = cAxes[key];
-    if (!ax || ax.available === false || ax.continuum == null) return fallback;
+    const canon = canonicalEstimate(key);
+    if (!canon) return fallback;
     return {
-      value: Number(ax.continuum),
-      display: String(ax.display || ax.status || fallback?.display || ''),
+      ...canon,
+      display: canon.display || fallback?.display || '',
       description: fallback?.description,
     };
   }
@@ -775,27 +794,94 @@ export function buildVocalAxes(
     };
   }
 
+  const contactCanon = canonicalEstimate('contact');
+  const breathCanon = canonicalEstimate('functional_breathiness') || canonicalEstimate('breathiness');
+  const effortCanon = canonicalEstimate('effort');
+  const presenceCanon = canonicalEstimate('presence') || canonicalEstimate('resonance');
+  const registerCanon = !!(canonicalRegister?.status || canonicalRegister?.profile_label);
+
   const contactEst = fromCanonical('contact', estimateContact(byId.glottal_contact_profile));
-  const breathEst = fromCanonical(
-    'functional_breathiness',
-    fromCanonical('breathiness', estimateBreath(byId.air_leakage_breathiness)),
-  );
+  const breathEst = breathCanon
+    ? fromCanonical('functional_breathiness', fromCanonical('breathiness', estimateBreath(byId.air_leakage_breathiness)))
+    : estimateBreath(byId.air_leakage_breathiness);
   const effortEst = fromCanonical('effort', estimateEffort(byId.vocal_effort_strain));
-  const presenceEst = fromCanonical(
-    'presence',
-    fromCanonical('resonance', estimateResonance(byId.resonance_formant_strategy)),
-  );
+  const presenceEst = presenceCanon
+    ? fromCanonical('presence', fromCanonical('resonance', estimateResonance(byId.resonance_formant_strategy)))
+    : estimateResonance(byId.resonance_formant_strategy);
 
   const axes: Array<DisplayAxis | null> = [
-    pack('contact', '접촉감', '가벼움', '단단함', byId.glottal_contact_profile, contactEst),
-    pack('breath', '숨 섞임', '적음', '많음', byId.air_leakage_breathiness, breathEst),
-    pack('effort', '힘', '편안', '밀어붙임', byId.vocal_effort_strain, effortEst),
-    pack('register', '성구 연결', '분리', '자연스러움', byId.register_configuration, registerEstimate),
+    pack('contact', '접촉감', '가벼움', '단단함', byId.glottal_contact_profile, contactEst, !!contactCanon),
+    pack('breath', '숨 섞임', '적음', '많음', byId.air_leakage_breathiness, breathEst, !!breathCanon),
+    pack('effort', '힘', '편안', '밀어붙임', byId.vocal_effort_strain, effortEst, !!effortCanon),
+    pack('register', '성구 연결', '분리', '자연스러움', byId.register_configuration, registerEstimate, registerCanon),
     // UI: single presence concept (internal alias resonance kept)
-    pack('resonance', '중역 존재감', '낮음', '높음', byId.resonance_formant_strategy, presenceEst),
+    pack('resonance', '중역 존재감', '낮음', '높음', byId.resonance_formant_strategy, presenceEst, !!presenceCanon),
   ];
 
   return axes.filter(Boolean) as DisplayAxis[];
+}
+
+export type VocalProfileView = {
+  axes: DisplayAxis[];
+  missing: Array<{
+    id: ProfileAxisId;
+    label: string;
+    reason: AxisUnavailableReason;
+  }>;
+  title: string;
+  intro?: string;
+  zeroMessage?: string;
+};
+
+/** Available bars + evidence-backed missing-axis reasons (presentation only). */
+export function buildVocalProfileView(
+  dimsInput: any,
+  criteriaMatrix: any[] = [],
+  canonicalRegister?: { status?: string; profile_label?: string; title?: string; description?: string } | null,
+  canonicalAcoustic?: { axes?: Record<string, any> } | null,
+  opts?: { quality?: any; highNoteProfile?: any; context?: 'song' | 'precision'; remainingUncertainties?: string[] },
+): VocalProfileView {
+  const axes = buildVocalAxes(dimsInput, criteriaMatrix, canonicalRegister, canonicalAcoustic);
+  const missing = listMissingProfileAxes(
+    axes.map((a) => a.id),
+    {
+      dimensions: dimsInput,
+      criteriaMatrix,
+      quality: opts?.quality,
+      highNoteProfile: opts?.highNoteProfile,
+      context: opts?.context || 'song',
+      remainingUncertainties: opts?.remainingUncertainties,
+    },
+  );
+  const n = axes.length;
+  const precision = opts?.context === 'precision';
+  if (n === 0) {
+    return {
+      axes,
+      missing,
+      title: '발성 프로필',
+      zeroMessage: precision
+        ? '이번 진단에서는 발성 프로필을 안정적으로 구성하기 어려웠어요.'
+        : '이번 녹음에서는 발성 프로필을 안정적으로 구성하기 어려웠어요.',
+    };
+  }
+  if (n <= 2) {
+    return {
+      axes,
+      missing,
+      title: precision
+        ? '이번 진단에서 확인된 발성 프로필'
+        : '이번 노래에서 확인된 발성 프로필',
+      intro: precision
+        ? '이번 표준 과제에서 안정적으로 확인된 항목만 표시했어요.'
+        : '이번 녹음에서 안정적으로 확인된 항목만 표시했어요.',
+    };
+  }
+  return {
+    axes,
+    missing,
+    title: precision ? '정밀 발성 프로필' : '내 발성 프로필',
+  };
 }
 
 export function buildAdditionalFindings(

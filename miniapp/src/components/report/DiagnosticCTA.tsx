@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import PremiumProductCard from '../ui/PremiumProductCard';
 import { concernIntakePath, premiumEntryPath } from '../../lib/diagnosticEntry';
 import { diagnosticOfferBullets, type DiagnosticOffer } from '../../lib/diagnosticOffer';
+import {
+  buildVocalProfileView,
+} from '../../lib/reportPresentation';
 
 type Props = {
   analysisId?: string;
@@ -10,6 +13,12 @@ type Props = {
   unlocked?: boolean;
   sessionId?: string | null;
   diagnosticOffer?: DiagnosticOffer | null;
+  dimensions?: any;
+  criteriaMatrix?: any[];
+  canonicalRegister?: any;
+  canonicalAcoustic?: any;
+  quality?: any;
+  highNoteProfile?: any;
 };
 
 export default function DiagnosticCTA({
@@ -19,15 +28,44 @@ export default function DiagnosticCTA({
   unlocked,
   sessionId,
   diagnosticOffer,
+  dimensions,
+  criteriaMatrix = [],
+  canonicalRegister,
+  canonicalAcoustic,
+  quality,
+  highNoteProfile,
 }: Props) {
   const bullets = diagnosticOfferBullets(diagnosticOffer);
+  const missingLabels =
+    dimensions
+      ? buildVocalProfileView(
+          dimensions,
+          criteriaMatrix,
+          canonicalRegister,
+          canonicalAcoustic,
+          { quality, highNoteProfile },
+        ).missing
+          .slice(0, 3)
+          .map((m) => m.label)
+      : [];
+
   const displayBullets =
     bullets.length > 0
       ? bullets.filter((b) => !b.includes('추가 녹음 0'))
-      : [
-          '현재 노래 + 짧은 추가 녹음으로 더 정밀하게',
-          '고민이 있으면 고민 중심으로, 없으면 전체 발성 특성으로',
-        ];
+      : missingLabels.length
+        ? [
+            `이번 노래에서 확인하기 어려웠던 ${missingLabels.join('·')} 등을 짧은 추가 녹음으로 다시 확인해요.`,
+            '표준 과제를 통해 발성 특성을 더 정밀하게 비교해요.',
+          ]
+        : [
+            '현재 노래와 짧은 추가 녹음으로 더 정밀하게 확인해요.',
+            '선택한 고민과 현재 분석 결과에 맞춰 필요한 녹음만 진행해요.',
+          ];
+
+  const description =
+    missingLabels.length > 0
+      ? `이번 노래에서 확인하기 어려웠던 ${missingLabels.join('·')} 등을 짧은 추가 녹음으로 다시 확인해요.`
+      : '현재 노래와 짧은 추가 녹음을 함께 분석해 발성 특성을 더 정밀하게 확인해요.';
 
   if (unlocked && sessionId) {
     return (
@@ -49,22 +87,21 @@ export default function DiagnosticCTA({
     <section className="section" style={{ borderBottom: 0 }}>
       <h3 className="section-title">한 단계 더 정밀하게</h3>
       <p className="body-text muted" style={{ marginBottom: 14 }}>
-        현재 노래와 짧은 추가 녹음을 함께 분석해
-        발성 특성을 더 정밀하게 확인해요.
+        {description}
       </p>
       <PremiumProductCard
-        badge="가장 정밀한 분석"
         featured
         title="정밀 발성 진단"
-        description="고민을 고르거나, 전체 발성 특성을 확인하기 위해 표준 추가 녹음을 진행합니다."
+        description={description}
         priceLabel={priceLabel}
-        bullets={[
-          ...displayBullets.slice(0, 2),
-          '선택한 고민과 현재 분석 결과에 맞춰 필요한 녹음만 진행합니다.',
-        ]}
+        bullets={displayBullets.slice(0, 3)}
         ctaLabel={`정밀 발성 진단 · ${priceLabel}`}
         to={analysisId ? premiumEntryPath(analysisId, productId) : '/premium'}
-        footer="상세 리포트는 이 노래만의 분석이에요. 정밀 진단은 추가 녹음이 포함됩니다."
+        footer={
+          productId === 'diagnostic_upgrade'
+            ? '상세 리포트를 이용 중이어서 정밀 진단만 추가돼요.'
+            : '상세 리포트는 이 노래만의 분석이에요. 정밀 진단은 추가 녹음이 포함됩니다.'
+        }
       />
       {analysisId ? (
         <p className="muted" style={{ marginTop: 12, fontSize: '0.82rem' }}>

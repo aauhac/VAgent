@@ -60,13 +60,13 @@ def test_progress_still_uses_hidden_goal_for_classification():
     assert "buildLocalProgressInsight" in page
 
 
-def test_detail_is_goal_management_surface():
+def test_detail_is_diagnosis_only_without_goal_management():
     detail = _read("pages/SongDetailReport.tsx")
-    assert "내 연습 목표" in detail
-    assert "GoalSelectorSheet" in detail
-    assert "목표 바꾸기" in detail
-    assert "goalState" in detail or "GoalLoadState" in detail
-    assert "detail-goal-loading" in detail
+    assert "내 연습 목표" not in detail
+    assert "GoalSelectorSheet" not in detail
+    assert "목표 바꾸기" not in detail
+    assert "SubPageHeader" not in detail
+    assert "상세 리포트" in detail
 
 
 def test_goal_hydration_distinguishes_loading_from_none():
@@ -76,9 +76,10 @@ def test_goal_hydration_distinguishes_loading_from_none():
     assert "'ready'" in hyd
 
 
-def test_precision_coaching_goal_label_distinct():
+def test_precision_production_ui_hides_training_goal_copy():
     prem = _read("pages/PremiumReport.tsx")
-    assert "먼저 연습할 부분" in prem
+    # Training/prescription blocks may remain in source for debug; production path must not rely on them as primary.
+    assert "정밀 발성 진단" in prem or "report_title" in prem
     assert 'section-title">이번 목표' not in prem
 
 

@@ -27,8 +27,8 @@ def test_progress_subtitle_explains_record_comparison():
 def test_precision_distinct_feature_has_no_decorative_01():
     page = _read("pages/PremiumReport.tsx")
     assert "padStart(2" not in page
-    assert "확인된 핵심 특징" in page
-    assert "가장 뚜렷한 특징" not in page
+    assert "가장 뚜렷한 특징" in page
+    assert "diag-num" not in page or 'className="diag-num"' not in page
 
 
 def test_precision_distinct_feature_does_not_concat_tone():
@@ -39,14 +39,14 @@ def test_precision_distinct_feature_does_not_concat_tone():
 
 def test_supporting_section_uses_user_facing_title():
     page = _read("pages/PremiumReport.tsx")
-    assert "참고로 확인된 변화" in page
-    assert "추가로 관찰된 특징" not in page
+    assert "추가 관찰" in page
+    assert "참고로 확인된 변화" not in page
 
 
 def test_uncertain_section_title_is_confirm_not_decided_wording():
     page = _read("pages/PremiumReport.tsx")
-    assert "이번에 확정하지 않은 부분" in page
-    assert "추가 확인이 필요한 항목" not in page
+    assert "추가 확인이 필요한 항목" in page
+    assert "이번에 확정하지 않은 부분" not in page
 
 
 def test_analysis_scope_does_not_say_song_analysis_used():
@@ -57,11 +57,11 @@ def test_analysis_scope_does_not_say_song_analysis_used():
     assert "presentAnalysisScope" in page
 
 
-def test_analysis_method_limit_accordion_removed():
+def test_analysis_method_limit_accordion_present():
     page = _read("pages/PremiumReport.tsx")
     more = _read("components/report/MoreDetails.tsx")
-    assert "분석 방법과 한계" not in page
-    assert "분석 방법과 한계" not in more
+    assert "분석 방법과 한계" in page
+    assert "분석 방법과 한계" in more
     assert "precision-disclaimer" in page
 
 

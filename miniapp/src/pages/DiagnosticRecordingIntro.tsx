@@ -18,6 +18,7 @@ export default function DiagnosticRecordingIntro() {
   const [error, setError] = useState<string | null>(null);
   const [confirmSkip, setConfirmSkip] = useState(false);
   const [planned, setPlanned] = useState(0);
+  const [durationText, setDurationText] = useState<string | null>(null);
   const [painNote, setPainNote] = useState(false);
   const [phase, setPhase] = useState<'choice' | 'analyzing'>('choice');
 
@@ -27,6 +28,13 @@ export default function DiagnosticRecordingIntro() {
       .then((s) => {
         const n = (s?.selected_tasks || []).length;
         setPlanned(n);
+        const dur =
+          s?.estimated_duration_text
+          || s?.diagnostic_offer?.estimated_duration_text
+          || s?.task_plan?.estimated_duration_text
+          || null;
+        const durStr = dur && !String(dur).includes('없음') ? String(dur).replace(/^약\s*/, '') : null;
+        setDurationText(durStr);
         setPainNote(Boolean(s?.safety_flag_pain) || (s?.safety_flags || []).length > 0);
         const status = String(s?.status || '').toUpperCase();
         const diagStatus = String(s?.diagnostic_status || '').toUpperCase();
@@ -105,7 +113,7 @@ export default function DiagnosticRecordingIntro() {
   if (phase === 'analyzing') {
     return (
       <main>
-        <h1 className="brand" style={{ fontSize: '1.5rem' }}>정밀 발성 진단</h1>
+        <p className="page-kicker">정밀 발성 진단</p>
         <p className="lead" style={{ marginTop: 10 }}>
           안전을 위해 추가 녹음 없이
           현재 노래에서 확인된 범위를 중심으로 안내해요.
@@ -118,12 +126,15 @@ export default function DiagnosticRecordingIntro() {
 
   return (
     <main>
-      <h1 className="brand" style={{ fontSize: '1.5rem' }}>정밀 발성 진단</h1>
-      <p className="lead" style={{ marginTop: 10 }}>
+      <p className="page-kicker">정밀 발성 진단</p>
+      <p className="lead">
         선택한 고민을 더 정확히 확인하기 위해
         몇 가지 짧은 발성 과제를 진행해요.
       </p>
-      <p className="muted">약 2~3분 · {planned > 0 ? `${planned}개 과제` : '추가 과제'}</p>
+      <p className="muted">
+        {planned > 0 ? `${planned}개 과제` : '추가 과제'}
+        {durationText ? ` · 약 ${durationText}` : ''}
+      </p>
       {painNote ? (
         <p className="body-text" style={{ marginTop: 8 }}>
           불편감을 고려해 강한 과제는 제외했어요.

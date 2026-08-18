@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   createDiagnosticSession,
   getAnalysis,
@@ -29,6 +29,7 @@ export default function PremiumUnlock() {
   const analysisId = params.get('analysis') || undefined;
   const existingSession = params.get('session') || undefined;
   const productHint = params.get('product') || undefined;
+  const showDebug = params.get('debug') === '1';
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,6 @@ export default function PremiumUnlock() {
   const [productId, setProductId] = useState<string>('diagnostic_full');
   const [offer, setOffer] = useState<DiagnosticOffer | null>(null);
   const [offerLoading, setOfferLoading] = useState(!!analysisId);
-  const [offerFailed, setOfferFailed] = useState(false);
   const [resolving, setResolving] = useState(!!analysisId || !!existingSession);
 
   useEffect(() => {
@@ -53,11 +53,9 @@ export default function PremiumUnlock() {
     if (!analysisId) {
       setOffer(null);
       setOfferLoading(false);
-      setOfferFailed(false);
       return;
     }
     setOfferLoading(true);
-    setOfferFailed(false);
     getAnalysis(analysisId)
       .then((job) => {
         setOffer(pickDiagnosticOffer(job.result));
@@ -65,7 +63,6 @@ export default function PremiumUnlock() {
       })
       .catch(() => {
         setOffer(null);
-        setOfferFailed(true);
         setOfferLoading(false);
       });
   }, [analysisId]);
@@ -119,9 +116,28 @@ export default function PremiumUnlock() {
     };
   }, [analysisId, existingSession, nav]);
 
+  useEffect(() => {
+    if (import.meta.env.PROD) return;
+    // eslint-disable-next-line no-console
+    console.info('[PremiumUnlock] 개발 환경 Mock 결제 · 실제 과금이 아닙니다.');
+  }, []);
+
   const labels = (offer?.unresolved_labels || []).filter(Boolean).slice(0, 3);
   const bullets = diagnosticOfferBullets(offer);
   const isStandalone = !analysisId;
+  const upgradeNote =
+    productId === 'diagnostic_upgrade'
+      ? '상세 리포트를 이용 중이어서 정밀 진단만 추가돼요.'
+      : productId === 'diagnostic_full'
+        ? '상세 리포트가 함께 포함돼요.'
+        : null;
+
+  const lead =
+    isStandalone
+      ? '추가 녹음으로 발성 특성을 더 정확히 확인해요.'
+      : labels.length
+        ? `현재 노래에서 확인하기 어려웠던 ${labels.join('·')} 등을 짧은 표준 녹음으로 다시 확인합니다.`
+        : '현재 노래에서 확인하기 어려웠던 발성 특성을 짧은 표준 녹음으로 다시 확인합니다.';
 
   async function start() {
     setBusy(true);
@@ -148,7 +164,7 @@ export default function PremiumUnlock() {
           return;
         }
         if (iap.state === 'CANCELLED') {
-          setError(iap.message || '결제가 취소됐어요.');
+          if (iap.message) setError(iap.message);
           setBusy(false);
           return;
         }
@@ -177,11 +193,7 @@ export default function PremiumUnlock() {
   if (resolving || (analysisId && offerLoading)) {
     return (
       <main>
-        <Link className="muted" to={analysisId ? `/result/${analysisId}/detail` : '/'}>
-          ← 뒤로
-        </Link>
-        <p className="page-kicker" style={{ marginTop: 16 }}>정밀 검사</p>
-        <h1 className="brand" style={{ fontSize: '1.7rem' }}>정밀 발성 진단</h1>
+        <h1 className="brand page-screen-title">정밀 발성 진단</h1>
         <p className="muted">정밀 진단 준비 중…</p>
         <div className="skeleton" style={{ height: 18, width: '60%' }} />
         <div className="skeleton" style={{ height: 120 }} />
@@ -190,88 +202,52 @@ export default function PremiumUnlock() {
     );
   }
 
-  const productBullets = isStandalone
-    ? [
-        '고민 선택 또는 전체 발성 특성 확인',
-        '몇 가지 짧은 추가 녹음',
-        productId === 'diagnostic_upgrade' ? '업그레이드 요금' : '상세 리포트 포함',
-        '한 번 완료한 진단 리포트는 계속 열람 가능',
-      ]
-    : bullets.length > 0
-      ? [
-          ...bullets,
-          productId === 'diagnostic_upgrade' ? '업그레이드 요금' : '상세 리포트 포함',
-        ]
-      : offerFailed
-        ? [
-            '선택한 고민과 현재 분석 결과에 맞춰 필요한 녹음만 진행합니다',
-            productId === 'diagnostic_upgrade' ? '업그레이드 요금' : '상세 리포트 포함',
-          ]
-        : [
-            '고민이 있으면 고민 중심, 없으면 전체 발성 특성',
-            '몇 가지 짧은 추가 녹음',
-            productId === 'diagnostic_upgrade' ? '업그레이드 요금' : '상세 리포트 포함',
-          ];
+  const productBullets = [
+    '고민 선택 → 안전 확인 → 짧은 추가 녹음 → 정밀 진단 결과',
+    ...(upgradeNote ? [upgradeNote] : []),
+    ...(isStandalone
+      ? ['한 번 완료한 진단 리포트는 계속 열람 가능']
+      : bullets.filter((b) => !upgradeNote || !b.includes('상세 리포트')).slice(0, 2)),
+  ];
 
   return (
     <main>
-      <Link className="muted" to={analysisId ? `/result/${analysisId}/detail` : '/'}>
-        ← 뒤로
-      </Link>
-      <p className="page-kicker" style={{ marginTop: 16 }}>정밀 검사</p>
-      <h1 className="brand" style={{ fontSize: '1.7rem' }}>
-        정밀 발성 진단
-      </h1>
-      <p className="lead">
-        {isStandalone
-          ? '고민이 있으면 고민 중심으로, 없으면 전체 발성 특성을 짧은 추가 녹음으로 확인해요.'
-          : '현재 노래와 짧은 추가 녹음을 함께 분석해 발성 특성을 더 정밀하게 확인해요.'}
+      <h1 className="brand page-screen-title">정밀 발성 진단</h1>
+      <p className="lead" style={{ marginTop: 4 }}>
+        추가 녹음으로 발성 특성을 더 정확히 확인해요.
       </p>
-
-      {!isStandalone && labels.length > 0 && (
-        <div className="offer-summary">
-          <p className="offer-summary-title">노래에서 더 확인하면 좋은 항목</p>
-          <div className="offer-chips">
-            {labels.map((label) => (
-              <span key={label} className="offer-chip">{label}</span>
-            ))}
-          </div>
-          <p className="offer-summary-meta">
-            몇 가지 짧은 추가 녹음
-            {offer?.estimated_duration_text && !String(offer.estimated_duration_text).includes('없음')
-              ? ` · ${offer.estimated_duration_text}`
-              : ''}
-          </p>
-        </div>
+      {!isStandalone ? (
+        <p className="body-text muted" style={{ marginTop: 8, lineHeight: 1.5 }}>
+          {lead}
+        </p>
+      ) : (
+        <p className="body-text muted" style={{ marginTop: 8, lineHeight: 1.5 }}>
+          표준 추가 녹음으로 발성 특성을 정밀하게 확인하고, 고민에 맞춘 발성 피드백을 받아요.
+        </p>
       )}
 
-      {!isStandalone && (
-        <div className="trust-note" style={{ marginBottom: 16 }}>
-          <h3>이렇게 진행돼요</h3>
-          <p>
-            고민 선택(또는 특별한 고민 없음) → 안전 확인 → 짧은 추가 녹음 → 정밀 진단 리포트.
-          </p>
-        </div>
-      )}
+      <div className="trust-note" style={{ margin: '16px 0' }}>
+        <h3>진행 과정</h3>
+        <p>고민 선택 → 안전 확인 → 짧은 추가 녹음 → 정밀 진단 결과</p>
+      </div>
 
       <PremiumProductCard
-        badge="가장 정밀한 분석"
         featured
-        title="정밀 발성 진단"
+        title="짧은 추가 녹음으로 확인"
         description={
           isStandalone
-            ? '표준 추가 녹음으로 발성 특성을 정밀하게 확인합니다.'
+            ? '표준 추가 녹음으로 발성 특성을 정밀하게 확인하고, 고민에 맞춘 발성 피드백을 받아요.'
             : '선택한 고민과 현재 분석 결과에 맞춰 필요한 녹음만 진행합니다.'
         }
         priceLabel={displayAmount}
-        bullets={productBullets}
+        bullets={productBullets.slice(0, 4)}
         ctaLabel={busy ? '준비 중…' : `정밀 진단 시작 · ${displayAmount}`}
         onClick={start}
         busy={busy}
         footer={
-          import.meta.env.PROD
-            ? undefined
-            : '개발 환경 Mock 결제 · 실제 과금이 아닙니다.'
+          showDebug && !import.meta.env.PROD
+            ? '개발 환경 Mock 결제 · 실제 과금이 아닙니다.'
+            : (upgradeNote || undefined)
         }
       />
 

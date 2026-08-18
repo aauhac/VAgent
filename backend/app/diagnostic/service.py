@@ -1028,6 +1028,10 @@ class DiagnosticSessionService:
             if song_vf.get("vocal_type_profile"):
                 report["vocal_type_profile"] = song_vf.get("vocal_type_profile")
                 report["baseline_vocal_type"] = song_vf.get("vocal_type_profile")
+            if song_vf.get("dimensions"):
+                report["dimensions"] = song_vf.get("dimensions")
+            if song_vf.get("criteria_matrix"):
+                report["criteria_matrix"] = song_vf.get("criteria_matrix")
         if personalized.get("coaching"):
             report["coaching_version"] = personalized["coaching"].get("coaching_version")
         if session.get("diagnostic_status") == DIAGNOSTIC_STATUS_SAFETY_LIMITED or session.get("safety_flag_pain") or has_pain_safety_flag(concerns):
