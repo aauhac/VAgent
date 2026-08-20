@@ -15,9 +15,15 @@ from .config import is_production
 # SDK 3.x *.web.tossmini.com origins do not apply unless this app migrates.
 TOSS_MINIAPP_LIVE_ORIGIN = "https://vocalfb.apps.tossmini.com"
 TOSS_MINIAPP_QR_ORIGIN = "https://vocalfb.private-apps.tossmini.com"
+# Toss Console disconnect callback browser test origin (OPTIONS preflight from console UI).
+TOSS_CONSOLE_ORIGIN = "https://apps-in-toss.toss.im"
 TOSS_MINIAPP_PRODUCTION_ORIGINS = (
     TOSS_MINIAPP_LIVE_ORIGIN,
     TOSS_MINIAPP_QR_ORIGIN,
+)
+TOSS_PRODUCTION_CORS_ORIGINS = (
+    *TOSS_MINIAPP_PRODUCTION_ORIGINS,
+    TOSS_CONSOLE_ORIGIN,
 )
 
 DEV_CORS_DEFAULT = "http://localhost:5173,http://127.0.0.1:5173"
@@ -102,11 +108,12 @@ def validate_public_backend_base_url(url: str | None, *, required: bool = False)
 
 def cors_origins() -> list[str]:
     """
-    Production: Toss-hosted vocalfb origins only (live + QR). No localhost, no *.
+    Production: Toss miniapp live + QR + Toss Console callback-test origin.
+    No localhost, no *.
     Development: local Vite origins unless CORS_ORIGINS overrides.
     """
     if is_production():
-        default = ",".join(TOSS_MINIAPP_PRODUCTION_ORIGINS)
+        default = ",".join(TOSS_PRODUCTION_CORS_ORIGINS)
     else:
         default = DEV_CORS_DEFAULT
     raw = os.environ.get("CORS_ORIGINS")

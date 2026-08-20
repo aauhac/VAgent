@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from backend.app.http_config import (
+    TOSS_CONSOLE_ORIGIN,
     TOSS_MINIAPP_LIVE_ORIGIN,
     TOSS_MINIAPP_QR_ORIGIN,
+    TOSS_PRODUCTION_CORS_ORIGINS,
     cors_origins,
     public_backend_url,
     public_legal_privacy_consent_url,
@@ -49,10 +51,63 @@ def test_production_cors_defaults_to_verified_toss_origins(monkeypatch):
     monkeypatch.delenv("CORS_ORIGINS", raising=False)
     monkeypatch.delenv("PUBLIC_BACKEND_BASE_URL", raising=False)
     origins = cors_origins()
-    assert origins == [TOSS_MINIAPP_LIVE_ORIGIN, TOSS_MINIAPP_QR_ORIGIN]
+    assert origins == [
+        TOSS_MINIAPP_LIVE_ORIGIN,
+        TOSS_MINIAPP_QR_ORIGIN,
+        TOSS_CONSOLE_ORIGIN,
+    ]
+    assert list(TOSS_PRODUCTION_CORS_ORIGINS) == origins
     assert "localhost" not in ",".join(origins)
     assert "*" not in origins
     assert validate_production_http_config() == []
+
+
+def test_production_cors_preflight_allows_toss_console_origin(monkeypatch):
+    """OPTIONS from Toss Console must allow apps-in-toss.toss.im (not wildcard)."""
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setenv("VAGENT_ENV", "production")
+    monkeypatch.delenv("CORS_ORIGINS", raising=False)
+    app = FastAPI()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins(),
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
+
+    @app.post("/v1/auth/toss/disconnect")
+    def _disconnect() -> dict:
+        return {"ok": True}
+
+    client = TestClient(app)
+    for origin in (
+        TOSS_MINIAPP_LIVE_ORIGIN,
+        TOSS_MINIAPP_QR_ORIGIN,
+        TOSS_CONSOLE_ORIGIN,
+    ):
+        r = client.options(
+            "/v1/auth/toss/disconnect",
+            headers={
+                "Origin": origin,
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "authorization,content-type",
+            },
+        )
+        assert r.status_code == 200, origin
+        assert r.headers.get("access-control-allow-origin") == origin
+    wild = client.options(
+        "/v1/auth/toss/disconnect",
+        headers={
+            "Origin": "https://evil.example",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "authorization,content-type",
+        },
+    )
+    assert wild.headers.get("access-control-allow-origin") not in ("*", "https://evil.example")
 
 
 def test_production_cors_strips_localhost_and_rejects_wildcard(monkeypatch):

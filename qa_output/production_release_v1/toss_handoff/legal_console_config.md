@@ -114,8 +114,30 @@ URL: `https://54.116.187.5/legal/privacy`
 
 URL: `https://54.116.187.5/v1/auth/toss/disconnect`
 
-Basic Auth: `TOSS_DISCONNECT_BASIC_USER` / `TOSS_DISCONNECT_BASIC_PASSWORD` (host secrets only).
-**REQUIRES_TOSS_CONSOLE_CONFIRMATION:** callback + Basic Auth registered in console.
+Method: `POST` (console primary)
+
+Basic Auth: configured on host (`TOSS_DISCONNECT_BASIC_USER` / `TOSS_DISCONNECT_BASIC_PASSWORD` — secrets not in git).
+
+**Status (operator-confirmed production):**
+- callback URL: confirmed
+- POST: confirmed
+- Basic Auth: confirmed configured
+- OPTIONS preflight from `https://apps-in-toss.toss.im`: PASS
+- Toss Console callback test (`userKey=0`): PASS / CONFIRMED_BY_OPERATOR
+
+Repo CORS default now includes `https://apps-in-toss.toss.im` (Toss Console test origin).
+Repo disconnect handler preserves numeric `userKey=0` (does not coerce to empty).
+
+## Legal URL registration
+
+Candidates (live HTTPS):
+
+- `https://54.116.187.5/legal/terms`
+- `https://54.116.187.5/legal/privacy-consent`
+- `https://54.116.187.5/legal/privacy`
+
+**REQUIRES_TOSS_CONSOLE_CONFIRMATION:** whether Toss accepts **raw-IP** HTTPS URLs when saving
+terms/consent/privacy fields. Disconnect callback itself is confirmed; legal URL save is separate.
 
 ## Live monetization note (not a legal claim)
 

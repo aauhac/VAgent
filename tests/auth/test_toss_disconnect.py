@@ -130,3 +130,58 @@ def test_disconnect_unconfigured_is_unavailable(auth_env, monkeypatch):
         json={"userKey": "1", "referrer": "UNLINK"},
     )
     assert r.status_code == 503
+
+
+def test_disconnect_accepts_numeric_user_key_zero(auth_env):
+    """Toss Console callback test posts userKey=0; must not coerce to empty."""
+    client = auth_env
+    r = client.post(
+        "/v1/auth/toss/disconnect",
+        headers=_basic(),
+        json={"userKey": 0, "referrer": "UNLINK"},
+    )
+    assert r.status_code == 200
+    assert r.json() == {"ok": True}
+
+
+def test_disconnect_rejects_empty_user_key(auth_env):
+    client = auth_env
+    r = client.post(
+        "/v1/auth/toss/disconnect",
+        headers=_basic(),
+        json={"userKey": "", "referrer": "UNLINK"},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "invalid disconnect payload"
+
+
+def test_disconnect_rejects_missing_user_key(auth_env):
+    client = auth_env
+    r = client.post(
+        "/v1/auth/toss/disconnect",
+        headers=_basic(),
+        json={"referrer": "UNLINK"},
+    )
+    assert r.status_code == 422
+
+
+def test_disconnect_rejects_invalid_referrer(auth_env):
+    client = auth_env
+    r = client.post(
+        "/v1/auth/toss/disconnect",
+        headers=_basic(),
+        json={"userKey": 1, "referrer": "NOT_A_REFERRER"},
+    )
+    assert r.status_code == 400
+    assert r.json()["detail"] == "invalid disconnect payload"
+
+
+def test_disconnect_rejects_bad_basic_auth(auth_env):
+    client = auth_env
+    bad = base64.b64encode(b"cb-user:wrong-pass").decode("ascii")
+    r = client.post(
+        "/v1/auth/toss/disconnect",
+        headers={"Authorization": f"Basic {bad}"},
+        json={"userKey": 1, "referrer": "UNLINK"},
+    )
+    assert r.status_code == 401

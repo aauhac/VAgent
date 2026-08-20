@@ -68,5 +68,7 @@ Status: SUPPORTED_BY_CODE | SUPPORTED_BY_POLICY | LEGAL_REQUIREMENT | OPERATOR_I
 | External font CDN | SUPPORTED_BY_CODE | removed; system fonts |
 | Generative AI labeling (Toss §5) | SUPPORTED_BY_POLICY | live path is local acoustic analysis |
 | Public legal pages free of draft/TODO blockers | SUPPORTED_BY_CODE | `tests/legal/test_legal_pages.py`, package/bundle scanners |
-| Toss console raw-IP legal/disconnect registration | OPERATOR_INPUT_REQUIRED | REQUIRES_TOSS_CONSOLE_CONFIRMATION |
+| Toss console disconnect callback (CORS + userKey=0) | SUPPORTED_BY_CODE | `http_config.TOSS_CONSOLE_ORIGIN`; auth_routes preserve `0` |
+| Toss Console disconnect test PASS | CONFIRMED_BY_OPERATOR | production OPTIONS+POST; console test |
+| Toss console raw-IP legal/disconnect registration | OPERATOR_INPUT_REQUIRED | legal URL save still REQUIRES_TOSS_CONSOLE_CONFIRMATION |
 | Mobile legal smoke re-run | OPERATOR_INPUT_REQUIRED | after copy change |

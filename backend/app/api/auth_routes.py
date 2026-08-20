@@ -134,7 +134,8 @@ def _require_disconnect_basic(request: Request) -> None:
 
 
 def _handle_toss_disconnect(user_key: str | int | None, referrer: str | None) -> JSONResponse:
-    key = str(user_key or "").strip()
+    # Preserve numeric 0 (Toss Console callback test). None/"" still reject.
+    key = "" if user_key is None else str(user_key).strip()
     ref = str(referrer or "").strip().upper()
     if not key or ref not in _DISCONNECT_REFERRERS:
         raise HTTPException(status_code=400, detail="invalid disconnect payload")

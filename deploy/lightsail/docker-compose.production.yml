@@ -58,6 +58,9 @@ services:
       RUNTIME_DIR: /var/lib/vocalfb/runtime
       ARTIFACT_STORAGE_MODE: LOCAL_PERSISTENT
       BACKEND_REPLICAS: "1"
+      # Pin local analysis mode so aws-queue-staging.env cannot flip the API to queue
+      # (queue requires S3/SQS and will fail-loop startup on this launch host).
+      VAGENT_ANALYSIS_EXECUTION_MODE: "local"
     ports:
       - "127.0.0.1:8000:8000"
     volumes:

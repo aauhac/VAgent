@@ -38,9 +38,11 @@ Viewport: 375×812 (prior screenshot paths retained; re-capture recommended afte
 | mobile rendering re-smoke | NOT_RUN |
 | Operator business registration fields in repo | PASS — 프랙토컬 / 강민혁 / 453-09-03373 in public legal |
 | Seoul Lightsail region + same-host DB/audio/logs | PASS — see `PRODUCTION_REGION_CHECKLIST.md` |
-| Toss console raw-IP legal/disconnect registration | REQUIRES_TOSS_CONSOLE_CONFIRMATION |
+| Toss console disconnect callback (URL+POST+Basic Auth+console test) | PASS — CONFIRMED_BY_OPERATOR |
+| Toss console raw-IP legal URL registration (terms/consent/privacy) | REQUIRES_TOSS_CONSOLE_CONFIRMATION |
 | mobile rendering re-smoke | NOT_RUN |
-| `LEGAL_RELEASE_APPROVED` | **NO** until Toss console confirmation + mobile smoke |
+| `LEGAL_RELEASE_APPROVED` | **NO** until legal URL registration + mobile smoke |
 
-Do not mark `LEGAL_RELEASE_APPROVED=YES` while Toss console registration and mobile smoke remain open.
+Do not mark `LEGAL_RELEASE_APPROVED=YES` while legal URL console save and mobile smoke remain open.
 Backup (Lightsail Automatic snapshots OFF) is a separate ops task, not a legal-copy blocker.
+Monetization (`PAYMENTS_ENABLED` / rewarded-ad group ID) is a separate launch gate.

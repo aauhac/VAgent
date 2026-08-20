@@ -39,9 +39,13 @@ Placeholder defaults (`vagent.song_detail`, `vagent.diagnostic_full`, `vagent.di
 - `PAYMENTS_ENABLED` — live server currently `false` (IAP backend disabled until launch decision)
 - `DATABASE_URL`
 - `PUBLIC_BACKEND_BASE_URL` — live: `https://54.116.187.5`
-- `CORS_ORIGINS` — production defaults to `https://vocalfb.apps.tossmini.com` and `https://vocalfb.private-apps.tossmini.com`. Must not include localhost or `*`
+- `CORS_ORIGINS` — production default / example:
+  `https://vocalfb.apps.tossmini.com,https://vocalfb.private-apps.tossmini.com,https://apps-in-toss.toss.im`
+  (miniapp live + QR + Toss Console callback-test origin). Must not include localhost or `*`
 - `BACKEND_REPLICAS` — must be `1` while artifact mode is `LOCAL_PERSISTENT`
 - `RUNTIME_DIR` — live: `/var/lib/vocalfb/runtime`
+- `VAGENT_ANALYSIS_EXECUTION_MODE` — launch host must stay `local` (compose pins backend to local;
+  do not let `aws-queue-staging.env` flip the API to `queue` without S3/SQS)
 - `ALLOW_MOCK_PREMIUM` — must stay false in production (endpoints 403 anyway)
 - `TOSS_DISCONNECT_BASIC_USER` / `TOSS_DISCONNECT_BASIC_PASSWORD` — required when Toss login is enabled in production
 
