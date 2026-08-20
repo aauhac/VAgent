@@ -38,9 +38,18 @@ Status: SUPPORTED_BY_CODE | SUPPORTED_BY_POLICY | LEGAL_REQUIREMENT | OPERATOR_I
 | Analysis is not medical diagnosis | SUPPORTED_BY_POLICY | product copy |
 | Audio auto-TTL (e.g. 1 year) | OPERATOR_INPUT_REQUIRED | not in code; docs state delete-on-request only |
 | Lightsail as production packaging | SUPPORTED_BY_CODE | `deploy/lightsail/*` |
-| Lightsail / DB region string | OPERATOR_INPUT_REQUIRED | not in repo |
-| International transfer notice filled | OPERATOR_INPUT_REQUIRED | wait for confirmed region |
-| DPO name / business registration in repo | OPERATOR_INPUT_REQUIRED | public docs point to Apps in Toss partner registration |
+| Production provider AWS Lightsail | SUPPORTED_BY_DEPLOYMENT | live host + compose |
+| AWS region `ap-northeast-2` (Seoul) | CONFIRMED_BY_OPERATOR | console + server audit |
+| Postgres same Seoul Lightsail host | CONFIRMED_BY_SERVER | `vocalfb-postgres-1`, `/var/lib/vocalfb/postgres` |
+| Audio/runtime same Seoul Lightsail host | CONFIRMED_BY_SERVER | `/var/lib/vocalfb/runtime` |
+| Local nginx/app logs same Seoul host | CONFIRMED_BY_SERVER | `/var/log/nginx/*`, Docker json-file |
+| Public backend `https://54.116.187.5` | CONFIRMED_BY_SERVER | env + live TLS + miniapp bake |
+| TLS auto-renew (Certbot shortlived IP) + nginx reload | CONFIRMED_BY_SERVER | `snap.certbot.renew.timer`, deploy hook |
+| Lightsail Automatic snapshots | DISABLED_CONFIRMED | AWS console OFF |
+| Dedicated VAgent / Postgres / audio backup | NONE_CONFIRMED | no job on host |
+| International transfer notice (company-hosted Seoul) | SUPPORTED_BY_POLICY | Privacy §6; platform internals not over-claimed |
+| Business legal entity 프랙토컬 / 453-09-03373 | CONFIRMED_BY_OPERATOR | public legal docs |
+| Representative / privacy officer 강민혁 | CONFIRMED_BY_OPERATOR | privacy §11; terms header |
 | Electronic commerce 청약철회 vs IAP | SUPPORTED_BY_POLICY | Terms §14: no blanket “환불 불가”; follow law + platform |
 | Safety answers as sensitive health data | OPERATOR_INPUT_REQUIRED | boolean discomfort fields stored; not labeled medical |
 | Under-14 dedicated flow | SUPPORTED_BY_POLICY | Privacy: no under-14 signup flow |
@@ -54,6 +63,10 @@ Status: SUPPORTED_BY_CODE | SUPPORTED_BY_POLICY | LEGAL_REQUIREMENT | OPERATOR_I
 | Login not required solely to watch rewarded ad | SUPPORTED_BY_CODE | routes use `_ident` / headers; anonymous principal_key |
 | Privacy distinguishes rewarded ads vs analytics SDKs | SUPPORTED_BY_POLICY | `PRIVACY_POLICY.ko.md` §2 / §10 |
 | Public privacy discloses reward records in user-friendly language | SUPPORTED_BY_POLICY | §2 E; no `principal_key` / table names |
+| Live `PAYMENTS_ENABLED=false` (IAP backend currently disabled) | CONFIRMED_BY_SERVER | vocalfb.env audit |
+| Live rewarded-ad production group ID empty | CONFIRMED_BY_ARTIFACT | miniapp bake |
 | External font CDN | SUPPORTED_BY_CODE | removed; system fonts |
 | Generative AI labeling (Toss §5) | SUPPORTED_BY_POLICY | live path is local acoustic analysis |
 | Public legal pages free of draft/TODO blockers | SUPPORTED_BY_CODE | `tests/legal/test_legal_pages.py`, package/bundle scanners |
+| Toss console raw-IP legal/disconnect registration | OPERATOR_INPUT_REQUIRED | REQUIRES_TOSS_CONSOLE_CONFIRMATION |
+| Mobile legal smoke re-run | OPERATOR_INPUT_REQUIRED | after copy change |

@@ -37,10 +37,19 @@ Provenance: SUPPORTED_BY_CODE unless marked otherwise.
 | External font CDN | Previously jsDelivr Pretendard | — | Removed; system fonts only | — | — | Privacy §10 |
 | AI training corpus | — | — | No live-app path | — | — | Explicitly **not** used for training |
 
-## Hosting (code/deploy tree)
+## Hosting (confirmed production)
 
-- Backend packaging: AWS Lightsail (`deploy/lightsail/`)
-- Region string: **OPERATOR_INPUT_REQUIRED** (not in repo)
+- Backend: AWS Lightsail Seoul / `ap-northeast-2` / AZ `ap-northeast-2a`
+- Static IPv4: `54.116.187.5`
+- Public HTTPS origin: `https://54.116.187.5` (`PUBLIC_BACKEND_BASE_URL` / miniapp `VITE_API_BASE`)
+- Postgres: same host (`vocalfb-postgres-1`, bind `/var/lib/vocalfb/postgres`) — no public DB port
+- Audio/runtime: same host (`RUNTIME_DIR=/var/lib/vocalfb/runtime`, `ARTIFACT_STORAGE_MODE=LOCAL_PERSISTENT`)
+- Logs: nginx `/var/log/nginx/*` + Docker `json-file` on same Seoul host
+- TLS: Let's Encrypt IP SAN short-lived; Certbot snap renew timer + nginx reload deploy hook
+- Lightsail Automatic snapshots: **OFF**
+- Dedicated application / PostgreSQL / audio backup: **none confirmed**
+- Live monetization flags (server audit): `TOSS_LOGIN_ENABLED=true`, `PAYMENTS_ENABLED=false`
+- Live miniapp rewarded-ad group id: **empty** (CTA hidden until configured)
 
 ## Absences (do not invent)
 
@@ -48,7 +57,7 @@ Provenance: SUPPORTED_BY_CODE unless marked otherwise.
 - 원클릭 전체 이용정보 일괄 삭제 UI
 - Audio TTL/cron for undeleted analyses
 - Card number, payment method PAN
-- Business registration number / DPO personal name in repo
 - Marketing push/email/SMS
 - Google Analytics / Sentry / PostHog / pixels / independent ad-tracking SDK
 - Invented production ad group IDs, AdMob/Google as named processors, ADID/IDFA collection by our app, overseas ad-transfer facts not confirmed in code
+- Automatic Lightsail snapshots or dedicated VAgent backup while OFF

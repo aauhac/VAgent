@@ -3,31 +3,39 @@
 Initial launch topology for VAgent. Local workspace is the implementation source of truth.
 
 **Production backend packaging path:** AWS Lightsail (`deploy/lightsail/`).  
-See `docs/PRODUCTION_CLOUD_DECISION.md`. Confirm the live Lightsail **region** on the
-instance/account console before documenting it (do not guess).
+See `docs/PRODUCTION_CLOUD_DECISION.md`.
+
+**Confirmed live topology:** Seoul / `ap-northeast-2` / AZ `ap-northeast-2a`  
+Static IP `54.116.187.5` · Public origin `https://54.116.187.5`
 
 ## Miniapp vs backend
 
 - Miniapp `appName=vocalfb` is hosted by Apps in Toss.
   Live origin: `https://vocalfb.apps.tossmini.com`
   QR origin: `https://vocalfb.private-apps.tossmini.com`
-- VAgent backend is a separate public HTTPS service on Lightsail (compose + Dockerfile).
-  Set `PUBLIC_BACKEND_BASE_URL` after that hostname exists.
+- VAgent backend is a separate public HTTPS service on Lightsail.
+  Live: `PUBLIC_BACKEND_BASE_URL=https://54.116.187.5`
 - Frontend origin and API origin are **not** the same. Production miniapp builds
-  must set `VITE_API_BASE` to `PUBLIC_BACKEND_BASE_URL`, then `npm run build:toss`.
+  must set `VITE_API_BASE` to that same origin, then `npm run build:toss`
+  (current artifact already bakes `https://54.116.187.5`).
 
 ## Environment
 
 - `VAGENT_ENV=production`
 - See `.env.production.example` for the full key list (no secrets).
+- Live audit (non-secret): `TOSS_LOGIN_ENABLED=true`, `PAYMENTS_ENABLED=false`,
+  `ARTIFACT_STORAGE_MODE=LOCAL_PERSISTENT`, `BACKEND_REPLICAS=1`,
+  `RUNTIME_DIR=/var/lib/vocalfb/runtime`
 - `ALLOW_MOCK_PREMIUM` must stay false. Production ignores the flag and returns 403 on mock unlock/pay/regenerate.
 - `SINGER_IDENTITY_ENABLED=false` until that gate is separately unblocked.
 - `PHYSIOLOGY_DEBUG=false`
 
 ## TLS
 
-- Assume the backend sits behind platform HTTPS / load balancer / reverse proxy.
-- Do not generate a production certificate in the app.
+- Host Nginx terminates HTTPS on `443` and proxies to `127.0.0.1:8000`.
+- Certificate: Let's Encrypt IP SAN for `54.116.187.5` (short-lived profile).
+- TLS auto renewal: **confirmed** (`snap.certbot.renew.timer`).
+- Nginx reload after renewal: **confirmed** (`/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh`).
 - Toss **outbound mTLS** client cert/key (`TOSS_MTLS_CERT_PATH` / `TOSS_MTLS_KEY_PATH`)
   is only for backend → Apps in Toss APIs. It is not the public HTTPS certificate.
 
@@ -106,15 +114,20 @@ Restart policy: restart the single process on failure; do not scale replicas whi
 
 - Apps in Toss miniapp: `npm run build:toss` from `miniapp/`.
 - Production prices come from `IAP.getProductItemList().displayAmount`. Backend catalog amounts are not authoritative in production.
-- Production API base is `VITE_API_BASE`. Empty is allowed for an unconfigured CI bundle (runtime fail-closed: `API_BASE_NOT_CONFIGURED`). It must not be localhost.
-- After the cloud hostname exists, rebuild with `VITE_API_BASE=$PUBLIC_BACKEND_BASE_URL`.
+- Production API base is `VITE_API_BASE`. Current production bake: `https://54.116.187.5`.
+- Empty is allowed only for an unconfigured CI bundle (runtime fail-closed: `API_BASE_NOT_CONFIGURED`). It must not be localhost.
 - Scan: `python scripts/check_production_bundle.py`
 
 ## Toss console
 
-- Register real SKUs. Do not ship placeholder `vagent.song_detail` / `vagent.diagnostic_full` / `vagent.diagnostic_upgrade` when payments are enabled.
+- Register real SKUs before enabling payments. Do not ship placeholder `vagent.song_detail` / `vagent.diagnostic_full` / `vagent.diagnostic_upgrade` when payments are enabled.
 - Set `IAP_SONG_DETAIL_SKU`, `IAP_DIAGNOSTIC_FULL_SKU`, `IAP_DIAGNOSTIC_UPGRADE_SKU`.
-- Legal / disconnect URLs: `{PUBLIC_BACKEND_BASE_URL}/legal/...` and `{PUBLIC_BACKEND_BASE_URL}/v1/auth/toss/disconnect`. Keep console placeholders until the hostname exists. Do not invent one.
+- Legal / disconnect URL candidates:
+  - `https://54.116.187.5/legal/terms`
+  - `https://54.116.187.5/legal/privacy`
+  - `https://54.116.187.5/legal/privacy-consent`
+  - `https://54.116.187.5/v1/auth/toss/disconnect`
+- **REQUIRES_TOSS_CONSOLE_CONFIRMATION:** whether Toss accepts raw-IP HTTPS URLs. Do not mark console registration as complete until verified.
 
 ## Toss login (required for payments)
 
@@ -161,8 +174,10 @@ Official flow: miniapp `appLogin()` → backend exchanges `authorizationCode` �
 - Structured payment logs: request_id, masked user, product, masked order, status, intent.
 - Never log AccessToken, RefreshToken, mTLS private keys, authorization codes, full session tokens, or disconnect Basic Auth passwords.
 
-## Region
+## Region / storage / backup
 
-- Prefer a Korea region for API, database, audio, backup, and logs on Lightsail.
-- Confirm the actual region on the live instance before filling
-  `docs/PRODUCTION_REGION_CHECKLIST.md`. Do not invent a region string in docs or legal.
+- Region: Seoul / `ap-northeast-2` / AZ `ap-northeast-2a` (confirmed).
+- Postgres + audio/runtime + nginx/app logs: same Lightsail host (confirmed).
+- Lightsail Automatic snapshots: **OFF**. Dedicated VAgent backup: **not configured**.
+- See `docs/PRODUCTION_REGION_CHECKLIST.md` and `docs/legal/INTERNATIONAL_TRANSFER_READINESS.md`.
+

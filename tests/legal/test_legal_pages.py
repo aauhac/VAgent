@@ -147,3 +147,37 @@ def test_privacy_hides_internal_rewarded_ad_implementation_names():
         "seoul_day",
     ):
         assert banned not in privacy, banned
+
+
+def test_public_legal_discloses_confirmed_business_identity():
+    text = _joined_docs()
+    assert "프랙토컬" in text
+    assert "강민혁" in text
+    assert "453-09-03373" in text
+    privacy = _privacy_text()
+    assert "개인정보 보호책임자: 강민혁" in privacy
+    assert "uhaki04@gmail.com" in privacy
+
+
+def test_public_legal_has_no_placeholder_business_identity():
+    text = _joined_docs()
+    assert "앱인토스에 본 서비스를 등록·운영하는 파트너" not in text
+    assert "[TODO:" not in text
+    assert "TODO_BEFORE_PRODUCTION" not in text
+
+
+def test_privacy_states_company_hosted_storage_in_seoul():
+    privacy = _privacy_text()
+    assert "서울" in privacy
+    assert "Lightsail" in privacy or "라이트세일" in privacy
+    # Must not over-claim absolute no-overseas for all platform processing
+    assert "국외로 이전되지 않는다고 단정하지 않습니다" in privacy
+
+
+def test_privacy_does_not_claim_nonexistent_backup_deletion():
+    privacy = _privacy_text()
+    assert "백업 주기에 따라 상실·교체" not in privacy
+    assert "Automatic snapshots" not in privacy
+    # Must not invent that backups exist and purge on a cycle
+    assert "인프라 백업에 남은 사본은" not in privacy
+    assert "즉시 삭제된다고 약속하지 않습니다" in privacy

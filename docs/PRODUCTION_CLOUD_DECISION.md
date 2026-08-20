@@ -10,8 +10,10 @@ Miniapp hosting and VAgent backend hosting remain different:
 | Apps in Toss miniapp `vocalfb` | Toss | No |
 | VAgent backend API | AWS Lightsail (this repo’s production path) | No, if Lightsail / reverse proxy gives a stable public HTTPS hostname |
 
-**AWS region:** not recorded in this repository. Confirm on the live Lightsail instance
-or account console before claiming a specific region (do not guess `ap-northeast-2`).
+**AWS region (confirmed):** Seoul / `ap-northeast-2` / AZ `ap-northeast-2a`  
+**Static IPv4:** `54.116.187.5`  
+**Public HTTPS origin:** `https://54.116.187.5` (`PUBLIC_BACKEND_BASE_URL`)  
+**Miniapp API bake:** `VITE_API_BASE=https://54.116.187.5`
 
 ## Miniapp origins (verified)
 
@@ -38,21 +40,23 @@ Packaging and deploy assets:
 
 Topology:
 
-- Public HTTPS in front of the backend (TLS at load balancer / reverse proxy / Lightsail HTTPS).
-- The application does not invent or terminate a production certificate by itself.
+- Public HTTPS: host Nginx terminates TLS on `443` → `127.0.0.1:8000` (FastAPI).
+- Certificate: Let's Encrypt **IP SAN** for `54.116.187.5` (short-lived profile).
+- TLS auto renewal: **confirmed** (`snap.certbot.renew.timer`); nginx reload after renew: **confirmed** (deploy hook).
 - Initial replica count: **1** (`BACKEND_REPLICAS=1`)
 - Uvicorn workers: **1** (in-memory `JobRunner` is process-local unless queue mode is enabled)
 - Stable outbound HTTPS (443) to Apps in Toss APIs
 - Ability to present a **client** mTLS certificate+key for outbound Toss calls
-- Persistent volume mount at `RUNTIME_DIR`
+- Persistent volume mount at `RUNTIME_DIR=/var/lib/vocalfb/runtime` on the same Seoul host
+- PostgreSQL on the same host (`/var/lib/vocalfb/postgres`); no public DB port
 
 Outbound Toss mTLS client cert ≠ public HTTPS server cert. Do not mix them.
 
 ## Database
 
-- PostgreSQL (compose service on the Lightsail host, or managed equivalent)
-- Prefer Korea region when selecting infrastructure; **verify** on the live instance
-- Automated backup is an operator responsibility
+- PostgreSQL compose service on the **same Seoul Lightsail host** (`vocalfb-postgres-1`)
+- Data volume: `/var/lib/vocalfb/postgres`
+- Lightsail Automatic snapshots: **OFF**; dedicated `pg_dump`/app backup: **not configured**
 - Encrypted connection — pass provider SSL through `DATABASE_URL` (do not invent `sslmode` in app code)
 - App uses SQLAlchemy `pool_pre_ping=True` and Postgres `connect_timeout=5`
 
@@ -106,6 +110,14 @@ Outbound (backend → Apps in Toss):
 
 ## Custom domain
 
-Not required to build or test the Toss-hosted miniapp.
-Required only if you want a branded API hostname instead of the Lightsail-provided HTTPS name.
-Set `PUBLIC_BACKEND_BASE_URL` / `VITE_API_BASE` only after a real hostname exists.
+Not required for the current live origin `https://54.116.187.5` (Let's Encrypt IP certificate).
+A branded hostname is optional later; if added, rebuild miniapp with matching `VITE_API_BASE`
+and update Toss console URLs. **REQUIRES_TOSS_CONSOLE_CONFIRMATION** whether raw-IP URLs
+are accepted for legal/disconnect registration.
+
+## Live monetization flags (server audit)
+
+- `TOSS_LOGIN_ENABLED=true`
+- `PAYMENTS_ENABLED=false` (IAP backend currently disabled — do not document as live IAP)
+- Miniapp rewarded-ad production group ID: empty (CTA hidden)
+

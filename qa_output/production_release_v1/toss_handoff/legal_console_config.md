@@ -2,19 +2,19 @@
 
 Do not store secrets here.
 
-Production legal HTML is served by the VAgent backend:
+Production legal HTML is served by the VAgent backend at live origin
+`https://54.116.187.5`:
 
-`{PUBLIC_BACKEND_BASE_URL}/legal/terms`  
-`{PUBLIC_BACKEND_BASE_URL}/legal/privacy`  
-`{PUBLIC_BACKEND_BASE_URL}/legal/privacy-consent`  
-`{PUBLIC_BACKEND_BASE_URL}/v1/auth/toss/disconnect`
+`https://54.116.187.5/legal/terms`  
+`https://54.116.187.5/legal/privacy`  
+`https://54.116.187.5/legal/privacy-consent`  
+`https://54.116.187.5/v1/auth/toss/disconnect`
 
-`PUBLIC_BACKEND_BASE_URL` is the live Lightsail (or reverse-proxy) HTTPS origin.
-Fill the real hostname in the **Toss console** after it exists. Do not commit secrets.
-Until the hostname is set in console, leave console URL fields empty rather than inventing one.
+`PUBLIC_BACKEND_BASE_URL` on the server is `https://54.116.187.5`.
 
-**REQUIRES_TOSS_CONSOLE_ACTION:** paste the three legal URLs + disconnect URL once hostname exists.  
-**REQUIRES_OPERATOR_ACTION:** confirm business registration / DPO contact in Apps in Toss partner profile.
+**REQUIRES_TOSS_CONSOLE_CONFIRMATION:** paste the three legal URLs + disconnect URL
+and confirm whether Toss accepts **raw-IP** HTTPS URLs. Do not mark registration complete
+until the console accepts them.
 
 Official sources:
 
@@ -38,6 +38,10 @@ QR / private test origin: `https://vocalfb.private-apps.tossmini.com`
 `노래 실력 진단받기`
 
 Matches granite `displayName`.
+
+## Operator / business (confirmed)
+
+상호: 프랙토컬 · 대표자/개인정보 보호책임자: 강민혁 · 사업자등록번호: 453-09-03373
 
 ## User information
 
@@ -74,7 +78,7 @@ Apps in Toss 사용자정보 SDK (`getConsentedUserData` / `termsUrl` HTTPS 회�
 
 제목: `노래 실력 진단받기 서비스 이용약관`
 
-URL: `{PUBLIC_BACKEND_BASE_URL}/legal/terms`
+URL: `https://54.116.187.5/legal/terms`
 
 권장 약관 유형: 콘솔 예시 **서비스 이용약관**
 
@@ -84,7 +88,7 @@ URL: `{PUBLIC_BACKEND_BASE_URL}/legal/terms`
 
 제목: `개인정보 수집·이용 동의`
 
-URL: `{PUBLIC_BACKEND_BASE_URL}/legal/privacy-consent`
+URL: `https://54.116.187.5/legal/privacy-consent`
 
 약관 유형: 콘솔 예시 **개인정보 수집·이용 동의**
 
@@ -92,13 +96,13 @@ URL: `{PUBLIC_BACKEND_BASE_URL}/legal/privacy-consent`
 
 마케팅 정보 수신 동의: **등록하지 않음** (기능 없음)
 
-국외 이전 동의: Lightsail **region 확인 전**에는 등록하지 않음.
-Region이 국외로 확인되면 **REQUIRES_TOSS_CONSOLE_ACTION**으로 동의문을 추가한다.
-확인되지 않은 국가·법인을 콘솔에 넣지 않는다.
+국외 이전 동의: 회사가 직접 운영하는 저장소는 Seoul Lightsail로 확인됨.
+플랫폼(Apps in Toss) 내부 처리 chain은 별개이므로, 확인되지 않은 국가·법인을
+콘솔에 넣지 않는다.
 
 ## Privacy Policy
 
-URL: `{PUBLIC_BACKEND_BASE_URL}/legal/privacy`
+URL: `https://54.116.187.5/legal/privacy`
 
 「개인정보 보호법」 제30조에 따라 미니앱 `/legal/privacy` 및 백엔드 HTML에 게시합니다.
 콘솔 약관 목록에 별도 항목으로 넣을지는 운영자가 콘솔 UI를 확인한 뒤 결정합니다
@@ -108,6 +112,13 @@ URL: `{PUBLIC_BACKEND_BASE_URL}/legal/privacy`
 
 구현: `POST` 및 `GET` `/v1/auth/toss/disconnect`
 
-URL: `{PUBLIC_BACKEND_BASE_URL}/v1/auth/toss/disconnect`
+URL: `https://54.116.187.5/v1/auth/toss/disconnect`
 
 Basic Auth: `TOSS_DISCONNECT_BASIC_USER` / `TOSS_DISCONNECT_BASIC_PASSWORD` (host secrets only).
+**REQUIRES_TOSS_CONSOLE_CONFIRMATION:** callback + Basic Auth registered in console.
+
+## Live monetization note (not a legal claim)
+
+- Server: `TOSS_LOGIN_ENABLED=true`, `PAYMENTS_ENABLED=false`
+- Miniapp: rewarded-ad production group ID currently empty (CTA hidden)
+- Enabling IAP / rewarded ads is a separate launch gate

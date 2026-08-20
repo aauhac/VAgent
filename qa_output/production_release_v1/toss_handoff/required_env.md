@@ -9,7 +9,7 @@ These are the variables the current VAgent code reads. Fill them on the host/sec
 - `TOSS_IDENTITY_TRUST_MODE` — keep `UNVERIFIED_CLIENT_SUBJECT`. Setting `VERIFIED_TOSS_SUBJECT` does **not** authenticate client headers.
 
 - Frontend sends `authorization_code` + `referrer` (`DEFAULT` | `SANDBOX`) to `POST /v1/auth/toss/login`. Backend exchanges the code and calls login-me. There is no client callback URL in this implementation.
-- Disconnect callback URL: `{PUBLIC_BACKEND_BASE_URL}/v1/auth/toss/disconnect`
+- Disconnect callback URL: `https://54.116.187.5/v1/auth/toss/disconnect` (**REQUIRES_TOSS_CONSOLE_CONFIRMATION**)
 
 ## Session / HMAC
 
@@ -36,18 +36,19 @@ Placeholder defaults (`vagent.song_detail`, `vagent.diagnostic_full`, `vagent.di
 
 ## Payments flag / CORS / DB / public URL
 
-- `PAYMENTS_ENABLED`
+- `PAYMENTS_ENABLED` — live server currently `false` (IAP backend disabled until launch decision)
 - `DATABASE_URL`
-- `PUBLIC_BACKEND_BASE_URL` — HTTPS origin of this backend after cloud deploy; composes legal + disconnect URLs
+- `PUBLIC_BACKEND_BASE_URL` — live: `https://54.116.187.5`
 - `CORS_ORIGINS` — production defaults to `https://vocalfb.apps.tossmini.com` and `https://vocalfb.private-apps.tossmini.com`. Must not include localhost or `*`
 - `BACKEND_REPLICAS` — must be `1` while artifact mode is `LOCAL_PERSISTENT`
-- `RUNTIME_DIR` — persistent volume path
+- `RUNTIME_DIR` — live: `/var/lib/vocalfb/runtime`
 - `ALLOW_MOCK_PREMIUM` — must stay false in production (endpoints 403 anyway)
 - `TOSS_DISCONNECT_BASIC_USER` / `TOSS_DISCONNECT_BASIC_PASSWORD` — required when Toss login is enabled in production
 
 Miniapp production build:
 
-- `VITE_API_BASE` — same HTTPS origin as `PUBLIC_BACKEND_BASE_URL` (rebuild after the hostname exists)
+- `VITE_API_BASE` — live bake: `https://54.116.187.5` (must match `PUBLIC_BACKEND_BASE_URL`)
+- `VITE_TOSS_REWARDED_DETAIL_AD_GROUP_ID` — currently empty in production artifact (CTA hidden)
 
 
 ## Not used as auth proof

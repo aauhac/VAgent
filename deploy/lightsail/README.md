@@ -156,16 +156,27 @@ Keep the previous tar.gz. Stop backend, extract the previous archive into `/opt/
 
 Do **not** run `alembic downgrade`. Payment/entitlement tables must remain readable.
 
-## L. Later Nginx / HTTPS
+## L. Nginx / HTTPS (live)
 
-1. Choose a real hostname.
-2. Copy `nginx-vocalfb.conf.template`, replace `__BACKEND_HOSTNAME__`.
-3. Point Nginx to `http://127.0.0.1:8000`.
-4. Add Certbot/HTTPS only after the hostname exists.
-5. Set `PUBLIC_BACKEND_BASE_URL` to `https://<hostname>` (no trailing slash).
-6. Rebuild the Toss miniapp with `VITE_API_BASE` equal to that origin.
+Current production (confirmed):
 
+- Region: `ap-northeast-2` / AZ `ap-northeast-2a`
+- Public origin: `https://54.116.187.5`
+- Nginx `443` → `127.0.0.1:8000`
+- Postgres: no public port; volume `/var/lib/vocalfb/postgres`
+- Runtime: `/var/lib/vocalfb/runtime` (local persistent)
+- Certbot: short-lived Let's Encrypt IP certificate; auto-renew enabled
+  (`snap.certbot.renew.timer`); deploy hook reloads nginx
+- `PUBLIC_BACKEND_BASE_URL=https://54.116.187.5`
+- Miniapp `VITE_API_BASE` must match that origin
+
+Optional later: add a branded hostname and re-issue certificates for that name.
 Do not configure SSL against a placeholder hostname.
+
+## Backup note
+
+Lightsail Automatic snapshots are currently **OFF**. Enabling snapshots or
+`pg_dump` is a separate ops task — not part of legal-doc updates.
 
 ## Capacity
 

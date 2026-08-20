@@ -36,7 +36,11 @@ Viewport: 375×812 (prior screenshot paths retained; re-capture recommended afte
 | no secrets | PASS |
 | docs/frontend sync | PASS |
 | mobile rendering re-smoke | NOT_RUN |
-| Operator business registration fields in repo | OPERATOR_INPUT_REQUIRED |
-| `LEGAL_RELEASE_APPROVED` | **NO** until operator business/DPO registration details are confirmed and mobile smoke re-run |
+| Operator business registration fields in repo | PASS — 프랙토컬 / 강민혁 / 453-09-03373 in public legal |
+| Seoul Lightsail region + same-host DB/audio/logs | PASS — see `PRODUCTION_REGION_CHECKLIST.md` |
+| Toss console raw-IP legal/disconnect registration | REQUIRES_TOSS_CONSOLE_CONFIRMATION |
+| mobile rendering re-smoke | NOT_RUN |
+| `LEGAL_RELEASE_APPROVED` | **NO** until Toss console confirmation + mobile smoke |
 
-Do not mark `LEGAL_RELEASE_APPROVED=YES` while operator legal-entity fields remain outside the repo and mobile smoke is not re-run.
+Do not mark `LEGAL_RELEASE_APPROVED=YES` while Toss console registration and mobile smoke remain open.
+Backup (Lightsail Automatic snapshots OFF) is a separate ops task, not a legal-copy blocker.
