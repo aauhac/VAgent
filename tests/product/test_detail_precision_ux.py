@@ -145,10 +145,13 @@ def test_canonical_fallback_not_dropped_when_raw_hidden():
 
 def test_dev_price_fallbacks_match_catalog_policy():
     result = _read("pages/Result.tsx")
-    assert "₩990" in result
-    assert "₩1,980" in result
-    assert "₩1,000" not in result
-    assert "₩2,000" not in result
+    assert "₩990" not in result
+    assert "₩1,980" not in result
+    assert "useIapProductPrices" in result
     catalog = (ROOT / "backend" / "app" / "products" / "catalog.py").read_text(encoding="utf-8")
     assert 'mock_amount_krw": 990' in catalog
     assert 'mock_amount_krw": 1980' in catalog
+    iap = _read("lib/iapCatalog.ts")
+    assert "import.meta.env.PROD" in iap
+    assert "display_amount" in iap
+    assert "₩990" not in iap

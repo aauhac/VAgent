@@ -18,12 +18,14 @@ from .api.payment_routes import router as payment_router
 from .api.routes import router
 from .api.voice_profile_routes import router as voice_profile_router
 from .config import (
+    analysis_execution_mode,
     artifact_storage_mode,
     database_url,
     get_runtime_dir,
     is_production,
     log_startup_banner,
     runtime_writable,
+    validate_analysis_execution_config,
 )
 from .http_config import cors_origins, public_backend_base_url, validate_production_http_config
 from .middleware.request_context import RequestContextMiddleware
@@ -31,6 +33,29 @@ from .payments.settings import backend_replicas, payments_enabled, toss_login_en
 from .payments.startup import validate_login_production_config, validate_payment_production_config
 
 load_dotenv_if_available()
+
+def _separation_dependency_state() -> tuple[str, str | None]:
+    """
+    Returns:
+      (state, detail)
+    state:
+      - ok
+      - dependency_missing (torch/demucs/torchaudio not installed)
+      - error (unexpected import/runtime error)
+    detail must be short and non-sensitive.
+    """
+    try:
+        import torch  # noqa: F401
+        import demucs  # noqa: F401
+        # We intentionally do not call get_model(); model weights download can be slow.
+        return "ok", None
+    except ModuleNotFoundError as exc:  # noqa: BLE001
+        mod = getattr(exc, "name", "") or ""
+        if any(x in mod for x in ("torch", "demucs", "torchaudio")):
+            return "dependency_missing", mod
+        return "dependency_missing", mod or str(exc)
+    except Exception as exc:  # noqa: BLE001
+        return "error", str(exc)[:200]
 
 
 def _build_app() -> FastAPI:
@@ -65,6 +90,9 @@ app.include_router(voice_profile_router)
 
 @app.on_event("startup")
 def _on_startup() -> None:
+    mode_blockers = validate_analysis_execution_config()
+    if any(b == "VAGENT_ANALYSIS_EXECUTION_MODE_INVALID" for b in mode_blockers):
+        raise RuntimeError("analysis execution mode not ready: " + ",".join(mode_blockers))
     log_startup_banner()
     runtime_ok = runtime_writable()
     get_runtime_dir()
@@ -102,6 +130,18 @@ def _on_startup() -> None:
                 raise RuntimeError("production login not ready: " + ",".join(blockers))
         if artifact_storage_mode() == "LOCAL_PERSISTENT" and backend_replicas() != 1:
             raise RuntimeError("LOCAL_PERSISTENT artifact store requires BACKEND_REPLICAS=1")
+        queue_blockers = validate_analysis_execution_config()
+        if queue_blockers:
+            raise RuntimeError("analysis queue mode not ready: " + ",".join(queue_blockers))
+
+    from .api import routes as routes_mod
+    from .services.analysis_service import wire_analysis_service
+
+    if analysis_execution_mode() == "queue":
+        queue_blockers = validate_analysis_execution_config()
+        if queue_blockers:
+            raise RuntimeError("analysis queue mode not ready: " + ",".join(queue_blockers))
+        routes_mod.service = wire_analysis_service()
 
 
 @app.get("/health")
@@ -145,9 +185,17 @@ def ready():
         "runtime": "ok" if runtime_ok else "not_writable",
         "payments": payment_state,
         "login": login_state,
+        "separation": None,
         "public_backend_base": "configured" if public_backend_base_url() else "unset",
         "multi_instance_safe": False,
     }
+
+    # Separation dependency check:
+    # - Useful for MIXED mode readiness (Demucs requires torch/demucs).
+    # - Do not block startup here; /ready must stay informative.
+    sep_state, sep_detail = _separation_dependency_state()
+    body["separation"] = {"state": sep_state, "detail": sep_detail}
+
     if not ok:
         return JSONResponse(status_code=503, content=body)
     return body

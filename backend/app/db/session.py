@@ -36,6 +36,9 @@ def get_engine() -> Optional[Engine]:
         kwargs: dict = {"pool_pre_ping": True}
         if url.startswith("postgresql"):
             kwargs["connect_args"] = {"connect_timeout": 5}
+        elif url.startswith("sqlite"):
+            # Heartbeat/worker threads share the engine in tests.
+            kwargs["connect_args"] = {"check_same_thread": False}
         _engine = create_engine(url, **kwargs)
         _SessionLocal = sessionmaker(bind=_engine, autoflush=False, autocommit=False)
     return _engine

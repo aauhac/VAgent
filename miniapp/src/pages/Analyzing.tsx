@@ -1,13 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getAnalysis, saveHistory } from '../api/client';
+import {
+  ANALYSIS_INTERRUPTED,
+  ANALYSIS_PROGRESS_HINT,
+  ANALYSIS_PROGRESS_WAIT,
+  analysisStageLabel,
+  isInterruptedStage,
+  visualAnalysisProgress,
+} from '../lib/analysisProgress';
+import { ANALYSIS_FAILED, RESULT_UNAVAILABLE } from '../lib/userFacingErrors';
+import {
+  requestAnalysisCompleteAgreement,
+  type NotificationAgreementState,
+} from '../lib/tossNotifications';
 
 export default function Analyzing() {
   const { id } = useParams();
   const nav = useNavigate();
-  const [progress, setProgress] = useState(5);
+  const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState('queued');
+  const [status, setStatus] = useState('queued');
   const [error, setError] = useState<string | null>(null);
+  const [notifyState, setNotifyState] = useState<NotificationAgreementState>('IDLE');
+  const [notifyError, setNotifyError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -16,10 +32,13 @@ export default function Analyzing() {
       try {
         const job = await getAnalysis(id);
         if (!alive) return;
-        setProgress(job.progress ?? 10);
-        setStage(job.stage || job.status);
-        if (job.status === 'failed') {
-          setError(job.error || '분석 실패');
+        setProgress(typeof job.progress === 'number' ? job.progress : 0);
+        setStage(job.stage || job.status || 'queued');
+        setStatus(job.status || '');
+        if (job.status === 'failed' || isInterruptedStage(job.stage, job.error)) {
+          setError(
+            isInterruptedStage(job.stage, job.error) ? ANALYSIS_INTERRUPTED : ANALYSIS_FAILED,
+          );
           return;
         }
         if (job.status === 'completed' && job.result) {
@@ -44,8 +63,8 @@ export default function Analyzing() {
           return;
         }
         window.setTimeout(tick, 1200);
-      } catch (e: any) {
-        if (alive) setError(e?.message || '상태 조회 실패');
+      } catch {
+        if (alive) setError(RESULT_UNAVAILABLE);
       }
     };
     tick();
@@ -54,18 +73,67 @@ export default function Analyzing() {
     };
   }, [id, nav]);
 
+  const barWidth = visualAnalysisProgress({ status, stage, progress });
+
   return (
     <main>
       <h1 className="brand" style={{ fontSize: '1.7rem' }}>분석 중</h1>
-      <p className="lead">목소리를 듣고 발성 특성을 계산하고 있어요.</p>
       <div className="panel">
-        <div className="muted">단계: {stage}</div>
-        <div className="meter"><span style={{ width: `${progress}%` }} /></div>
-        <div>{progress}%</div>
-        {error && (
+        {error ? (
           <>
             <p className="fail">{error}</p>
             <Link className="btn secondary" to="/">홈으로</Link>
+          </>
+        ) : (
+          <>
+            <p className="analyzing-stage">{analysisStageLabel(stage)}</p>
+            <p className="analyzing-hint">{ANALYSIS_PROGRESS_HINT}</p>
+            <div
+              className="meter"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={barWidth}
+              aria-label={analysisStageLabel(stage)}
+            >
+              <span className="meter-fill" style={{ width: `${barWidth}%` }} />
+            </div>
+            <p className="analyzing-wait">{ANALYSIS_PROGRESS_WAIT}</p>
+            <div className="analyzing-notify">
+              <p className="analyzing-notify-kicker">잠깐 다른 일을 보셔도 돼요.</p>
+              {notifyState === 'AGREED' ? (
+                <p className="analyzing-notify-ok">✓ 분석이 끝나면 알려드릴게요.</p>
+              ) : (
+                <>
+                  <p className="analyzing-notify-ask">분석이 끝나면 알려드릴까요?</p>
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    style={{ width: '100%', marginTop: 10 }}
+                    disabled={notifyState === 'REQUESTING' || !id}
+                    onClick={async () => {
+                      if (!id) return;
+                      setNotifyError(null);
+                      setNotifyState('REQUESTING');
+                      const result = await requestAnalysisCompleteAgreement(id);
+                      if (result.state === 'REJECTED') {
+                        setNotifyState('IDLE');
+                        return;
+                      }
+                      if (result.state === 'AGREED') {
+                        setNotifyState('AGREED');
+                        return;
+                      }
+                      setNotifyState(result.state === 'UNAVAILABLE' ? 'UNAVAILABLE' : 'ERROR');
+                      setNotifyError(result.message || null);
+                    }}
+                  >
+                    {notifyState === 'REQUESTING' ? '설정 중…' : '완료 알림 받기'}
+                  </button>
+                  {notifyError ? <p className="fail" style={{ marginTop: 8 }}>{notifyError}</p> : null}
+                </>
+              )}
+            </div>
           </>
         )}
       </div>

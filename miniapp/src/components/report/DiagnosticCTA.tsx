@@ -19,6 +19,9 @@ type Props = {
   canonicalAcoustic?: any;
   quality?: any;
   highNoteProfile?: any;
+  canPurchase?: boolean;
+  priceRetryable?: boolean;
+  onRetryPrice?: () => void;
 };
 
 export default function DiagnosticCTA({
@@ -34,6 +37,9 @@ export default function DiagnosticCTA({
   canonicalAcoustic,
   quality,
   highNoteProfile,
+  canPurchase = true,
+  priceRetryable = false,
+  onRetryPrice,
 }: Props) {
   const bullets = diagnosticOfferBullets(diagnosticOffer);
   const missingLabels =
@@ -95,8 +101,11 @@ export default function DiagnosticCTA({
         description={description}
         priceLabel={priceLabel}
         bullets={displayBullets.slice(0, 3)}
-        ctaLabel={`정밀 발성 진단 · ${priceLabel}`}
-        to={analysisId ? premiumEntryPath(analysisId, productId) : '/premium'}
+        ctaLabel={canPurchase ? `정밀 발성 진단 · ${priceLabel}` : '정밀 발성 진단'}
+        to={canPurchase && analysisId ? premiumEntryPath(analysisId, productId) : canPurchase ? '/premium' : undefined}
+        disabled={!canPurchase}
+        retryable={priceRetryable}
+        onRetry={onRetryPrice}
         footer={
           productId === 'diagnostic_upgrade'
             ? '상세 리포트를 이용 중이어서 정밀 진단만 추가돼요.'

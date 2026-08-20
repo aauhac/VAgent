@@ -11,15 +11,14 @@ from __future__ import annotations
 
 import json
 import re
-import shutil
 import threading
-import traceback
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Optional
 
-from audio_analyzer import analyze_audio, public_result
 from audio_analyzer.env_utils import load_dotenv_if_available
+
+from .processor import AnalysisJobProcessor
 
 
 load_dotenv_if_available()
@@ -38,6 +37,7 @@ class JobRunner:
         self._deleted: set[str] = set()
         self._lock = threading.Lock()
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
+        self.processor = AnalysisJobProcessor(self.runtime_dir)
 
     def submit(
         self,
@@ -84,6 +84,54 @@ class JobRunner:
             in_mode,
         )
 
+    def remember_queued(
+        self,
+        *,
+        analysis_id: str,
+        analysis_mode: str = "QUICK",
+        input_mode: str = "AUTO",
+    ) -> None:
+        """Track a queued job for GET /status without starting JobRunner._run."""
+        if not validate_analysis_id(analysis_id):
+            raise ValueError("invalid analysis_id")
+        mode = (analysis_mode or "QUICK").upper()
+        in_mode = (input_mode or "AUTO").upper()
+        with self._lock:
+            self._deleted.discard(analysis_id)
+            current = self._jobs.get(analysis_id)
+            if current and current.get("status") in ("queued", "analyzing"):
+                return
+            self._jobs[analysis_id] = {
+                "analysis_id": analysis_id,
+                "status": "queued",
+                "stage": "queued",
+                "progress": 0,
+                "error": None,
+                "result": None,
+                "analysis_status": None,
+                "feedback_status": None,
+                "analysis_mode": mode,
+                "input_mode": in_mode,
+            }
+
+    def mark_terminal_failed(
+        self,
+        analysis_id: str,
+        *,
+        error: str,
+        error_code: str,
+    ) -> None:
+        self._update(
+            analysis_id,
+            status="failed",
+            stage="error",
+            progress=100,
+            error=error,
+            error_code=error_code,
+            analysis_status="failed",
+            feedback_status="skipped",
+        )
+
     def get(self, analysis_id: str) -> Optional[dict[str, Any]]:
         if not validate_analysis_id(analysis_id):
             return None
@@ -94,6 +142,12 @@ class JobRunner:
             if job:
                 return dict(job)
         return self._load_from_disk(analysis_id)
+
+    def get_durable(self, analysis_id: str) -> Optional[dict[str, Any]]:
+        """Read runtime artifacts only. Does not use in-memory _jobs."""
+        if not validate_analysis_id(analysis_id):
+            return None
+        return self._load_from_disk(analysis_id, recover_interrupted=False)
 
     def mark_deleted(self, analysis_id: str) -> None:
         with self._lock:
@@ -180,108 +234,21 @@ class JobRunner:
         analysis_mode: str = "QUICK",
         input_mode: str = "AUTO",
     ) -> None:
-        if self._is_deleted(analysis_id):
-            return
-        self._update(
-            analysis_id,
-            status="analyzing",
-            stage="start",
-            progress=1,
+        self.processor.process(
+            analysis_id=analysis_id,
+            audio_path=audio_path,
+            analysis_mode=analysis_mode,
+            input_mode=input_mode,
+            include_feedback=include_feedback,
+            separate=separate,
+            on_update=self._update,
+            is_cancelled=lambda: self._is_deleted(analysis_id),
+            notify=True,
         )
 
-        def progress(stage: str, pct: int) -> None:
-            if self._is_deleted(analysis_id):
-                return
-            self._update(
-                analysis_id,
-                status="analyzing",
-                stage=stage,
-                progress=pct,
-            )
-
-        try:
-            if self._is_deleted(analysis_id):
-                return
-            result = analyze_audio(
-                audio_path=audio_path,
-                output_dir=str(self.runtime_dir),
-                recording_id=analysis_id,
-                separate=separate,
-                analysis_mode=analysis_mode,
-                input_mode=input_mode,
-                include_feedback=include_feedback,
-                generate_visuals=False,
-                build_preview=True,
-                progress_callback=progress,
-            )
-            if self._is_deleted(analysis_id):
-                # Job deleted mid-run: drop artifacts and do not restore memory
-                shutil.rmtree(self.runtime_dir / analysis_id, ignore_errors=True)
-                return
-
-            pub = public_result(result)
-            status_path = self.runtime_dir / analysis_id / "job_status.json"
-            payload = {
-                "analysis_id": analysis_id,
-                "status": "completed",
-                "stage": "done",
-                "progress": 100,
-                "error": None,
-                "result": pub,
-                "analysis_status": result.get("analysis_status", "completed"),
-                "feedback_status": result.get("feedback_status", "skipped"),
-                "analysis_mode": analysis_mode,
-                "input_mode": input_mode,
-            }
-            status_path.write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-            preview_key = f"{analysis_id}/preview.wav" if (self.runtime_dir / analysis_id / "preview.wav").exists() else None
-            result_key = f"{analysis_id}/public_result.json"
-            vt = pub.get("vocal_type_teaser") or pub.get("vocal_type_profile")
-            self._update(
-                analysis_id,
-                status="completed",
-                stage="done",
-                progress=100,
-                error=None,
-                result=pub,
-                analysis_status=result.get("analysis_status", "completed"),
-                feedback_status=result.get("feedback_status", "skipped"),
-                public_summary={"vocal_type": vt} if vt else None,
-                preview_storage_key=preview_key,
-                result_storage_key=result_key,
-            )
-        except Exception as exc:  # noqa: BLE001
-            if self._is_deleted(analysis_id):
-                return
-            err = f"{exc}\n{traceback.format_exc()}"
-            self._update(
-                analysis_id,
-                status="failed",
-                stage="error",
-                progress=100,
-                error=str(exc),
-                analysis_status="failed",
-                feedback_status="skipped",
-            )
-            fail_path = self.runtime_dir / analysis_id / "job_status.json"
-            fail_path.parent.mkdir(parents=True, exist_ok=True)
-            fail_path.write_text(
-                json.dumps(
-                    {
-                        "analysis_id": analysis_id,
-                        "status": "failed",
-                        "error": err,
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                ),
-                encoding="utf-8",
-            )
-
-    def _load_from_disk(self, analysis_id: str) -> Optional[dict[str, Any]]:
+    def _load_from_disk(
+        self, analysis_id: str, *, recover_interrupted: bool = True
+    ) -> Optional[dict[str, Any]]:
         if self._is_deleted(analysis_id):
             return None
         path = self.runtime_dir / analysis_id / "job_status.json"
@@ -307,8 +274,11 @@ class JobRunner:
                                 data.setdefault("input_mode", meta.get("input_mode"))
                         except (json.JSONDecodeError, OSError):
                             pass
-                # Restart recovery: in-flight jobs cannot continue after process death
-                if str(data.get("status") or "").lower() in ("queued", "analyzing"):
+                # Local in-process restart recovery only. Queue workers still own in-flight jobs.
+                if recover_interrupted and str(data.get("status") or "").lower() in (
+                    "queued",
+                    "analyzing",
+                ):
                     data["status"] = "failed"
                     data["stage"] = "interrupted_restart"
                     data["error"] = data.get("error") or "INTERRUPTED_RESTART"

@@ -1,0 +1,348 @@
+{
+  "source": "/var/lib/vocalfb/runtime/7c1c8f5c49964a7e966746714b65c02c/upload.m4a",
+  "audio_duration_sec": 210.389333,
+  "clip": {
+    "clip_start_sec": 90.1946665,
+    "clip_duration_sec": 30.0
+  },
+  "server_snapshot_before": {
+    "meminfo": {
+      "MemAvailable_kb": null,
+      "SwapTotal_kb": null,
+      "SwapFree_kb": null
+    },
+    "self_rss_mb": null
+  },
+  "backend_health_before": {
+    "status": "ok",
+    "service": "vocalfb",
+    "backend": "ok"
+  },
+  "backend_health_after_b": {
+    "status": "ok",
+    "service": "vocalfb",
+    "backend": "ok"
+  },
+  "backend_health_after_c": {
+    "status": "ok",
+    "service": "vocalfb",
+    "backend": "ok"
+  },
+  "stages": {
+    "A_import_model_load": {
+      "name": "A_import_model_load",
+      "ok": true,
+      "wall_sec": 23.603,
+      "max_rss_mb": 0.0,
+      "max_swap_used_mb": 0.0,
+      "error": null,
+      "extra": {
+        "torch_cuda_available": false,
+        "model_samplerate": 44100
+      },
+      "samples": [
+        {
+          "t_sec": 0.0,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 1.476,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 1.977,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 2.508,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 3.008,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 3.517,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 4.021,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 4.522,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 5.028,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 5.556,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 6.056,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 6.557,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 7.058,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 7.559,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 8.061,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 8.565,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 9.067,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 9.615,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 10.176,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 10.804,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 11.305,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 11.805,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 12.314,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 12.894,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 13.396,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 13.897,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 14.397,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 14.899,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 15.403,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 15.911,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 16.479,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 16.985,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 17.487,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 17.995,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 18.496,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 19.001,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 19.51,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 20.01,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 20.511,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 21.011,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 21.512,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 22.013,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 22.514,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 23.014,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        },
+        {
+          "t_sec": 23.53,
+          "rss_mb": null,
+          "swap_used_mb": 0.0,
+          "mem_available_mb": null
+        }
+      ]
+    },
+    "B_15_30s_clip_separation": {
+      "name": "B_15_30s_clip_separation",
+      "ok": false,
+      "wall_sec": 0.0,
+      "max_rss_mb": 0.0,
+      "max_swap_used_mb": 0.0,
+      "error": "skipped_by_max_stage",
+      "extra": {},
+      "samples": null
+    },
+    "C_full_separation": {
+      "name": "C_full_separation",
+      "ok": false,
+      "wall_sec": 0.0,
+      "max_rss_mb": 0.0,
+      "max_swap_used_mb": 0.0,
+      "error": "skipped_by_max_stage",
+      "extra": {},
+      "samples": null
+    }
+  },
+  "stage_d_verify_mixed": {
+    "skipped": true
+  },
+  "outputs": {
+    "vocals_exists": false,
+    "no_vocals_exists": false,
+    "vocals_path": null,
+    "no_vocals_path": null
+  },
+  "realtime_factor": 0.0,
+  "verdict": "FAIL"
+}

@@ -31,6 +31,27 @@ from .register_strategy import (
 )
 
 
+def classify_vocal_type_resolution_state(
+    *,
+    base_type: str,
+    confidence: str,
+    ratios_available: bool,
+    balance_class: str,
+    neutral_collapse: bool,
+) -> str:
+    """Map engine branch flags to additive public resolution_state. Does not change type."""
+    if str(base_type or "") != "UNRESOLVED":
+        return "RESOLVED"
+    bal = str(balance_class or "").upper()
+    if bal == "CONFLICTED":
+        return "CONFLICTED_EVIDENCE"
+    if neutral_collapse:
+        return "NEUTRAL_EVIDENCE"
+    if confidence == "low" or not ratios_available:
+        return "INSUFFICIENT_EVIDENCE"
+    return "INSUFFICIENT_EVIDENCE"
+
+
 def compute_vocal_type_profile(
     *,
     segments: list[dict[str, Any]],
@@ -118,6 +139,8 @@ def compute_vocal_type_profile(
         family_agreement=agree,
         directionality=global_ratio_dir,
     )
+    pre_balance_class = str((source_balance or {}).get("balance_class") or "")
+    pre_ratios_available = bool(ratios.get("available"))
     register_strategy = classify_register_strategy(
         index=index_for_type,
         bridge=bridge,
@@ -229,6 +252,13 @@ def compute_vocal_type_profile(
         "HEAD_DOMINANT_MIX",
         "LIGHT_HEAD_FALSETTO_LIKE",
     )
+    resolution_state = classify_vocal_type_resolution_state(
+        base_type=base_type,
+        confidence=conf,
+        ratios_available=pre_ratios_available,
+        balance_class=pre_balance_class,
+        neutral_collapse=bool(neutral_collapse),
+    )
 
     return {
         "available": available or bool(usable and ratios.get("available")),
@@ -237,6 +267,7 @@ def compute_vocal_type_profile(
         "type_id": base_type,
         "base_type": base_type,
         "global_type": base_type,
+        "resolution_state": resolution_state,
         "display_name": display_name,
         "confidence": conf,
         "confidence_label": {"high": "높음", "medium": "중간", "low": "낮음"}.get(conf, conf),
@@ -411,9 +442,11 @@ def _timeline(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]:
+    resolution_state = (profile or {}).get("resolution_state") or "INSUFFICIENT_EVIDENCE"
     if not profile or not profile.get("available"):
         return {
             "available": False,
+            "resolution_state": resolution_state,
             "display_name": "발성 성향 판단 보류",
             "description": "이번 녹음에서는 발성 성향을 충분히 구분하지 못했어요.",
             "head_chest": {"available": False},
@@ -434,6 +467,9 @@ def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]
     rs = profile.get("register_strategy") or {}
     return {
         "available": True,
+        "resolution_state": profile.get("resolution_state") or (
+            "RESOLVED" if str(profile.get("base_type") or profile.get("type_id") or "") != "UNRESOLVED" else "INSUFFICIENT_EVIDENCE"
+        ),
         "type_id": profile.get("type_id"),
         "base_type": profile.get("base_type"),
         "global_type": profile.get("global_type") or profile.get("type_id"),

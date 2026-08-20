@@ -19,7 +19,7 @@ from ..entitlements import allow_dev_bypass, get_entitlement_provider
 from ..jobs.runner import validate_analysis_id
 from ..products import product_catalog
 from ..schemas.analysis import AnalysisCreateResponse, AnalysisStatusResponse
-from ..services.analysis_service import AnalysisService
+from ..services.analysis_service import AnalysisService, AnalysisSubmitError
 from ..services.history_service import list_user_history
 from ..services.ownership import can_access_analysis
 
@@ -126,6 +126,8 @@ async def create_analysis(
             user_id=ident.subject,
             user_provider=ident.provider,
         )
+    except AnalysisSubmitError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return AnalysisCreateResponse(analysis_id=analysis_id, status="queued")
@@ -234,6 +236,32 @@ def get_analysis(
         ).get("offers")
         job["result"] = result
     return AnalysisStatusResponse(**job)
+
+
+@router.post("/analyses/{analysis_id}/completion-notification")
+def request_completion_notification(
+    analysis_id: str,
+    request: Request,
+    x_user_id: str | None = Header(default=None),
+    x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
+) -> dict:
+    if not validate_analysis_id(analysis_id):
+        raise HTTPException(status_code=404, detail="analysis not found")
+    session_ident = _ident(request, x_user_id, x_vagent_user_key)
+    header_ident = resolve_identity_from_headers(
+        x_user_id=x_user_id,
+        x_vagent_user_key=x_vagent_user_key,
+    )
+    runtime = service.runtime_dir
+    if can_access_analysis(session_ident.subject, analysis_id, runtime):
+        ident = session_ident
+    elif can_access_analysis(header_ident.subject, analysis_id, runtime):
+        ident = header_ident
+    else:
+        raise HTTPException(status_code=404, detail="analysis not found")
+    from ..notifications.completion import opt_in_completion_notification
+
+    return opt_in_completion_notification(analysis_id, ident, runtime_dir=runtime)
 
 
 @router.get("/analyses/{analysis_id}/access")

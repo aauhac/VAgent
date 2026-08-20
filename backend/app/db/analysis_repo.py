@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.orm import Session
 
 from ..config import database_url, is_production
@@ -33,6 +33,7 @@ def update_analysis_status(
     public_summary: dict | None = None,
     preview_storage_key: str | None = None,
     result_storage_key: str | None = None,
+    audio_storage_key: str | None = None,
 ) -> None:
     if not db_enabled():
         return
@@ -59,6 +60,8 @@ def update_analysis_status(
                 row.preview_storage_key = preview_storage_key
             if result_storage_key is not None:
                 row.result_storage_key = result_storage_key
+            if audio_storage_key is not None:
+                row.audio_storage_key = audio_storage_key
             row.updated_at = datetime.now(timezone.utc)
             if status == "completed":
                 row.completed_at = row.completed_at or datetime.now(timezone.utc)
@@ -323,3 +326,124 @@ def analysis_owned_by(analysis_id: str, subject: str) -> Optional[bool]:
                 return False
         return False
     return owner == subject
+
+
+def _analysis_snapshot(row: Analysis | None) -> dict[str, Any] | None:
+    if row is None:
+        return None
+    return {
+        "id": row.id,
+        "status": row.status,
+        "stage": row.stage,
+        "progress": row.progress,
+        "analysis_mode": row.analysis_mode,
+        "input_mode": row.input_mode,
+        "separate": row.separate,
+        "audio_storage_key": row.audio_storage_key,
+        "error_code": row.error_code,
+        "error_message": row.error_message,
+        "deleted_at": row.deleted_at,
+        "worker_claim_token": row.worker_claim_token,
+        "worker_lease_expires_at": row.worker_lease_expires_at,
+        "worker_attempt_count": row.worker_attempt_count or 0,
+    }
+
+
+def get_analysis_snapshot(analysis_id: str) -> dict[str, Any] | None:
+    if not db_enabled():
+        return None
+    with session_scope() as session:
+        return _analysis_snapshot(session.get(Analysis, analysis_id))
+
+
+def claim_analysis_job(
+    analysis_id: str,
+    *,
+    claim_token: str,
+    lease_seconds: int,
+) -> dict[str, Any] | None:
+    """Atomic claim: queued, or analyzing with an expired lease. One winner."""
+    if not db_enabled():
+        return None
+    now = datetime.now(timezone.utc)
+    lease = now + timedelta(seconds=max(1, int(lease_seconds)))
+    stmt = (
+        update(Analysis)
+        .where(
+            Analysis.id == analysis_id,
+            Analysis.deleted_at.is_(None),
+            or_(
+                Analysis.status == "queued",
+                and_(
+                    Analysis.status == "analyzing",
+                    or_(
+                        Analysis.worker_lease_expires_at.is_(None),
+                        Analysis.worker_lease_expires_at < now,
+                    ),
+                ),
+            ),
+        )
+        .values(
+            status="analyzing",
+            stage="start",
+            progress=1,
+            worker_claim_token=claim_token,
+            worker_lease_expires_at=lease,
+            worker_attempt_count=Analysis.worker_attempt_count + 1,
+            updated_at=now,
+        )
+    )
+    with session_scope() as session:
+        result = session.execute(stmt)
+        if int(result.rowcount or 0) != 1:
+            return None
+        return _analysis_snapshot(session.get(Analysis, analysis_id))
+
+
+def extend_worker_lease(
+    analysis_id: str,
+    *,
+    claim_token: str,
+    lease_seconds: int,
+) -> bool:
+    if not db_enabled():
+        return False
+    now = datetime.now(timezone.utc)
+    lease = now + timedelta(seconds=max(1, int(lease_seconds)))
+    stmt = (
+        update(Analysis)
+        .where(
+            Analysis.id == analysis_id,
+            Analysis.worker_claim_token == claim_token,
+            Analysis.deleted_at.is_(None),
+        )
+        .values(worker_lease_expires_at=lease, updated_at=now)
+    )
+    with session_scope() as session:
+        result = session.execute(stmt)
+        return int(result.rowcount or 0) == 1
+
+
+def release_claim_to_queued(analysis_id: str, *, claim_token: str) -> None:
+    """Retryable failure: allow another receive/claim. Does not mark failed."""
+    if not db_enabled():
+        return
+    now = datetime.now(timezone.utc)
+    stmt = (
+        update(Analysis)
+        .where(
+            Analysis.id == analysis_id,
+            Analysis.worker_claim_token == claim_token,
+            Analysis.status == "analyzing",
+            Analysis.deleted_at.is_(None),
+        )
+        .values(
+            status="queued",
+            stage="queued",
+            worker_claim_token=None,
+            worker_lease_expires_at=None,
+            updated_at=now,
+        )
+    )
+    with session_scope() as session:
+        session.execute(stmt)

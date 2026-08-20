@@ -1299,5 +1299,97 @@ export function sanitizeDisclaimer(text?: string): string {
     .replace(/훈련 참고용[^.]*\./g, '');
 }
 
-export const NO_PRIMARY_MESSAGE =
-  '이번 녹음에서는 특정 발성 특징이 크게 두드러지지 않았어요.';
+export const NO_PRIMARY_FOUND_MESSAGE =
+  '이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.';
+export const PRIMARY_UNRESOLVED_MESSAGE =
+  '이번 녹음에서는 한 가지 문제를 핵심으로 정하기 어려웠어요.';
+export const NO_PRIMARY_MESSAGE = NO_PRIMARY_FOUND_MESSAGE;
+
+export type VocalTypeResolutionState =
+  | 'RESOLVED'
+  | 'INSUFFICIENT_EVIDENCE'
+  | 'CONFLICTED_EVIDENCE'
+  | 'NEUTRAL_EVIDENCE';
+
+export function vocalTypeUnresolvedCopy(state?: string | null): { title: string; description: string } {
+  switch (String(state || '').toUpperCase()) {
+    case 'CONFLICTED_EVIDENCE':
+      return {
+        title: '이번 녹음에서는 발성 성향을 한쪽으로 단정하기 어려웠어요.',
+        description: '여러 음향 특징이 서로 다른 방향으로 나타났어요.',
+      };
+    case 'NEUTRAL_EVIDENCE':
+      return {
+        title: '이번 녹음에서는 한쪽으로 치우친 발성 성향이 뚜렷하지 않았어요.',
+        description: '흉성·두성 관련 특징이 비교적 비슷하게 나타났어요.',
+      };
+    default:
+      return {
+        title: '이번 녹음에서는 발성 성향을 충분히 구분하기 어려웠어요.',
+        description: '분석 가능한 발성 구간이 더 필요해요.',
+      };
+  }
+}
+
+export function isVocalTypeUnresolved(profile: any): boolean {
+  if (!profile) return true;
+  if (profile.available === false) return true;
+  const state = String(profile.resolution_state || '').toUpperCase();
+  if (state && state !== 'RESOLVED') return true;
+  const typeId = String(profile.base_type || profile.type_id || '').toUpperCase();
+  if (typeId === 'UNRESOLVED') return true;
+  const name = String(profile.display_name || '');
+  return name.includes('판단 보류');
+}
+
+export type CoreFindingView = {
+  state: 'FOUND' | 'NONE' | 'UNRESOLVED';
+  title: string;
+  detail: string;
+};
+
+export function presentCoreFinding(data: any): CoreFindingView {
+  const teaser = data?.main_finding_teaser;
+  const score = data?.score || {};
+  const stateRaw = String(teaser?.state || '').toUpperCase();
+  const hasPrimary =
+    teaser &&
+    (stateRaw === 'FOUND' ||
+      (!teaser.none && (teaser.id || teaser.user_title || teaser.title)));
+
+  if (hasPrimary) {
+    const mapped = diagnosisFromPrimary(teaser);
+    if (mapped) return { state: 'FOUND', title: mapped.title, detail: mapped.detail };
+    return {
+      state: 'FOUND',
+      title: String(teaser.user_title || teaser.title || ''),
+      detail: String(teaser.detail || teaser.why || ''),
+    };
+  }
+
+  if (teaser?.none === true || stateRaw === 'NONE') {
+    return {
+      state: 'NONE',
+      title: String(teaser.title || NO_PRIMARY_FOUND_MESSAGE),
+      detail: String(teaser.detail || ''),
+    };
+  }
+
+  const focusTitle = score.focus_area?.display_name || score.focus_area?.title;
+  if (focusTitle) {
+    return { state: 'FOUND', title: String(focusTitle), detail: '' };
+  }
+  const teaserLine = (data?.vocal_function_teaser || [])[0];
+  if (typeof teaserLine === 'string' && teaserLine.trim()) {
+    return {
+      state: 'FOUND',
+      title: teaserLine.replace(/^먼저 살펴볼 후보:\s*/, '').replace(/\.$/, ''),
+      detail: '',
+    };
+  }
+  return {
+    state: 'UNRESOLVED',
+    title: PRIMARY_UNRESOLVED_MESSAGE,
+    detail: '',
+  };
+}

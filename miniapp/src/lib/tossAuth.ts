@@ -14,6 +14,7 @@ const SESSION_KEY = 'vagent_session_token_v1';
 
 export type TossLoginStage =
   | 'OK'
+  | 'LOGIN_SUCCESS'
   | 'APP_LOGIN_FUNCTION_UNAVAILABLE'
   | 'APP_LOGIN_CANCELLED'
   | 'APP_LOGIN_FAILED'
@@ -63,16 +64,29 @@ function isCancelLike(error: unknown): boolean {
   return /user_cancel|cancelled|canceled|cancel\b|취소|닫기/.test(text);
 }
 
+function safeLoginCode(error: unknown): string {
+  const rec = error as { code?: unknown; name?: unknown };
+  const raw = String(rec?.code || rec?.name || 'ERROR');
+  if (/eyJ|bearer|token|userKey|authorization/i.test(raw)) return 'REDACTED';
+  const cleaned = raw.replace(/[^A-Za-z0-9._-]/g, '').slice(0, 40);
+  return cleaned || 'ERROR';
+}
+
+function loginReferrer(value: unknown): 'DEFAULT' | 'SANDBOX' {
+  return String(value || '').toUpperCase() === 'SANDBOX' ? 'SANDBOX' : 'DEFAULT';
+}
+
 export function tossLoginUserMessage(stage: TossLoginStage): string | null {
   switch (stage) {
     case 'OK':
+    case 'LOGIN_SUCCESS':
     case 'APP_LOGIN_CANCELLED':
-    case 'AUTHORIZATION_CODE_MISSING':
       return null;
     case 'BACKEND_LOGIN_FAILED':
       return LOGIN_BACKEND_FAILED;
     case 'APP_LOGIN_FUNCTION_UNAVAILABLE':
     case 'APP_LOGIN_FAILED':
+    case 'AUTHORIZATION_CODE_MISSING':
     default:
       return LOGIN_START_FAILED;
   }
@@ -94,7 +108,7 @@ export async function loginWithTossApp(): Promise<TossLoginResult> {
   const pending: Promise<TossLoginResult> = (async (): Promise<TossLoginResult> => {
     loginWarn('app_login_start');
     if (typeof appLogin !== 'function') {
-      loginWarn('app_login_failed');
+      loginWarn('app_login_failed code=FUNCTION_UNAVAILABLE');
       return { ok: false, stage: 'APP_LOGIN_FUNCTION_UNAVAILABLE' };
     }
 
@@ -103,16 +117,16 @@ export async function loginWithTossApp(): Promise<TossLoginResult> {
       result = await appLogin();
     } catch (error) {
       if (isCancelLike(error)) {
-        loginWarn('app_login_failed');
+        loginWarn('app_login_cancelled');
         return { ok: false, stage: 'APP_LOGIN_CANCELLED' };
       }
-      loginWarn('app_login_failed');
+      loginWarn(`app_login_failed code=${safeLoginCode(error)}`);
       return { ok: false, stage: 'APP_LOGIN_FAILED' };
     }
 
     const authorizationCode = result?.authorizationCode;
     if (typeof authorizationCode !== 'string' || !authorizationCode) {
-      loginWarn('app_login_failed');
+      loginWarn('app_login_failed code=AUTHORIZATION_CODE_MISSING');
       return { ok: false, stage: 'AUTHORIZATION_CODE_MISSING' };
     }
 
@@ -120,13 +134,14 @@ export async function loginWithTossApp(): Promise<TossLoginResult> {
     loginWarn('backend_exchange_start');
     try {
       const { exchangeTossLogin } = await import('../api/client');
-      await exchangeTossLogin(authorizationCode, String(result?.referrer || 'DEFAULT'));
-    } catch {
-      loginWarn('backend_exchange_failed');
+      await exchangeTossLogin(authorizationCode, loginReferrer(result?.referrer));
+    } catch (error) {
+      const status = Number((error as { status?: unknown })?.status);
+      loginWarn(`backend_exchange_failed status=${Number.isFinite(status) ? status : 'unknown'}`);
       return { ok: false, stage: 'BACKEND_LOGIN_FAILED' };
     }
     loginWarn('success');
-    return { ok: true, stage: 'OK' };
+    return { ok: true, stage: 'LOGIN_SUCCESS' };
   })().finally(() => {
     loginInFlight = null;
   });
@@ -140,7 +155,7 @@ export async function ensureTossLogin(): Promise<TossLoginResult> {
   if (token) {
     const { getAuthMe } = await import('../api/client');
     const alive = await getAuthMe();
-    if (alive) return { ok: true, stage: 'OK' };
+    if (alive) return { ok: true, stage: 'LOGIN_SUCCESS' };
   }
   return loginWithTossApp();
 }

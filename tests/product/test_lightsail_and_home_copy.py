@@ -63,6 +63,54 @@ def test_compose_ports_are_loopback_and_postgres_closed():
     assert "/var/lib/vocalfb/postgres:/var/lib/postgresql/data" in compose
     assert "/etc/vocalfb/secrets:/etc/vocalfb/secrets:ro" in compose
     assert "replicas:" not in compose
+    assert "scale:" not in compose
+
+
+def test_compose_queue_worker_model_cache_and_aws_env_files():
+    compose = _read("deploy/lightsail/docker-compose.production.yml")
+    services: dict[str, str] = {}
+    current = None
+    chunks: list[str] = []
+    for line in compose.splitlines(keepends=True):
+        if line.startswith("  ") and not line.startswith("    ") and line.strip().endswith(":"):
+            name = line.strip().rstrip(":")
+            if current is not None:
+                services[current] = "".join(chunks)
+            current = name
+            chunks = [line]
+        elif current is not None:
+            chunks.append(line)
+    if current is not None:
+        services[current] = "".join(chunks)
+
+    postgres = services["postgres"]
+    backend = services["backend"]
+    worker = services["worker"]
+
+    assert "profiles:" in worker
+    assert "queue-worker" in worker
+    assert "TORCH_HOME: /model-cache" in worker
+    assert "/var/lib/vocalfb/model-cache:/model-cache" in worker
+    assert "/var/lib/vocalfb/runtime:/var/lib/vocalfb/runtime" in worker
+    assert "/var/lib/vocalfb/worker:/var/lib/vocalfb/worker" in worker
+    assert "/etc/vocalfb/secrets:/etc/vocalfb/secrets:ro" in worker
+    assert worker.count("replicas:") == 0
+    assert "scale:" not in worker
+
+    aws_env = "/etc/vocalfb/secrets/aws-queue-staging.env"
+    vocalfb_env = "/etc/vocalfb/vocalfb.env"
+    assert vocalfb_env in backend
+    assert aws_env in backend
+    assert vocalfb_env in worker
+    assert aws_env in worker
+    assert vocalfb_env in postgres
+    assert aws_env not in postgres
+    assert "TORCH_HOME" not in backend
+    assert "model-cache" not in backend
+    assert "Dockerfile.worker" in worker
+    backend_df = _read("deploy/lightsail/Dockerfile.backend")
+    assert "ARG INSTALL_SEPARATION=0" in backend_df
+    assert "CMD [\"uvicorn\"" in backend_df
 
 
 def test_backend_dockerfile_single_worker_no_reload():

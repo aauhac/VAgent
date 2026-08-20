@@ -1,0 +1,4 @@
+sample,sex_label,duration,source_rms_dbfs,analysis_rms_dbfs,quality_status,silent_ratio,voiced_ratio,voiced_duration_sec,f0_mean,f0_min,f0_max,usable_segments,evidence_mass,mean_source_families,family_agreement,ratio_eligible,source_balance_class,vocal_type,confidence,resolution,root_cause
+강1,male,45.0,-10.81,-10.9,warn,0.0289,0.7939,35.726,98.09,70.1,663.07,,,,,False,CHEST_LEANING,흉성 쪽 음향 성향이 다소 강한 편,medium,RESOLVED,SEGMENT_EXTRACTION_INSUFFICIENT
+강2,male,45.0,-14.24,-14.24,warn,0.0106,0.6507,29.281,320.96,70.1,911.03,,,,,False,CHEST_DOMINANT,흉성 쪽 음향 성향이 더 강한 편,medium,RESOLVED,SEGMENT_EXTRACTION_INSUFFICIENT
+박1,female,45.0,-11.17,-11.26,warn,0.004,0.6476,29.142,84.0,70.1,282.03,,,,,False,CHEST_DOMINANT,흉성 쪽 음향 성향이 더 강한 편,medium,RESOLVED,SEGMENT_EXTRACTION_INSUFFICIENT

@@ -66,6 +66,7 @@ def test_free_includes_vocal_type_and_main_finding_teasers():
     assert pub["vocal_type_teaser"]["available"] is True
     assert pub["vocal_type_teaser"]["head_chest"]["chest_ratio"] == 43
     assert pub["main_finding_teaser"]["none"] is False
+    assert pub["main_finding_teaser"]["state"] == "FOUND"
     assert pub["main_finding_teaser"]["id"] == "RESONANCE_MID_PRESENCE_LOSS"
     assert "연습" not in pub["disclaimer"]
     assert "timeline" not in pub
@@ -86,4 +87,23 @@ def test_free_main_finding_none_when_no_primary():
     }
     pub = free_public_result(fake)
     assert pub["main_finding_teaser"]["none"] is True
+    assert pub["main_finding_teaser"]["state"] == "NONE"
     assert "두드러진 발성 문제" in pub["main_finding_teaser"]["title"]
+
+
+def test_free_main_finding_unresolved_when_decision_missing():
+    fake = {
+        "quality": {"status": "pass", "confidence": 0.9, "metrics": {}},
+        "score": {"available": True, "areas": []},
+        "audio": {},
+        "vocal_function_profile": {
+            "available": True,
+            "vocal_type_profile": {"available": False},
+            "dimensions": {},
+        },
+    }
+    pub = free_public_result(fake)
+    assert pub["main_finding_teaser"]["state"] == "UNRESOLVED"
+    assert pub["main_finding_teaser"]["none"] is False
+    assert "핵심으로 정하기 어려웠어요" in pub["main_finding_teaser"]["title"]
+    assert pub["vocal_type_teaser"]["resolution_state"]

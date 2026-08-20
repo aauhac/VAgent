@@ -20,8 +20,21 @@ RUN apt-get update \
 WORKDIR /opt/vocalfb/app
 
 COPY --chown=vocalfb:vocalfb requirements.txt /opt/vocalfb/app/requirements.txt
+ARG INSTALL_SEPARATION=0
+COPY --chown=vocalfb:vocalfb requirements-separation.txt /opt/vocalfb/app/requirements-separation.txt
 RUN pip install --upgrade pip \
     && pip install --prefer-binary -r /opt/vocalfb/app/requirements.txt
+
+# CPU-only separation support (torch/demucs).
+# Do NOT install CUDA wheels: use PyTorch CPU index explicitly.
+RUN if [ "$INSTALL_SEPARATION" = "1" ]; then \
+      pip install --upgrade pip && \
+      pip install --index-url https://download.pytorch.org/whl/cpu \
+        torch==2.11.0 torchaudio==2.11.0 && \
+      pip install -r /opt/vocalfb/app/requirements-separation.txt ; \
+    else \
+      echo "Skipping separation deps (INSTALL_SEPARATION=0)" ; \
+    fi
 
 COPY --chown=vocalfb:vocalfb alembic.ini /opt/vocalfb/app/alembic.ini
 COPY --chown=vocalfb:vocalfb backend /opt/vocalfb/app/backend

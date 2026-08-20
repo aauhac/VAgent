@@ -13,6 +13,9 @@ type Props = {
   busy?: boolean;
   featured?: boolean;
   footer?: ReactNode;
+  disabled?: boolean;
+  retryable?: boolean;
+  onRetry?: () => void;
 };
 
 /** Premium product block — not a plain primary button. */
@@ -28,13 +31,27 @@ export default function PremiumProductCard({
   busy,
   featured,
   footer,
+  disabled,
+  retryable,
+  onRetry,
 }: Props) {
-  const cta = to ? (
+  const showRetry = Boolean(disabled && retryable && onRetry);
+  const cta = showRetry ? (
+    <button type="button" className="btn" style={{ width: '100%' }} onClick={onRetry}>
+      가격 다시 확인하기
+    </button>
+  ) : to && !disabled ? (
     <Link className="btn" to={to} style={{ width: '100%' }}>
       {ctaLabel}
     </Link>
   ) : (
-    <button type="button" className="btn" style={{ width: '100%' }} disabled={busy} onClick={onClick}>
+    <button
+      type="button"
+      className="btn"
+      style={{ width: '100%' }}
+      disabled={busy || disabled}
+      onClick={disabled ? undefined : onClick}
+    >
       {busy ? '준비 중…' : ctaLabel}
     </button>
   );

@@ -31,8 +31,10 @@ import {
   type ProgressCard,
   type ProgressInsightPayload,
 } from '../lib/progressPresentation';
-import { diagnosisFromPrimary, NO_PRIMARY_MESSAGE, sanitizeDisclaimer } from '../lib/reportPresentation';
-import { buyProduct, getIapProductMap } from '../lib/tossIap';
+import { presentCoreFinding, sanitizeDisclaimer } from '../lib/reportPresentation';
+import { buyProduct } from '../lib/tossIap';
+import { PRICE_LOADING_LABEL, PRICE_UNAVAILABLE_LABEL } from '../lib/iapCatalog';
+import { useIapProductPrices } from '../lib/useIapProductPrices';
 
 export default function Result() {
   const { id } = useParams();
@@ -45,7 +47,7 @@ export default function Result() {
   const [busyDetail, setBusyDetail] = useState(false);
   const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
   const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
-  const [iapPrices, setIapPrices] = useState<Record<string, string>>({});
+  const { prices: iapPrices, reload: reloadIapPrices } = useIapProductPrices(products);
 
   useEffect(() => {
     if (!id) return;
@@ -74,25 +76,6 @@ export default function Result() {
         setError('분석 기록이 만료됐어요.');
       });
   }, [id]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const prodMap = products?.products || {};
-    getIapProductMap()
-      .then((map) => {
-        if (cancelled) return;
-        const next: Record<string, string> = {};
-        for (const p of Object.values(prodMap) as any[]) {
-          const sku = p?.sku;
-          if (sku && map[sku]?.displayAmount) next[p.product_id] = map[sku].displayAmount;
-        }
-        setIapPrices(next);
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [products]);
 
   useEffect(() => {
     const st = location.state as { focusOffer?: string } | null;
@@ -198,6 +181,10 @@ export default function Result() {
 
   async function buySongDetail() {
     if (!id) return;
+    if (!iapPrices.song_detail?.canPurchase) {
+      reloadIapPrices();
+      return;
+    }
     setBusyDetail(true);
     setError(null);
     try {
@@ -208,7 +195,6 @@ export default function Result() {
         return;
       }
       if (iap.state === 'CANCELLED') {
-        if (iap.message) setError(iap.message);
         setBusyDetail(false);
         return;
       }
@@ -266,11 +252,13 @@ export default function Result() {
 
   const score = data.score || {};
   const access = data.access || {};
-  const prodMap = products?.products || {};
-  const songPrice = iapPrices.song_detail || prodMap.song_detail?.display_amount || (import.meta.env.PROD ? '—' : '₩990');
   const diagOfferKey = products?.offers?.diagnostic || 'diagnostic_full';
-  const diagFallback = diagOfferKey === 'diagnostic_upgrade' ? '₩990' : '₩1,980';
-  const diagPrice = iapPrices[diagOfferKey] || prodMap[diagOfferKey]?.display_amount || (import.meta.env.PROD ? '—' : diagFallback);
+  const songPrice = iapPrices.song_detail;
+  const diagPrice = iapPrices[diagOfferKey];
+  const songPriceLabel = songPrice?.label || PRICE_LOADING_LABEL;
+  const diagPriceLabel = diagPrice?.label || PRICE_LOADING_LABEL;
+  const songCanBuy = !!songPrice?.canPurchase;
+  const diagCanBuy = !!diagPrice?.canPurchase;
   const songUnlocked = !!access.song_detail_unlocked;
   const diagUnlocked = !!access.diagnostic_unlocked;
   const sessionId = access.diagnostic_session_id || null;
@@ -285,31 +273,9 @@ export default function Result() {
     || data.vocal_type_profile
     || null;
 
-  const findingTeaser = data.main_finding_teaser || null;
-  const primaryForUi =
-    findingTeaser && !findingTeaser.none && (findingTeaser.id || findingTeaser.user_title)
-      ? findingTeaser
-      : null;
-
-  const mapped = diagnosisFromPrimary(primaryForUi);
-  const noPrimaryTitle =
-    findingTeaser?.none
-      ? (findingTeaser.title || NO_PRIMARY_MESSAGE)
-      : null;
-
-  let fallbackFinding: { title: string; detail: string } | null = null;
-  if (!mapped && !noPrimaryTitle) {
-    const teaser = (data.vocal_function_teaser || data.vocal_quality_teaser || [])[0];
-    if (teaser) {
-      fallbackFinding = {
-        title: String(teaser).replace(/^먼저 살펴볼 후보:\s*/, '').replace(/\.$/, ''),
-        detail: '',
-      };
-    }
-  }
-
-  const coreFinding = mapped || fallbackFinding;
-  const coreTitle = coreFinding?.title || noPrimaryTitle || NO_PRIMARY_MESSAGE;
+  const finding = presentCoreFinding(data);
+  const coreTitle = finding.title;
+  const coreDetail = finding.detail;
 
   return (
     <main>
@@ -329,11 +295,11 @@ export default function Result() {
 
           <section className="section" data-testid="core-finding">
             <h3 className="section-title">이번 노래 핵심</h3>
-            <p className="finding-title" style={{ marginBottom: coreAxes.length ? 14 : 0 }}>
+            <p className="finding-title" style={{ marginBottom: coreAxes.length || coreDetail ? 14 : 0 }}>
               {coreTitle}
             </p>
-            {coreFinding?.detail ? (
-              <p className="body-text muted" style={{ marginTop: 0 }}>{coreFinding.detail}</p>
+            {coreDetail ? (
+              <p className="body-text muted" style={{ marginTop: 0 }}>{coreDetail}</p>
             ) : null}
             {coreAxes.length > 0 ? (
               <ul className="progress-today-list" style={{ marginTop: 12 }}>
@@ -378,15 +344,24 @@ export default function Result() {
                     badge="이 노래 더 자세히"
                     title="상세 리포트"
                     description="이 노래에서 어떤 부분이 잘 되고, 어디에서 변화가 나타나는지 실제 구간과 함께 확인해요."
-                    priceLabel={songPrice}
+                    priceLabel={songPriceLabel}
                     bullets={[
                       '전체 발성 프로필과 고음·음색 분석',
                       '특징이 나타난 실제 노래 구간 듣기',
                       '이번 녹음에서 확인된 발성 특성 정리',
                     ]}
-                    ctaLabel={`상세 리포트 보기 · ${songPrice}`}
+                    ctaLabel={
+                      songCanBuy
+                        ? `상세 리포트 보기 · ${songPriceLabel}`
+                        : songPriceLabel === PRICE_LOADING_LABEL
+                          ? '상세 리포트 보기'
+                          : PRICE_UNAVAILABLE_LABEL
+                    }
                     onClick={buySongDetail}
                     busy={busyDetail}
+                    disabled={!songCanBuy}
+                    retryable={!!songPrice?.retryable}
+                    onRetry={reloadIapPrices}
                   />
                 </div>
               )}
@@ -407,7 +382,7 @@ export default function Result() {
                   featured={needsDiagnostic}
                   title="정밀 발성 진단"
                   description="짧은 추가 녹음으로 노래만으로 확인하기 어려웠던 발성 특성을 다시 측정하고, 내 고민에 맞춘 발성 피드백을 받아요."
-                  priceLabel={diagPrice}
+                  priceLabel={diagPriceLabel}
                   bullets={
                     diagBullets.length
                       ? diagBullets
@@ -417,8 +392,17 @@ export default function Result() {
                           '선택한 고민과 현재 분석 결과에 맞는 항목을 확인해요',
                         ]
                   }
-                  ctaLabel={`정밀 진단 시작 · ${diagPrice}`}
-                  to={`/premium?analysis=${id || ''}&product=${diagOfferKey}`}
+                  ctaLabel={
+                    diagCanBuy
+                      ? `정밀 진단 시작 · ${diagPriceLabel}`
+                      : diagPriceLabel === PRICE_LOADING_LABEL
+                        ? '정밀 진단 시작'
+                        : PRICE_UNAVAILABLE_LABEL
+                  }
+                  to={diagCanBuy ? `/premium?analysis=${id || ''}&product=${diagOfferKey}` : undefined}
+                  disabled={!diagCanBuy}
+                  retryable={!!diagPrice?.retryable}
+                  onRetry={reloadIapPrices}
                   footer={diagDuration || undefined}
                 />
               )}

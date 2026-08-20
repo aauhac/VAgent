@@ -52,6 +52,7 @@ services:
         condition: service_healthy
     env_file:
       - /etc/vocalfb/vocalfb.env
+      - /etc/vocalfb/secrets/aws-queue-staging.env
     environment:
       VAGENT_ENV: production
       RUNTIME_DIR: /var/lib/vocalfb/runtime
@@ -74,6 +75,40 @@ services:
       timeout: 5s
       retries: 12
       start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Opt-in only. Default `docker compose up` must not start this service
+  # and must not change API VAGENT_ANALYSIS_EXECUTION_MODE.
+  #   docker compose --profile queue-worker up worker
+  worker:
+    profiles:
+      - queue-worker
+    build:
+      context: ../..
+      dockerfile: deploy/lightsail/Dockerfile.worker
+    image: vocalfb-worker:local
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - /etc/vocalfb/vocalfb.env
+      - /etc/vocalfb/secrets/aws-queue-staging.env
+    environment:
+      VAGENT_ENV: production
+      RUNTIME_DIR: /var/lib/vocalfb/runtime
+      WORKER_RUNTIME_DIR: /var/lib/vocalfb/worker
+      ARTIFACT_STORAGE_MODE: LOCAL_PERSISTENT
+      TORCH_HOME: /model-cache
+    volumes:
+      - /var/lib/vocalfb/runtime:/var/lib/vocalfb/runtime
+      - /var/lib/vocalfb/worker:/var/lib/vocalfb/worker
+      - /etc/vocalfb/secrets:/etc/vocalfb/secrets:ro
+      - /var/lib/vocalfb/model-cache:/model-cache
     logging:
       driver: json-file
       options:

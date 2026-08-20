@@ -6,6 +6,8 @@
 import { pauseAllMediaPlayback } from './mediaPlayback';
 import { ensureTossLogin, tossLoginUserMessage } from './tossAuth';
 
+export { getIapProductMap, loadIapCatalog } from './iapCatalog';
+
 export type PurchaseState =
   | 'IDLE'
   | 'PREPARING'
@@ -59,29 +61,6 @@ async function loadIap(): Promise<any | null> {
     return (mod as any).IAP || null;
   } catch {
     return null;
-  }
-}
-
-export async function getIapProductMap(): Promise<Record<string, { sku: string; displayAmount: string; displayName: string }>> {
-  const IAP = await loadIap();
-  if (!IAP?.getProductItemList) return {};
-  try {
-    const response = await IAP.getProductItemList();
-    const products = response?.products;
-    if (!Array.isArray(products)) return {};
-    const map: Record<string, { sku: string; displayAmount: string; displayName: string }> = {};
-    for (const p of products) {
-      if (p?.sku) {
-        map[String(p.sku)] = {
-          sku: String(p.sku),
-          displayAmount: String(p.displayAmount || ''),
-          displayName: String(p.displayName || ''),
-        };
-      }
-    }
-    return map;
-  } catch {
-    return {};
   }
 }
 

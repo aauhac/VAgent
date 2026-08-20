@@ -238,6 +238,7 @@ export async function exchangeTossLogin(authorizationCode: string, referrer: str
   if (!res.ok) {
     const err: any = new Error('AUTH_FAILED');
     err.code = 'AUTH_FAILED';
+    err.status = res.status;
     throw err;
   }
   const data = await res.json();
@@ -717,4 +718,14 @@ export async function postVocalGoalProgress(body: {
   } catch {
     return null;
   }
+}
+
+export async function requestCompletionNotification(analysisId: string): Promise<{ ok: boolean }> {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/completion-notification`), {
+    method: 'POST',
+    headers: await headers({ 'Content-Type': 'application/json' }),
+  });
+  throwIfAuthLost(res);
+  if (!res.ok) throw new Error('NOTIFICATION_OPT_IN_FAILED');
+  return res.json();
 }

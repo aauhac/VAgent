@@ -19,6 +19,8 @@ import {
   type DiagnosticOffer,
 } from '../lib/diagnosticOffer';
 import { buyProduct } from '../lib/tossIap';
+import { PRICE_LOADING_LABEL, PRICE_UNAVAILABLE_LABEL } from '../lib/iapCatalog';
+import { useIapProductPrices } from '../lib/useIapProductPrices';
 
 /**
  * Diagnostic unlock — after mock pay / existing entitlement → ConcernIntake.
@@ -33,18 +35,20 @@ export default function PremiumUnlock() {
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [displayAmount, setDisplayAmount] = useState<string>('—');
   const [productId, setProductId] = useState<string>('diagnostic_full');
   const [offer, setOffer] = useState<DiagnosticOffer | null>(null);
   const [offerLoading, setOfferLoading] = useState(!!analysisId);
   const [resolving, setResolving] = useState(!!analysisId || !!existingSession);
+  const [catalog, setCatalog] = useState<any>(null);
+  const { prices, reload: reloadPrices } = useIapProductPrices(catalog);
+  const price = prices[productId];
 
   useEffect(() => {
     getProducts(analysisId)
       .then((cat) => {
         const next = productHint || cat.offers?.diagnostic || 'diagnostic_full';
         setProductId(next);
-        setDisplayAmount(cat.products?.[next]?.display_amount || '—');
+        setCatalog(cat);
       })
       .catch(() => undefined);
   }, [analysisId, productHint]);
@@ -143,6 +147,12 @@ export default function PremiumUnlock() {
     setBusy(true);
     setError(null);
     try {
+      if (!price?.canPurchase) {
+        reloadPrices();
+        setError(PRICE_UNAVAILABLE_LABEL);
+        setBusy(false);
+        return;
+      }
       if (existingSession) {
         await mockPaySession(existingSession, productId);
         saveUnlockedSession(existingSession);
@@ -164,7 +174,6 @@ export default function PremiumUnlock() {
           return;
         }
         if (iap.state === 'CANCELLED') {
-          if (iap.message) setError(iap.message);
           setBusy(false);
           return;
         }
@@ -210,6 +219,9 @@ export default function PremiumUnlock() {
       : bullets.filter((b) => !upgradeNote || !b.includes('상세 리포트')).slice(0, 2)),
   ];
 
+  const displayAmount = price?.label || PRICE_LOADING_LABEL;
+  const canBuy = !!price?.canPurchase;
+
   return (
     <main>
       <h1 className="brand page-screen-title">정밀 발성 진단</h1>
@@ -241,9 +253,20 @@ export default function PremiumUnlock() {
         }
         priceLabel={displayAmount}
         bullets={productBullets.slice(0, 4)}
-        ctaLabel={busy ? '준비 중…' : `정밀 진단 시작 · ${displayAmount}`}
+        ctaLabel={
+          busy
+            ? '준비 중…'
+            : canBuy
+              ? `정밀 진단 시작 · ${displayAmount}`
+              : displayAmount === PRICE_LOADING_LABEL
+                ? '정밀 진단 시작'
+                : PRICE_UNAVAILABLE_LABEL
+        }
         onClick={start}
         busy={busy}
+        disabled={!canBuy}
+        retryable={!!price?.retryable}
+        onRetry={reloadPrices}
         footer={
           showDebug && !import.meta.env.PROD
             ? '개발 환경 Mock 결제 · 실제 과금이 아닙니다.'

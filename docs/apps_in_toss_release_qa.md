@@ -54,8 +54,10 @@
 ## IAP (코드 준비, 이번 빌드에서 활성화하지 않음)
 
 - [ ] 결제창 직전 재생 중 오디오 pause, 완료/취소 후 자동 재생 없음
-- [ ] UI 가격은 catalog/IAP displayAmount
-- [ ] 취소 시 구매 화면 복귀, 실패 시 실패 표시
+- [ ] UI 가격은 IAP `displayAmount` (loading: `가격 확인 중…`, 실패: `가격 정보를 불러오지 못했어요.`)
+- [ ] `상세 리포트 · —` / `정밀 진단 · —` 가 보이지 않음
+- [ ] 가격 조회는 Toss Login을 요구하지 않음
+- [ ] 구매 CTA 클릭 → Toss Login → IAP. 로그인 취소 시 오류 토스트 없음
 
 ## Bundle / console
 

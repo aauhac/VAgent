@@ -14,13 +14,15 @@ import AudioCompare from '../components/report/AudioCompare';
 import MoreDetails from '../components/report/MoreDetails';
 import DiagnosticCTA from '../components/report/DiagnosticCTA';
 import ReportAudioPlayer, { type ClipRange } from '../components/report/ReportAudioPlayer';
+import { PRICE_LOADING_LABEL } from '../lib/iapCatalog';
+import { useIapProductPrices } from '../lib/useIapProductPrices';
 
 export default function SongDetailReport() {
   const { id } = useParams();
   const debug = useIsDebug();
   const [report, setReport] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [diagPrice, setDiagPrice] = useState('—');
+  const [catalog, setCatalog] = useState<any>(null);
   const [diagProduct, setDiagProduct] = useState('diagnostic_upgrade');
   const [clip, setClip] = useState<ClipRange | null>(null);
   const [accessState, setAccessState] = useState<{
@@ -28,6 +30,8 @@ export default function SongDetailReport() {
     diagnostic_session_id?: string | null;
   }>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { prices, reload: reloadPrices } = useIapProductPrices(catalog);
+  const diagPrice = prices[diagProduct];
 
   useEffect(() => {
     if (!id) return;
@@ -48,7 +52,7 @@ export default function SongDetailReport() {
       .then((cat) => {
         const pid = cat.offers?.diagnostic || 'diagnostic_upgrade';
         setDiagProduct(pid);
-        setDiagPrice(cat.products?.[pid]?.display_amount || '—');
+        setCatalog(cat);
       })
       .catch(() => undefined);
     getAnalysisAccess(id)
@@ -197,8 +201,11 @@ export default function SongDetailReport() {
 
       <DiagnosticCTA
         analysisId={id}
-        priceLabel={diagPrice}
+        priceLabel={diagPrice?.label || PRICE_LOADING_LABEL}
         productId={diagProduct}
+        priceRetryable={!!diagPrice?.retryable}
+        canPurchase={!!diagPrice?.canPurchase}
+        onRetryPrice={reloadPrices}
         unlocked={!!accessState.diagnostic_unlocked}
         sessionId={accessState.diagnostic_session_id}
         diagnosticOffer={

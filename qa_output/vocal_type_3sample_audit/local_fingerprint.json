@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-08-18T07:11:03.097171+00:00",
+  "git": {
+    "head": "cecbb894a05babe02d62332b1afd9ca93cf0b66f",
+    "status_short": "M .env.example\n M .env.production.example\n M audio_analyzer/coach_profile/__init__.py\n M audio_analyzer/coach_profile/engine.py\n M audio_analyzer/models.py\n M backend/app/api/routes.py\n M backend/app/db/models.py\n M backend/app/jobs/runner.py\n M backend/app/payments/toss_clients.py\n M docs/apps_in_toss_release_qa.md\n M miniapp/src/api/client.ts\n M miniapp/src/components/report/DiagnosticCTA.tsx\n M miniapp/src/components/report/VocalTypeHero.tsx\n M miniapp/src/components/ui/PremiumProductCard.tsx\n M miniapp/src/lib/reportPresentation.ts\n M miniapp/src/lib/tossAuth.ts\n M miniapp/src/lib/tossIap.ts\n M miniapp/src/pages/Analyzing.tsx\n M miniapp/src/pages/PremiumUnlock.tsx\n M miniapp/src/pages/Result.tsx\n M miniapp/src/pages/SongDetailReport.tsx\n M miniapp/src/styles/app.css\n M miniapp/src/vite-env.d.ts\n M miniapp/tsconfig.tsbuildinfo\n M tests/analyzer/test_free_vocal_type_teaser.py\n M tests/product/test_apps_in_toss_release.py\n M tests/product/test_detail_precision_ux.py\n?? backend/alembic/versions/20260818_0007_completion_notifications.py\n?? backend/app/notifications/\n?? docs/iap_sku_and_notification_console.md\n?? docs/vocal_gender_calibration_audit.md\n?? miniapp/src/lib/analysisProgress.ts\n?? miniapp/src/lib/iapCatalog.ts\n?? miniapp/src/lib/tossNotifications.ts\n?? miniapp/src/lib/useIapProductPrices.ts\n?? qa_output/vocal_type_3sample_audit/\n?? scripts/audit_public_analysis.py\n?? scripts/audit_vocal_type_samples.py\n?? scripts/compare_production_runtime.py\n?? tests/coach_profile/test_resolution_state.py\n?? tests/notifications/\n?? tests/product/test_iap_price_login_finding.py",
+    "latest_commit": ""
+  },
+  "packaged_release_head": "﻿40407e77467298523bf9ce1e8d5832825df2d1dc",
+  "deploy_lag_vs_local_head": true,
+  "analysis_version": "2.0",
+  "coach_profile_version": "vocal-type-v1.4",
+  "calibration_status": "semantic_calibration_v1_4_naq_time_derivative",
+  "expected_production_config": {
+    "analysis_mode": "FUNCTIONAL",
+    "input_mode": "VOCAL_ONLY",
+    "separate": false
+  },
+  "ait": {
+    "path": "C:\\VocalAgent\\miniapp\\vocalfb.ait",
+    "size_bytes": 3885902,
+    "last_write_time": "2026-08-18T06:23:20.634435+00:00",
+    "sha256": "ed4355fdcf22a354d77aaa3efcb9c7318039827df463c13e4d1868c9de5efb96"
+  },
+  "manual_confirmation_required": [
+    "LATEST_AIT_REGISTERED"
+  ],
+  "key_file_sha256": {
+    "audio_analyzer/pipeline.py": "500b866fd4c184ec7c64520625631925fbbf8a1f01a0ae3684aa2ad29576027e",
+    "audio_analyzer/coach_profile/engine.py": "b248010ee4062fc9cf6efe510801865ca33f1ffff58fd1fa6c39636ffe17bc2c",
+    "audio_analyzer/coach_profile/config.py": "793da4609262a4fc73a85eeea6de15d90712df5f3d96c59b324afc17c18ccc68",
+    "audio_analyzer/models.py": "f937295fceb2152d876dbeca18fcef861990bdcf1ebac9aa5bf362f7fa2d9cd3",
+    "backend/app/jobs/runner.py": "23423a8a177a76ff0be680849142f0527ea1e12914aad0d47082273e8d981e5e",
+    "backend/app/services/analysis_service.py": "20733c41ce056a47a7978caa176a95f3ba5b994ab22c3986b6565de5b954f32d",
+    "miniapp/src/pages/Upload.tsx": "128b638b104d681db3f382c84132c300fb72645b9d80f579aba62af216fac2fd",
+    "miniapp/src/api/client.ts": "4188dbf5a26132d7c0de2e5fa48ee0f10778b83bbb127c8b6dbeb5e3fd28460e"
+  },
+  "source_content_sha256": {
+    "kang1": "25139727c1964b0815b6aedba277bd94381cf66ac68675ffb0650de8e6ef3931",
+    "kang2": "8e2bcb919b1a7d23ef0242776708e4afa853a9af8c1d28985f7818be0cde2ce3",
+    "park1": "786512f47c09fd288e3d86be79153a592d24bb07450ab4d4b1a224e820594636"
+  }
+}

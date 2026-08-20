@@ -49,6 +49,24 @@ class User(Base):
     auth_sessions: Mapped[list["AuthSession"]] = relationship(back_populates="user")
 
 
+class AnalysisCompletionNotification(Base):
+    """Opt-in to send an analysis-complete smart message. Recipient key is never logged."""
+
+    __tablename__ = "analysis_completion_notifications"
+
+    analysis_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("analyses.id"), primary_key=True
+    )
+    recipient_kind: Mapped[str] = mapped_column(String(16), nullable=False)  # ANON | TOSS_USER
+    recipient_key: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="REQUESTED")
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+
+    analysis: Mapped["Analysis"] = relationship(back_populates="completion_notification")
+
+
 class Analysis(Base):
     __tablename__ = "analyses"
 
@@ -74,8 +92,14 @@ class Analysis(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     audio_deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    worker_claim_token: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    worker_lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    worker_attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     user: Mapped[User] = relationship(back_populates="analyses")
+    completion_notification: Mapped["AnalysisCompletionNotification | None"] = relationship(
+        back_populates="analysis", uselist=False
+    )
 
 
 class UserVoiceProfile(Base):

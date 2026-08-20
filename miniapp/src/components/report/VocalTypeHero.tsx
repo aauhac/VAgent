@@ -1,4 +1,5 @@
 import RatioSpectrum from './RatioSpectrum';
+import { isVocalTypeUnresolved, vocalTypeUnresolvedCopy } from '../../lib/reportPresentation';
 
 type Props = {
   profile: any;
@@ -9,13 +10,18 @@ type Props = {
 export default function VocalTypeHero({ profile, styleProfile, compact }: Props) {
   const style = styleProfile || profile?.vocal_style_profile || null;
 
+  const unresolved = isVocalTypeUnresolved(profile) && (!style || style.available === false || isVocalTypeUnresolved(style));
+  const unresolvedCopy = unresolved ? vocalTypeUnresolvedCopy(profile?.resolution_state || style?.resolution_state) : null;
+
   if ((!profile || profile.available === false) && (!style || style.available === false)) {
+    const copy = vocalTypeUnresolvedCopy(profile?.resolution_state);
     return (
       <section className="section">
         <p className="eyebrow">내 발성 스타일</p>
         <h2 className="type-title">
-          이번 녹음에서는 발성 스타일을 안정적으로 구분하기 어려웠어요.
+          {copy.title}
         </h2>
+        <p className="body-text" style={{ marginTop: 8 }}>{copy.description}</p>
       </section>
     );
   }
@@ -42,12 +48,14 @@ export default function VocalTypeHero({ profile, styleProfile, compact }: Props)
   );
 
   const title =
-    style?.display_name
+    unresolvedCopy?.title
+    || style?.display_name
     || profile?.display_name
     || profile?.headline
     || '발성 스타일';
   const description =
-    style?.description
+    unresolvedCopy?.description
+    || style?.description
     || profile?.description
     || '';
 

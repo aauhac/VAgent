@@ -127,8 +127,36 @@ class TossIapClient:
         )
 
 
+SEND_MESSAGE_PATH = "/api-partner/v1/apps-in-toss/messenger/send-message"
+
+
+class TossMessengerClient:
+    def send_message(self, *, template_set_code: str, headers: dict[str, str]) -> str:
+        anon = (headers.get("x-anon-key") or "").strip()
+        user = (headers.get("x-user-key") or "").strip()
+        if bool(anon) == bool(user):
+            raise TossApiError("INVALID_RECIPIENT", retryable=False)
+        if anon and user:
+            raise TossApiError("INVALID_RECIPIENT", retryable=False)
+        with _client() as client:
+            response = client.post(
+                SEND_MESSAGE_PATH,
+                json={"templateSetCode": template_set_code, "context": {}},
+                headers=headers,
+            )
+        payload = response.json() if response.content else {}
+        if not isinstance(payload, dict):
+            raise TossApiError("INVALID_TOSS_RESPONSE", retryable=True)
+        result_type = str(payload.get("resultType") or "").upper()
+        if result_type != "SUCCESS":
+            retryable = result_type in {"HTTP_TIMEOUT", "NETWORK_ERROR", "ERROR", "INTERNAL_ERROR"}
+            raise TossApiError(result_type or "TOSS_RESULT_FAIL", retryable=retryable)
+        return result_type
+
+
 _login_client: Optional[TossLoginClient] = None
 _iap_client: Optional[TossIapClient] = None
+_messenger_client: Optional[TossMessengerClient] = None
 
 
 def get_login_client() -> TossLoginClient:
@@ -153,3 +181,15 @@ def set_login_client(client: TossLoginClient | None) -> None:
 def set_iap_client(client: TossIapClient | None) -> None:
     global _iap_client
     _iap_client = client
+
+
+def get_messenger_client() -> TossMessengerClient:
+    global _messenger_client
+    if _messenger_client is None:
+        _messenger_client = TossMessengerClient()
+    return _messenger_client
+
+
+def set_messenger_client(client: TossMessengerClient | None) -> None:
+    global _messenger_client
+    _messenger_client = client

@@ -1,0 +1,9 @@
+#
+# Separation-only dependencies for Demucs on CPU-only environments.
+#
+# Keep this file minimal; torch/torchaudio are installed in Dockerfile.backend
+# from PyTorch CPU index to avoid CUDA wheels.
+#
+
+demucs==4.0.1
+

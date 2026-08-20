@@ -34,6 +34,7 @@ def test_login_is_not_forced_on_free_analysis():
         assert "loginWithTossApp" not in src, rel
         assert "ensureTossLogin" not in src, rel
     auth = _read("lib/tossAuth.ts")
+    assert "LOGIN_SUCCESS" in auth
     assert "APP_LOGIN_FUNCTION_UNAVAILABLE" in auth
     assert "APP_LOGIN_CANCELLED" in auth
     assert "APP_LOGIN_FAILED" in auth
@@ -41,9 +42,11 @@ def test_login_is_not_forced_on_free_analysis():
     assert "BACKEND_LOGIN_FAILED" in auth
     assert "[TOSS_LOGIN]" in auth
     assert "app_login_start" in auth
+    assert "app_login_cancelled" in auth
+    assert "app_login_failed code=" in auth
     assert "authorization_code_received" in auth
     assert "backend_exchange_start" in auth
-    assert "backend_exchange_failed" in auth
+    assert "backend_exchange_failed status=" in auth
     boot = auth[auth.find("export async function bootstrapTossSession") :]
     assert "loginWithTossApp" not in boot
     assert "ensureTossLogin" in auth
@@ -123,6 +126,46 @@ def test_home_explains_voice_analysis_without_product_tiers():
     assert "보컬 진단" in home
     assert "15~60초 한 구절이면 충분해요." in home
     assert home.find("home-input") < home.find("home-depth") < home.find("home-links")
+
+
+def test_analyzing_uses_korean_stage_and_visual_bar():
+    page = _read("pages/Analyzing.tsx")
+    helper = _read("lib/analysisProgress.ts")
+    css = _read("styles/app.css")
+    assert "단계:" not in page
+    assert "{progress}%" not in page
+    assert "setInterval" not in page
+    assert "1200" in page
+    assert "analysisStageLabel" in page
+    assert "visualAnalysisProgress" in page
+    assert "meter-fill" in page
+    for stage, copy in (
+        ("queued", "분석을 준비하고 있어요"),
+        ("features", "음높이와 음색을 살펴보고 있어요"),
+        ("phonation", "발성 특성을 분석하고 있어요"),
+        ("done", "분석이 완료됐어요"),
+    ):
+        assert stage in helper
+        assert copy in helper
+    assert "Math.max(4" in helper
+    assert "meter-shimmer" in css
+    assert "prefers-reduced-motion" in css
+    assert "transition: width 800ms" in css
+    assert "nav(`/result/${id}`" in page
+    assert "saveHistory" in page
+    assert "잠깐 다른 일을 보셔도 돼요." in page
+    assert "분석이 끝나면 알려드릴까요?" in page
+    assert "완료 알림 받기" in page
+    assert "analyzing-notify" in page
+    assert "notifyAvailable" not in page
+    assert "requestNotificationAgreement" not in page
+    notify = _read("lib/tossNotifications.ts")
+    assert "requestNotificationAgreement" in notify
+    assert "VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE" in notify
+    assert "지금은 완료 알림을 사용할 수 없어요." in notify
+    assert "newAgreement" in notify
+    assert "alreadyAgreed" in notify
+    assert "agreementRejected" in notify
 
 
 def test_no_eval_new_function_or_insecure_ws_in_src():

@@ -220,7 +220,14 @@ def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]
         "description": description,
         "confidence": pub.get("confidence"),
         "confidence_label": pub.get("confidence_label"),
+        "resolution_state": pub.get("resolution_state") or (
+            "RESOLVED"
+            if pub.get("available") and str(pub.get("base_type") or pub.get("type_id") or "") != "UNRESOLVED"
+            else "INSUFFICIENT_EVIDENCE"
+        ),
         "style_id": style.get("style_id") if isinstance(style, dict) else None,
+        "type_id": pub.get("type_id"),
+        "base_type": pub.get("base_type"),
         "head_chest": {
             "available": bool(show_ratio and hc.get("available")),
             "chest_ratio": hc.get("chest_ratio") if show_ratio else None,
@@ -243,16 +250,30 @@ def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]
 
 def _free_main_finding_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]:
     """Single primary finding for FREE — diagnosis copy only."""
-    vf = vf_profile or {}
+    unresolved = {
+        "state": "UNRESOLVED",
+        "none": False,
+        "title": "이번 녹음에서는 한 가지 문제를 핵심으로 정하기 어려웠어요.",
+        "detail": "",
+    }
+    vf = vf_profile if isinstance(vf_profile, dict) else None
+    if not vf:
+        return dict(unresolved)
+    if "coaching_decision" not in vf:
+        return dict(unresolved)
     decision = vf.get("coaching_decision") or {}
+    if not isinstance(decision, dict):
+        return dict(unresolved)
     primary = decision.get("primary_bottleneck")
     if not primary:
         return {
+            "state": "NONE",
             "none": True,
             "title": "이번 녹음에서는 두드러진 발성 문제는 보이지 않았어요.",
             "detail": "",
         }
     return {
+        "state": "FOUND",
         "none": False,
         "id": primary.get("id"),
         "user_title": primary.get("user_title") or primary.get("summary"),

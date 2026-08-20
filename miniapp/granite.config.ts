@@ -14,8 +14,7 @@ export default defineConfig({
   brand: {
     displayName: '노래 실력 진단받기',
     primaryColor: '#3182F6',
-    // TODO: paste icon URL from Apps in Toss console after upload
-    icon: '',
+    icon: 'https://static.toss.im/appsintoss/72229/8fece2a9-b7a6-4c8b-b5c9-36cd8d46d883.png',
   },
   web: {
     host: 'localhost',
