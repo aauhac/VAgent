@@ -1,9 +1,9 @@
 # Legal claim audit
 
-version: draft-2  
-generated: 2026-08-18
+version: production-2026-08-20  
+updated: 2026-08-20
 
-Status: SUPPORTED_BY_CODE | SUPPORTED_BY_POLICY | LEGAL_REQUIREMENT | TODO
+Status: SUPPORTED_BY_CODE | SUPPORTED_BY_POLICY | LEGAL_REQUIREMENT | OPERATOR_INPUT_REQUIRED
 
 | Claim | Status | Evidence |
 | --- | --- | --- |
@@ -34,15 +34,17 @@ Status: SUPPORTED_BY_CODE | SUPPORTED_BY_POLICY | LEGAL_REQUIREMENT | TODO
 | IAP refund follows Apple/Google + Apps in Toss console | LEGAL_REQUIREMENT | [인앱 결제](https://developers-apps-in-toss.toss.im/guide/monetization/in-app-payment.md) |
 | Digital goods must use IAP not Toss Pay | LEGAL_REQUIREMENT | [서비스 오픈 정책](https://developers-apps-in-toss.toss.im/intro/guide.md) §6 |
 | Partner must register 서비스 이용약관 + 수집·이용 동의 | LEGAL_REQUIREMENT | [토스 로그인 소개](https://developers-apps-in-toss.toss.im/guide/authentication/intro.md) |
-| Privacy policy public notice | LEGAL_REQUIREMENT | 개인정보 보호법 §30; 2026 작성지침 |
+| Privacy policy public notice | LEGAL_REQUIREMENT | 개인정보 보호법 §30 |
 | Analysis is not medical diagnosis | SUPPORTED_BY_POLICY | product copy |
-| Retention 1/3/5 years | TODO | not in code; not invented |
-| Hosting country / processors | TODO | PRODUCTION_HOSTING_DECISION_REQUIRED |
-| International transfer | TODO | not verified; Korea region preferred, not confirmed |
-| DPO / business registration | TODO | not in repo |
-| Electronic commerce 청약철회 vs IAP | LEGAL_REVIEW_REQUIRED | do not invent 7-day or no-refund blanket |
-| Safety answers as sensitive health data | LEGAL_REVIEW_REQUIRED | boolean discomfort fields stored |
-| Under-14 users | LEGAL_REVIEW_REQUIRED | not implemented |
+| Audio auto-TTL (e.g. 1 year) | OPERATOR_INPUT_REQUIRED | not in code; docs state delete-on-request only |
+| Lightsail as production packaging | SUPPORTED_BY_CODE | `deploy/lightsail/*` |
+| Lightsail / DB region string | OPERATOR_INPUT_REQUIRED | not in repo |
+| International transfer notice filled | OPERATOR_INPUT_REQUIRED | wait for confirmed region |
+| DPO name / business registration in repo | OPERATOR_INPUT_REQUIRED | public docs point to Apps in Toss partner registration |
+| Electronic commerce 청약철회 vs IAP | SUPPORTED_BY_POLICY | Terms §14: no blanket “환불 불가”; follow law + platform |
+| Safety answers as sensitive health data | OPERATOR_INPUT_REQUIRED | boolean discomfort fields stored; not labeled medical |
+| Under-14 dedicated flow | SUPPORTED_BY_POLICY | Privacy: no under-14 signup flow |
 | No analytics SDK | SUPPORTED_BY_CODE | miniapp/src, backend |
 | External font CDN | SUPPORTED_BY_CODE | removed; system fonts |
 | Generative AI labeling (Toss §5) | SUPPORTED_BY_POLICY | live path is local acoustic analysis |
+| Public legal pages free of draft/TODO blockers | SUPPORTED_BY_CODE | `tests/legal/test_legal_pages.py`, package/bundle scanners |

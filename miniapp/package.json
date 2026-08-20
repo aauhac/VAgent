@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "sync:legal": "python ../scripts/sync_legal_docs.py",
     "build": "npm run build:web",
-    "build:web": "tsc -b && vite build",
+    "build:web": "npm run sync:legal && tsc -b && vite build",
     "build:toss": "npm run build:web && ait build",
     "preview": "vite preview"
   },

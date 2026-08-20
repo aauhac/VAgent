@@ -1,7 +1,7 @@
 # 노래 실력 진단받기 data processing inventory
 
-version: draft-2  
-generated: 2026-08-18  
+version: production-2026-08-20  
+updated: 2026-08-20  
 source: local workspace code (`backend/`, `miniapp/src/`)  
 not a user-facing document
 
@@ -23,17 +23,23 @@ Provenance: SUPPORTED_BY_CODE unless marked otherwise.
 | Public summary / vocal type teaser | Analyzer | Free result | `analyses.public_summary`; `public_result.json` | No TTL | Cleared/removed with analysis delete | Privacy |
 | Full analysis JSON | Local analyzer | Detail report | `runtime/<id>/analysis.json` | No TTL | With analysis delete | Privacy |
 | Diagnostic session, `source_analysis_id`, report | Server | Precision flow + History link | Postgres `diagnostic_sessions`; `session.json` | No TTL | Cascade when source analysis deleted (explicit relation only). Orphans kept | Privacy |
-| User concerns / safety yes-no answers | User forms | Plan diagnostic tasks; safety gating | Session JSON; deleted with diagnostic session | No TTL | With linked diagnostic delete | Privacy. LEGAL_REVIEW_REQUIRED: 민감정보 해당 여부 |
+| User concerns / safety yes-no answers | User forms | Plan diagnostic tasks; safety gating | Session JSON; deleted with diagnostic session | No TTL | With linked diagnostic delete | Privacy (boolean discomfort fields; not labeled as medical diagnosis) |
 | Payment intent | Miniapp after login | Bind SKU to analysis before IAP | `payment_intents` | Intent expires 20 minutes | Row remains after analysis delete | Privacy |
 | Purchase order | After Toss order verify | Accounting / grant | `purchase_orders` (order id, sku, product, resource, status, refunded_at). **No card/PAN.** | No TTL | **Not** deleted on analysis delete | Privacy / terms |
 | Entitlement | After verified grant | Unlock Detail/Precision for that analysis | `entitlements` | Until refund revoke | Refund → REVOKED. Analysis delete does not erase purchase rows | Terms / privacy |
-| IP address | TCP peer | Login/payment in-memory rate limit bucket | Not persisted by app | In-memory window | Process restart | Privacy: not stored. Reverse proxy access logs: TODO_BEFORE_PRODUCTION |
+| Rewarded-ad claim | Miniapp after `userEarnedReward` | Grant SONG_DETAIL for one analysis | `rewarded_ad_claims`, `rewarded_ad_daily_slots` | Session token ~15m; daily slots Asia/Seoul | Survives with entitlement; not a separate access path | Terms / privacy (same SONG_DETAIL) |
+| IP address | TCP peer | Login/payment in-memory rate limit bucket | Not persisted by app DB | In-memory window | Process restart | Privacy: not stored in app DB. Reverse proxy access logs: host/operator config |
 | User-Agent | Not read by app middleware | — | Not stored | — | — | Not disclosed as collected |
-| Request id / error logs | Middleware | Debug unhandled exceptions | Process logs: request_id, method, path, exception type | Deploy/log policy: POLICY_DECISION_REQUIRED | POLICY_DECISION_REQUIRED | Privacy (operational logs) |
+| Request id / error logs | Middleware | Debug unhandled exceptions | Process logs: request_id, method, path, exception type | Host log retention | Host rotation | Privacy (operational logs) |
 | localStorage history/goals/snapshots | Miniapp | UX cache | Device only | Caps (history 20, etc.) | User can clear site data; History delete also drops local cache after server success | Privacy (device storage) |
 | Analytics SDK | — | — | None in miniapp/src or backend | — | — | Do not claim analytics |
 | External font CDN | Previously jsDelivr Pretendard | — | Removed; system fonts only | — | — | Privacy §10 |
 | AI training corpus | — | — | No live-app path | — | — | Explicitly **not** used for training |
+
+## Hosting (code/deploy tree)
+
+- Backend packaging: AWS Lightsail (`deploy/lightsail/`)
+- Region string: **OPERATOR_INPUT_REQUIRED** (not in repo)
 
 ## Absences (do not invent)
 
@@ -41,6 +47,6 @@ Provenance: SUPPORTED_BY_CODE unless marked otherwise.
 - 원클릭 전체 이용정보 일괄 삭제 UI
 - Audio TTL/cron for undeleted analyses
 - Card number, payment method PAN
-- Business entity, hosting country, DPO contact in repo
+- Business registration number / DPO personal name in repo
 - Marketing push/email/SMS
 - Google Analytics / Sentry / PostHog / pixels

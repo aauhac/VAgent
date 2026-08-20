@@ -343,6 +343,38 @@ def required_present(members: list[str]) -> list[str]:
     return missing
 
 
+LEGAL_PUBLIC_FILES = (
+    "docs/legal/TERMS_OF_SERVICE.ko.md",
+    "docs/legal/PRIVACY_POLICY.ko.md",
+    "docs/legal/PRIVACY_COLLECTION_CONSENT.ko.md",
+)
+
+LEGAL_RELEASE_BLOCKERS = (
+    "[TODO:",
+    "TODO_BEFORE_PRODUCTION",
+    "POLICY_DECISION_REQUIRED",
+    "PRODUCTION_HOSTING_DECISION_REQUIRED",
+    "LEGAL_REVIEW_REQUIRED",
+    "draft-2",
+)
+
+
+def scan_legal_release_blockers(staging_root: Path | None = None) -> list[str]:
+    """Fail packaging if public legal docs still contain draft/TODO blockers."""
+    hits: list[str] = []
+    base = staging_root if staging_root is not None else ROOT
+    for rel in LEGAL_PUBLIC_FILES:
+        path = base / rel
+        if not path.is_file():
+            hits.append(f"missing:{rel}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for token in LEGAL_RELEASE_BLOCKERS:
+            if token in text:
+                hits.append(f"{rel}:{token}")
+    return hits
+
+
 def main() -> int:
     print(f"ROOT={ROOT}")
     files = collect_files()
@@ -394,6 +426,13 @@ def main() -> int:
     if missing:
         print("FAIL: required production files missing from archive")
         for n in missing:
+            print(f"  {n}")
+        return 1
+
+    legal_hits = scan_legal_release_blockers()
+    if legal_hits:
+        print("FAIL: unfinished legal docs (release blockers)")
+        for n in legal_hits:
             print(f"  {n}")
         return 1
 

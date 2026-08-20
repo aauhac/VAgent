@@ -2,16 +2,17 @@
 
 Initial launch topology for VAgent. Local workspace is the implementation source of truth.
 
-Vendor, region, and custom domain are **not chosen**. See
-`docs/PRODUCTION_CLOUD_DECISION.md` and `docs/PRODUCTION_REGION_CHECKLIST.md`.
+**Production backend packaging path:** AWS Lightsail (`deploy/lightsail/`).  
+See `docs/PRODUCTION_CLOUD_DECISION.md`. Confirm the live Lightsail **region** on the
+instance/account console before documenting it (do not guess).
 
 ## Miniapp vs backend
 
 - Miniapp `appName=vocalfb` is hosted by Apps in Toss.
   Live origin: `https://vocalfb.apps.tossmini.com`
   QR origin: `https://vocalfb.private-apps.tossmini.com`
-- VAgent backend is a separate public HTTPS service. It may use a
-  cloud-provided hostname. Set `PUBLIC_BACKEND_BASE_URL` after that hostname exists.
+- VAgent backend is a separate public HTTPS service on Lightsail (compose + Dockerfile).
+  Set `PUBLIC_BACKEND_BASE_URL` after that hostname exists.
 - Frontend origin and API origin are **not** the same. Production miniapp builds
   must set `VITE_API_BASE` to `PUBLIC_BACKEND_BASE_URL`, then `npm run build:toss`.
 
@@ -82,7 +83,17 @@ No storage migration in this phase.
 
 ## Process
 
-From repo root, after migrations:
+Preferred path: package with `scripts/package_lightsail_release.py`, transfer the
+archive to the Lightsail host, then run `deploy/lightsail/deploy.sh`
+(Postgres → `alembic upgrade head` → backend).
+
+Compose assets:
+
+- `deploy/lightsail/Dockerfile.backend`
+- `deploy/lightsail/docker-compose.production.yml`
+- optional worker: `Dockerfile.worker` + compose profile `queue-worker`
+
+Direct uvicorn (dev / emergency) from repo root after migrations:
 
 ```
 uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --workers 1
@@ -90,10 +101,6 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --workers 1
 
 Restart policy: restart the single process on failure; do not scale replicas while
 `LOCAL_PERSISTENT` is in use.
-
-There is no production backend Dockerfile. Existing Docker files are singer-id/trainer
-and disposable QA/dev Postgres compose only. Do not add vendor-specific cloud YAML
-until a vendor is chosen.
 
 ## Frontend
 
@@ -156,5 +163,6 @@ Official flow: miniapp `appLogin()` → backend exchanges `authorizationCode` �
 
 ## Region
 
-- Prefer a Korea region for API, database, audio, backup, and logs once a vendor is chosen.
-- Do not treat an invented provider/region as confirmed. Fill `docs/PRODUCTION_REGION_CHECKLIST.md` after the actual account exists.
+- Prefer a Korea region for API, database, audio, backup, and logs on Lightsail.
+- Confirm the actual region on the live instance before filling
+  `docs/PRODUCTION_REGION_CHECKLIST.md`. Do not invent a region string in docs or legal.

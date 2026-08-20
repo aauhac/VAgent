@@ -1,7 +1,6 @@
 """Scan production miniapp assets for banned hosts / placeholder SKUs.
 
-Inspects runtime web assets under miniapp/dist (JS/CSS/HTML), not source maps
-and not granite local-dev config. Documentation strings in the repo are out of scope.
+Also fails if public legal markdown still contains draft/TODO release blockers.
 """
 
 from __future__ import annotations
@@ -28,6 +27,24 @@ BANNED_PATTERNS = (
 
 SKIP_SUFFIXES = {".map", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".woff", ".woff2", ".ttf"}
 SCAN_SUFFIXES = {".js", ".css", ".html", ".json"}
+
+LEGAL_PUBLIC = (
+    ROOT / "docs" / "legal" / "TERMS_OF_SERVICE.ko.md",
+    ROOT / "docs" / "legal" / "PRIVACY_POLICY.ko.md",
+    ROOT / "docs" / "legal" / "PRIVACY_COLLECTION_CONSENT.ko.md",
+    ROOT / "miniapp" / "src" / "legal" / "TERMS_OF_SERVICE.ko.md",
+    ROOT / "miniapp" / "src" / "legal" / "PRIVACY_POLICY.ko.md",
+    ROOT / "miniapp" / "src" / "legal" / "PRIVACY_COLLECTION_CONSENT.ko.md",
+)
+
+LEGAL_BLOCKERS = (
+    "[TODO:",
+    "TODO_BEFORE_PRODUCTION",
+    "POLICY_DECISION_REQUIRED",
+    "PRODUCTION_HOSTING_DECISION_REQUIRED",
+    "LEGAL_REVIEW_REQUIRED",
+    "draft-2",
+)
 
 
 def iter_runtime_files(dist: Path = DIST) -> list[Path]:
@@ -65,10 +82,29 @@ def scan_dist(dist: Path = DIST) -> list[tuple[str, str]]:
     return findings
 
 
+def scan_legal_sources() -> list[str]:
+    hits: list[str] = []
+    for path in LEGAL_PUBLIC:
+        if not path.is_file():
+            hits.append(f"missing:{path.relative_to(ROOT).as_posix()}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for token in LEGAL_BLOCKERS:
+            if token in text:
+                hits.append(f"{path.relative_to(ROOT).as_posix()}:{token}")
+    return hits
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dist", type=Path, default=DIST)
     args = parser.parse_args()
+    legal_hits = scan_legal_sources()
+    if legal_hits:
+        print("FAIL: legal release blockers in public markdown")
+        for h in legal_hits:
+            print(f"  {h}")
+        return 1
     if not args.dist.is_dir():
         print(f"FAIL: dist not found: {args.dist}", file=sys.stderr)
         return 2
@@ -78,6 +114,7 @@ def main() -> int:
         for rel, pattern in findings:
             print(f"  {rel}: {pattern}")
         return 1
+    print("PASS: legal sources have no release blockers")
     print(f"PASS: no banned hosts/SKUs in {args.dist}")
     return 0
 

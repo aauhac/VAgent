@@ -154,12 +154,13 @@ def get_history(
 @router.get("/analyses/{analysis_id}", response_model=AnalysisStatusResponse)
 def get_analysis(
     analysis_id: str,
+    request: Request,
     x_user_id: str | None = Header(default=None),
     x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> AnalysisStatusResponse:
     if not validate_analysis_id(analysis_id):
         raise HTTPException(status_code=404, detail="analysis not found")
-    uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key)
+    uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
     job = service.get_job(analysis_id)
     if job is None:
         raise HTTPException(status_code=404, detail="analysis not found")
@@ -231,6 +232,24 @@ def get_analysis(
             "diagnostic_unlocked": access["diagnostic_unlocked"],
             "diagnostic_session_id": access.get("diagnostic_session_id"),
         }
+        try:
+            from ..rewards import rewarded_ad_status
+
+            result["access"]["rewarded_ad"] = rewarded_ad_status(
+                analysis_id,
+                _ident(request, x_user_id, x_vagent_user_key),
+                already_unlocked=bool(access["song_detail_unlocked"]),
+                runtime_dir=service.runtime_dir,
+            )
+        except Exception:
+            result["access"]["rewarded_ad"] = {
+                "daily_limit": 3,
+                "used_today": 0,
+                "remaining_today": 3,
+                "already_unlocked": bool(access["song_detail_unlocked"]),
+                "can_use_rewarded_ad": not bool(access["song_detail_unlocked"]),
+                "reward_type": "SONG_DETAIL",
+            }
         result["product_offers"] = product_catalog(
             song_detail_owned=access["song_detail_unlocked"]
         ).get("offers")
@@ -267,12 +286,13 @@ def request_completion_notification(
 @router.get("/analyses/{analysis_id}/access")
 def get_analysis_access(
     analysis_id: str,
+    request: Request,
     x_user_id: str | None = Header(default=None),
     x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> dict:
     if not validate_analysis_id(analysis_id):
         raise HTTPException(status_code=404, detail="analysis not found")
-    uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key)
+    uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
     if service.get_job(analysis_id) is None:
         raise HTTPException(status_code=404, detail="analysis not found")
     try:
@@ -287,11 +307,107 @@ def get_analysis_access(
             "diagnostic_session_id": None,
         }
         catalog = product_catalog(song_detail_owned=False)
-    return {
+    payload = {
         **access,
         "offers": catalog["offers"],
         "products": catalog["products"],
     }
+    try:
+        from ..rewards import rewarded_ad_status
+
+        ident = _ident(request, x_user_id, x_vagent_user_key)
+        payload["rewarded_ad"] = rewarded_ad_status(
+            analysis_id,
+            ident,
+            already_unlocked=bool(access.get("song_detail_unlocked")),
+            runtime_dir=service.runtime_dir,
+        )
+    except Exception:
+        payload["rewarded_ad"] = {
+            "daily_limit": 3,
+            "used_today": 0,
+            "remaining_today": 3,
+            "already_unlocked": bool(access.get("song_detail_unlocked")),
+            "can_use_rewarded_ad": not bool(access.get("song_detail_unlocked")),
+            "reward_type": "SONG_DETAIL",
+        }
+    return payload
+
+
+@router.get("/analyses/{analysis_id}/rewarded-ad")
+def get_rewarded_ad_status(
+    analysis_id: str,
+    request: Request,
+    x_user_id: str | None = Header(default=None),
+    x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
+) -> dict:
+    if not validate_analysis_id(analysis_id):
+        raise HTTPException(status_code=404, detail="analysis not found")
+    uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
+    unlocked = _ents().has_song_detail(uid, analysis_id)
+    from ..rewards import RewardedAdError, rewarded_ad_status
+
+    try:
+        return rewarded_ad_status(
+            analysis_id,
+            _ident(request, x_user_id, x_vagent_user_key),
+            already_unlocked=unlocked,
+            runtime_dir=service.runtime_dir,
+        )
+    except RewardedAdError as exc:
+        raise HTTPException(status_code=exc.http_status, detail=exc.code) from exc
+
+
+@router.post("/analyses/{analysis_id}/rewarded-ad/session")
+def create_rewarded_ad_session(
+    analysis_id: str,
+    request: Request,
+    x_user_id: str | None = Header(default=None),
+    x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
+) -> dict:
+    if not validate_analysis_id(analysis_id):
+        raise HTTPException(status_code=404, detail="analysis not found")
+    uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
+    if service.get_job(analysis_id) is None and service.load_full_analysis(analysis_id) is None:
+        raise HTTPException(status_code=404, detail="analysis not found")
+    unlocked = _ents().has_song_detail(uid, analysis_id)
+    from ..rewards import RewardedAdError, create_rewarded_session
+
+    try:
+        return create_rewarded_session(
+            analysis_id,
+            _ident(request, x_user_id, x_vagent_user_key),
+            already_unlocked=unlocked,
+            runtime_dir=service.runtime_dir,
+        )
+    except RewardedAdError as exc:
+        raise HTTPException(status_code=exc.http_status, detail=exc.code) from exc
+
+
+@router.post("/analyses/{analysis_id}/rewarded-ad/claim")
+def claim_rewarded_ad(
+    analysis_id: str,
+    request: Request,
+    body: dict | None = Body(default=None),
+    x_user_id: str | None = Header(default=None),
+    x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
+) -> dict:
+    if not validate_analysis_id(analysis_id):
+        raise HTTPException(status_code=404, detail="analysis not found")
+    _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
+    payload = body if isinstance(body, dict) else {}
+    session_token = str(payload.get("session_token") or "").strip()
+    from ..rewards import RewardedAdError, claim_rewarded_song_detail
+
+    try:
+        return claim_rewarded_song_detail(
+            analysis_id,
+            _ident(request, x_user_id, x_vagent_user_key),
+            session_token=session_token,
+            runtime_dir=service.runtime_dir,
+        )
+    except RewardedAdError as exc:
+        raise HTTPException(status_code=exc.http_status, detail=exc.code) from exc
 
 
 @router.get("/analyses/{analysis_id}/detailed-report")

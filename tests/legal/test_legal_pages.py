@@ -1,4 +1,4 @@
-"""Public legal pages: unauthenticated 200, no secrets, placeholders visible."""
+"""Public legal pages: unauthenticated 200, no secrets, no release blockers."""
 
 from pathlib import Path
 
@@ -10,8 +10,15 @@ client = TestClient(app)
 
 ROOT = Path(__file__).resolve().parents[2]
 LEGAL_DIR = ROOT / "docs" / "legal"
+MINI_LEGAL = ROOT / "miniapp" / "src" / "legal"
 
-BANNED = [
+PUBLIC_FILES = (
+    "TERMS_OF_SERVICE.ko.md",
+    "PRIVACY_POLICY.ko.md",
+    "PRIVACY_COLLECTION_CONSENT.ko.md",
+)
+
+BANNED_SECRETS = [
     "BEGIN PRIVATE",
     "BEGIN RSA",
     "VAGENT_SESSION_SECRET",
@@ -22,6 +29,28 @@ BANNED = [
     "authorizationCode",
 ]
 
+RELEASE_BLOCKERS = [
+    "[TODO:",
+    "TODO_BEFORE_PRODUCTION",
+    "POLICY_DECISION_REQUIRED",
+    "PRODUCTION_HOSTING_DECISION_REQUIRED",
+    "LEGAL_REVIEW_REQUIRED",
+    "draft-2",
+    "<PRODUCTION_DOMAIN>",
+    "{PUBLIC_BACKEND_BASE_URL}",
+]
+
+DRAFT_PHRASES = [
+    "정식 시행된 약관이 아닙니다",
+    "정식 공개 방침으로 시행하지 않습니다",
+    "초안(draft-2)",
+    "작성한 **초안**",
+]
+
+
+def _joined_docs() -> str:
+    return "".join((LEGAL_DIR / n).read_text(encoding="utf-8") for n in PUBLIC_FILES)
+
 
 def test_legal_routes_ok_without_auth():
     for path in ("/legal/terms", "/legal/privacy", "/legal/privacy-consent"):
@@ -30,53 +59,44 @@ def test_legal_routes_ok_without_auth():
         assert "text/html" in r.headers.get("content-type", "")
         assert "<h1" in r.text
         body = r.text
-        for token in BANNED:
+        for token in BANNED_SECRETS:
             assert token not in body, token
+        for token in RELEASE_BLOCKERS:
+            assert token not in body, f"{path} still has {token}"
+        for phrase in DRAFT_PHRASES:
+            assert phrase not in body, phrase
 
 
 def test_legal_markdown_has_no_secrets_or_env_names():
-    files = (
-        "TERMS_OF_SERVICE.ko.md",
-        "PRIVACY_POLICY.ko.md",
-        "PRIVACY_COLLECTION_CONSENT.ko.md",
-    )
-    text = "".join((LEGAL_DIR / n).read_text(encoding="utf-8") for n in files)
-    for token in BANNED:
+    text = _joined_docs()
+    for token in BANNED_SECRETS:
         assert token not in text, token
     for name in ("IAP_SONG_DETAIL_SKU", "VAGENT_SESSION_SECRET", "TOSS_MTLS_KEY_PATH"):
         assert name not in text, name
 
 
-def test_placeholders_present_so_release_is_not_claimed():
-    joined = "".join(
-        (LEGAL_DIR / n).read_text(encoding="utf-8")
-        for n in (
-            "TERMS_OF_SERVICE.ko.md",
-            "PRIVACY_POLICY.ko.md",
-            "PRIVACY_COLLECTION_CONSENT.ko.md",
-        )
-    )
-    assert "[TODO: 사업자명]" in joined
-    assert "[TODO: 시행일]" in joined
-    assert "[TODO: 이메일]" in joined
+def test_no_release_placeholders_in_public_legal_docs():
+    text = _joined_docs()
+    for token in RELEASE_BLOCKERS:
+        assert token not in text, token
+    for phrase in DRAFT_PHRASES:
+        assert phrase not in text, phrase
+    assert "2026년 8월 20일" in text
+    assert "노래 실력 진단받기" in text
 
 
-def test_todo_company_placeholder_is_not_a_markdown_link():
+def test_terms_article1_has_no_todo_company_placeholder():
     html = client.get("/legal/terms").text
     article1 = html.split("제1조", 1)[-1].split("제2조", 1)[0]
     assert 'href="' not in article1
-    assert "[TODO: 사업자명]" in article1
+    assert "[TODO:" not in article1
+    assert "사업자명" not in article1 or "등록" in html
 
 
 def test_frontend_legal_copy_matches_docs():
-    src = ROOT / "miniapp/src/legal"
-    for name in (
-        "TERMS_OF_SERVICE.ko.md",
-        "PRIVACY_POLICY.ko.md",
-        "PRIVACY_COLLECTION_CONSENT.ko.md",
-    ):
+    for name in PUBLIC_FILES:
         a = (LEGAL_DIR / name).read_text(encoding="utf-8")
-        b = (src / name).read_text(encoding="utf-8")
+        b = (MINI_LEGAL / name).read_text(encoding="utf-8")
         assert a == b, name
     app_src = (ROOT / "miniapp/src/App.tsx").read_text(encoding="utf-8")
     assert 'path="/legal/terms"' in app_src
@@ -90,4 +110,3 @@ def test_frontend_legal_copy_matches_docs():
     terms = (LEGAL_DIR / "TERMS_OF_SERVICE.ko.md").read_text(encoding="utf-8")
     assert terms.startswith("# 노래 실력 진단받기")
     assert "회원탈퇴" not in terms or "토스 계정" in terms
-

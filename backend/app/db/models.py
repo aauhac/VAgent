@@ -318,3 +318,49 @@ class AuthSession(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     user: Mapped[User] = relationship(back_populates="auth_sessions")
+
+
+class RewardedAdClaim(Base):
+    """Pending/claimed rewarded-ad unlock for one analysis SONG_DETAIL."""
+
+    __tablename__ = "rewarded_ad_claims"
+    __table_args__ = (
+        UniqueConstraint("claim_token_hash", name="uq_rewarded_ad_claim_token"),
+        UniqueConstraint(
+            "claimed_analysis_id",
+            name="uq_rewarded_ad_claimed_analysis",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    analysis_id: Mapped[str] = mapped_column(String(64), ForeignKey("analyses.id"), nullable=False, index=True)
+    principal_key: Mapped[str] = mapped_column(String(320), nullable=False, index=True)
+    principal_provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    principal_subject: Mapped[str] = mapped_column(String(255), nullable=False)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(UUIDType, ForeignKey("users.id"), nullable=True, index=True)
+    reward_type: Mapped[str] = mapped_column(String(32), nullable=False, default="SONG_DETAIL")
+    claim_token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    seoul_day: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    # Set only when status=claimed so unique(claimed_analysis_id) allows multiple pendings.
+    claimed_analysis_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    entitlement_id: Mapped[uuid.UUID | None] = mapped_column(UUIDType, ForeignKey("entitlements.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    rewarded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class RewardedAdDailySlot(Base):
+    """One row per successful daily unlock slot (1..3). Unique insert enforces the cap."""
+
+    __tablename__ = "rewarded_ad_daily_slots"
+    __table_args__ = (
+        UniqueConstraint("principal_key", "seoul_day", "slot_index", name="uq_rewarded_ad_daily_slot"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    principal_key: Mapped[str] = mapped_column(String(320), nullable=False, index=True)
+    seoul_day: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    slot_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    claim_id: Mapped[uuid.UUID | None] = mapped_column(UUIDType, ForeignKey("rewarded_ad_claims.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)

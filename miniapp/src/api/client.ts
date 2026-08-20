@@ -314,6 +314,61 @@ export async function mockUnlockSongDetail(analysisId: string) {
   return res.json();
 }
 
+export type RewardedAdStatus = {
+  daily_limit: number;
+  used_today: number;
+  remaining_today: number;
+  already_unlocked: boolean;
+  can_use_rewarded_ad: boolean;
+  reward_type?: string;
+};
+
+export async function getRewardedAdStatus(analysisId: string): Promise<RewardedAdStatus> {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/rewarded-ad`), {
+    headers: await headers(),
+  });
+  throwIfAuthLost(res);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function createRewardedAdSession(analysisId: string): Promise<
+  RewardedAdStatus & { session_token: string; expires_at?: string }
+> {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/rewarded-ad/session`), {
+    method: 'POST',
+    headers: await headers(),
+  });
+  throwIfAuthLost(res);
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = typeof payload?.detail === 'string' ? payload.detail : await Promise.resolve('');
+    throw new Error(detail || `REWARDED_SESSION_${res.status}`);
+  }
+  return payload;
+}
+
+export async function claimRewardedSongDetail(
+  analysisId: string,
+  sessionToken: string,
+): Promise<RewardedAdStatus & { unlocked?: boolean; duplicate?: boolean }> {
+  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/rewarded-ad/claim`), {
+    method: 'POST',
+    headers: {
+      ...(await headers()),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ session_token: sessionToken }),
+  });
+  throwIfAuthLost(res);
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = typeof payload?.detail === 'string' ? payload.detail : '';
+    throw new Error(detail || `REWARDED_CLAIM_${res.status}`);
+  }
+  return payload;
+}
+
 export async function getSongDetailedReport(analysisId: string) {
   const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/detailed-report`), {
     headers: await headers(),

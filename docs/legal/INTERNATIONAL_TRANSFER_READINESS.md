@@ -1,46 +1,46 @@
 # International transfer readiness
 
-version: draft-2  
-generated: 2026-08-18
+version: production-2026-08-20  
+updated: 2026-08-20
 
-## Currently confirmed hosting location
+## Currently confirmed hosting
 
-**Not confirmed.** `PRODUCTION_HOSTING_DECISION_REQUIRED`.
+| Layer | Status |
+| --- | --- |
+| Miniapp | Apps in Toss (`vocalfb.apps.tossmini.com`) — Toss hosts the miniapp |
+| Backend packaging | **AWS Lightsail** (`deploy/lightsail/` in this repo) |
+| PostgreSQL | Compose/host DB on the Lightsail deployment path |
+| Audio / runtime volume | Local persistent volume on the Lightsail host (`RUNTIME_DIR`) |
+| AWS region | **Not recorded in repo** — confirm on live instance/account |
 
-Production **may** use a cloud backend (Toss miniapp → HTTPS → FastAPI → PostgreSQL → persistent/object storage). Cloud itself is not a blocker.
+Do not invent `ap-northeast-2` or any other region string.
 
-Initial production **should prefer a Korea region** for backend, PostgreSQL, audio storage, backup, and logs. That preference is not a confirmed vendor/region.
+## Does overseas transfer occur?
 
-`docs/PRODUCTION_DEPLOYMENT.md` requires PostgreSQL and a local persistent volume for audio (`LOCAL_PERSISTENT`, single replica) but does not name a cloud provider, region, or legal entity.
+**Toss platform traffic (confirmed direction):** login token exchange and IAP order
+lookup go to `https://apps-in-toss-api.toss.im` (대한민국 사업 토스). That is
+platform processing through the Toss app, not a filled “국외 이전 동의” form with
+invented foreign entities.
 
-## Does overseas transfer occur today?
+**Company-hosted personal data (userKey rows, audio, analysis, payment rows):**
+storage country = Lightsail **instance region**. Until the operator confirms that
+region is in Korea (or elsewhere), do not publish a user-facing claim of
+「국외 이전 없음」 or fill overseas-transfer consent fields with guessed countries.
 
-**Unknown for production.** Do not write 「국외 이전 없음」 until vendor + region are verified.
+## Unconfirmed (OPERATOR_INPUT_REQUIRED)
 
-- Toss login and IAP order lookup go to Toss (대한민국 사업) infrastructure. That is platform processing through the Toss app.
-- Browser no longer loads Pretendard from `cdn.jsdelivr.net`. Miniapp uses device system fonts.
-- Storage country of `userKey`, audio, analysis, and payment rows is unknown until hosting is chosen.
+- Lightsail instance region
+- PostgreSQL region (if not co-located)
+- Backup region / snapshot location
+- Reverse-proxy access-log retention location
 
-## Unconfirmed
+## Operator checklist
 
-- Hosting provider / legal entity
-- Server country / region
-- PostgreSQL region
-- Audio storage region
-- Backup region
-- Logging region
+1. Confirm Lightsail region in the AWS console.
+2. If all personal-data stores are Korea-only, document that fact with the region
+   evidence and keep privacy policy §6 aligned.
+3. If any store is outside Korea, register **개인정보 국외 이전 동의** in Apps in Toss
+   login terms and publish: 이전받는 자, 국가, 연락처, 항목, 시점·방법, 목적, 보유기간.
+4. Never leave unfinished overseas-transfer placeholders in public legal pages.
 
-## Before production
-
-1. Choose cloud vendor and Korea (or other) region for every store of personal data.
-2. Audit that personal data is not written to a non-Korea region unless an overseas-transfer notice is added.
-3. If personal data is stored or processed outside Korea, register **개인정보 국외 이전 동의** in Apps in Toss login terms per [토스 로그인 소개](https://developers-apps-in-toss.toss.im/guide/authentication/intro.md).
-4. Fill: 이전받는 자, 국가, 연락처, 항목, 시점·방법, 목적, 보유기간.
-
-Apps in Toss console overseas-transfer placeholders:
-
-- 국가: `[TODO: 이전 국가]`
-- 법인명: `[TODO: 이전받는 자]`
-- 연락처: `[TODO: 이전받는 자 연락처]`
-
-Do not invent AWS/Google/Cloudflare facts.
+Do not invent AWS/Google/Cloudflare legal entity names or countries.

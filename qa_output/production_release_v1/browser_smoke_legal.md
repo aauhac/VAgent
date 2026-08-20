@@ -1,8 +1,8 @@
 # Legal pages visual smoke (375×812)
 
-Date: 2026-08-17  
-Harness: `miniapp` QA Vite `http://127.0.0.1:5177/qa-visual.html#/legal/...`  
-Viewport: 375×812 (plus tall captures for tables)
+Date: 2026-08-20  
+Harness: FastAPI `/legal/*` + miniapp embedded markdown (synced from `docs/legal`)  
+Viewport: 375×812 (prior screenshot paths retained; re-capture recommended after copy change)
 
 ## Screenshots
 
@@ -14,23 +14,29 @@ Viewport: 375×812 (plus tall captures for tables)
 | Privacy (table) | `browser_smoke/screenshots/legal-privacy-table-375.png` |
 | Consent | `browser_smoke/screenshots/legal-privacy-consent-375x812.png` |
 
-## Checks
+## Checks (code/test evidence 2026-08-20)
 
 | Check | Result |
 | --- | --- |
-| Title / 조항 번호 / spacing | PASS |
-| Semantic headings (h1 document, h2 articles) | PASS |
-| Light/minimal UI (not dark-only) | PASS |
-| Tables: horizontal scroll wrapper, no page-break overflow | PASS |
-| Long Toss URL wrap (`overflow-wrap: anywhere`) | PASS (terms 환불 조항) |
-| Footer / Home legal links | PASS (이용약관, 개인정보처리방침). Home does not restore medical disclaimer |
-| `[TODO: 사업자명]` not rendered as a hyperlink | PASS (space before 이하; renderer https-only) |
-| Placeholders visible | PASS — expected until business facts filled |
-| Secrets / env names | PASS — none in DOM |
-| Login/payment API calls on open | PASS — static markdown |
-| Safe-area padding | PASS — `env(safe-area-inset-*)` on legal page / backend HTML |
+| Public routes `/legal/terms|privacy|privacy-consent` HTTP 200 without auth | PASS (`tests/legal`) |
+| text/html + H1 | PASS |
+| Release blockers (`[TODO:`, `draft-2`, `*_REQUIRED`) absent from markdown + HTML | PASS |
+| Draft “정식 시행이 아님” phrases absent | PASS |
+| Secrets / env names | PASS |
+| `docs/legal` == `miniapp/src/legal` | PASS |
+| Placeholders visible | **FAIL (desired)** — no longer shown |
+| Mobile screenshot re-capture after copy change | **NOT_RUN** (REQUIRES_OPERATOR_ACTION) |
 
-## Notes
+## Legal release gate
 
-- These captures do **not** overwrite prior `home-*` / `react-detail-*` screenshots.
-- `LEGAL_RELEASE_APPROVED` remains NO because `[TODO: …]` placeholders are user-visible by design.
+| Gate | Status |
+| --- | --- |
+| public routes | PASS |
+| no placeholder / draft blockers | PASS |
+| no secrets | PASS |
+| docs/frontend sync | PASS |
+| mobile rendering re-smoke | NOT_RUN |
+| Operator business registration fields in repo | OPERATOR_INPUT_REQUIRED |
+| `LEGAL_RELEASE_APPROVED` | **NO** until operator business/DPO registration details are confirmed and mobile smoke re-run |
+
+Do not mark `LEGAL_RELEASE_APPROVED=YES` while operator legal-entity fields remain outside the repo and mobile smoke is not re-run.

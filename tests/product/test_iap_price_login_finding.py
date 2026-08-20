@@ -66,8 +66,10 @@ def test_paid_screens_reuse_iap_price_resolver():
     assert "useIapProductPrices" in unlock
     assert "useIapProductPrices" in detail
     assert "canPurchase" in result
-    assert "disabled={!songCanBuy}" in result
+    assert "songCanBuy" in result
+    assert "Toss로 바로 열기" in result or "상세 리포트 보기" in result
     assert "가격 다시 확인하기" in _read("components/ui/PremiumProductCard.tsx")
+    assert "가격 다시 확인하기" in result
     assert "ensureTossLogin" not in _read("lib/iapCatalog.ts")
     assert "ensureTossLogin" not in _read("lib/useIapProductPrices.ts")
 

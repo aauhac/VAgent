@@ -35,6 +35,7 @@ import { presentCoreFinding, sanitizeDisclaimer } from '../lib/reportPresentatio
 import { buyProduct } from '../lib/tossIap';
 import { PRICE_LOADING_LABEL, PRICE_UNAVAILABLE_LABEL } from '../lib/iapCatalog';
 import { useIapProductPrices } from '../lib/useIapProductPrices';
+import { useRewardedDetailUnlock } from '../lib/useRewardedDetailUnlock';
 
 export default function Result() {
   const { id } = useParams();
@@ -48,6 +49,8 @@ export default function Result() {
   const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
   const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
   const { prices: iapPrices, reload: reloadIapPrices } = useIapProductPrices(products);
+  const songUnlockedEarly = !!data?.access?.song_detail_unlocked;
+  const rewarded = useRewardedDetailUnlock(id, songUnlockedEarly);
 
   useEffect(() => {
     if (!id) return;
@@ -212,6 +215,28 @@ export default function Result() {
     }
   }
 
+  async function unlockViaRewardedAd() {
+    if (!id) return;
+    setError(null);
+    const result = await rewarded.watchAndUnlock();
+    if (result === 'unlocked') {
+      saveSongDetailUnlock(id);
+      patchHistory(id, { songDetailUnlocked: true });
+      setData((prev: any) =>
+        prev
+          ? {
+              ...prev,
+              access: {
+                ...(prev.access || {}),
+                song_detail_unlocked: true,
+              },
+            }
+          : prev,
+      );
+      nav(`/result/${id}/detail`);
+    }
+  }
+
   const coreAxes = useMemo(() => {
     if (!data) return [];
     return buildTodayHighlights(extractCanonicalFromResult(data)).slice(0, 3);
@@ -339,30 +364,108 @@ export default function Result() {
                   />
                 </div>
               ) : (
-                <div id="offer-song-detail" data-testid="offer-song-detail">
-                  <PremiumProductCard
-                    badge="이 노래 더 자세히"
-                    title="상세 리포트"
-                    description="이 노래에서 어떤 부분이 잘 되고, 어디에서 변화가 나타나는지 실제 구간과 함께 확인해요."
-                    priceLabel={songPriceLabel}
-                    bullets={[
-                      '전체 발성 프로필과 고음·음색 분석',
-                      '특징이 나타난 실제 노래 구간 듣기',
-                      '이번 녹음에서 확인된 발성 특성 정리',
-                    ]}
-                    ctaLabel={
-                      songCanBuy
-                        ? `상세 리포트 보기 · ${songPriceLabel}`
-                        : songPriceLabel === PRICE_LOADING_LABEL
-                          ? '상세 리포트 보기'
-                          : PRICE_UNAVAILABLE_LABEL
-                    }
-                    onClick={buySongDetail}
-                    busy={busyDetail}
-                    disabled={!songCanBuy}
-                    retryable={!!songPrice?.retryable}
-                    onRetry={reloadIapPrices}
-                  />
+                <div id="offer-song-detail" data-testid="offer-song-detail" className="premium-card">
+                  <div className="premium-card-top">
+                    <span className="premium-badge">이 노래 더 자세히</span>
+                    <span className="premium-price">{songPriceLabel}</span>
+                  </div>
+                  <h3 className="premium-title">상세 리포트</h3>
+                  <p className="premium-desc">
+                    노래에서 발견된 발성 특징을 더 자세히 확인해보세요.
+                  </p>
+                  <ul className="premium-bullets">
+                    <li>전체 발성 프로필과 고음·음색 분석</li>
+                    <li>특징이 나타난 실제 노래 구간 듣기</li>
+                    <li>이번 녹음에서 확인된 발성 특성 정리</li>
+                  </ul>
+                  <div className="premium-cta" data-testid="rewarded-detail-offer">
+                    {rewarded.configured && rewarded.status && rewarded.status.remaining_today <= 0 ? (
+                      <p className="muted" style={{ margin: '0 0 10px', fontSize: '0.85rem', lineHeight: 1.45 }}>
+                        오늘 무료 열람 기회를 모두 사용했어요. 내일 다시 이용할 수 있어요.
+                      </p>
+                    ) : null}
+                    {rewarded.configured && rewarded.loadState === 'unavailable' ? (
+                      <p className="muted" style={{ margin: '0 0 10px', fontSize: '0.85rem' }}>
+                        지금은 광고 무료 열람을 사용할 수 없어요.
+                      </p>
+                    ) : null}
+                    {rewarded.configured &&
+                    rewarded.loadState !== 'unavailable' &&
+                    !(rewarded.status && rewarded.status.remaining_today <= 0) ? (
+                      <>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ width: '100%' }}
+                          disabled={
+                            rewarded.busy ||
+                            rewarded.loadState === 'loading' ||
+                            rewarded.loadState === 'showing'
+                          }
+                          onClick={unlockViaRewardedAd}
+                        >
+                          {rewarded.busy || rewarded.loadState === 'showing'
+                            ? '광고 진행 중…'
+                            : rewarded.loadState === 'loading'
+                              ? '광고 준비 중…'
+                              : '광고 보고 무료로 열기'}
+                        </button>
+                        {typeof rewarded.remainingToday === 'number' ? (
+                          <p className="muted" style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>
+                            오늘 무료 열람 {rewarded.remainingToday}회 남음
+                          </p>
+                        ) : (
+                          <p className="muted" style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>
+                            오늘 무료 열람 {rewarded.dailyLimit}회까지 가능
+                          </p>
+                        )}
+                        {rewarded.error ? (
+                          <p className="fail" style={{ marginTop: 8 }}>{rewarded.error}</p>
+                        ) : null}
+                        {rewarded.loadState === 'error' && !rewarded.busy ? (
+                          <button
+                            type="button"
+                            className="btn secondary"
+                            style={{ width: '100%', marginTop: 8 }}
+                            onClick={() => void rewarded.retryLoad()}
+                          >
+                            다시 시도
+                          </button>
+                        ) : null}
+                        <p className="muted" style={{ margin: '14px 0 8px', fontSize: '0.85rem', textAlign: 'center' }}>
+                          또는
+                        </p>
+                      </>
+                    ) : null}
+                    {songCanBuy ? (
+                      <button
+                        type="button"
+                        className="btn secondary"
+                        style={{ width: '100%' }}
+                        disabled={busyDetail}
+                        onClick={buySongDetail}
+                      >
+                        {busyDetail
+                          ? '준비 중…'
+                          : `Toss로 바로 열기 · ${songPriceLabel}`}
+                      </button>
+                    ) : songPrice?.retryable ? (
+                      <button
+                        type="button"
+                        className="btn secondary"
+                        style={{ width: '100%' }}
+                        onClick={reloadIapPrices}
+                      >
+                        가격 다시 확인하기
+                      </button>
+                    ) : (
+                      <button type="button" className="btn secondary" style={{ width: '100%' }} disabled>
+                        {songPriceLabel === PRICE_LOADING_LABEL
+                          ? '가격 확인 중…'
+                          : PRICE_UNAVAILABLE_LABEL}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 

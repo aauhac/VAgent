@@ -5,12 +5,13 @@
 
 ## Architecture
 
-Nginx (later) → `127.0.0.1:8000` → FastAPI (Uvicorn workers=1) → Docker network PostgreSQL
+HTTPS terminator / reverse proxy (operator-managed, e.g. Lightsail load balancer or
+host Nginx) → backend `127.0.0.1:8000` → FastAPI (Uvicorn workers=1) → Docker network PostgreSQL
 
 - `BACKEND_REPLICAS=1`
 - `ARTIFACT_STORAGE_MODE=LOCAL_PERSISTENT`
 - `MULTI_INSTANCE_UNSAFE`
-- Backend bind: loopback only
+- Backend bind: loopback only (typical)
 - Postgres: no public port
 
 Entrypoint:
