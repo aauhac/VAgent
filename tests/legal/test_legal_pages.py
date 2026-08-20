@@ -110,3 +110,40 @@ def test_frontend_legal_copy_matches_docs():
     terms = (LEGAL_DIR / "TERMS_OF_SERVICE.ko.md").read_text(encoding="utf-8")
     assert terms.startswith("# 노래 실력 진단받기")
     assert "회원탈퇴" not in terms or "토스 계정" in terms
+
+
+def _privacy_text() -> str:
+    return (LEGAL_DIR / "PRIVACY_POLICY.ko.md").read_text(encoding="utf-8")
+
+
+def test_privacy_does_not_claim_no_ad_feature_while_rewarded_ads_exist():
+    """Rewarded ads are implemented; privacy must not read as 'no ads at all'."""
+    rewarded_impl = (ROOT / "miniapp/src/lib/tossRewardedAd.ts").exists()
+    assert rewarded_impl
+    privacy = _privacy_text()
+    outdated = "광고·분석(Analytics) SDK는 사용하지 않습니다."
+    assert outdated not in privacy
+    assert "리워드 광고" in privacy
+    assert "Apps in Toss" in privacy or "앱인토스" in privacy
+
+
+def test_privacy_discloses_rewarded_ad_processing_in_user_friendly_language():
+    privacy = _privacy_text()
+    assert "리워드 광고" in privacy
+    assert "일일 이용" in privacy or "일일 이용 횟수" in privacy
+    assert "상세 리포트" in privacy
+    # Distinguishes platform ads from separate analytics/tracking tools
+    assert "Google Analytics" in privacy or "행태 분석" in privacy
+
+
+def test_privacy_hides_internal_rewarded_ad_implementation_names():
+    privacy = _privacy_text()
+    for banned in (
+        "claim_token_hash",
+        "principal_key",
+        "rewarded_ad_daily_slots",
+        "rewarded_ad_claims",
+        "slot_index",
+        "seoul_day",
+    ):
+        assert banned not in privacy, banned

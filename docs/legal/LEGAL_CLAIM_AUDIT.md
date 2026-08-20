@@ -44,7 +44,16 @@ Status: SUPPORTED_BY_CODE | SUPPORTED_BY_POLICY | LEGAL_REQUIREMENT | OPERATOR_I
 | Electronic commerce 청약철회 vs IAP | SUPPORTED_BY_POLICY | Terms §14: no blanket “환불 불가”; follow law + platform |
 | Safety answers as sensitive health data | OPERATOR_INPUT_REQUIRED | boolean discomfort fields stored; not labeled medical |
 | Under-14 dedicated flow | SUPPORTED_BY_POLICY | Privacy: no under-14 signup flow |
-| No analytics SDK | SUPPORTED_BY_CODE | miniapp/src, backend |
+| No separate analytics/error-tracking SDK (GA/Sentry/PostHog) | SUPPORTED_BY_CODE | miniapp/src, backend |
+| Apps in Toss rewarded ads used for SONG_DETAIL unlock | SUPPORTED_BY_CODE | `tossRewardedAd.ts`, `rewarded_detail.py` |
+| Rewarded ad only unlocks SONG_DETAIL (not diagnostic) | SUPPORTED_BY_CODE | `REWARD_TYPE_SONG_DETAIL` / entitlement grant |
+| Reward only after `userEarnedReward` + valid server session | SUPPORTED_BY_CODE | claim requires session token; client watched-alone insufficient |
+| Daily limit 3 Asia/Seoul enforced server-side | SUPPORTED_BY_CODE | `RewardedAdDailySlot` unique slots |
+| Production ad group ID from env only | SUPPORTED_BY_CODE | `VITE_TOSS_REWARDED_DETAIL_AD_GROUP_ID`; empty → hide CTA |
+| No invented production ad group ID | SUPPORTED_BY_CODE | non-prod may use official test id only |
+| Login not required solely to watch rewarded ad | SUPPORTED_BY_CODE | routes use `_ident` / headers; anonymous principal_key |
+| Privacy distinguishes rewarded ads vs analytics SDKs | SUPPORTED_BY_POLICY | `PRIVACY_POLICY.ko.md` §2 / §10 |
+| Public privacy discloses reward records in user-friendly language | SUPPORTED_BY_POLICY | §2 E; no `principal_key` / table names |
 | External font CDN | SUPPORTED_BY_CODE | removed; system fonts |
 | Generative AI labeling (Toss §5) | SUPPORTED_BY_POLICY | live path is local acoustic analysis |
 | Public legal pages free of draft/TODO blockers | SUPPORTED_BY_CODE | `tests/legal/test_legal_pages.py`, package/bundle scanners |

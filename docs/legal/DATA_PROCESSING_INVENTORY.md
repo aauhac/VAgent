@@ -27,12 +27,13 @@ Provenance: SUPPORTED_BY_CODE unless marked otherwise.
 | Payment intent | Miniapp after login | Bind SKU to analysis before IAP | `payment_intents` | Intent expires 20 minutes | Row remains after analysis delete | Privacy |
 | Purchase order | After Toss order verify | Accounting / grant | `purchase_orders` (order id, sku, product, resource, status, refunded_at). **No card/PAN.** | No TTL | **Not** deleted on analysis delete | Privacy / terms |
 | Entitlement | After verified grant | Unlock Detail/Precision for that analysis | `entitlements` | Until refund revoke | Refund → REVOKED. Analysis delete does not erase purchase rows | Terms / privacy |
-| Rewarded-ad claim | Miniapp after `userEarnedReward` | Grant SONG_DETAIL for one analysis | `rewarded_ad_claims`, `rewarded_ad_daily_slots` | Session token ~15m; daily slots Asia/Seoul | Survives with entitlement; not a separate access path | Terms / privacy (same SONG_DETAIL) |
+| Rewarded-ad claim | Miniapp after Apps in Toss `userEarnedReward` (session created before `showFullScreenAd`) | Grant **SONG_DETAIL only** for one analysis; daily limit 3 (Asia/Seoul) via unique slots | `rewarded_ad_claims` (claim_token_hash, principal_key, analysis_id, status); `rewarded_ad_daily_slots` (principal_key, seoul_day, slot_index) | Pending session ~15m (`SESSION_TTL_SECONDS`); successful claims/slots: **no auto TTL/delete in code** | Not removed by analysis delete (`deletion.py`); survives with entitlement | Privacy §2 E / §3 (user-friendly; no internal column names in public policy) |
 | IP address | TCP peer | Login/payment in-memory rate limit bucket | Not persisted by app DB | In-memory window | Process restart | Privacy: not stored in app DB. Reverse proxy access logs: host/operator config |
 | User-Agent | Not read by app middleware | — | Not stored | — | — | Not disclosed as collected |
 | Request id / error logs | Middleware | Debug unhandled exceptions | Process logs: request_id, method, path, exception type | Host log retention | Host rotation | Privacy (operational logs) |
 | localStorage history/goals/snapshots | Miniapp | UX cache | Device only | Caps (history 20, etc.) | User can clear site data; History delete also drops local cache after server success | Privacy (device storage) |
-| Analytics SDK | — | — | None in miniapp/src or backend | — | — | Do not claim analytics |
+| Separate analytics / error / ad-tracking SDK | — | — | No Google Analytics / Sentry / PostHog / pixels / direct AdMob in miniapp/src or backend | — | — | Privacy: distinguish from Apps in Toss rewarded ads |
+| Apps in Toss rewarded ad (platform) | `loadFullScreenAd` / `showFullScreenAd` when user opts in | Unlock SONG_DETAIL without IAP | Ad creative delivery is platform-side; company stores claim/slot records only | Ad group id from env (`VITE_TOSS_REWARDED_DETAIL_AD_GROUP_ID`); empty in prod hides CTA | n/a | Privacy §2 E, §4–5, §10; Terms |
 | External font CDN | Previously jsDelivr Pretendard | — | Removed; system fonts only | — | — | Privacy §10 |
 | AI training corpus | — | — | No live-app path | — | — | Explicitly **not** used for training |
 
@@ -49,4 +50,5 @@ Provenance: SUPPORTED_BY_CODE unless marked otherwise.
 - Card number, payment method PAN
 - Business registration number / DPO personal name in repo
 - Marketing push/email/SMS
-- Google Analytics / Sentry / PostHog / pixels
+- Google Analytics / Sentry / PostHog / pixels / independent ad-tracking SDK
+- Invented production ad group IDs, AdMob/Google as named processors, ADID/IDFA collection by our app, overseas ad-transfer facts not confirmed in code
