@@ -27,11 +27,12 @@ def test_home_product_tier_section_removed():
     assert "₩1,980" not in home
     assert "displayAmount" not in home
     assert "녹음 시작" in home
-    assert "이용약관" in home
+    assert "서비스 정보" in home
     assert "무료 리포트" in home
     assert "상세 리포트" in home
     assert "보컬 진단" in home
-    assert "15~60초 한 구절이면 충분해요." in home
+    assert "15~60초" not in home
+    assert "한 구절이면 충분" not in home
 
 
 def test_precision_home_promise_matches_report_feedback_not_training():

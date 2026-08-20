@@ -113,18 +113,19 @@ def test_light_mode_and_pinch_zoom_viewport():
 
 def test_home_explains_voice_analysis_without_product_tiers():
     home = _read("pages/Home.tsx")
-    assert "노래나 음성을 분석해서" in home
+    assert "노래나 음성을 분석해 발성 타입과 특징을 보여드려요." in home
     assert "보컬 리포트" not in home
     assert "home-product-compare" not in home
     assert "FREE" not in home
     assert "DETAIL" not in home
     assert "PRECISION" not in home
     assert "₩" not in home
-    assert "이용약관" in home
+    assert "서비스 정보" in home
     assert "무료 리포트" in home
     assert "상세 리포트" in home
     assert "보컬 진단" in home
-    assert "15~60초 한 구절이면 충분해요." in home
+    assert "15~60초" not in home
+    assert "한 구절이면 충분" not in home
     assert home.find("home-input") < home.find("home-depth") < home.find("home-links")
 
 
@@ -157,7 +158,7 @@ def test_analyzing_uses_korean_stage_and_visual_bar():
     assert "분석이 끝나면 알려드릴까요?" in page
     assert "완료 알림 받기" in page
     assert "analyzing-notify" in page
-    assert "notifyAvailable" not in page
+    assert "notificationFeatureAvailable" in page
     assert "requestNotificationAgreement" not in page
     notify = _read("lib/tossNotifications.ts")
     assert "requestNotificationAgreement" in notify
@@ -166,6 +167,7 @@ def test_analyzing_uses_korean_stage_and_visual_bar():
     assert "newAgreement" in notify
     assert "alreadyAgreed" in notify
     assert "agreementRejected" in notify
+    assert "분석은 계속 진행돼요" in notify
 
 
 def test_no_eval_new_function_or_insecure_ws_in_src():

@@ -103,8 +103,9 @@ def test_frontend_legal_copy_matches_docs():
     assert 'path="/legal/privacy"' in app_src
     assert 'path="/legal/privacy-consent"' in app_src
     home = (ROOT / "miniapp/src/pages/Home.tsx").read_text(encoding="utf-8")
-    assert "/legal/terms" in home
-    assert "/legal/privacy" in home
+    assert "/service-info" in home
+    assert "/legal/terms" not in home
+    assert "/legal/privacy" not in home
     assert "의료 진단이 아닙니다" not in home
     assert "노래 실력 진단받기" in home
     terms = (LEGAL_DIR / "TERMS_OF_SERVICE.ko.md").read_text(encoding="utf-8")
@@ -155,8 +156,31 @@ def test_public_legal_discloses_confirmed_business_identity():
     assert "강민혁" in text
     assert "453-09-03373" in text
     privacy = _privacy_text()
+    assert "개인정보 처리자: 프랙토컬" in privacy
     assert "개인정보 보호책임자: 강민혁" in privacy
+    assert "직책: 대표" in privacy
     assert "uhaki04@gmail.com" in privacy
+    assert "010-9873-6677" in privacy
+    # Business registration / address live in Terms + ServiceInfo, not Privacy header/DPO
+    dpo = privacy.split("## 11.", 1)[-1].split("## 12.", 1)[0]
+    assert "453-09-03373" not in dpo
+    assert "대학로3길" not in dpo
+
+
+def test_terms_keeps_business_block_and_is_simplified():
+    terms = (LEGAL_DIR / "TERMS_OF_SERVICE.ko.md").read_text(encoding="utf-8")
+    assert "제14조" in terms
+    assert "제15조" not in terms
+    assert "authorizationCode" not in terms
+    assert "mTLS" not in terms
+    assert "HMAC" not in terms
+    assert "accessToken" not in terms
+    assert "프랙토컬" in terms
+    assert "453-09-03373" in terms
+    assert "사업장 주소" in terms
+    assert "의료 진단" in terms
+    assert "인앱결제" in terms
+    assert "리워드 광고" in terms
 
 
 def test_public_legal_has_no_placeholder_business_identity():

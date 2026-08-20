@@ -11,6 +11,7 @@ import {
 } from '../lib/analysisProgress';
 import { ANALYSIS_FAILED, RESULT_UNAVAILABLE } from '../lib/userFacingErrors';
 import {
+  notificationFeatureAvailable,
   requestAnalysisCompleteAgreement,
   type NotificationAgreementState,
 } from '../lib/tossNotifications';
@@ -24,6 +25,7 @@ export default function Analyzing() {
   const [error, setError] = useState<string | null>(null);
   const [notifyState, setNotifyState] = useState<NotificationAgreementState>('IDLE');
   const [notifyError, setNotifyError] = useState<string | null>(null);
+  const notifyOfferVisible = notificationFeatureAvailable();
 
   useEffect(() => {
     if (!id) return;
@@ -99,41 +101,43 @@ export default function Analyzing() {
               <span className="meter-fill" style={{ width: `${barWidth}%` }} />
             </div>
             <p className="analyzing-wait">{ANALYSIS_PROGRESS_WAIT}</p>
-            <div className="analyzing-notify">
-              <p className="analyzing-notify-kicker">잠깐 다른 일을 보셔도 돼요.</p>
-              {notifyState === 'AGREED' ? (
-                <p className="analyzing-notify-ok">✓ 분석이 끝나면 알려드릴게요.</p>
-              ) : (
-                <>
-                  <p className="analyzing-notify-ask">분석이 끝나면 알려드릴까요?</p>
-                  <button
-                    type="button"
-                    className="btn secondary"
-                    style={{ width: '100%', marginTop: 10 }}
-                    disabled={notifyState === 'REQUESTING' || !id}
-                    onClick={async () => {
-                      if (!id) return;
-                      setNotifyError(null);
-                      setNotifyState('REQUESTING');
-                      const result = await requestAnalysisCompleteAgreement(id);
-                      if (result.state === 'REJECTED') {
-                        setNotifyState('IDLE');
-                        return;
-                      }
-                      if (result.state === 'AGREED') {
-                        setNotifyState('AGREED');
-                        return;
-                      }
-                      setNotifyState(result.state === 'UNAVAILABLE' ? 'UNAVAILABLE' : 'ERROR');
-                      setNotifyError(result.message || null);
-                    }}
-                  >
-                    {notifyState === 'REQUESTING' ? '설정 중…' : '완료 알림 받기'}
-                  </button>
-                  {notifyError ? <p className="fail" style={{ marginTop: 8 }}>{notifyError}</p> : null}
-                </>
-              )}
-            </div>
+            {notifyOfferVisible ? (
+              <div className="analyzing-notify">
+                <p className="analyzing-notify-kicker">잠깐 다른 일을 보셔도 돼요.</p>
+                {notifyState === 'AGREED' ? (
+                  <p className="analyzing-notify-ok">✓ 분석이 끝나면 알려드릴게요.</p>
+                ) : (
+                  <>
+                    <p className="analyzing-notify-ask">분석이 끝나면 알려드릴까요?</p>
+                    <button
+                      type="button"
+                      className="btn secondary"
+                      style={{ width: '100%', marginTop: 10 }}
+                      disabled={notifyState === 'REQUESTING' || !id}
+                      onClick={async () => {
+                        if (!id) return;
+                        setNotifyError(null);
+                        setNotifyState('REQUESTING');
+                        const result = await requestAnalysisCompleteAgreement(id);
+                        if (result.state === 'REJECTED') {
+                          setNotifyState('IDLE');
+                          return;
+                        }
+                        if (result.state === 'AGREED') {
+                          setNotifyState('AGREED');
+                          return;
+                        }
+                        setNotifyState(result.state === 'UNAVAILABLE' ? 'UNAVAILABLE' : 'ERROR');
+                        setNotifyError(result.message || null);
+                      }}
+                    >
+                      {notifyState === 'REQUESTING' ? '설정 중…' : '완료 알림 받기'}
+                    </button>
+                    {notifyError ? <p className="fail" style={{ marginTop: 8 }}>{notifyError}</p> : null}
+                  </>
+                )}
+              </div>
+            ) : null}
           </>
         )}
       </div>

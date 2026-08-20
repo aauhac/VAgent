@@ -20,7 +20,8 @@ def test_home_has_no_vocal_report_tier_section():
     assert "home-hero" in home
     assert "home-input" in home
     assert "home-depth" in home
-    assert "home-legal" in home
+    assert "home-service-info" in home
+    assert "home-legal" not in home
     assert "녹음 시작" in home
     assert home.find("home-input") < home.find("home-depth") < home.find("home-links")
 

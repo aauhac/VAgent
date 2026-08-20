@@ -16,6 +16,7 @@ import DiagnosticTask from './pages/DiagnosticTask';
 import PremiumReport from './pages/PremiumReport';
 import DiagnosticResume from './pages/DiagnosticResume';
 import ProgressInsight from './pages/ProgressInsight';
+import ServiceInfo from './pages/ServiceInfo';
 import { LegalPrivacy, LegalPrivacyConsent, LegalTerms } from './pages/Legal';
 import { SESSION_CLEARED_EVENT } from './lib/clientSession';
 import { bootstrapTossSession, getVagentSessionToken, resumeTossSession } from './lib/tossAuth';
@@ -80,6 +81,7 @@ export default function App() {
         <Route path="/result/:id/detail" element={<SongDetailReport />} />
         <Route path="/progress" element={<ProgressInsight />} />
         <Route path="/history" element={<History />} />
+        <Route path="/service-info" element={<ServiceInfo />} />
         <Route path="/premium" element={<PremiumUnlock />} />
         <Route path="/legal/terms" element={<LegalTerms />} />
         <Route path="/legal/privacy" element={<LegalPrivacy />} />

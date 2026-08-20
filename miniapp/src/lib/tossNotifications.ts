@@ -2,8 +2,8 @@
  * Apps in Toss analysis-complete notification opt-in.
  * Client never sends the smart message itself.
  *
- * CTA visibility must not depend on template code or SDK capability.
- * Those are checked only when the user taps "완료 알림 받기".
+ * Production CTA is shown only when a build-time template code is configured.
+ * Template / SDK / backend failures must not look like analysis failure.
  */
 
 import { requestCompletionNotification } from '../api/client';
@@ -16,7 +16,7 @@ export type NotificationAgreementState =
   | 'ERROR'
   | 'UNAVAILABLE';
 
-const NOTIFY_ERROR = '알림 설정을 완료하지 못했어요. 다시 시도해 주세요.';
+const NOTIFY_ERROR = '알림 설정을 완료하지 못했어요. 분석은 계속 진행돼요.';
 export const NOTIFY_UNAVAILABLE = '지금은 완료 알림을 사용할 수 없어요.';
 
 function notifyLog(event: string) {
@@ -32,10 +32,7 @@ export function analysisCompleteTemplateCode(): string {
   return String(import.meta.env.VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE || '').trim();
 }
 
-/**
- * Whether the build includes a Console template code.
- * Do NOT use this to hide the Analyzing CTA — users must still see the offer.
- */
+/** Production CTA gate: hide offer when template code is not configured. */
 export function notificationFeatureAvailable(): boolean {
   return !!analysisCompleteTemplateCode();
 }
@@ -82,22 +79,30 @@ export async function requestAnalysisCompleteAgreement(analysisId: string): Prom
         onEvent: (result: { type?: string }) => {
           const type = String(result?.type || '');
           if (type === 'agreementRejected') {
+            notifyLog('agreementRejected');
             finish({ state: 'REJECTED' });
             return;
           }
           if (type === 'newAgreement' || type === 'alreadyAgreed') {
+            notifyLog(type);
             requestCompletionNotification(analysisId)
               .then(() => finish({ state: 'AGREED' }))
-              .catch(() => finish({ state: 'ERROR', message: NOTIFY_ERROR }));
+              .catch(() => {
+                notifyLog('backend_request_failed');
+                finish({ state: 'ERROR', message: NOTIFY_ERROR });
+              });
             return;
           }
+          notifyLog(type ? `unknown_event:${type}` : 'unknown_event');
           finish({ state: 'ERROR', message: NOTIFY_ERROR });
         },
         onError: () => {
+          notifyLog('sdk_error');
           finish({ state: 'ERROR', message: NOTIFY_ERROR });
         },
       });
     } catch {
+      notifyLog('sdk_error');
       finish({ state: 'UNAVAILABLE', message: NOTIFY_UNAVAILABLE });
     }
   });

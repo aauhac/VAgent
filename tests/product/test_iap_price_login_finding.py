@@ -113,24 +113,25 @@ def test_vocal_type_unresolved_reasons_and_core_finding_states():
     assert "PRIMARY_UNRESOLVED_MESSAGE" in pres
 
 
-def test_notification_cta_always_shown_checks_on_click():
+def test_notification_cta_gated_on_template_code():
     notify = _read("lib/tossNotifications.ts")
     page = _read("pages/Analyzing.tsx")
     assert "newAgreement" in notify
     assert "alreadyAgreed" in notify
     assert "agreementRejected" in notify
-    assert "알림 설정을 완료하지 못했어요" in notify
+    assert "알림 설정을 완료하지 못했어요. 분석은 계속 진행돼요." in notify
     assert "지금은 완료 알림을 사용할 수 없어요." in notify
+    assert "unknown_event:" in notify
+    assert "backend_request_failed" in notify
     assert "cleanup?.()" in notify
+    assert "notificationFeatureAvailable" in notify
+    assert "notificationFeatureAvailable" in page
+    assert "notifyOfferVisible" in page
     assert "잠깐 다른 일을 보셔도 돼요." in page
     assert "분석이 끝나면 알려드릴까요?" in page
     assert "완료 알림 받기" in page
-    assert "notifyAvailable" not in page
-    assert "notificationFeatureAvailable" not in page
     assert "analyzing-notify" in page
     assert "requestAnalysisCompleteAgreement(id)" in page
     assert "VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE" in notify
     assert "test-template-code" not in notify
     assert "requestNotificationAgreement" not in page
-    # Template/SDK checked only inside click handler path, not for render gating.
-    assert "analysisCompleteTemplateCode()" not in page
