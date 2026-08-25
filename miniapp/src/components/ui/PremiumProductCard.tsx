@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 
-type Props = {
+type BaseProps = {
   badge?: string;
   title: string;
   description: string;
@@ -11,14 +11,22 @@ type Props = {
   to?: string;
   onClick?: () => void;
   busy?: boolean;
-  featured?: boolean;
   footer?: ReactNode;
   disabled?: boolean;
   retryable?: boolean;
   onRetry?: () => void;
 };
 
-/** Premium product block — not a plain primary button. */
+/**
+ * `variant="purchase"` is the one production purchase presentation: every locked paid
+ * product renders identically — white surface, same border/radius/padding, price top-right.
+ * `featured` is a compile error on that variant, so a purchase card can never drift into a
+ * highlighted blue panel. Recommendation is expressed with a badge instead.
+ */
+type Props =
+  | (BaseProps & { variant?: 'default'; featured?: boolean })
+  | (BaseProps & { variant: 'purchase'; featured?: never });
+
 export default function PremiumProductCard({
   badge,
   title,
@@ -29,12 +37,14 @@ export default function PremiumProductCard({
   to,
   onClick,
   busy,
-  featured,
   footer,
   disabled,
   retryable,
   onRetry,
+  ...rest
 }: Props) {
+  const variant = (rest as { variant?: string }).variant ?? 'default';
+  const featured = variant === 'purchase' ? false : (rest as { featured?: boolean }).featured;
   const showRetry = Boolean(disabled && retryable && onRetry);
   const showCta = Boolean(ctaLabel) || showRetry;
   const cta = !showCta ? null : showRetry ? (
@@ -58,7 +68,11 @@ export default function PremiumProductCard({
   );
 
   return (
-    <article className={`premium-card${featured ? ' is-featured' : ''}`}>
+    <article
+      className={`premium-card${variant === 'purchase' ? ' is-purchase' : ''}${
+        featured ? ' is-featured' : ''
+      }`}
+    >
       <div className="premium-card-top">
         {badge ? <span className="premium-badge">{badge}</span> : null}
         {priceLabel ? <span className="premium-price">{priceLabel}</span> : null}

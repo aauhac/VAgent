@@ -1,58 +1,40 @@
-HEAD=42a82047fc35520dc940d1457165c379d4d6931d
+HEAD=aa702eaae72b0399f12067873d0e15be25f1358f
 origin/main...HEAD=0	0
 git status --short:
-M .env.example
- M .env.production.example
- M audio_analyzer/coach_profile/__init__.py
- M audio_analyzer/coach_profile/engine.py
- M audio_analyzer/models.py
- M backend/app/api/auth_routes.py
- M backend/app/api/payment_routes.py
+M backend/app/api/auth_routes.py
  M backend/app/api/routes.py
  M backend/app/db/analysis_repo.py
- M backend/app/main.py
- M backend/app/notifications/__init__.py
- M backend/app/notifications/completion.py
- M backend/app/payments/rate_limit.py
+ M backend/app/db/entitlements_db.py
+ M backend/app/db/identity_linking.py
+ M backend/app/db/models.py
+ M backend/app/db/users.py
+ M backend/app/diagnostic/service.py
+ M backend/app/entitlements/provider.py
  M backend/app/payments/service.py
- M backend/app/payments/toss_clients.py
- M backend/app/products/catalog.py
+ M backend/app/rewards/rewarded_detail.py
+ M backend/app/services/analysis_service.py
  M backend/app/services/history_service.py
- M deploy/lightsail/docker-compose.production.yml
- M docs/iap_sku_and_notification_console.md
- M miniapp/src/App.tsx
  M miniapp/src/api/client.ts
  M miniapp/src/components/report/DiagnosticCTA.tsx
- M miniapp/src/components/ui/PremiumProductCard.tsx
- M miniapp/src/lib/iapCatalog.ts
- M miniapp/src/lib/tossIap.ts
- M miniapp/src/lib/useIapProductPrices.ts
- M miniapp/src/pages/History.tsx
  M miniapp/src/pages/PremiumUnlock.tsx
  M miniapp/src/pages/Result.tsx
- M miniapp/src/pages/SongDetailReport.tsx
  M miniapp/tsconfig.tsbuildinfo
- M miniapp/vite.config.ts
  M qa_output/production_release_v1/lightsail/DEPLOY_SOURCE_STATE.txt
  M qa_output/production_release_v1/lightsail/MANIFEST.txt
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.sha256
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.tar.gz
  M scripts/check_production_bundle.py
- M scripts/roughness_fp_audit.py
- M tests/notifications/test_completion_notification.py
+ M tests/diagnostic/test_report_lifecycle_v1.py
+ M tests/notifications/test_notification_deep_link.py
+ M tests/payments/test_anonymous_toss_linking.py
  M tests/product/test_history_association.py
- M tests/product/test_lightsail_and_home_copy.py
-?? audio_analyzer/coach_profile/public_presentation.py
-?? backend/app/db/identity_linking.py
-?? backend/app/notifications/deep_link.py
-?? backend/app/notifications/startup.py
-?? miniapp/src/pages/NotificationResultRedirect.tsx
-?? tests/analyzer/test_unresolved_public_copy.py
-?? tests/notifications/test_notification_deep_link.py
-?? tests/notifications/test_notification_frontend_gate.py
-?? tests/payments/test_anonymous_toss_linking.py
-?? tests/payments/test_payments_disabled.py
-?? tests/product/test_iap_purchase_observability.py
-?? tests/product/test_notification_deep_link_frontend.py
-?? tests/product/test_payments_enabled_frontend_gate.py
-packaged_at_utc=2026-08-24T18:29:45.070430+00:00
+?? backend/alembic/versions/20260821_0010_user_identity_links.py
+?? backend/app/db/identity_links.py
+?? miniapp/src/api/devMocks.ts
+?? scripts/backfill_identity_links.py
+?? tests/payments/test_entitlement_reward_provider_exactness.py
+?? tests/payments/test_identity_provider_isolation.py
+?? tests/payments/test_legacy_identity_reconciliation.py
+?? tests/product/test_diagnostic_entitlement_gate.py
+?? tests/product/test_diagnostic_purchase_flow_frontend.py
+packaged_at_utc=2026-08-25T10:35:20.829475+00:00

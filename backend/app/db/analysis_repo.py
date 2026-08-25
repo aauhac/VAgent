@@ -89,6 +89,20 @@ def soft_delete_analysis(analysis_id: str) -> bool:
 
 
 def get_user_by_subject(session: Session, subject: str) -> Optional[User]:
+    """LEGACY, AMBIGUOUS: first row with this subject under ANY known provider.
+
+    The users unique key is (external_provider, external_subject), so the same string can
+    name two different people — a Toss userKey and an anonymous hash live in separate
+    namespaces. This helper cannot tell them apart and may return either row.
+
+    Do NOT use in auth, payment, or canonical identity resolution. Use instead:
+      - `users.get_user_by_identity(session, provider, subject)` for an exact lookup
+      - `identity_links.resolve_canonical_user` / `identity_group_ids` / `same_identity`
+        for canonical resolution, which merges rows only when a UserIdentityLink says so
+
+    Kept for legacy call sites that hold a bare subject and only need a single row to
+    scope their own data; it can never be the reason two identities are treated as one.
+    """
     return session.scalar(
         select(User).where(
             or_(
@@ -151,7 +165,7 @@ def _pick_primary_diagnostic(sessions: list[dict[str, Any]]) -> str | None:
 
 
 def list_analyses_for_subject(
-    subject: str, *, limit: int = 20, offset: int = 0
+    subject: str, *, limit: int = 20, offset: int = 0, provider: str | None = None
 ) -> dict[str, Any]:
     """History rows from PostgreSQL — production SoT. Joins diagnostic_sessions.source_analysis_id."""
     require_db_for_prod_metadata()
@@ -170,13 +184,18 @@ def list_analyses_for_subject(
     skip = max(0, offset)
 
     with session_scope() as session:
-        user = get_user_by_subject(session, subject)
-        if not user:
+        from .identity_links import identity_group_ids
+
+        # One canonical identity can span several user rows (canonical hash user, the
+        # (TOSS, userKey) user the old migration parked data on, other linked hashes).
+        # History unions them instead of moving anything.
+        group = identity_group_ids(session, subject, provider)
+        if not group:
             return empty
 
         owned = session.scalars(
             select(Analysis)
-            .where(Analysis.user_id == user.id, Analysis.deleted_at.is_(None))
+            .where(Analysis.user_id.in_(group), Analysis.deleted_at.is_(None))
             .order_by(Analysis.created_at.desc())
         ).all()
         owned_ids = {row.id for row in owned}
@@ -185,7 +204,7 @@ def list_analyses_for_subject(
             e.resource_id
             for e in session.scalars(
                 select(Entitlement).where(
-                    Entitlement.user_id == user.id,
+                    Entitlement.user_id.in_(group),
                     Entitlement.resource_type == "ANALYSIS",
                     Entitlement.entitlement_type == "SONG_DETAIL",
                     Entitlement.status == "ACTIVE",
@@ -196,8 +215,21 @@ def list_analyses_for_subject(
             e.resource_id
             for e in session.scalars(
                 select(Entitlement).where(
-                    Entitlement.user_id == user.id,
+                    Entitlement.user_id.in_(group),
                     Entitlement.resource_type == "ANALYSIS",
+                    Entitlement.entitlement_type == "DIAGNOSTIC",
+                    Entitlement.status == "ACTIVE",
+                )
+            ).all()
+        }
+        # Sessions the user actually paid for. An unpaid CREATED session is a workspace,
+        # not a purchase, and never appears in history as an available product.
+        diag_entitled_sessions = {
+            e.resource_id
+            for e in session.scalars(
+                select(Entitlement).where(
+                    Entitlement.user_id.in_(group),
+                    Entitlement.resource_type == "DIAGNOSTIC_SESSION",
                     Entitlement.entitlement_type == "DIAGNOSTIC",
                     Entitlement.status == "ACTIVE",
                 )
@@ -206,7 +238,7 @@ def list_analyses_for_subject(
 
         diag_rows = session.scalars(
             select(DiagnosticSession)
-            .where(DiagnosticSession.user_id == user.id)
+            .where(DiagnosticSession.user_id.in_(group))
             .order_by(DiagnosticSession.created_at.desc())
         ).all()
 
@@ -225,7 +257,7 @@ def list_analyses_for_subject(
                 seen_ids.add(drow.id)
             elif explicit:
                 source = session.get(Analysis, explicit)
-                if source is not None and source.user_id != user.id:
+                if source is not None and source.user_id not in group:
                     # Cross-user: keep session unlinked; never attach to the other analysis.
                     unlinked.append(drow)
                 else:
@@ -243,7 +275,7 @@ def list_analyses_for_subject(
             if any(s.id == sid for s in linked.get(row.id, [])):
                 continue
             pointed = session.get(DiagnosticSession, sid)
-            if pointed is None or pointed.user_id != user.id:
+            if pointed is None or pointed.user_id not in group:
                 continue
             linked.setdefault(row.id, []).append(pointed)
             seen_ids.add(pointed.id)
@@ -253,7 +285,16 @@ def list_analyses_for_subject(
         out: list[dict[str, Any]] = []
         for row in page:
             summary = row.public_summary if isinstance(row.public_summary, dict) else {}
-            sessions = [_serialize_diag_session(s) for s in linked.get(row.id, [])]
+            analysis_entitled = row.id in diag_entitled_analyses
+            all_sessions = linked.get(row.id, [])
+            # Show a session only when it is paid for, either directly or via an
+            # analysis-level DIAGNOSTIC entitlement covering this analysis.
+            visible_sessions = [
+                s
+                for s in all_sessions
+                if analysis_entitled or str(s.id) in diag_entitled_sessions
+            ]
+            sessions = [_serialize_diag_session(s) for s in visible_sessions]
             primary = _pick_primary_diagnostic(sessions)
             status = row.status or "failed"
             if row.error_code == "INTERRUPTED_RESTART":
@@ -266,7 +307,7 @@ def list_analyses_for_subject(
                     "status": status,
                     "vocal_type": _vocal_type_label(summary),
                     "song_detail_unlocked": row.id in song_ids,
-                    "diagnostic_unlocked": bool(sessions) or row.id in diag_entitled_analyses,
+                    "diagnostic_unlocked": analysis_entitled or bool(sessions),
                     "diagnostic_session_id": primary,
                     "diagnostic_sessions": sessions,
                     "artifact_missing": bool(
@@ -280,7 +321,7 @@ def list_analyses_for_subject(
         unlinked_out = [
             _serialize_diag_session(s)
             for s in unlinked
-            if s.id not in seen_ids
+            if s.id not in seen_ids and str(s.id) in diag_entitled_sessions
         ]
         return {
             "items": out,
@@ -319,10 +360,20 @@ def resolve_owner_subject(analysis_id: str) -> Optional[str]:
 def analysis_owned_by(analysis_id: str, subject: str) -> Optional[bool]:
     """
     Returns True/False if DB has ownership info, None if DB disabled / row missing.
+
+    Compares canonical identities, so an analysis parked on the (TOSS, userKey) user by the
+    old migration is still the caller's own once a verified login has linked them. A bare
+    anonymous hash with no link resolves to itself and cannot reach a linked user's data.
     """
     if not db_enabled():
         return None
     owner = resolve_owner_subject(analysis_id)
+    if owner is not None and owner != subject:
+        with session_scope() as session:
+            from .identity_links import same_identity
+
+            if same_identity(session, owner, subject):
+                return True
     if owner is None:
         # Row may not exist yet (legacy) — signal unknown
         with session_scope() as session:

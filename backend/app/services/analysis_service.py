@@ -450,18 +450,19 @@ class AnalysisService:
                     code="QUEUE_DB_REQUIRED",
                 )
             return
-        from ..db.analysis_repo import get_user_by_subject
         from ..db.models import Analysis
         from ..db.session import session_scope
-        from ..db.users import get_or_create_user
+        from ..db.users import get_or_create_user, get_user_by_identity
 
         if use_default_local_key and audio_storage_key is None:
             audio_storage_key = f"{analysis_id}/upload{Path(filename).suffix.lower()}"
 
         with session_scope() as session:
-            user = get_user_by_subject(session, user_id)
+            # Exact (provider, subject): ownership must never be assigned to a row that
+            # merely shares the subject string under a different provider.
+            provider = (user_provider or "DEV").strip().upper() or "DEV"
+            user = get_user_by_identity(session, provider, user_id)
             if user is None:
-                provider = (user_provider or "DEV").strip().upper() or "DEV"
                 user = get_or_create_user(session, provider=provider, subject=user_id)
             if session.get(Analysis, analysis_id):
                 return

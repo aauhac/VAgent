@@ -52,6 +52,11 @@ async function headers(extra?: HeadersInit): Promise<HeadersInit> {
   }
 }
 
+/** Header builder for the dev-only mock shims in ./devMocks. Not for production paths. */
+export async function devMockHeaders(extra?: HeadersInit): Promise<HeadersInit> {
+  return headers(extra);
+}
+
 export async function createAnalysis(
   file: Blob,
   filename: string,
@@ -343,16 +348,6 @@ export async function recoverIapOrder(input: { order_id: string; sku?: string })
   return payload as { granted?: boolean };
 }
 
-export async function mockUnlockSongDetail(analysisId: string) {
-  const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/mock-unlock-detail`), {
-    method: 'POST',
-    headers: await headers(),
-  });
-  throwIfAuthLost(res);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
 export type RewardedAdStatus = {
   daily_limit: number;
   used_today: number;
@@ -425,17 +420,6 @@ export async function createDiagnosticSession(sourceAnalysisId?: string) {
   const res = await fetch(apiUrl(`/v1/diagnostic-sessions${q}`), {
     method: 'POST',
     headers: await headers(),
-  });
-  throwIfAuthLost(res);
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-export async function mockPaySession(sessionId: string, productId?: string) {
-  const res = await fetch(apiUrl(`/v1/diagnostic-sessions/${sessionId}/mock-pay`), {
-    method: 'POST',
-    headers: await headers({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify(productId ? { product_id: productId } : {}),
   });
   throwIfAuthLost(res);
   if (!res.ok) throw new Error(await res.text());

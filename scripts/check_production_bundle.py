@@ -150,9 +150,24 @@ def main() -> int:
             # Cannot reliably detect empty env; rely on vite fail-fast + CTA presence.
             pass
         print("PASS: notification CTA present in bundle")
+    # Mock payment must be unreachable in a production build: neither the API symbols nor
+    # any user-visible mock copy may survive into the shipped bundle.
+    mock_markers = [
+        "mockPaySession",
+        "mockUnlockSongDetail",
+        "mock-pay",
+        "mock-unlock-detail",
+        "Mock 결제",
+    ]
+    mock_hits = [marker for marker in mock_markers if marker in joined]
+    if mock_hits:
+        print(f"FAIL: mock payment path present in production bundle: {mock_hits}")
+        return 1
+
     print("PASS: legal sources have no release blockers")
     print("PASS: no banned hosts/SKUs in", args.dist)
     print("PASS: no internal unresolved label in miniapp/src")
+    print("PASS: no mock payment path in production bundle")
     return 0
 
 

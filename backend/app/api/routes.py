@@ -58,6 +58,19 @@ def _user_id(
     return _ident(request, x_user_id, x_vagent_user_key).subject
 
 
+def _provider(
+    x_user_id: str | None = None,
+    x_vagent_user_key: str | None = None,
+    request: Request | None = None,
+) -> str:
+    """Identity namespace of the current caller.
+
+    Entitlement reads/writes state it so a subject that exists under two providers is
+    never resolved to the wrong person.
+    """
+    return (_ident(request, x_user_id, x_vagent_user_key).provider or "DEV").strip().upper()
+
+
 def _ents():
     # Prefer service/diag runtime so tests that monkeypatch services still work
     return get_entitlement_provider(service.runtime_dir)
@@ -85,7 +98,9 @@ def get_products(
     song_owned = False
     if analysis_id and validate_analysis_id(analysis_id):
         uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
-        song_owned = _ents().has_song_detail(uid, analysis_id)
+        song_owned = _ents().has_song_detail(
+            uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key, request)
+        )
     elif analysis_id:
         raise HTTPException(status_code=404, detail="analysis not found")
     return product_catalog(song_detail_owned=song_owned)
@@ -142,9 +157,13 @@ def get_history(
     x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
 ) -> dict:
     """Server-side analysis history with access summary (avoids N× /access)."""
-    uid = _user_id(x_user_id, x_vagent_user_key, request)
+    ident = _ident(request, x_user_id, x_vagent_user_key)
     payload = list_user_history(
-        uid, limit=limit, offset=offset, runtime_dir=service.runtime_dir
+        ident.subject,
+        limit=limit,
+        offset=offset,
+        runtime_dir=service.runtime_dir,
+        provider=ident.provider,
     )
     if isinstance(payload, list):
         return {"items": payload, "unlinked_diagnostics": [], "has_more": False}
@@ -220,7 +239,9 @@ def get_analysis(
                 score.pop(nested_banned, None)
         # Attach access flags (no detailed content)
         try:
-            access = _ents().analysis_access(uid, analysis_id)
+            access = _ents().analysis_access(
+            uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key, request)
+        )
         except Exception:
             access = {
                 "song_detail_unlocked": False,
@@ -334,7 +355,9 @@ def get_analysis_access(
     if service.get_job(analysis_id) is None:
         raise HTTPException(status_code=404, detail="analysis not found")
     try:
-        access = _ents().analysis_access(uid, analysis_id)
+        access = _ents().analysis_access(
+            uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key, request)
+        )
         catalog = product_catalog(song_detail_owned=bool(access.get("song_detail_unlocked")))
     except Exception:
         # Corrupt entitlement store must not become a raw 500
@@ -382,7 +405,9 @@ def get_rewarded_ad_status(
     if not validate_analysis_id(analysis_id):
         raise HTTPException(status_code=404, detail="analysis not found")
     uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
-    unlocked = _ents().has_song_detail(uid, analysis_id)
+    unlocked = _ents().has_song_detail(
+        uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key, request)
+    )
     from ..rewards import RewardedAdError, rewarded_ad_status
 
     try:
@@ -408,7 +433,9 @@ def create_rewarded_ad_session(
     uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key, request)
     if service.get_job(analysis_id) is None and service.load_full_analysis(analysis_id) is None:
         raise HTTPException(status_code=404, detail="analysis not found")
-    unlocked = _ents().has_song_detail(uid, analysis_id)
+    unlocked = _ents().has_song_detail(
+        uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key, request)
+    )
     from ..rewards import RewardedAdError, create_rewarded_session
 
     try:
@@ -457,7 +484,9 @@ def get_detailed_report(
     if not validate_analysis_id(analysis_id):
         raise HTTPException(status_code=404, detail="analysis not found")
     uid = _require_analysis_owner(analysis_id, x_user_id, x_vagent_user_key)
-    if not _ents().has_song_detail(uid, analysis_id):
+    if not _ents().has_song_detail(
+        uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key)
+    ):
         raise HTTPException(status_code=402, detail="SONG_DETAIL_LOCKED")
     full = service.load_full_analysis(analysis_id)
     if full is None:
@@ -472,7 +501,9 @@ def get_detailed_report(
     ):
         report.pop(banned, None)
     try:
-        access = _ents().analysis_access(uid, analysis_id)
+        access = _ents().analysis_access(
+            uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key)
+        )
     except Exception:
         access = {
             "song_detail_unlocked": True,
@@ -505,7 +536,9 @@ def mock_unlock_song_detail(
     if service.get_job(analysis_id) is None and service.load_full_analysis(analysis_id) is None:
         raise HTTPException(status_code=404, detail="analysis not found")
     ents = _ents()
-    if not ents.has_song_detail(uid, analysis_id):
+    if not ents.has_song_detail(
+        uid, analysis_id, provider=_provider(x_user_id, x_vagent_user_key)
+    ):
         ents.grant_song_detail(
             uid,
             analysis_id,

@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   getAnalysis,
+  getAnalysisAccess,
   getProducts,
-  mockUnlockSongDetail,
   patchHistory,
   postVocalProgressInsight,
   postVocalSnapshot,
@@ -182,6 +182,26 @@ export default function Result() {
     };
   }, [id, data]);
 
+  /** Re-read entitlements from the server and fold them into the rendered access block. */
+  async function reloadAccess() {
+    if (!id) return;
+    const access = await getAnalysisAccess(id).catch(() => null);
+    if (!access) return;
+    setData((prev: any) =>
+      prev
+        ? {
+            ...prev,
+            access: {
+              ...(prev.access || {}),
+              song_detail_unlocked: Boolean(access.song_detail_unlocked),
+              diagnostic_unlocked: Boolean(access.diagnostic_unlocked),
+              diagnostic_session_id: access.diagnostic_session_id ?? null,
+            },
+          }
+        : prev,
+    );
+  }
+
   async function buySongDetail() {
     if (!id) return;
     if (!iapPrices.song_detail?.canPurchase) {
@@ -193,15 +213,25 @@ export default function Result() {
     try {
       const iap = await buyProduct({ productId: 'song_detail', resourceId: id });
       if (iap.ok) {
+        // Confirm with the server before navigating; a local flag is not a receipt.
+        const access = await getAnalysisAccess(id).catch(() => null);
+        if (!access?.song_detail_unlocked) {
+          setError('결제 상태를 확인하고 있어요. 다시 앱을 열어도 이어서 확인할 수 있어요.');
+          setBusyDetail(false);
+          return;
+        }
         saveSongDetailUnlock(id);
         nav(`/result/${id}/detail`);
         return;
       }
       if (iap.state === 'CANCELLED') {
+        // Nothing was granted; re-read so the CTA cannot drift into an unlocked look.
+        await reloadAccess();
         setBusyDetail(false);
         return;
       }
       if (!import.meta.env.PROD && (iap.message || '').includes('토스 앱')) {
+        const { mockUnlockSongDetail } = await import('../api/devMocks');
         await mockUnlockSongDetail(id);
         saveSongDetailUnlock(id);
         nav(`/result/${id}/detail`);
@@ -364,7 +394,11 @@ export default function Result() {
                   />
                 </div>
               ) : (
-                <div id="offer-song-detail" data-testid="offer-song-detail" className="premium-card">
+                <div
+                  id="offer-song-detail"
+                  data-testid="offer-song-detail"
+                  className="premium-card is-purchase"
+                >
                   <div className="premium-card-top">
                     <span className="premium-badge">이 노래 더 자세히</span>
                     {paymentsEnabled ? (
@@ -452,7 +486,7 @@ export default function Result() {
                         >
                           {busyDetail
                             ? '준비 중…'
-                            : `Toss로 바로 열기 · ${songPriceLabel}`}
+                            : `${songPriceLabel}에 상세 리포트 열기`}
                         </button>
                       ) : songPrice?.retryable ? (
                         <button
@@ -477,8 +511,7 @@ export default function Result() {
 
               {diagUnlocked && sessionId ? (
                 <PremiumProductCard
-                  badge="열람 가능"
-                  featured={needsDiagnostic}
+                  badge="이용 가능"
                   title="정밀 발성 진단"
                   description="추가 녹음으로 확인한 발성 특성을 더 정밀하게 볼 수 있어요."
                   bullets={diagBullets.length ? diagBullets : ['정밀 진단 결과 열람']}
@@ -487,8 +520,8 @@ export default function Result() {
                 />
               ) : (
                 <PremiumProductCard
+                  variant="purchase"
                   badge={needsDiagnostic ? '추가 확인 추천' : '추가 녹음으로 더 정밀하게'}
-                  featured={needsDiagnostic}
                   title="정밀 발성 진단"
                   description="짧은 추가 녹음으로 노래만으로 확인하기 어려웠던 발성 특성을 다시 측정하고, 내 고민에 맞춘 발성 피드백을 받아요."
                   priceLabel={paymentsEnabled ? diagPriceLabel : undefined}
@@ -505,9 +538,9 @@ export default function Result() {
                     !paymentsEnabled
                       ? undefined
                       : diagCanBuy
-                        ? `정밀 진단 시작 · ${diagPriceLabel}`
+                        ? `${diagPriceLabel}에 정밀 진단 시작하기`
                         : diagPriceLabel === PRICE_LOADING_LABEL
-                          ? '정밀 진단 시작'
+                          ? '정밀 진단 시작하기'
                           : PRICE_UNAVAILABLE_LABEL
                   }
                   to={paymentsEnabled && diagCanBuy ? `/premium?analysis=${id || ''}&product=${diagOfferKey}` : undefined}

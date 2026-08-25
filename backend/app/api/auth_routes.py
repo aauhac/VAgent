@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from ..db.auth_sessions import revoke_sessions_for_user_key
-from ..db.identity_linking import link_anonymous_user_to_toss_user
+from ..db.identity_links import link_identities
 from ..db.models import AuthSession
 from ..db.session import session_scope
 from ..db.users import get_or_create_user
@@ -68,12 +68,12 @@ def toss_login(body: TossLoginBody, request: Request) -> dict:
         raise http_payment_error("AUTH_FAILED", "로그인을 완료하지 못했어요.", 401)
     toss_user_key = str(user_key)
     # Client-asserted pre-login identifier. Never trusted as a userKey — it only names
-    # which anonymous rows may be adopted by the userKey Toss just verified above.
+    # which anonymous hash gets mapped to the userKey Toss just verified above.
     anonymous_subject = (
         request.headers.get(USER_KEY_HEADER) or request.headers.get(USER_ID_HEADER) or ""
     ).strip()
     vagent_token, payload = issue_session(toss_user_key=toss_user_key)
-    linked: dict[str, int] = {}
+    linked: dict[str, object] = {}
     try:
         with session_scope() as session:
             user = get_or_create_user(session, provider="TOSS", subject=toss_user_key)
@@ -86,8 +86,10 @@ def toss_login(body: TossLoginBody, request: Request) -> dict:
                     expires_at=datetime.fromtimestamp(payload.exp, tz=timezone.utc),
                 )
             )
-            # Same transaction, and only after a verified userKey exists.
-            linked = link_anonymous_user_to_toss_user(
+            # Same transaction, and only after a verified userKey exists. This records
+            # the hash ↔ userKey mapping; it does NOT move any rows. Ownership stays
+            # where it is and resolution unions the identity instead.
+            linked = link_identities(
                 session,
                 anonymous_subject=anonymous_subject,
                 toss_user_key=toss_user_key,
@@ -104,8 +106,8 @@ def toss_login(body: TossLoginBody, request: Request) -> dict:
         "token_type": "Bearer",
         "expires_in": SESSION_TTL_SECONDS,
         "provider": "TOSS",
-        # Count only — lets the client log whether adoption happened, never what moved.
-        "linked_analyses": int(linked.get("analyses", 0)),
+        # Boolean only — tells the client an identity link exists, never what it maps.
+        "identity_linked": bool(linked.get("linked")),
     }
 
 

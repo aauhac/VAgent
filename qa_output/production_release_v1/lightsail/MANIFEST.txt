@@ -200,6 +200,7 @@ backend/alembic/versions/20260818_0006_auth_revoked.py
 backend/alembic/versions/20260818_0007_completion_notifications.py
 backend/alembic/versions/20260819_0008_worker_claim.py
 backend/alembic/versions/20260820_0009_rewarded_ad_claims.py
+backend/alembic/versions/20260821_0010_user_identity_links.py
 backend/app/__init__.py
 backend/app/api/__init__.py
 backend/app/api/auth_routes.py
@@ -214,6 +215,7 @@ backend/app/db/auth_sessions.py
 backend/app/db/diagnostic_repo.py
 backend/app/db/entitlements_db.py
 backend/app/db/identity_linking.py
+backend/app/db/identity_links.py
 backend/app/db/models.py
 backend/app/db/purchases.py
 backend/app/db/session.py
@@ -338,6 +340,7 @@ miniapp/scripts/e2e_qa_v4_runtime_browser.mjs
 miniapp/scripts/e2e_safety_browser.mjs
 miniapp/src/api/base.ts
 miniapp/src/api/client.ts
+miniapp/src/api/devMocks.ts
 miniapp/src/App.tsx
 miniapp/src/components/progress/GoalEvidenceDots.tsx
 miniapp/src/components/progress/GoalProgressCard.tsx
@@ -445,6 +448,7 @@ scripts/audit_effort_truth_v6.py
 scripts/audit_public_analysis.py
 scripts/audit_report_labels.py
 scripts/audit_vocal_type_samples.py
+scripts/backfill_identity_links.py
 scripts/benchmark_demucs_lightsail.py
 scripts/breathiness_paired_audit.py
 scripts/browser_e2e_record.mjs
@@ -618,6 +622,9 @@ tests/notifications/test_completion_notification.py
 tests/notifications/test_notification_deep_link.py
 tests/notifications/test_notification_frontend_gate.py
 tests/payments/test_anonymous_toss_linking.py
+tests/payments/test_entitlement_reward_provider_exactness.py
+tests/payments/test_identity_provider_isolation.py
+tests/payments/test_legacy_identity_reconciliation.py
 tests/payments/test_payment_security.py
 tests/payments/test_payments_disabled.py
 tests/payments/test_postgres_live_gate.py
@@ -629,6 +636,8 @@ tests/product/fixtures/analysis_9dff_profile_slice.json
 tests/product/test_analysis_deletion.py
 tests/product/test_apps_in_toss_release.py
 tests/product/test_detail_precision_ux.py
+tests/product/test_diagnostic_entitlement_gate.py
+tests/product/test_diagnostic_purchase_flow_frontend.py
 tests/product/test_goal_progress_ux.py
 tests/product/test_goal_surface_simplification.py
 tests/product/test_history_association.py

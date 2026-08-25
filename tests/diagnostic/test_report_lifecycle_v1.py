@@ -9,7 +9,8 @@ from backend.app.diagnostic.service import DiagnosticSessionService
 
 
 class _Ent:
-    def has_session_unlock(self, user_id, session_id):
+    # `provider` names the identity namespace; this stub unlocks regardless.
+    def has_session_unlock(self, user_id, session_id, *, provider=None):
         return True
 
 

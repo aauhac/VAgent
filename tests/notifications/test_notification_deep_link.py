@@ -297,14 +297,31 @@ def test_anonymous_to_toss_migrated_analysis_still_resolves(deep_link_env):
     assert result.status_code == 200
 
 
-def test_anonymous_header_alone_cannot_reopen_a_migrated_analysis(deep_link_env):
-    """Section 5: after migration the analysis is TOSS-owned; the bare hash is not enough."""
+def test_anonymous_header_still_resolves_after_login(deep_link_env):
+    """Canonical identity: the hash owns the data, so a logged-out reopen still works.
+
+    Deliberate role split — the hash is the identity for reading one's own data; buying
+    still requires a verified Toss session (see tests/payments/test_anonymous_toss_linking).
+    This is why tapping the alert works even after the session token expires.
+    """
     client, _, runtime, _ = deep_link_env
     aid = _seed(runtime, subject=ANON_A)
     _opt_in(client, aid, ANON_A)
-    _login(client, ANON_A)  # migrates ownership to the verified user
+    _login(client, ANON_A)  # records the hash ↔ userKey link; moves nothing
 
-    assert _latest(client, anon=ANON_A)["found"] is False
+    body = _latest(client, anon=ANON_A)
+    assert body["found"] is True
+    assert body["analysis_id"] == aid
+
+
+def test_a_foreign_hash_still_resolves_nothing_after_login(deep_link_env):
+    """The canonical rule widens nothing for someone presenting a different hash."""
+    client, _, runtime, _ = deep_link_env
+    aid = _seed(runtime, subject=ANON_A)
+    _opt_in(client, aid, ANON_A)
+    _login(client, ANON_A)
+
+    assert _latest(client, anon=ANON_B)["found"] is False
 
 
 # --- cross-user isolation ------------------------------------------------------------

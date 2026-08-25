@@ -18,7 +18,8 @@ def test_use_iap_respects_payments_enabled():
 def test_result_hides_purchase_when_payments_disabled():
     src = (MINIAPP / "src" / "pages" / "Result.tsx").read_text(encoding="utf-8")
     assert "paymentsEnabled" in src
-    assert "Toss로 바로 열기" in src
+    # The purchase CTA exists but is rendered behind the payments gate.
+    assert "에 상세 리포트 열기" in src
     assert "paymentsEnabled ?" in src or "paymentsEnabled &&" in src
 
 

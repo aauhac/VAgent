@@ -80,7 +80,6 @@ export default function DiagnosticCTA({
       <section className="section" style={{ borderBottom: 0 }}>
         <PremiumProductCard
           badge="이용 가능"
-          featured
           title="정밀 발성 진단"
           description="이미 해제한 정밀 진단을 이어서 진행하거나 결과를 볼 수 있어요."
           bullets={displayBullets}
@@ -98,7 +97,8 @@ export default function DiagnosticCTA({
         {description}
       </p>
       <PremiumProductCard
-        featured
+        variant="purchase"
+        badge="추가 녹음으로 더 정밀하게"
         title="정밀 발성 진단"
         description={description}
         priceLabel={paymentsEnabled ? priceLabel : undefined}
@@ -107,8 +107,8 @@ export default function DiagnosticCTA({
           !paymentsEnabled
             ? undefined
             : canPurchase
-              ? `정밀 발성 진단 · ${priceLabel}`
-              : '정밀 발성 진단'
+              ? `${priceLabel}에 정밀 진단 시작하기`
+              : '정밀 진단 시작하기'
         }
         to={
           !paymentsEnabled

@@ -104,6 +104,55 @@ def validate_session_id(session_id: str) -> bool:
     return bool(session_id and _SESSION_ID_RE.match(session_id))
 
 
+
+
+def _provider_of(subject: str) -> str | None:
+    """Identity namespace a stored bare subject belongs to.
+
+    Diagnostic sessions persist the subject only, so the namespace is recovered by exact
+    (provider, subject) probing — never by an ambiguous cross-provider match. Returns None
+    when the row does not exist yet, which leaves the caller's own default in force.
+    """
+    try:
+        from ..db.analysis_repo import db_enabled
+        from ..db.session import session_scope
+        from ..db.users import get_user_by_identity
+
+        if not db_enabled():
+            return None
+        with session_scope() as db:
+            for namespace in ("TOSS", "TOSS_ANONYMOUS", "DEV"):
+                if get_user_by_identity(db, namespace, subject) is not None:
+                    return namespace
+    except Exception:
+        return None
+    return None
+
+
+def _same_owner(owner: str, user_id: str) -> bool:
+    """Compare canonical identities, not raw subject strings.
+
+    A session stores the subject that created it. That may be an anonymous hash or, for a
+    session created while logged in, a Toss userKey — so a plain string compare locks a
+    user out of their own session once their canonical identity resolves to the other one.
+    Falls back to the raw compare whenever the mapping is unavailable, so ownership can
+    only ever be confirmed here, never widened by an error.
+    """
+    if owner == user_id:
+        return True
+    try:
+        from ..db.analysis_repo import db_enabled
+        from ..db.identity_links import same_identity
+        from ..db.session import session_scope
+
+        if not db_enabled():
+            return False
+        with session_scope() as db:
+            return same_identity(db, owner, user_id)
+    except Exception:
+        return False
+
+
 class DiagnosticSessionService:
     def __init__(self, runtime_dir: Path) -> None:
         self.runtime_dir = runtime_dir
@@ -333,7 +382,7 @@ class DiagnosticSessionService:
         if not session:
             raise KeyError("session not found")
         owner = session.get("user_id") or "anon"
-        if owner != user_id:
+        if not _same_owner(owner, user_id):
             raise KeyError("session not found")
         from ..products import (
             PRODUCT_DIAGNOSTIC_FULL,
@@ -342,8 +391,9 @@ class DiagnosticSessionService:
         )
 
         src = session.get("source_analysis_id")
+        namespace = _provider_of(user_id)
         song_owned = bool(
-            src and self.entitlements.has_song_detail(user_id, src)
+            src and self.entitlements.has_song_detail(user_id, src, provider=namespace)
         )
         resolved = product_id or resolve_diagnostic_product(song_owned)
         if resolved not in (PRODUCT_DIAGNOSTIC_FULL, PRODUCT_DIAGNOSTIC_UPGRADE):
@@ -358,15 +408,17 @@ class DiagnosticSessionService:
             entitlement_id,
             product_id=resolved,
             meta={"source_analysis_id": src} if src else None,
+            provider=namespace,
         )
         # Diagnostic Full/Upgrade always includes Song Detail for source analysis
         if src:
-            if not self.entitlements.has_song_detail(user_id, src):
+            if not self.entitlements.has_song_detail(user_id, src, provider=namespace):
                 self.entitlements.grant_song_detail(
                     user_id,
                     src,
                     f"bundle_{entitlement_id}",
                     product_id=resolved,
+                    provider=namespace,
                 )
             if hasattr(self.entitlements, "link_diagnostic_session"):
                 self.entitlements.link_diagnostic_session(user_id, src, session_id)
@@ -1106,7 +1158,7 @@ class DiagnosticSessionService:
         if not session:
             raise KeyError("session not found")
         owner = session.get("user_id") or "anon"
-        if owner != user_id:
+        if not _same_owner(owner, user_id):
             raise KeyError("session not found")
         if not self._is_unlocked(session, user_id):
             return {
@@ -1158,7 +1210,7 @@ class DiagnosticSessionService:
         if not session:
             return None
         owner = session.get("user_id") or "anon"
-        if owner != user_id:
+        if not _same_owner(owner, user_id):
             return None
         pub = self.public_session(session)
         pub["unlocked"] = self._is_unlocked(session, user_id)
@@ -1183,17 +1235,20 @@ class DiagnosticSessionService:
         if not session:
             raise KeyError("session not found")
         owner = session.get("user_id") or "anon"
-        if owner != user_id:
+        if not _same_owner(owner, user_id):
             raise KeyError("session not found")
         return session
 
-    def _is_unlocked(self, session: dict[str, Any], user_id: str) -> bool:
+    def _is_unlocked(
+        self, session: dict[str, Any], user_id: str, provider: str | None = None
+    ) -> bool:
+        namespace = provider or _provider_of(user_id)
         sid = str(session.get("session_id") or "")
-        if sid and self.entitlements.has_session_unlock(user_id, sid):
+        if sid and self.entitlements.has_session_unlock(user_id, sid, provider=namespace):
             return True
         src = session.get("source_analysis_id")
         if src and self.entitlements.has_unlock(
-            user_id, "ANALYSIS", str(src), "DIAGNOSTIC"
+            user_id, "ANALYSIS", str(src), "DIAGNOSTIC", provider=namespace
         ):
             return True
         return False

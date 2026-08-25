@@ -388,6 +388,16 @@ a { color: inherit; }
   background: linear-gradient(180deg, #f5f8ff 0%, #ffffff 72%);
   border-color: #c7d7f5;
 }
+/* One purchase presentation for every locked paid product. Declared after .is-featured
+   so a stray highlight class can never repaint a purchase card. */
+.premium-card.is-purchase,
+.premium-card.is-purchase.is-featured {
+  background: #ffffff;
+  border: 1px solid #dce6f8;
+  border-radius: var(--radius-card);
+  padding: 20px 18px 18px;
+  box-shadow: var(--shadow-soft);
+}
 .premium-card + .premium-card {
   margin-top: 12px;
 }

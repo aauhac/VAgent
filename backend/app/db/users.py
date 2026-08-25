@@ -10,6 +10,25 @@ from sqlalchemy.orm import Session
 from .models import User
 
 
+def get_user_by_identity(session: Session, provider: str, subject: str) -> User | None:
+    """Exact `(external_provider, external_subject)` lookup — the users unique key.
+
+    The identity primitive for auth, payment and canonical resolution. The same subject
+    string can legitimately exist under several providers (a Toss userKey and an anonymous
+    hash are different namespaces), so anything that decides ownership must say which one
+    it means. Two rows are the same person only when a UserIdentityLink says so.
+    """
+    key = (subject or "").strip()
+    if not key:
+        return None
+    return session.scalar(
+        select(User).where(
+            User.external_provider == (provider or "").strip().upper(),
+            User.external_subject == key,
+        )
+    )
+
+
 def get_or_create_user(session: Session, *, provider: str, subject: str) -> User:
     provider = (provider or "DEV").strip().upper()
     subject = (subject or "").strip()

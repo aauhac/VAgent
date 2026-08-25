@@ -87,7 +87,20 @@ def _add_analysis(user_id, *, filename: str | None, vocal: str | None = None, de
     return aid
 
 
-def _add_session(user_id, *, source: str | None, status: str = "COMPLETED", persisted: str | None = None):
+def _add_session(
+    user_id,
+    *,
+    source: str | None,
+    status: str = "COMPLETED",
+    persisted: str | None = None,
+    paid: bool = True,
+):
+    """Seed a diagnostic session.
+
+    `paid` grants the ACTIVE DIAGNOSTIC entitlement that makes a session visible.
+    History hides unpaid sessions, so association behaviour is only observable on paid
+    ones; pass paid=False to exercise the hiding rule itself.
+    """
     from backend.app.db.session import session_scope
 
     sid = _aid()
@@ -108,6 +121,17 @@ def _add_session(user_id, *, source: str | None, status: str = "COMPLETED", pers
                 completed_at=now if status == "COMPLETED" else None,
             )
         )
+        if paid:
+            session.add(
+                Entitlement(
+                    user_id=user_id,
+                    resource_type="DIAGNOSTIC_SESSION",
+                    resource_id=sid,
+                    entitlement_type="DIAGNOSTIC",
+                    status="ACTIVE",
+                    granted_at=now,
+                )
+            )
     return sid
 
 

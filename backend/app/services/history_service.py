@@ -73,6 +73,7 @@ def list_user_history(
     limit: int = 20,
     offset: int = 0,
     runtime_dir: Path | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     """
     Production / DATABASE_URL: PostgreSQL only (no runtime history fallback).
@@ -81,12 +82,16 @@ def list_user_history(
     if database_url():
         from ..db.analysis_repo import list_analyses_for_subject
 
-        return list_analyses_for_subject(user_id, limit=limit, offset=offset)
+        return list_analyses_for_subject(
+            user_id, limit=limit, offset=offset, provider=provider
+        )
 
     if is_production():
         raise RuntimeError("production history requires DATABASE_URL")
 
-    return _list_from_runtime(user_id, limit=limit, offset=offset, runtime_dir=runtime_dir)
+    return _list_from_runtime(
+        user_id, limit=limit, offset=offset, runtime_dir=runtime_dir, provider=provider
+    )
 
 
 def _vocal_type_from_public(pub: dict[str, Any] | None) -> str | None:
@@ -123,6 +128,7 @@ def _list_from_runtime(
     limit: int = 20,
     offset: int = 0,
     runtime_dir: Path | None = None,
+    provider: str | None = None,
 ) -> dict[str, Any]:
     base = runtime_dir or get_runtime_dir()
     ents = get_entitlement_provider(base)
@@ -169,7 +175,14 @@ def _list_from_runtime(
             if src and str(src) in linked:
                 linked[str(src)].append(rec)
             else:
-                unlinked.append(rec)
+                # Unlinked sessions have no analysis to inherit an entitlement from, so
+                # they must carry their own or stay hidden.
+                try:
+                    paid = ents.has_session_unlock(user_id, sid, provider=provider)
+                except Exception:
+                    paid = False
+                if paid:
+                    unlinked.append(rec)
 
     for analysis_id in analysis_ids:
         child = base / analysis_id
@@ -189,7 +202,7 @@ def _list_from_runtime(
             error_code = "INTERRUPTED_RESTART"
 
         try:
-            access = ents.analysis_access(user_id, analysis_id)
+            access = ents.analysis_access(user_id, analysis_id, provider=provider)
         except Exception:
             access = {
                 "song_detail_unlocked": False,
@@ -197,7 +210,9 @@ def _list_from_runtime(
                 "diagnostic_session_id": None,
             }
         pointer = access.get("diagnostic_session_id")
-        sessions = list(linked.get(analysis_id) or [])
+        unlocked = bool(access.get("diagnostic_unlocked"))
+        # Unpaid sessions are workspaces, not products: hide them from history entirely.
+        sessions = list(linked.get(analysis_id) or []) if unlocked else []
         if pointer and not any(s.get("session_id") == pointer for s in sessions):
             sessions.append(
                 {
@@ -224,7 +239,7 @@ def _list_from_runtime(
                 "status": status,
                 "vocal_type": _vocal_type_from_public(pub),
                 "song_detail_unlocked": bool(access.get("song_detail_unlocked")),
-                "diagnostic_unlocked": bool(sessions) or bool(access.get("diagnostic_unlocked")),
+                "diagnostic_unlocked": unlocked,
                 "diagnostic_session_id": primary,
                 "diagnostic_sessions": sessions,
                 "error_code": error_code,

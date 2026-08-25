@@ -71,26 +71,56 @@ def _entitlement_for_product(product_id: str) -> tuple[str, str]:
 
 
 def resolve_toss_user(session: Session, toss_user_key: str) -> User:
+    """Verified userKey → the canonical user that owns this buyer's analyses.
+
+    Only reached after a verified Toss session, so this never turns a client-asserted
+    hash into purchase authority: the mapping is looked up BY the verified key. Without a
+    link (first login, or a user who never went through one) this is the plain
+    (TOSS, userKey) row it always was.
+    """
+    from ..db.identity_links import resolve_canonical_user
+
+    # Looked up on the TOSS side only — a hash that happens to equal this userKey
+    # string is a different namespace and must not resolve here.
+    linked = resolve_canonical_user(session, str(toss_user_key), PROVIDER_TOSS)
+    if linked is not None:
+        return linked
     return get_or_create_user(session, provider=PROVIDER_TOSS, subject=str(toss_user_key))
+
+
+def _identity_group(session: Session, user: User) -> list:
+    """User rows of the buyer's canonical identity.
+
+    Ownership is unchanged in strength — it is still checked, never skipped. The group
+    only accounts for the fact that one person's analyses can sit on the canonical hash
+    user and on the (TOSS, userKey) user the old migration created.
+    """
+    from ..db.identity_links import identity_group_ids
+
+    ids = identity_group_ids(session, str(user.external_subject), str(user.external_provider))
+    if user.id not in ids:
+        ids.append(user.id)
+    return ids
 
 
 def _analysis_owned(session: Session, user: User, analysis_id: str) -> Analysis:
     row = session.get(Analysis, analysis_id)
-    if row is None or row.deleted_at is not None or row.user_id != user.id:
+    if row is None or row.deleted_at is not None or row.user_id not in _identity_group(session, user):
         raise PaymentError("RESOURCE_NOT_FOUND", "분석 기록을 찾을 수 없어요.", 404)
     return row
 
 
 def _has_active(
     session: Session,
-    user_id: uuid.UUID,
+    user_ids: list[uuid.UUID] | uuid.UUID,
     resource_type: str,
     resource_id: str,
     entitlement_type: str,
 ) -> bool:
+    ids = user_ids if isinstance(user_ids, (list, tuple, set)) else [user_ids]
     row = session.scalar(
         select(Entitlement).where(
-            Entitlement.user_id == user_id,
+            Entitlement.user_id.in_(list(ids)),
             Entitlement.resource_type == resource_type,
             Entitlement.resource_id == resource_id,
             Entitlement.entitlement_type == entitlement_type,
@@ -117,7 +147,9 @@ def create_intent(
         if not analysis_id:
             raise PaymentError("RESOURCE_REQUIRED", "결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.", 400)
         _analysis_owned(session, user, analysis_id)
-        if _has_active(session, user.id, RESOURCE_ANALYSIS, analysis_id, ENTITLEMENT_SONG_DETAIL):
+        if _has_active(
+            session, _identity_group(session, user), RESOURCE_ANALYSIS, analysis_id, ENTITLEMENT_SONG_DETAIL
+        ):
             raise PaymentError("ALREADY_PURCHASED", "이미 이용할 수 있는 리포트예요.", 409)
         resource_type, resource_id = RESOURCE_ANALYSIS, analysis_id
     elif product_id in (PRODUCT_DIAGNOSTIC_FULL, PRODUCT_DIAGNOSTIC_UPGRADE):
@@ -125,7 +157,11 @@ def create_intent(
             raise PaymentError("RESOURCE_REQUIRED", "결제를 시작하지 못했어요. 잠시 후 다시 시도해주세요.", 400)
         _analysis_owned(session, user, analysis_id)
         detail_owned = _has_active(
-            session, user.id, RESOURCE_ANALYSIS, analysis_id, ENTITLEMENT_SONG_DETAIL
+            session,
+            _identity_group(session, user),
+            RESOURCE_ANALYSIS,
+            analysis_id,
+            ENTITLEMENT_SONG_DETAIL,
         )
         if product_id == PRODUCT_DIAGNOSTIC_UPGRADE and not detail_owned:
             raise PaymentError(

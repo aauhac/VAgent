@@ -21,7 +21,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..db.analysis_repo import get_user_by_subject
 from ..db.models import Entitlement, RewardedAdClaim, RewardedAdDailySlot
 from ..db.session import database_url, session_scope
 from ..db.users import get_or_create_user
@@ -59,11 +58,62 @@ def seoul_day(now: datetime | None = None) -> str:
 
 
 def principal_key(identity: ResolvedIdentity) -> str:
+    """Canonical principal — the key every WRITE (claim, daily slot) is stamped with.
+
+    Resolving to one identity is what keeps the daily cap enforceable: without it a user
+    would get a fresh allowance simply by logging in, because the unique slot insert is
+    per principal. Reads union `principal_keys()` so linking never erases past usage.
+    """
     provider = (identity.provider or "DEV").strip().upper()
     subject = (identity.subject or "").strip()
     if not subject:
         raise RewardedAdError("IDENTITY_REQUIRED", http_status=401)
+    try:
+        from ..db.analysis_repo import db_enabled
+        from ..db.identity_links import resolve_canonical_user
+        from ..db.session import session_scope
+
+        if db_enabled():
+            with session_scope() as db:
+                canonical = resolve_canonical_user(db, subject, provider)
+                if canonical is not None:
+                    return f"{canonical.external_provider}:{canonical.external_subject}"
+    except Exception:
+        pass
     return f"{provider}:{subject}"
+
+
+def principal_keys(identity: ResolvedIdentity) -> list[str]:
+    """Every principal this identity has ever written under, canonical first.
+
+    Includes the pre-login anonymous principal and the (TOSS, userKey) principal, so a
+    login cannot reset today's rewarded-ad usage.
+    """
+    keys = [principal_key(identity)]
+    subject = (identity.subject or "").strip()
+    raw = f"{(identity.provider or 'DEV').strip().upper()}:{subject}"
+    if raw not in keys:
+        keys.append(raw)
+    try:
+        from ..db.analysis_repo import db_enabled
+        from ..db.identity_links import identity_group_ids
+        from ..db.models import User
+        from ..db.session import session_scope
+
+        if db_enabled():
+            with session_scope() as db:
+                for uid in identity_group_ids(
+                    db, subject, (identity.provider or 'DEV').strip().upper()
+                ):
+                    row = db.get(User, uid)
+                    if row is None:
+                        continue
+                    key = f"{row.external_provider}:{row.external_subject}"
+                    if key not in keys:
+                        keys.append(key)
+    except Exception:
+        pass
+    return keys
 
 
 def _hash_token(token: str) -> str:
@@ -90,15 +140,16 @@ def _status_payload(
     }
 
 
-def _used_today_db(session: Session, pkey: str, day: str) -> int:
+def _used_today_db(session: Session, pkey: str, day: str, extra_keys: list[str] | None = None) -> int:
     from sqlalchemy import func
 
+    keys = [pkey] + [k for k in (extra_keys or []) if k != pkey]
     return int(
         session.scalar(
             select(func.count())
             .select_from(RewardedAdDailySlot)
             .where(
-                RewardedAdDailySlot.principal_key == pkey,
+                RewardedAdDailySlot.principal_key.in_(keys),
                 RewardedAdDailySlot.seoul_day == day,
             )
         )
@@ -117,10 +168,21 @@ def _already_claimed_analysis(session: Session, analysis_id: str) -> RewardedAdC
 
 
 def _resolve_user(session: Session, identity: ResolvedIdentity):
-    existing = get_user_by_subject(session, identity.subject)
+    """Exact (provider, subject) — a rewarded claim must attach to the caller's own row.
+
+    Prefers the canonical user when a verified login has linked this identity, so an
+    unlock earned before login is not stranded on a second row.
+    """
+    from ..db.identity_links import resolve_canonical_user
+    from ..db.users import get_user_by_identity
+
+    provider = (identity.provider or "DEV").strip().upper()
+    canonical = resolve_canonical_user(session, identity.subject, provider)
+    if canonical is not None:
+        return canonical
+    existing = get_user_by_identity(session, provider, identity.subject)
     if existing is not None:
         return existing
-    provider = (identity.provider or "DEV").strip().upper()
     return get_or_create_user(session, provider=provider, subject=identity.subject)
 
 
@@ -234,7 +296,7 @@ def rewarded_ad_status(
     day = seoul_day()
     if database_url():
         with session_scope() as session:
-            used = _used_today_db(session, pkey, day)
+            used = _used_today_db(session, pkey, day, principal_keys(identity))
             claimed = _already_claimed_analysis(session, analysis_id) is not None
             unlocked = already_unlocked or claimed
             return _status_payload(used_today=used, already_unlocked=unlocked)
@@ -352,14 +414,15 @@ def claim_rewarded_song_detail(
                 raise RewardedAdError("SESSION_NOT_FOUND", http_status=404)
             if claim.analysis_id != analysis_id:
                 raise RewardedAdError("SESSION_MISMATCH", http_status=400)
-            if claim.principal_key != pkey:
+            # A claim opened before login carries the pre-login principal.
+            if claim.principal_key not in principal_keys(identity):
                 raise RewardedAdError("SESSION_MISMATCH", http_status=403)
             if claim.reward_type != REWARD_TYPE_SONG_DETAIL:
                 raise RewardedAdError("INVALID_REWARD_TYPE", http_status=400)
 
             if claim.status == STATUS_CLAIMED:
                 logger.info("[REWARDED_AD] claim_duplicate")
-                used = _used_today_db(session, pkey, day)
+                used = _used_today_db(session, pkey, day, principal_keys(identity))
                 return {
                     **_status_payload(used_today=used, already_unlocked=True),
                     "unlocked": True,
@@ -418,7 +481,9 @@ def claim_rewarded_song_detail(
     rec = sessions.get(token_hash)
     if not isinstance(rec, dict):
         raise RewardedAdError("SESSION_NOT_FOUND", http_status=404)
-    if rec.get("analysis_id") != analysis_id or rec.get("principal_key") != pkey:
+    if rec.get("analysis_id") != analysis_id or rec.get("principal_key") not in principal_keys(
+        identity
+    ):
         raise RewardedAdError("SESSION_MISMATCH", http_status=403)
     if rec.get("status") == STATUS_CLAIMED:
         logger.info("[REWARDED_AD] claim_duplicate")
@@ -453,7 +518,9 @@ def claim_rewarded_song_detail(
         raise RewardedAdError("DAILY_LIMIT_REACHED", http_status=429)
 
     ents = get_entitlement_provider(base)
-    if not ents.has_song_detail(identity.subject, analysis_id):
+    if not ents.has_song_detail(
+        identity.subject, analysis_id, provider=(identity.provider or 'DEV').strip().upper()
+    ):
         ents.grant_song_detail(
             identity.subject,
             analysis_id,

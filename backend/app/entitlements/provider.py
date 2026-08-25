@@ -23,6 +23,13 @@ ENTITLEMENT_DIAGNOSTIC = "DIAGNOSTIC"
 
 
 class EntitlementProvider(ABC):
+    """`provider` names the identity namespace `user_id` belongs to.
+
+    users is unique on (external_provider, external_subject), so a bare subject can name
+    two different people. Every entitlement read and write states its provider so the row
+    is chosen exactly; cross-provider sharing happens only through a UserIdentityLink.
+    """
+
     @abstractmethod
     def has_unlock(
         self,
@@ -30,6 +37,8 @@ class EntitlementProvider(ABC):
         resource_type: str,
         resource_id: str,
         entitlement_type: str,
+        *,
+        provider: Optional[str] = None,
     ) -> bool: ...
 
     @abstractmethod
@@ -43,15 +52,29 @@ class EntitlementProvider(ABC):
         *,
         product_id: Optional[str] = None,
         meta: Optional[dict[str, Any]] = None,
+        provider: Optional[str] = None,
     ) -> dict[str, Any]: ...
 
     # Back-compat wrappers used by diagnostic service
-    def has_session_unlock(self, user_id: str, session_id: str) -> bool:
+    def has_session_unlock(
+        self, user_id: str, session_id: str, *, provider: Optional[str] = None
+    ) -> bool:
         return self.has_unlock(
-            user_id, RESOURCE_DIAGNOSTIC_SESSION, session_id, ENTITLEMENT_DIAGNOSTIC
+            user_id,
+            RESOURCE_DIAGNOSTIC_SESSION,
+            session_id,
+            ENTITLEMENT_DIAGNOSTIC,
+            provider=provider,
         )
 
-    def grant_session_unlock(self, user_id: str, session_id: str, entitlement_id: str) -> None:
+    def grant_session_unlock(
+        self,
+        user_id: str,
+        session_id: str,
+        entitlement_id: str,
+        *,
+        provider: Optional[str] = None,
+    ) -> None:
         self.grant_unlock(
             user_id,
             RESOURCE_DIAGNOSTIC_SESSION,
@@ -59,11 +82,18 @@ class EntitlementProvider(ABC):
             ENTITLEMENT_DIAGNOSTIC,
             entitlement_id,
             product_id="diagnostic_full",
+            provider=provider,
         )
 
-    def has_song_detail(self, user_id: str, analysis_id: str) -> bool:
+    def has_song_detail(
+        self, user_id: str, analysis_id: str, *, provider: Optional[str] = None
+    ) -> bool:
         return self.has_unlock(
-            user_id, RESOURCE_ANALYSIS, analysis_id, ENTITLEMENT_SONG_DETAIL
+            user_id,
+            RESOURCE_ANALYSIS,
+            analysis_id,
+            ENTITLEMENT_SONG_DETAIL,
+            provider=provider,
         )
 
     def grant_song_detail(
@@ -73,6 +103,7 @@ class EntitlementProvider(ABC):
         entitlement_id: str,
         *,
         product_id: str = "song_detail",
+        provider: Optional[str] = None,
     ) -> dict[str, Any]:
         return self.grant_unlock(
             user_id,
@@ -81,9 +112,12 @@ class EntitlementProvider(ABC):
             ENTITLEMENT_SONG_DETAIL,
             entitlement_id,
             product_id=product_id,
+            provider=provider,
         )
 
-    def analysis_access(self, user_id: str, analysis_id: str) -> dict[str, Any]:
+    def analysis_access(
+        self, user_id: str, analysis_id: str, *, provider: Optional[str] = None
+    ) -> dict[str, Any]:
         data = self._user_blob(user_id) if hasattr(self, "_user_blob") else {}
         analyses = (data.get("analyses") or {}) if isinstance(data, dict) else {}
         if not isinstance(analyses, dict):
@@ -95,24 +129,38 @@ class EntitlementProvider(ABC):
         if not isinstance(analyses_rec, dict):
             analyses_rec = {}
         linked = analyses_rec.get("diagnostic_session_id")
-        diagnostic_unlocked = False
-        if linked and linked in sessions and isinstance(sessions.get(linked), dict):
-            diagnostic_unlocked = True
-        # also scan sessions for source link stored in meta
-        if not diagnostic_unlocked:
-            for sid, rec in sessions.items():
-                if not isinstance(rec, dict):
-                    continue
-                meta = rec.get("meta") if isinstance(rec.get("meta"), dict) else {}
-                if meta.get("source_analysis_id") == analysis_id:
-                    diagnostic_unlocked = True
-                    linked = sid
-                    break
+        # Session existence is not payment. Only an ACTIVE DIAGNOSTIC entitlement unlocks,
+        # held either against this analysis or against one of its sessions.
+        candidates: list[str] = []
+        if linked and isinstance(sessions.get(linked), dict):
+            candidates.append(str(linked))
+        for sid, rec in sessions.items():
+            if not isinstance(rec, dict):
+                continue
+            meta = rec.get("meta") if isinstance(rec.get("meta"), dict) else {}
+            if meta.get("source_analysis_id") == analysis_id and str(sid) not in candidates:
+                candidates.append(str(sid))
+
+        analysis_entitled = self.has_unlock(
+            user_id, RESOURCE_ANALYSIS, analysis_id, ENTITLEMENT_DIAGNOSTIC, provider=provider
+        )
+        paid = [
+            sid for sid in candidates if self.has_session_unlock(user_id, sid, provider=provider)
+        ]
+        diagnostic_unlocked = analysis_entitled or bool(paid)
+        if paid:
+            linked = paid[0]
+        elif analysis_entitled and candidates:
+            linked = candidates[0]
+        else:
+            linked = None
         return {
             "analysis_id": analysis_id,
-            "song_detail_unlocked": self.has_song_detail(user_id, analysis_id),
+            "song_detail_unlocked": self.has_song_detail(
+                user_id, analysis_id, provider=provider
+            ),
             "diagnostic_unlocked": diagnostic_unlocked,
-            "diagnostic_session_id": linked if diagnostic_unlocked else analyses_rec.get("diagnostic_session_id"),
+            "diagnostic_session_id": linked if diagnostic_unlocked else None,
         }
 
 
@@ -161,6 +209,8 @@ class MockEntitlementProvider(EntitlementProvider):
         resource_type: str,
         resource_id: str,
         entitlement_type: str,
+        *,
+        provider: Optional[str] = None,
     ) -> bool:
         blob = self._user_blob(user_id)
         if resource_type == RESOURCE_DIAGNOSTIC_SESSION:
@@ -184,6 +234,7 @@ class MockEntitlementProvider(EntitlementProvider):
         *,
         product_id: Optional[str] = None,
         meta: Optional[dict[str, Any]] = None,
+        provider: Optional[str] = None,
     ) -> dict[str, Any]:
         blob = self._user_blob(user_id)
         now = datetime.now(timezone.utc).isoformat()
@@ -242,6 +293,8 @@ class TossIAPEntitlementProvider(EntitlementProvider):
         resource_type: str,
         resource_id: str,
         entitlement_type: str,
+        *,
+        provider: Optional[str] = None,
     ) -> bool:
         return self._fallback.has_unlock(
             user_id, resource_type, resource_id, entitlement_type
@@ -257,6 +310,7 @@ class TossIAPEntitlementProvider(EntitlementProvider):
         *,
         product_id: Optional[str] = None,
         meta: Optional[dict[str, Any]] = None,
+        provider: Optional[str] = None,
     ) -> dict[str, Any]:
         raise RuntimeError("UNVERIFIED_PAYMENT_PROVIDER")
 

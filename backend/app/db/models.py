@@ -303,6 +303,31 @@ class PaymentIntent(Base):
     user: Mapped[User] = relationship(back_populates="payment_intents")
 
 
+class UserIdentityLink(Base):
+    """Permanent anon-hash ↔ verified Toss userKey mapping.
+
+    Written only after Toss returns a verified userKey. Many hashes may point at one
+    userKey (N:1); every row for that userKey shares one `canonical_user_id`, which is the
+    hash user that was linked first.
+
+    `uq_identity_link_anon` plus a never-repoint rule is the security boundary: a second
+    Toss account signing in on a device that already has a link cannot take over the first
+    account's canonical identity.
+    """
+
+    __tablename__ = "user_identity_links"
+    __table_args__ = (UniqueConstraint("anon_subject", name="uq_identity_link_anon"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    anon_subject: Mapped[str] = mapped_column(String(255), nullable=False)
+    toss_user_key: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    canonical_user_id: Mapped[uuid.UUID] = mapped_column(
+        UUIDType, ForeignKey("users.id"), nullable=False, index=True
+    )
+    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
 class AuthSession(Base):
     """VAgent session after server-side Toss token exchange. Never stores Toss tokens."""
 
