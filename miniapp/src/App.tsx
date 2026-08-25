@@ -16,6 +16,7 @@ import DiagnosticTask from './pages/DiagnosticTask';
 import PremiumReport from './pages/PremiumReport';
 import DiagnosticResume from './pages/DiagnosticResume';
 import ProgressInsight from './pages/ProgressInsight';
+import NotificationResultRedirect, { NOTIFICATION_RESULT_PATH } from './pages/NotificationResultRedirect';
 import ServiceInfo from './pages/ServiceInfo';
 import { LegalPrivacy, LegalPrivacyConsent, LegalTerms } from './pages/Legal';
 import { SESSION_CLEARED_EVENT } from './lib/clientSession';
@@ -53,6 +54,9 @@ function MiniappRuntime() {
       void resumeTossSession().catch(() => undefined);
     };
     const onCleared = () => {
+      // The notification deep link resolves its own fallback (/history). An expired
+      // session must not yank it to Home mid-redirect; every other screen still does.
+      if (window.location.pathname === NOTIFICATION_RESULT_PATH) return;
       nav('/', { replace: true });
     };
     document.addEventListener('visibilitychange', onVisible);
@@ -78,6 +82,7 @@ export default function App() {
         <Route path="/quality" element={<QualityResult />} />
         <Route path="/analyzing/:id" element={<Analyzing />} />
         <Route path="/result/:id" element={<Result />} />
+        <Route path={NOTIFICATION_RESULT_PATH} element={<NotificationResultRedirect />} />
         <Route path="/result/:id/detail" element={<SongDetailReport />} />
         <Route path="/progress" element={<ProgressInsight />} />
         <Route path="/history" element={<History />} />

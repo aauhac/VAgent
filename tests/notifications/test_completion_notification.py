@@ -22,7 +22,13 @@ from backend.app.notifications.completion import (
     opt_in_completion_notification,
     send_if_requested,
 )
-from backend.app.payments.toss_clients import TossApiError, set_login_client, set_messenger_client
+from backend.app.notifications.startup import validate_notification_production_config
+from backend.app.payments.toss_clients import (
+    SEND_MESSAGE_PATH,
+    TossApiError,
+    set_login_client,
+    set_messenger_client,
+)
 from backend.app.payments.session_tokens import issue_session
 
 
@@ -45,11 +51,22 @@ class FakeMessengerClient:
         self.result_type = result_type
         self.error = error
 
-    def send_message(self, *, template_set_code: str, headers: dict[str, str]) -> str:
+    def send_message(
+        self,
+        *,
+        template_set_code: str,
+        headers: dict[str, str],
+    ) -> str:
         anon = bool(headers.get("x-anon-key"))
-        user = bool(headers.get("x-user-key"))
+        user = bool(headers.get("x-toss-user-key"))
         assert anon != user
-        self.calls.append({"template_set_code": template_set_code, "headers": dict(headers)})
+        assert not headers.get("x-user-key")
+        self.calls.append(
+            {
+                "template_set_code": template_set_code,
+                "headers": dict(headers),
+            }
+        )
         if self.error:
             raise self.error
         if self.result_type != "SUCCESS":
@@ -122,7 +139,8 @@ def test_messenger_headers_are_exclusive():
     anon = messenger_recipient_headers(KIND_ANON, "anon-1")
     user = messenger_recipient_headers(KIND_TOSS_USER, "user-1")
     assert list(anon) == ["x-anon-key"]
-    assert list(user) == ["x-user-key"]
+    assert list(user) == ["x-toss-user-key"]
+    assert "x-user-key" not in user
     with pytest.raises(ValueError):
         messenger_recipient_headers("BOTH", "x")
 
@@ -157,12 +175,16 @@ def test_anonymous_recipient_uses_x_anon_key(notify_env):
     )
     assert r.status_code == 200
     assert len(fake.calls) == 1
-    assert "x-anon-key" in fake.calls[0]["headers"]
-    assert "x-user-key" not in fake.calls[0]["headers"]
-    assert fake.calls[0]["headers"]["x-anon-key"] == "anon-owner"
+    call = fake.calls[0]
+    assert "x-anon-key" in call["headers"]
+    assert "x-toss-user-key" not in call["headers"]
+    assert "x-user-key" not in call["headers"]
+    assert call["headers"]["x-anon-key"] == "anon-owner"
+    assert call["template_set_code"] == "approved-template"
+    assert "deployment_id" not in call
 
 
-def test_verified_toss_user_uses_x_user_key(notify_env):
+def test_verified_toss_user_uses_x_toss_user_key(notify_env):
     client, fake, _, runtime = notify_env
     login = client.post(
         "/v1/auth/toss/login",
@@ -178,8 +200,10 @@ def test_verified_toss_user_uses_x_user_key(notify_env):
     assert r.status_code == 200, r.text
     assert r.json()["recipient_kind"] == KIND_TOSS_USER
     assert len(fake.calls) == 1
-    assert fake.calls[0]["headers"].get("x-user-key") == "443731104"
-    assert "x-anon-key" not in fake.calls[0]["headers"]
+    call = fake.calls[0]
+    assert call["headers"].get("x-toss-user-key") == "443731104"
+    assert "x-anon-key" not in call["headers"]
+    assert "x-user-key" not in call["headers"]
 
 
 def test_messenger_client_rejects_both_headers():
@@ -188,9 +212,49 @@ def test_messenger_client_rejects_both_headers():
     with pytest.raises(TossApiError) as exc:
         TossMessengerClient().send_message(
             template_set_code="t",
-            headers={"x-anon-key": "a", "x-user-key": "u"},
+            headers={"x-anon-key": "a", "x-toss-user-key": "u"},
         )
     assert exc.value.code == "INVALID_RECIPIENT"
+
+
+def test_messenger_client_send_body_includes_required_fields(monkeypatch):
+    from backend.app.payments.toss_clients import TossMessengerClient
+
+    captured: dict = {}
+
+    class FakeResponse:
+        content = b'{"resultType":"SUCCESS"}'
+
+        def json(self):
+            return {"resultType": "SUCCESS"}
+
+    class FakeHttpClient:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def post(self, path, json=None, headers=None):
+            captured["path"] = path
+            captured["json"] = json
+            captured["headers"] = headers
+            return FakeResponse()
+
+    monkeypatch.setattr("backend.app.payments.toss_clients._client", lambda: FakeHttpClient())
+    monkeypatch.setattr("backend.app.payments.toss_clients.toss_mtls_cert_path", lambda: "cert")
+    monkeypatch.setattr("backend.app.payments.toss_clients.toss_mtls_key_path", lambda: "key")
+
+    TossMessengerClient().send_message(
+        template_set_code="set-code",
+        headers={"x-anon-key": "anon-hash"},
+    )
+    assert captured["path"] == SEND_MESSAGE_PATH
+    body = captured["json"]
+    assert body["templateSetCode"] == "set-code"
+    assert body["context"] == {}
+    # deploymentId belongs to send-test-message, never to live send-message.
+    assert "deploymentId" not in body
 
 
 def test_completed_before_opt_in_sends_once(notify_env):
@@ -256,6 +320,29 @@ def test_template_missing_skips_send(notify_env, monkeypatch):
     assert rec["status"] == "REQUESTED"
 
 
+def test_template_set_code_present_success_marks_sent(notify_env):
+    client, fake, _, runtime = notify_env
+    aid = _seed(runtime, subject="anon-owner", status="completed")
+    client.post(
+        f"/v1/analyses/{aid}/completion-notification",
+        headers={"X-VAgent-User-Key": "anon-owner"},
+    )
+    assert len(fake.calls) == 1
+    rec = load_record(aid, runtime)
+    assert rec["status"] == "SENT"
+
+
+def test_notification_production_readiness_validator(monkeypatch):
+    monkeypatch.setenv("TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE", "set")
+    # deploymentId is a send-test-message parameter: absence must not degrade readiness.
+    monkeypatch.delenv("TOSS_ANALYSIS_COMPLETE_DEPLOYMENT_ID", raising=False)
+    assert validate_notification_production_config() == []
+    monkeypatch.delenv("TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE", raising=False)
+    blockers = validate_notification_production_config()
+    assert "NOTIFICATION_TEMPLATE_SET_MISSING" in blockers
+    assert not any("DEPLOYMENT" in b for b in blockers)
+
+
 def test_opt_in_persists_after_reload(notify_env):
     client, _, _, runtime = notify_env
     aid = _seed(runtime, subject="anon-owner", status="queued")
@@ -265,7 +352,6 @@ def test_opt_in_persists_after_reload(notify_env):
     )
     rec = load_record(aid, runtime)
     assert rec["status"] == "REQUESTED"
-    # Persistence is the sqlite row; loading again without the in-memory file is enough.
     rec2 = load_record(aid, runtime)
     assert rec2["requested_at"]
     assert rec2["recipient_kind"] == KIND_ANON

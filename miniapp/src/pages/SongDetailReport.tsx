@@ -30,7 +30,7 @@ export default function SongDetailReport() {
     diagnostic_session_id?: string | null;
   }>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const { prices, reload: reloadPrices } = useIapProductPrices(catalog);
+  const { prices, reload: reloadPrices, paymentsEnabled } = useIapProductPrices(catalog);
   const diagPrice = prices[diagProduct];
 
   useEffect(() => {
@@ -206,6 +206,7 @@ export default function SongDetailReport() {
         priceRetryable={!!diagPrice?.retryable}
         canPurchase={!!diagPrice?.canPurchase}
         onRetryPrice={reloadPrices}
+        paymentsEnabled={paymentsEnabled}
         unlocked={!!accessState.diagnostic_unlocked}
         sessionId={accessState.diagnostic_session_id}
         diagnosticOffer={

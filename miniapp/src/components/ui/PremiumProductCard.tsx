@@ -7,7 +7,7 @@ type Props = {
   description: string;
   priceLabel?: string;
   bullets?: string[];
-  ctaLabel: string;
+  ctaLabel?: string;
   to?: string;
   onClick?: () => void;
   busy?: boolean;
@@ -36,7 +36,8 @@ export default function PremiumProductCard({
   onRetry,
 }: Props) {
   const showRetry = Boolean(disabled && retryable && onRetry);
-  const cta = showRetry ? (
+  const showCta = Boolean(ctaLabel) || showRetry;
+  const cta = !showCta ? null : showRetry ? (
     <button type="button" className="btn" style={{ width: '100%' }} onClick={onRetry}>
       가격 다시 확인하기
     </button>
@@ -71,7 +72,7 @@ export default function PremiumProductCard({
           ))}
         </ul>
       ) : null}
-      <div className="premium-cta">{cta}</div>
+      {cta ? <div className="premium-cta">{cta}</div> : null}
       {footer ? <div className="premium-footer">{footer}</div> : null}
     </article>
   );

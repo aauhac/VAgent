@@ -14,6 +14,13 @@ WINDOW_SECONDS = 60
 MAX_HITS = 30
 
 
+def reset() -> None:
+    """Drop all buckets. Test seam: the window is process-global, so a suite that logs
+    in many times would otherwise spend another suite's budget."""
+    with _LOCK:
+        _HITS.clear()
+
+
 def allow(key: str, *, max_hits: int = MAX_HITS, window: int = WINDOW_SECONDS) -> bool:
     now = time.time()
     with _LOCK:

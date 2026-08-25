@@ -131,9 +131,14 @@ SEND_MESSAGE_PATH = "/api-partner/v1/apps-in-toss/messenger/send-message"
 
 
 class TossMessengerClient:
-    def send_message(self, *, template_set_code: str, headers: dict[str, str]) -> str:
+    def send_message(
+        self,
+        *,
+        template_set_code: str,
+        headers: dict[str, str],
+    ) -> str:
         anon = (headers.get("x-anon-key") or "").strip()
-        user = (headers.get("x-user-key") or "").strip()
+        user = (headers.get("x-toss-user-key") or "").strip()
         if bool(anon) == bool(user):
             raise TossApiError("INVALID_RECIPIENT", retryable=False)
         if anon and user:
@@ -141,7 +146,10 @@ class TossMessengerClient:
         with _client() as client:
             response = client.post(
                 SEND_MESSAGE_PATH,
-                json={"templateSetCode": template_set_code, "context": {}},
+                json={
+                    "templateSetCode": template_set_code,
+                    "context": {},
+                },
                 headers=headers,
             )
         payload = response.json() if response.content else {}

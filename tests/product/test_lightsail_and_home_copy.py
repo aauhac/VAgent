@@ -170,3 +170,20 @@ def test_env_production_example_uses_repo_names():
         "RUNTIME_DIR",
     ):
         assert name in env, name
+
+
+def test_compose_pins_separation_build_arg():
+    """Production separation=ok came from a manual `--build-arg INSTALL_SEPARATION=1`.
+
+    Without this pin the next deploy.sh rebuild silently drops torch/demucs and /ready
+    reports separation unavailable again.
+    """
+    compose = _read("deploy/lightsail/docker-compose.production.yml")
+    backend = compose[compose.index("  backend:") :]
+    backend = backend[: backend.index("\n  worker:")] if "\n  worker:" in backend else backend
+    assert "args:" in backend
+    assert 'INSTALL_SEPARATION: "1"' in backend
+
+    dockerfile = _read("deploy/lightsail/Dockerfile.backend")
+    assert "ARG INSTALL_SEPARATION" in dockerfile
+    assert 'if [ "$INSTALL_SEPARATION" = "1" ]' in dockerfile

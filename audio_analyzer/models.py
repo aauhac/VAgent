@@ -206,6 +206,8 @@ def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]
     if show_raw is None:
         show_raw = balance_class not in ("CONFLICTED", "UNRESOLVED", "UNKNOWN")
     show_ratio = bool(show_raw) and hc.get("available") is not False and balance_class != "CONFLICTED"
+    from audio_analyzer.coach_profile.public_presentation import apply_public_vocal_type_copy
+
     display_name = (
         (style.get("display_name") if isinstance(style, dict) else None)
         or pub.get("display_name")
@@ -214,7 +216,7 @@ def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]
         (style.get("description") if isinstance(style, dict) else None)
         or pub.get("description")
     )
-    return {
+    teaser = {
         "available": bool(pub.get("available") or (isinstance(style, dict) and style.get("available"))),
         "display_name": display_name,
         "description": description,
@@ -246,6 +248,7 @@ def _free_vocal_type_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]
         or (pub.get("key_traits") or [])[:2],
         "vocal_style_profile": style if isinstance(style, dict) else None,
     }
+    return apply_public_vocal_type_copy(teaser)
 
 
 def _free_main_finding_teaser(vf_profile: dict[str, Any] | None) -> dict[str, Any]:

@@ -40,7 +40,7 @@ export default function PremiumUnlock() {
   const [offerLoading, setOfferLoading] = useState(!!analysisId);
   const [resolving, setResolving] = useState(!!analysisId || !!existingSession);
   const [catalog, setCatalog] = useState<any>(null);
-  const { prices, reload: reloadPrices } = useIapProductPrices(catalog);
+  const { prices, reload: reloadPrices, paymentsEnabled } = useIapProductPrices(catalog);
   const price = prices[productId];
 
   useEffect(() => {
@@ -220,7 +220,7 @@ export default function PremiumUnlock() {
   ];
 
   const displayAmount = price?.label || PRICE_LOADING_LABEL;
-  const canBuy = !!price?.canPurchase;
+  const canBuy = paymentsEnabled && !!price?.canPurchase;
 
   return (
     <main>
@@ -251,22 +251,24 @@ export default function PremiumUnlock() {
             ? '표준 추가 녹음으로 발성 특성을 정밀하게 확인하고, 고민에 맞춘 발성 피드백을 받아요.'
             : '선택한 고민과 현재 분석 결과에 맞춰 필요한 녹음만 진행합니다.'
         }
-        priceLabel={displayAmount}
+        priceLabel={paymentsEnabled ? displayAmount : undefined}
         bullets={productBullets.slice(0, 4)}
         ctaLabel={
-          busy
-            ? '준비 중…'
-            : canBuy
-              ? `정밀 진단 시작 · ${displayAmount}`
-              : displayAmount === PRICE_LOADING_LABEL
-                ? '정밀 진단 시작'
-                : PRICE_UNAVAILABLE_LABEL
+          !paymentsEnabled
+            ? undefined
+            : busy
+              ? '준비 중…'
+              : canBuy
+                ? `정밀 진단 시작 · ${displayAmount}`
+                : displayAmount === PRICE_LOADING_LABEL
+                  ? '정밀 진단 시작'
+                  : PRICE_UNAVAILABLE_LABEL
         }
-        onClick={start}
+        onClick={paymentsEnabled ? start : undefined}
         busy={busy}
-        disabled={!canBuy}
-        retryable={!!price?.retryable}
-        onRetry={reloadPrices}
+        disabled={!paymentsEnabled || !canBuy}
+        retryable={paymentsEnabled && !!price?.retryable}
+        onRetry={paymentsEnabled ? reloadPrices : undefined}
         footer={
           showDebug && !import.meta.env.PROD
             ? '개발 환경 Mock 결제 · 실제 과금이 아닙니다.'

@@ -160,6 +160,35 @@ export async function getProducts(analysisId?: string) {
   return res.json();
 }
 
+export type LatestNotificationResult = {
+  found: boolean;
+  analysis_id?: string | null;
+  sent_at?: string | null;
+};
+
+/**
+ * Which analysis the completion alert the user just tapped was about.
+ * The Smart Message campaign URL is fixed and carries no id, so the deep-link landing
+ * asks the server. "Nothing to open" is a normal answer, not an error.
+ *
+ * Deliberately does NOT run throwIfAuthLost: an expired session must degrade to the
+ * anonymous answer, not bounce the deep link to Home mid-redirect.
+ */
+export async function getLatestNotificationResult(): Promise<LatestNotificationResult> {
+  const res = await fetch(apiUrl('/v1/notifications/latest-result'), {
+    headers: await headers(),
+  });
+  if (!res.ok) return { found: false, analysis_id: null, sent_at: null };
+  const data = await res.json().catch(() => null);
+  const id = data?.analysis_id;
+  const analysisId = typeof id === 'string' && id ? id : null;
+  return {
+    found: Boolean(data?.found) && analysisId != null,
+    analysis_id: analysisId,
+    sent_at: typeof data?.sent_at === 'string' ? data.sent_at : null,
+  };
+}
+
 export async function getAnalysisAccess(analysisId: string) {
   const res = await fetch(apiUrl(`/v1/analyses/${analysisId}/access`), {
     headers: await headers(),
@@ -227,9 +256,19 @@ export async function getAuthMe(): Promise<boolean> {
 }
 
 export async function exchangeTossLogin(authorizationCode: string, referrer: string) {
+  // Carry the pre-login anonymous identity so the backend can adopt this device's free
+  // analyses onto the userKey it verifies. The header is an identifier, never auth proof.
+  // Best-effort: a device with no resolvable anonymous key must still be able to log in,
+  // it simply has nothing to adopt.
+  let loginHeaders: HeadersInit = { 'Content-Type': 'application/json' };
+  try {
+    loginHeaders = await ensureIdentityHeaders({ 'Content-Type': 'application/json' });
+  } catch {
+    /* identity unavailable — proceed without adoption */
+  }
   const res = await fetch(apiUrl(`/v1/auth/toss/login`), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: loginHeaders,
     body: JSON.stringify({
       authorization_code: authorizationCode,
       referrer,

@@ -48,7 +48,7 @@ export default function Result() {
   const [busyDetail, setBusyDetail] = useState(false);
   const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
   const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
-  const { prices: iapPrices, reload: reloadIapPrices } = useIapProductPrices(products);
+  const { prices: iapPrices, reload: reloadIapPrices, paymentsEnabled } = useIapProductPrices(products);
   const songUnlockedEarly = !!data?.access?.song_detail_unlocked;
   const rewarded = useRewardedDetailUnlock(id, songUnlockedEarly);
 
@@ -282,8 +282,8 @@ export default function Result() {
   const diagPrice = iapPrices[diagOfferKey];
   const songPriceLabel = songPrice?.label || PRICE_LOADING_LABEL;
   const diagPriceLabel = diagPrice?.label || PRICE_LOADING_LABEL;
-  const songCanBuy = !!songPrice?.canPurchase;
-  const diagCanBuy = !!diagPrice?.canPurchase;
+  const songCanBuy = paymentsEnabled && !!songPrice?.canPurchase;
+  const diagCanBuy = paymentsEnabled && !!diagPrice?.canPurchase;
   const songUnlocked = !!access.song_detail_unlocked;
   const diagUnlocked = !!access.diagnostic_unlocked;
   const sessionId = access.diagnostic_session_id || null;
@@ -367,7 +367,9 @@ export default function Result() {
                 <div id="offer-song-detail" data-testid="offer-song-detail" className="premium-card">
                   <div className="premium-card-top">
                     <span className="premium-badge">이 노래 더 자세히</span>
-                    <span className="premium-price">{songPriceLabel}</span>
+                    {paymentsEnabled ? (
+                      <span className="premium-price">{songPriceLabel}</span>
+                    ) : null}
                   </div>
                   <h3 className="premium-title">상세 리포트</h3>
                   <p className="premium-desc">
@@ -432,39 +434,43 @@ export default function Result() {
                             다시 시도
                           </button>
                         ) : null}
-                        <p className="muted" style={{ margin: '14px 0 8px', fontSize: '0.85rem', textAlign: 'center' }}>
-                          또는
-                        </p>
+                        {paymentsEnabled ? (
+                          <p className="muted" style={{ margin: '14px 0 8px', fontSize: '0.85rem', textAlign: 'center' }}>
+                            또는
+                          </p>
+                        ) : null}
                       </>
                     ) : null}
-                    {songCanBuy ? (
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{ width: '100%' }}
-                        disabled={busyDetail}
-                        onClick={buySongDetail}
-                      >
-                        {busyDetail
-                          ? '준비 중…'
-                          : `Toss로 바로 열기 · ${songPriceLabel}`}
-                      </button>
-                    ) : songPrice?.retryable ? (
-                      <button
-                        type="button"
-                        className="btn secondary"
-                        style={{ width: '100%' }}
-                        onClick={reloadIapPrices}
-                      >
-                        가격 다시 확인하기
-                      </button>
-                    ) : (
-                      <button type="button" className="btn secondary" style={{ width: '100%' }} disabled>
-                        {songPriceLabel === PRICE_LOADING_LABEL
-                          ? '가격 확인 중…'
-                          : PRICE_UNAVAILABLE_LABEL}
-                      </button>
-                    )}
+                    {paymentsEnabled ? (
+                      songCanBuy ? (
+                        <button
+                          type="button"
+                          className="btn secondary"
+                          style={{ width: '100%' }}
+                          disabled={busyDetail}
+                          onClick={buySongDetail}
+                        >
+                          {busyDetail
+                            ? '준비 중…'
+                            : `Toss로 바로 열기 · ${songPriceLabel}`}
+                        </button>
+                      ) : songPrice?.retryable ? (
+                        <button
+                          type="button"
+                          className="btn secondary"
+                          style={{ width: '100%' }}
+                          onClick={reloadIapPrices}
+                        >
+                          가격 다시 확인하기
+                        </button>
+                      ) : (
+                        <button type="button" className="btn secondary" style={{ width: '100%' }} disabled>
+                          {songPriceLabel === PRICE_LOADING_LABEL
+                            ? '가격 확인 중…'
+                            : PRICE_UNAVAILABLE_LABEL}
+                        </button>
+                      )
+                    ) : null}
                   </div>
                 </div>
               )}
@@ -485,7 +491,7 @@ export default function Result() {
                   featured={needsDiagnostic}
                   title="정밀 발성 진단"
                   description="짧은 추가 녹음으로 노래만으로 확인하기 어려웠던 발성 특성을 다시 측정하고, 내 고민에 맞춘 발성 피드백을 받아요."
-                  priceLabel={diagPriceLabel}
+                  priceLabel={paymentsEnabled ? diagPriceLabel : undefined}
                   bullets={
                     diagBullets.length
                       ? diagBullets
@@ -496,16 +502,18 @@ export default function Result() {
                         ]
                   }
                   ctaLabel={
-                    diagCanBuy
-                      ? `정밀 진단 시작 · ${diagPriceLabel}`
-                      : diagPriceLabel === PRICE_LOADING_LABEL
-                        ? '정밀 진단 시작'
-                        : PRICE_UNAVAILABLE_LABEL
+                    !paymentsEnabled
+                      ? undefined
+                      : diagCanBuy
+                        ? `정밀 진단 시작 · ${diagPriceLabel}`
+                        : diagPriceLabel === PRICE_LOADING_LABEL
+                          ? '정밀 진단 시작'
+                          : PRICE_UNAVAILABLE_LABEL
                   }
-                  to={diagCanBuy ? `/premium?analysis=${id || ''}&product=${diagOfferKey}` : undefined}
-                  disabled={!diagCanBuy}
-                  retryable={!!diagPrice?.retryable}
-                  onRetry={reloadIapPrices}
+                  to={paymentsEnabled && diagCanBuy ? `/premium?analysis=${id || ''}&product=${diagOfferKey}` : undefined}
+                  disabled={!paymentsEnabled || !diagCanBuy}
+                  retryable={paymentsEnabled && !!diagPrice?.retryable}
+                  onRetry={paymentsEnabled ? reloadIapPrices : undefined}
                   footer={diagDuration || undefined}
                 />
               )}

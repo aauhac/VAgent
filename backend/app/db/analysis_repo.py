@@ -112,12 +112,19 @@ def _persisted_source_id(row: DiagnosticSession) -> str | None:
 def _vocal_type_label(summary: dict[str, Any] | None) -> str | None:
     if not isinstance(summary, dict):
         return None
-    raw = summary.get("vocal_type") or summary.get("vocal_type_teaser")
+    from audio_analyzer.coach_profile.public_presentation import public_vocal_type_label
+
+    raw = summary.get("vocal_type") or summary.get("vocal_type_teaser") or summary.get("vocal_type_profile")
     if isinstance(raw, dict):
-        name = raw.get("display_name")
-        return str(name).strip() if name else None
+        return public_vocal_type_label(
+            resolution_state=raw.get("resolution_state") or summary.get("vocal_type_resolution_state"),
+            display_name=raw.get("display_name"),
+            base_type=raw.get("base_type"),
+            type_id=raw.get("type_id"),
+            available=raw.get("available"),
+        )
     if isinstance(raw, str) and raw.strip():
-        return raw.strip()
+        return public_vocal_type_label(display_name=raw.strip())
     return None
 
 

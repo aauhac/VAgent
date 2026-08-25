@@ -7,6 +7,7 @@
 export type IapCatalogState =
   | 'LOADING'
   | 'READY'
+  | 'DISABLED'
   | 'SDK_UNAVAILABLE'
   | 'UNSUPPORTED_APP'
   | 'EMPTY'
@@ -241,6 +242,19 @@ export function resolveProductPrice(
 
   if (snapshot.state === 'LOADING') {
     return unavailable('LOADING', false);
+  }
+  if (snapshot.state === 'DISABLED') {
+    return {
+      productId,
+      configuredSku,
+      state: 'DISABLED',
+      displayAmount: null,
+      label: '',
+      canPurchase: false,
+      retryable: false,
+      matched: false,
+      hasDisplayAmount: false,
+    };
   }
   if (snapshot.state === 'SDK_UNAVAILABLE') {
     if (mockAmount) {

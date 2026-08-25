@@ -26,6 +26,7 @@ audio_analyzer/coach_profile/engine.py
 audio_analyzer/coach_profile/head_chest.py
 audio_analyzer/coach_profile/modifiers.py
 audio_analyzer/coach_profile/naming.py
+audio_analyzer/coach_profile/public_presentation.py
 audio_analyzer/coach_profile/register_strategy.py
 audio_analyzer/coach_profile/report.py
 audio_analyzer/coaching/__init__.py
@@ -197,6 +198,8 @@ backend/alembic/versions/20260816_0004_voice_identity_product.py
 backend/alembic/versions/20260817_0005_payment_intents.py
 backend/alembic/versions/20260818_0006_auth_revoked.py
 backend/alembic/versions/20260818_0007_completion_notifications.py
+backend/alembic/versions/20260819_0008_worker_claim.py
+backend/alembic/versions/20260820_0009_rewarded_ad_claims.py
 backend/app/__init__.py
 backend/app/api/__init__.py
 backend/app/api/auth_routes.py
@@ -210,6 +213,7 @@ backend/app/db/analysis_repo.py
 backend/app/db/auth_sessions.py
 backend/app/db/diagnostic_repo.py
 backend/app/db/entitlements_db.py
+backend/app/db/identity_linking.py
 backend/app/db/models.py
 backend/app/db/purchases.py
 backend/app/db/session.py
@@ -221,12 +225,18 @@ backend/app/entitlements/provider.py
 backend/app/http_config.py
 backend/app/identity.py
 backend/app/jobs/__init__.py
+backend/app/jobs/__main__.py
+backend/app/jobs/processor.py
+backend/app/jobs/queue.py
 backend/app/jobs/runner.py
+backend/app/jobs/worker.py
 backend/app/main.py
 backend/app/middleware/__init__.py
 backend/app/middleware/request_context.py
 backend/app/notifications/__init__.py
 backend/app/notifications/completion.py
+backend/app/notifications/deep_link.py
+backend/app/notifications/startup.py
 backend/app/payments/__init__.py
 backend/app/payments/errors.py
 backend/app/payments/rate_limit.py
@@ -237,6 +247,8 @@ backend/app/payments/startup.py
 backend/app/payments/toss_clients.py
 backend/app/products/__init__.py
 backend/app/products/catalog.py
+backend/app/rewards/__init__.py
+backend/app/rewards/rewarded_detail.py
 backend/app/schemas/__init__.py
 backend/app/schemas/analysis.py
 backend/app/services/__init__.py
@@ -254,6 +266,7 @@ backend/app/services/voice_profile.py
 backend/app/services/voice_profile_store.py
 backend/app/storage/__init__.py
 backend/app/storage/artifacts.py
+backend/app/storage/s3.py
 backend/README.md
 data/discrimination_manifest.example.csv
 data/human_ratings.example.csv
@@ -263,6 +276,7 @@ deploy/lightsail/check_capacity.sh
 deploy/lightsail/deploy.sh
 deploy/lightsail/docker-compose.production.yml
 deploy/lightsail/Dockerfile.backend
+deploy/lightsail/Dockerfile.worker
 deploy/lightsail/nginx-vocalfb.conf.template
 deploy/lightsail/README.md
 docker/Dockerfile.singer-id
@@ -301,6 +315,7 @@ entitlements.backup.json
 main.py
 miniapp/.granite/app.json
 miniapp/granite.config.ts
+miniapp/granite.config.ts.bak
 miniapp/index.html
 miniapp/package-lock.json
 miniapp/package.json
@@ -375,9 +390,11 @@ miniapp/src/lib/subPageNav.ts
 miniapp/src/lib/tossAuth.ts
 miniapp/src/lib/tossIap.ts
 miniapp/src/lib/tossNotifications.ts
+miniapp/src/lib/tossRewardedAd.ts
 miniapp/src/lib/unavailableAxisReason.ts
 miniapp/src/lib/uploadValidation.ts
 miniapp/src/lib/useIapProductPrices.ts
+miniapp/src/lib/useRewardedDetailUnlock.ts
 miniapp/src/lib/userFacingErrors.ts
 miniapp/src/lib/userFacingLabels.ts
 miniapp/src/lib/userIdentity.ts
@@ -390,6 +407,7 @@ miniapp/src/pages/DiagnosticTask.tsx
 miniapp/src/pages/History.tsx
 miniapp/src/pages/Home.tsx
 miniapp/src/pages/Legal.tsx
+miniapp/src/pages/NotificationResultRedirect.tsx
 miniapp/src/pages/PremiumReport.tsx
 miniapp/src/pages/PremiumUnlock.tsx
 miniapp/src/pages/ProgressInsight.tsx
@@ -397,6 +415,7 @@ miniapp/src/pages/QualityResult.tsx
 miniapp/src/pages/Record.tsx
 miniapp/src/pages/Result.tsx
 miniapp/src/pages/SafetyCheck.tsx
+miniapp/src/pages/ServiceInfo.tsx
 miniapp/src/pages/SongDetailReport.tsx
 miniapp/src/pages/Upload.tsx
 miniapp/src/qa/visualSmokeFixtures.ts
@@ -464,6 +483,7 @@ scripts/singer_identity/build_confirmed_profile.py
 scripts/singer_identity/evaluate_confirmed_profile.py
 scripts/singer_identity/seed_expansion.py
 scripts/song_score_sanity.py
+scripts/sync_legal_docs.py
 scripts/vocal_attribution_audit.py
 scripts/vocal_behavioral_audit/__init__.py
 scripts/vocal_behavioral_audit/analyze.py
@@ -519,7 +539,9 @@ tests/analyzer/test_free_diagnostic_offer.py
 tests/analyzer/test_free_vocal_type_teaser.py
 tests/analyzer/test_hardening.py
 tests/analyzer/test_phonation_and_pipeline.py
+tests/analyzer/test_unresolved_public_copy.py
 tests/api/__init__.py
+tests/api/test_analysis_execution_mode.py
 tests/api/test_api_e2e.py
 tests/api/test_health.py
 tests/api/test_identity_boundary.py
@@ -545,6 +567,7 @@ tests/coaching/test_coach_v21_harden.py
 tests/coaching/test_coach_v22.py
 tests/coaching/test_diagnostic_task_state.py
 tests/coaching/test_v210_target_vocal_eligibility.py
+tests/config/test_aws_queue_storage_config.py
 tests/config/test_http_config.py
 tests/config/test_production_startup.py
 tests/db/test_db_foundation.py
@@ -586,9 +609,17 @@ tests/entitlements/test_song_detail_split.py
 tests/frontend/test_presentation_vocab.py
 tests/frontend/test_production_bundle_hosts.py
 tests/frontend/test_ui_banned_strings.py
+tests/jobs/__init__.py
+tests/jobs/test_analysis_queue_service.py
+tests/jobs/test_worker.py
+tests/jobs/test_worker_claim.py
 tests/legal/test_legal_pages.py
 tests/notifications/test_completion_notification.py
+tests/notifications/test_notification_deep_link.py
+tests/notifications/test_notification_frontend_gate.py
+tests/payments/test_anonymous_toss_linking.py
 tests/payments/test_payment_security.py
+tests/payments/test_payments_disabled.py
 tests/payments/test_postgres_live_gate.py
 tests/physiology/test_hostile_audit.py
 tests/physiology/test_physiology_engine.py
@@ -603,7 +634,10 @@ tests/product/test_goal_surface_simplification.py
 tests/product/test_history_association.py
 tests/product/test_home_history_ux.py
 tests/product/test_iap_price_login_finding.py
+tests/product/test_iap_purchase_observability.py
 tests/product/test_lightsail_and_home_copy.py
+tests/product/test_notification_deep_link_frontend.py
+tests/product/test_payments_enabled_frontend_gate.py
 tests/product/test_precision_report_readability.py
 tests/product/test_prepayment_payment_readiness.py
 tests/product/test_progress_insight_ux.py
@@ -613,6 +647,8 @@ tests/product/test_singer_identity_product_v1.py
 tests/product/test_toss_qr_ux.py
 tests/quality/__init__.py
 tests/quality/test_gate.py
+tests/rewards/__init__.py
+tests/rewards/test_rewarded_detail.py
 tests/scoring/__init__.py
 tests/scoring/test_score_v2.py
 tests/scoring/test_score_v3.py
@@ -623,6 +659,8 @@ tests/singer_identity/test_seed_expansion_v1.py
 tests/singer_identity/test_singer_identity_v1.py
 tests/song_detail/__init__.py
 tests/song_detail/test_explain_v3_report.py
+tests/storage/__init__.py
+tests/storage/test_s3_storage_service.py
 tests/vocal_function/__init__.py
 tests/vocal_function/test_criteria_matrix.py
 tests/vocal_function/test_v210_vocal_attribution.py

@@ -15,6 +15,7 @@ from ..payments.service import (
     peek_intent_sku,
     reconcile_refund,
     recover_pending_order,
+    require_payments_enabled,
     verify_order_for_grant,
 )
 from ..payments.settings import INTENT_TTL_SECONDS
@@ -65,6 +66,10 @@ def create_payment_intent(
     request: Request,
     ident: ResolvedIdentity = Depends(require_authenticated_user),
 ) -> dict:
+    try:
+        require_payments_enabled()
+    except PaymentError as exc:
+        raise exc.as_http() from exc
     _rate(request, ident, "intent")
     intent = _run(
         lambda s: create_intent(
@@ -92,6 +97,10 @@ def grant_iap(
     request: Request,
     ident: ResolvedIdentity = Depends(require_authenticated_user),
 ) -> dict:
+    try:
+        require_payments_enabled()
+    except PaymentError as exc:
+        raise exc.as_http() from exc
     _rate(request, ident, "grant")
     key = ident.toss_user_key or ident.subject
     try:
@@ -120,6 +129,10 @@ def recover_iap(
     request: Request,
     ident: ResolvedIdentity = Depends(require_authenticated_user),
 ) -> dict:
+    try:
+        require_payments_enabled()
+    except PaymentError as exc:
+        raise exc.as_http() from exc
     _rate(request, ident, "recover")
     return _run(
         lambda s: recover_pending_order(
@@ -137,6 +150,10 @@ def refund_iap(
     request: Request,
     ident: ResolvedIdentity = Depends(require_authenticated_user),
 ) -> dict:
+    try:
+        require_payments_enabled()
+    except PaymentError as exc:
+        raise exc.as_http() from exc
     _rate(request, ident, "refund")
     return _run(
         lambda s: reconcile_refund(

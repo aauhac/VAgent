@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { deleteAnalysis, getServerHistory, removeHistory } from '../api/client';
 import { ensureTossLogin, tossLoginUserMessage } from '../lib/tossAuth';
 import { SESSION_CLEARED_EVENT } from '../lib/clientSession';
+import { vocalTypeUnresolvedCopy } from '../lib/reportPresentation';
 
 type DiagnosticBrief = {
   session_id: string;
@@ -47,12 +48,22 @@ function pickPrimary(sessions: DiagnosticBrief[]) {
   return pool[0];
 }
 
+/** Defensive UI boundary — never show internal unresolved engine label. */
+function presentHistoryVocalType(raw?: string | null): string | undefined {
+  const name = String(raw || '').trim();
+  if (!name) return undefined;
+  if (name.includes('판단 보류')) {
+    return vocalTypeUnresolvedCopy('INSUFFICIENT_EVIDENCE').title;
+  }
+  return name;
+}
+
 function mapItems(serverItems: Array<Record<string, unknown>>): Row[] {
   return (serverItems || []).map((it) => ({
     id: String(it.analysis_id || ''),
     at: String(it.created_at || ''),
     filename: (it.filename as string) || undefined,
-    vocalType: (it.vocal_type as string) || undefined,
+    vocalType: presentHistoryVocalType((it.vocal_type as string) || undefined),
     songDetailUnlocked: !!it.song_detail_unlocked,
     diagnosticUnlocked: !!it.diagnostic_unlocked,
     sessions: Array.isArray(it.diagnostic_sessions)

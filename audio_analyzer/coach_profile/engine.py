@@ -442,30 +442,36 @@ def _timeline(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]:
+    from .public_presentation import apply_public_vocal_type_copy, unresolved_public_copy
+
     resolution_state = (profile or {}).get("resolution_state") or "INSUFFICIENT_EVIDENCE"
     if not profile or not profile.get("available"):
-        return {
-            "available": False,
-            "resolution_state": resolution_state,
-            "display_name": "발성 성향 판단 보류",
-            "description": "이번 녹음에서는 발성 성향을 충분히 구분하지 못했어요.",
-            "head_chest": {"available": False},
-            "source_balance": {"balance_class": "UNKNOWN"},
-            "register_strategy": {
-                "status": "UNRESOLVED",
-                "title": "추가 확인 필요",
-                "description": "이번 녹음만으로 성구 연결 방식을 충분히 확인하기 어려웠어요.",
-            },
-            "key_traits": [],
-            "modifiers": [],
-            "local_register_events": [],
-            "timeline": (profile or {}).get("timeline") or [],
-            "warnings": (profile or {}).get("warnings") or [],
-        }
+        copy = unresolved_public_copy(resolution_state)
+        return apply_public_vocal_type_copy(
+            {
+                "available": False,
+                "resolution_state": resolution_state,
+                "display_name": copy["title"],
+                "description": copy["description"],
+                "head_chest": {"available": False},
+                "source_balance": {"balance_class": "UNKNOWN"},
+                "register_strategy": {
+                    "status": "UNRESOLVED",
+                    "title": "추가 확인 필요",
+                    "description": "이번 녹음만으로 성구 연결 방식을 충분히 확인하기 어려웠어요.",
+                },
+                "key_traits": [],
+                "modifiers": [],
+                "local_register_events": [],
+                "timeline": (profile or {}).get("timeline") or [],
+                "warnings": (profile or {}).get("warnings") or [],
+            }
+        )
     hc = profile.get("head_chest") or {}
     sb = profile.get("source_balance") or {}
     rs = profile.get("register_strategy") or {}
-    return {
+    return apply_public_vocal_type_copy(
+        {
         "available": True,
         "resolution_state": profile.get("resolution_state") or (
             "RESOLVED" if str(profile.get("base_type") or profile.get("type_id") or "") != "UNRESOLVED" else "INSUFFICIENT_EVIDENCE"
@@ -531,4 +537,5 @@ def build_vocal_type_public(profile: Optional[dict[str, Any]]) -> dict[str, Any]
         "timeline": profile.get("timeline") or [],
         "engine_version": profile.get("engine_version"),
         "warnings": profile.get("warnings") or [],
-    }
+        }
+    )

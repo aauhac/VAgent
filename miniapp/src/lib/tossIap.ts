@@ -31,6 +31,28 @@ export type BuyProductResult = {
 
 const LAST_INTENT_KEY = 'vagent_last_payment_intent_v1';
 
+/**
+ * Stage-only purchase trace. The user-facing copy stays one generic message, but the
+ * dev console shows which step actually failed.
+ * Never pass tokens, authorization codes, userKeys, anonymous hashes, or order payloads
+ * — `stage` and a short error code are the entire allowed vocabulary.
+ */
+function iapLog(stage: string, code?: string) {
+  try {
+    const safeCode = code ? String(code).replace(/[^A-Za-z0-9_.:-]/g, '').slice(0, 48) : '';
+    console.warn(`[IAP] ${stage}${safeCode ? ` code=${safeCode}` : ''}`);
+  } catch {
+    /* ignore */
+  }
+}
+
+function errorCode(error: unknown): string {
+  const raw = (error as any)?.code || (error as any)?.error?.code;
+  if (raw) return String(raw);
+  const status = Number((error as any)?.status);
+  return Number.isFinite(status) ? `HTTP_${status}` : 'UNKNOWN';
+}
+
 function userMessage(code?: string, fallback?: string): string {
   switch (code) {
     case 'PAYMENT_CANCELLED':
@@ -72,25 +94,31 @@ export async function buyProduct(input: BuyProductInput): Promise<BuyProductResu
   }
   buying = true;
   pauseAllMediaPlayback();
+  iapLog('login_start');
   const login = await ensureTossLogin();
   if (!login.ok) {
     buying = false;
+    iapLog('login_failed', login.stage);
     const message = tossLoginUserMessage(login.stage);
     if (!message) {
       return { ok: false, state: 'CANCELLED' };
     }
     return { ok: false, state: 'FAILED', message };
   }
+  iapLog('login_ok');
   const { createIapIntent, grantIapOrder } = await import('../api/client');
   try {
     const IAP = await loadIap();
     if (!IAP?.createOneTimePurchaseOrder) {
+      iapLog('sdk_unavailable', 'IAP_UNAVAILABLE');
       return { ok: false, state: 'FAILED', message: userMessage('IAP_UNAVAILABLE') };
     }
+    iapLog('intent_start');
     const intent = await createIapIntent({
       product_id: input.productId,
       analysis_id: input.resourceId,
     });
+    iapLog('intent_ok');
     try {
       sessionStorage.setItem(LAST_INTENT_KEY, JSON.stringify({ intent_id: intent.intent_id, sku: intent.sku }));
     } catch {
@@ -109,23 +137,27 @@ export async function buyProduct(input: BuyProductInput): Promise<BuyProductResu
         }
         resolve(result);
       };
+      iapLog('order_start');
       const cleanup = IAP.createOneTimePurchaseOrder({
         options: {
           sku: intent.sku,
           processProductGrant: async ({ orderId }: { orderId: string }) => {
+            iapLog('grant_start');
             try {
               const grant = await grantIapOrder({ intent_id: intent.intent_id, order_id: orderId });
-              if (!grant?.granted) return false;
-              try {
-                if (IAP.completeProductGrant) {
-                  await IAP.completeProductGrant({ params: { orderId } });
-                }
-              } catch {
-                /* retry on next entry */
+              if (!grant?.granted) {
+                iapLog('grant_denied');
+                return false;
               }
+              // Returning true IS the completion signal for this callback — the SDK
+              // finishes the grant itself. Calling IAP.completeProductGrant here would
+              // duplicate it. That call belongs only to recoverPendingPurchases(),
+              // where no processProductGrant callback exists.
+              iapLog('grant_ok');
               finish({ ok: true, state: 'GRANTED' });
               return true;
-            } catch {
+            } catch (error: unknown) {
+              iapLog('grant_failed', errorCode(error));
               finish({
                 ok: false,
                 state: 'PENDING_RECOVERY',
@@ -137,14 +169,17 @@ export async function buyProduct(input: BuyProductInput): Promise<BuyProductResu
         },
         onEvent: (event: { type?: string }) => {
           if (event?.type === 'success') {
+            iapLog('order_ok');
             cleanup?.();
           }
         },
         onError: (error: unknown) => {
           if (isCancelError(error)) {
+            iapLog('order_cancelled');
             finish({ ok: false, state: 'CANCELLED', message: userMessage('PAYMENT_CANCELLED') });
             return;
           }
+          iapLog('order_failed', errorCode(error));
           finish({
             ok: false,
             state: 'FAILED',
@@ -156,6 +191,8 @@ export async function buyProduct(input: BuyProductInput): Promise<BuyProductResu
     return granted;
   } catch (error: any) {
     const code = error?.code || error?.error?.code;
+    // Reached when the intent call itself throws — the stage that was silently failing.
+    iapLog('intent_failed', errorCode(error));
     return { ok: false, state: 'FAILED', message: userMessage(code) };
   } finally {
     buying = false;

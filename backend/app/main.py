@@ -177,6 +177,10 @@ def ready():
     if toss_login_enabled():
         login_blockers = validate_login_production_config() if is_production() else []
         login_state = "ok" if not login_blockers else "degraded"
+    from .notifications.startup import validate_notification_production_config
+
+    notification_blockers = validate_notification_production_config() if is_production() else []
+    notification_state = "ok" if not notification_blockers else "degraded"
     ok = runtime_ok and db_ok
     body = {
         "ready": ok,
@@ -185,6 +189,7 @@ def ready():
         "runtime": "ok" if runtime_ok else "not_writable",
         "payments": payment_state,
         "login": login_state,
+        "notifications": notification_state,
         "separation": None,
         "public_backend_base": "configured" if public_backend_base_url() else "unset",
         "multi_instance_safe": False,

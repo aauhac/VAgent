@@ -22,6 +22,7 @@ type Props = {
   canPurchase?: boolean;
   priceRetryable?: boolean;
   onRetryPrice?: () => void;
+  paymentsEnabled?: boolean;
 };
 
 export default function DiagnosticCTA({
@@ -40,6 +41,7 @@ export default function DiagnosticCTA({
   canPurchase = true,
   priceRetryable = false,
   onRetryPrice,
+  paymentsEnabled = true,
 }: Props) {
   const bullets = diagnosticOfferBullets(diagnosticOffer);
   const missingLabels =
@@ -99,13 +101,27 @@ export default function DiagnosticCTA({
         featured
         title="정밀 발성 진단"
         description={description}
-        priceLabel={priceLabel}
+        priceLabel={paymentsEnabled ? priceLabel : undefined}
         bullets={displayBullets.slice(0, 3)}
-        ctaLabel={canPurchase ? `정밀 발성 진단 · ${priceLabel}` : '정밀 발성 진단'}
-        to={canPurchase && analysisId ? premiumEntryPath(analysisId, productId) : canPurchase ? '/premium' : undefined}
-        disabled={!canPurchase}
-        retryable={priceRetryable}
-        onRetry={onRetryPrice}
+        ctaLabel={
+          !paymentsEnabled
+            ? undefined
+            : canPurchase
+              ? `정밀 발성 진단 · ${priceLabel}`
+              : '정밀 발성 진단'
+        }
+        to={
+          !paymentsEnabled
+            ? undefined
+            : canPurchase && analysisId
+              ? premiumEntryPath(analysisId, productId)
+              : canPurchase
+                ? '/premium'
+                : undefined
+        }
+        disabled={!paymentsEnabled || !canPurchase}
+        retryable={paymentsEnabled && priceRetryable}
+        onRetry={paymentsEnabled ? onRetryPrice : undefined}
         footer={
           productId === 'diagnostic_upgrade'
             ? '상세 리포트를 이용 중이어서 정밀 진단만 추가돼요.'

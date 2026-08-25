@@ -21,12 +21,54 @@ Production UI는 `display_amount=None` backend catalog를 가격으로 쓰지 �
 - placeholder `vagent.song_detail` 등을 production SKU로 쓰지 말 것
 - 실제 Console SKU를 코드에 넣지 않음 (서버 env로만)
 
-## 분석 완료 알림
+## 분석 완료 알림 (Smart Message)
 
-Frontend: `VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE` (동의 UI `templateCode`)
-Backend: `TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE` (send-message `templateSetCode`)
+세 값을 혼동하지 않는다.
 
-값이 없으면 CTA는 보이되 클릭 시 사용 불가 안내 / send skip. 앱과 분석은 계속 동작.
+| 역할 | env / source | Toss API field |
+|---|---|---|
+| 프론트 동의 UI | `VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE` (miniapp build-time) | `requestNotificationAgreement` → `templateCode` |
+| 백엔드 발송 템플릿 | `TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE` (server runtime) | send-message body → `templateSetCode` |
+
+운영 발송에 필요한 서버 설정은 `TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE` **하나**다.
+
+`deploymentId`는 Apps in Toss Console > **앱 출시**에서 업로드한 bundle(AIT) 식별값으로,
+`POST /api-partner/v1/apps-in-toss/messenger/send-test-message`에서 대상 번들을 지정할 때만 쓴다.
+운영 `POST /api-partner/v1/apps-in-toss/messenger/send-message`는 `deploymentId`를 받지 않으며,
+현재 VAgent live 발송 경로의 필수 설정이 **아니다**. (server-side test-message 기능은 구현하지 않음)
+
+Recipient header (send-message):
+
+- 무료 분석 익명: `x-anon-key`
+- 검증된 Toss Login: `x-toss-user-key` (not `x-user-key`)
+- 두 recipient header **동시 사용 금지**
+- anonymous hash ≠ Toss Login userKey
+
+Send body:
+
+```json
+{
+  "templateSetCode": "<configured>",
+  "context": {}
+}
+```
+
+`templateSetCode`가 없으면 Toss API를 호출하지 않는다.
+REQUESTED record는 유지 가능하나 SENT로 표시하면 안 된다.
+
+Production miniapp build: `VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE`가 없으면 `build:web` / `build:toss` FAIL.
+
+### Release sequence (notification + AIT)
+
+1. Console 기능성 캠페인 **templateCode** → `miniapp/.env.production.local` (gitignored)
+2. `npm --prefix miniapp run build:web` → `npm --prefix miniapp run build:toss`
+3. 새 `vocalfb.ait`를 Apps in Toss Console에 업로드
+4. Lightsail server env에 `TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE=<templateSetCode>` 설정/확인
+5. backend recreate/restart
+6. Console 완료 알림 **이동 URL**을 `intoss://vocalfb/notification-result`로 설정
+7. 실기기: 알림 동의 → 분석 완료 → Toss 알림 수신 → 알림 탭 → 결과 화면 진입 확인
+
+AIT 업로드/`deploymentId` 확인은 live 알림 발송의 선행 조건이 아니다.
 
 ### CONSOLE_CONFIGURATION_REQUIRED
 
@@ -34,14 +76,40 @@ Backend: `TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE` (send-message `templateSetCo
 
 - 제목: `분석 완료`
 - 본문: `발성 분석 결과가 준비됐어요.`
-- 결과 화면 deep link: Toss Console 링크 기능 확인 후 설정. 미확인 schema는 구현하지 않음.
+- 이동 URL: `intoss://vocalfb/notification-result`
 
-Recipient:
+#### 완료 알림 이동 URL
 
-- 무료 분석 익명: `x-anon-key`
-- 검증된 Toss Login: `x-user-key`
-- 두 헤더 동시 사용 금지
-- anonymous hash ≠ Toss Login userKey
+```
+intoss://vocalfb/notification-result
+```
+
+Apps in Toss는 `intoss://<appName>/<path>` 형태의 내부 deep link를 지원한다.
+이 URL에 `deploymentId`를 넣지 않는다. 출시 전 QR/deployment 테스트 scheme과
+production `intoss` scheme을 혼동하지 않는다.
+
+동작:
+
+```
+완료 알림 클릭
+  → miniapp /notification-result
+  → 현재 request가 제시한 identity(verified Toss session / anonymous 헤더)로 scope 제한
+  → GET /v1/notifications/latest-result
+  → 가장 최근 "열 수 있는" SENT completion notification resolve
+  → /result/<analysisId>
+  → 없으면 /history   (Home으로 보내지 않는다)
+```
+
+resolve 조건: `status == SENT` AND `sent_at IS NOT NULL`, `sent_at DESC`.
+`REQUESTED` / `FAILED`는 제외한다. 최신 건이 삭제된 분석이면 다음 후보를 검사한다.
+recipient 일치만으로 반환하지 않고 기존 `can_access_analysis` 게이트를 그대로 통과해야 한다.
+
+**한계 (의도된 것):** Smart Message 캠페인 이동 URL은 **고정**이라 클릭마다
+`analysis_id`를 URL에 동적으로 넣는 계약이 공식 확인되지 않았다. 따라서 resolver는
+"가장 최근에 열 수 있는 SENT 알림"을 연다. 방금 받은 알림을 누르는 일반적인 경우는
+정확히 해당 분석으로 이동하지만, 아주 오래된 알림을 나중에 누르면 그 사이 발송된
+더 최신 분석으로 갈 수 있다. 공식 dynamic click parameter가 확인되기 전까지
+임의 query interpolation은 구현하지 않는다.
 
 ## 리워드 광고 → 상세 리포트 (SONG_DETAIL)
 

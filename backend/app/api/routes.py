@@ -283,6 +283,44 @@ def request_completion_notification(
     return opt_in_completion_notification(analysis_id, ident, runtime_dir=runtime)
 
 
+@router.get("/notifications/latest-result")
+def latest_notification_result(
+    request: Request,
+    x_user_id: str | None = Header(default=None),
+    x_vagent_user_key: str | None = Header(default=None, alias="X-VAgent-User-Key"),
+) -> dict:
+    """Which analysis the completion alert the user just tapped was about.
+
+    Backs `intoss://vocalfb/notification-result`. Always 200: for a deep-link landing,
+    "nothing to open" is a normal state the client falls back from, not an error.
+
+    The response carries an analysis id and a timestamp only — never a recipient key,
+    anonymous hash, Toss userKey, or internal user id.
+    """
+    from ..notifications.deep_link import resolve_latest_sent_analysis_for_identity
+
+    session_ident = _ident(request, x_user_id, x_vagent_user_key)
+    header_ident = resolve_identity_from_headers(
+        x_user_id=x_user_id,
+        x_vagent_user_key=x_vagent_user_key,
+    )
+    idents = [session_ident]
+    if (header_ident.provider, header_ident.subject) != (
+        session_ident.provider,
+        session_ident.subject,
+    ):
+        idents.append(header_ident)
+
+    found = resolve_latest_sent_analysis_for_identity(idents, runtime_dir=service.runtime_dir)
+    if not found or not validate_analysis_id(str(found.get("analysis_id") or "")):
+        return {"found": False, "analysis_id": None, "sent_at": None}
+    return {
+        "found": True,
+        "analysis_id": found["analysis_id"],
+        "sent_at": found.get("sent_at"),
+    }
+
+
 @router.get("/analyses/{analysis_id}/access")
 def get_analysis_access(
     analysis_id: str,

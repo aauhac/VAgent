@@ -8,6 +8,8 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
+from ..payments.settings import payments_enabled
+
 
 PRODUCT_SONG_DETAIL = "song_detail"
 PRODUCT_DIAGNOSTIC_FULL = "diagnostic_full"
@@ -78,6 +80,7 @@ def product_catalog(*, song_detail_owned: bool = False) -> dict[str, Any]:
     )
     return {
         "environment": env,
+        "payments_enabled": payments_enabled(),
         "products": products,
         "offers": {
             "song_detail": PRODUCT_SONG_DETAIL if not song_detail_owned else None,

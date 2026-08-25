@@ -45,6 +45,10 @@ services:
     build:
       context: ../..
       dockerfile: deploy/lightsail/Dockerfile.backend
+      args:
+        # Pinned so a later deploy.sh cannot silently drop torch/demucs and
+        # regress /ready separation back to unavailable.
+        INSTALL_SEPARATION: "1"
     image: vocalfb-backend:local
     restart: unless-stopped
     depends_on:

@@ -92,12 +92,19 @@ def list_user_history(
 def _vocal_type_from_public(pub: dict[str, Any] | None) -> str | None:
     if not isinstance(pub, dict):
         return None
+    from audio_analyzer.coach_profile.public_presentation import public_vocal_type_label
+
     vt = pub.get("vocal_type_teaser") or pub.get("vocal_type_profile") or pub.get("vocal_type")
     if isinstance(vt, dict):
-        name = vt.get("display_name")
-        return str(name).strip() if name else None
+        return public_vocal_type_label(
+            resolution_state=vt.get("resolution_state") or pub.get("vocal_type_resolution_state"),
+            display_name=vt.get("display_name"),
+            base_type=vt.get("base_type"),
+            type_id=vt.get("type_id"),
+            available=vt.get("available"),
+        )
     if isinstance(vt, str) and vt.strip():
-        return vt.strip()
+        return public_vocal_type_label(display_name=vt.strip())
     return None
 
 

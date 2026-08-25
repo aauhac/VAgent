@@ -33,6 +33,7 @@ from .settings import (
     DENY_ORDER_STATUSES,
     GRANTABLE_ORDER_STATUSES,
     INTENT_TTL_SECONDS,
+    payments_enabled,
     production_skus,
 )
 from .toss_clients import TossApiError, TossOrderStatus, get_iap_client
@@ -40,6 +41,13 @@ from .toss_clients import TossApiError, TossOrderStatus, get_iap_client
 logger = logging.getLogger("vagent.payments")
 
 PROVIDER_TOSS = "TOSS"
+
+PAYMENTS_DISABLED_MESSAGE = "현재 결제를 이용할 수 없어요."
+
+
+def require_payments_enabled() -> None:
+    if not payments_enabled():
+        raise PaymentError("PAYMENTS_DISABLED", PAYMENTS_DISABLED_MESSAGE, 503)
 
 
 def _utcnow() -> datetime:
@@ -100,6 +108,7 @@ def create_intent(
     analysis_id: str | None,
     session_id: str | None,
 ) -> PaymentIntent:
+    require_payments_enabled()
     user = resolve_toss_user(session, toss_user_key)
     now = _utcnow()
     sku = _sku_for_product(product_id)
@@ -278,6 +287,7 @@ def grant_for_intent(
     order_id: str,
     order_status: TossOrderStatus | None = None,
 ) -> dict[str, Any]:
+    require_payments_enabled()
     user = resolve_toss_user(session, toss_user_key)
     try:
         iid = uuid.UUID(str(intent_id))
@@ -370,6 +380,7 @@ def recover_pending_order(
     order_id: str,
     sku: str | None = None,
 ) -> dict[str, Any]:
+    require_payments_enabled()
     user = resolve_toss_user(session, toss_user_key)
     now = _utcnow()
     # Prefer already-bound intent
@@ -421,6 +432,7 @@ def reconcile_refund(
     toss_user_key: str,
     order_id: str,
 ) -> dict[str, Any]:
+    require_payments_enabled()
     user = resolve_toss_user(session, toss_user_key)
     status = _verify_order_for_refund(order_id, toss_user_key)
     if status.status != "REFUNDED":

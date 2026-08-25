@@ -1,4 +1,4 @@
-HEAD=cecbb894a05babe02d62332b1afd9ca93cf0b66f
+HEAD=42a82047fc35520dc940d1457165c379d4d6931d
 origin/main...HEAD=0	0
 git status --short:
 M .env.example
@@ -6,48 +6,53 @@ M .env.example
  M audio_analyzer/coach_profile/__init__.py
  M audio_analyzer/coach_profile/engine.py
  M audio_analyzer/models.py
+ M backend/app/api/auth_routes.py
+ M backend/app/api/payment_routes.py
  M backend/app/api/routes.py
- M backend/app/db/models.py
- M backend/app/jobs/runner.py
+ M backend/app/db/analysis_repo.py
  M backend/app/main.py
+ M backend/app/notifications/__init__.py
+ M backend/app/notifications/completion.py
+ M backend/app/payments/rate_limit.py
+ M backend/app/payments/service.py
  M backend/app/payments/toss_clients.py
- M deploy/lightsail/Dockerfile.backend
- M docs/apps_in_toss_release_qa.md
+ M backend/app/products/catalog.py
+ M backend/app/services/history_service.py
+ M deploy/lightsail/docker-compose.production.yml
+ M docs/iap_sku_and_notification_console.md
+ M miniapp/src/App.tsx
  M miniapp/src/api/client.ts
  M miniapp/src/components/report/DiagnosticCTA.tsx
- M miniapp/src/components/report/VocalTypeHero.tsx
  M miniapp/src/components/ui/PremiumProductCard.tsx
- M miniapp/src/lib/reportPresentation.ts
- M miniapp/src/lib/tossAuth.ts
+ M miniapp/src/lib/iapCatalog.ts
  M miniapp/src/lib/tossIap.ts
- M miniapp/src/pages/Analyzing.tsx
+ M miniapp/src/lib/useIapProductPrices.ts
+ M miniapp/src/pages/History.tsx
  M miniapp/src/pages/PremiumUnlock.tsx
  M miniapp/src/pages/Result.tsx
  M miniapp/src/pages/SongDetailReport.tsx
- M miniapp/src/styles/app.css
- M miniapp/src/vite-env.d.ts
  M miniapp/tsconfig.tsbuildinfo
+ M miniapp/vite.config.ts
+ M qa_output/production_release_v1/lightsail/DEPLOY_SOURCE_STATE.txt
  M qa_output/production_release_v1/lightsail/MANIFEST.txt
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.sha256
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.tar.gz
- M tests/analyzer/test_free_vocal_type_teaser.py
- M tests/product/test_apps_in_toss_release.py
- M tests/product/test_detail_precision_ux.py
-?? backend/alembic/versions/20260818_0007_completion_notifications.py
-?? backend/app/notifications/
-?? docs/iap_sku_and_notification_console.md
-?? docs/vocal_gender_calibration_audit.md
-?? miniapp/src/lib/analysisProgress.ts
-?? miniapp/src/lib/iapCatalog.ts
-?? miniapp/src/lib/tossNotifications.ts
-?? miniapp/src/lib/useIapProductPrices.ts
-?? qa_output/vocal_type_3sample_audit/
-?? requirements-separation.txt
-?? scripts/audit_public_analysis.py
-?? scripts/audit_vocal_type_samples.py
-?? scripts/benchmark_demucs_lightsail.py
-?? scripts/compare_production_runtime.py
-?? tests/coach_profile/test_resolution_state.py
-?? tests/notifications/
-?? tests/product/test_iap_price_login_finding.py
-packaged_at_utc=2026-08-18T08:02:33.686406+00:00
+ M scripts/check_production_bundle.py
+ M scripts/roughness_fp_audit.py
+ M tests/notifications/test_completion_notification.py
+ M tests/product/test_history_association.py
+ M tests/product/test_lightsail_and_home_copy.py
+?? audio_analyzer/coach_profile/public_presentation.py
+?? backend/app/db/identity_linking.py
+?? backend/app/notifications/deep_link.py
+?? backend/app/notifications/startup.py
+?? miniapp/src/pages/NotificationResultRedirect.tsx
+?? tests/analyzer/test_unresolved_public_copy.py
+?? tests/notifications/test_notification_deep_link.py
+?? tests/notifications/test_notification_frontend_gate.py
+?? tests/payments/test_anonymous_toss_linking.py
+?? tests/payments/test_payments_disabled.py
+?? tests/product/test_iap_purchase_observability.py
+?? tests/product/test_notification_deep_link_frontend.py
+?? tests/product/test_payments_enabled_frontend_gate.py
+packaged_at_utc=2026-08-24T18:29:45.070430+00:00

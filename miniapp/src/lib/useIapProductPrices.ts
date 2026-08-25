@@ -15,16 +15,42 @@ const LOADING: IapCatalogSnapshot = {
   tossAppVersion: null,
 };
 
-export function useIapProductPrices(backendCatalog: any | null | undefined) {
-  const [snapshot, setSnapshot] = useState<IapCatalogSnapshot>(LOADING);
+const DISABLED: IapCatalogSnapshot = {
+  state: 'DISABLED',
+  itemsBySku: {},
+  count: 0,
+  tossAppVersion: null,
+};
+
+export type UseIapProductPricesOptions = {
+  /** When false, never call Toss IAP SDK. Backend PAYMENTS_ENABLED is source of truth. */
+  enabled?: boolean;
+};
+
+export function useIapProductPrices(
+  backendCatalog: any | null | undefined,
+  options?: UseIapProductPricesOptions,
+) {
+  const paymentsEnabled = options?.enabled ?? backendCatalog?.payments_enabled === true;
+  const [snapshot, setSnapshot] = useState<IapCatalogSnapshot>(
+    paymentsEnabled ? LOADING : DISABLED,
+  );
   const [generation, setGeneration] = useState(0);
 
   const reload = useCallback(() => {
+    if (!paymentsEnabled) {
+      setSnapshot(DISABLED);
+      return;
+    }
     setSnapshot(LOADING);
     setGeneration((n) => n + 1);
-  }, []);
+  }, [paymentsEnabled]);
 
   useEffect(() => {
+    if (!paymentsEnabled) {
+      setSnapshot(DISABLED);
+      return;
+    }
     let cancelled = false;
     loadIapCatalog()
       .then((next) => {
@@ -43,13 +69,13 @@ export function useIapProductPrices(backendCatalog: any | null | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [generation]);
+  }, [generation, paymentsEnabled]);
 
   useEffect(() => {
-    if (backendCatalog && snapshot.state !== 'LOADING') {
+    if (paymentsEnabled && backendCatalog && snapshot.state !== 'LOADING') {
       logSkuMatches(backendCatalog, snapshot);
     }
-  }, [backendCatalog, snapshot]);
+  }, [backendCatalog, snapshot, paymentsEnabled]);
 
   const prices = useMemo(() => {
     const map: Record<string, ResolvedProductPrice> = {};
@@ -57,7 +83,7 @@ export function useIapProductPrices(backendCatalog: any | null | undefined) {
     for (const productId of Object.keys(products)) {
       map[productId] = resolveProductPrice(productId, backendCatalog, snapshot);
     }
-    if (backendCatalog && snapshot.state !== 'LOADING') {
+    if (paymentsEnabled && backendCatalog && snapshot.state !== 'LOADING') {
       for (const [productId, price] of Object.entries(map)) {
         try {
           console.info(
@@ -71,12 +97,16 @@ export function useIapProductPrices(backendCatalog: any | null | undefined) {
       }
     }
     return map;
-  }, [backendCatalog, snapshot]);
+  }, [backendCatalog, snapshot, paymentsEnabled]);
 
-  const audit = useMemo(() => skuAuditRows(backendCatalog, snapshot), [backendCatalog, snapshot]);
+  const audit = useMemo(
+    () => (paymentsEnabled ? skuAuditRows(backendCatalog, snapshot) : []),
+    [backendCatalog, snapshot, paymentsEnabled],
+  );
 
   return {
     catalogState: snapshot.state,
+    paymentsEnabled,
     prices,
     reload,
     audit,

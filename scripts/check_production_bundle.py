@@ -98,6 +98,11 @@ def scan_legal_sources() -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dist", type=Path, default=DIST)
+    parser.add_argument(
+        "--require-notification-cta",
+        action="store_true",
+        help="Fail if production assets lack analysis-complete notification CTA string",
+    )
     args = parser.parse_args()
     legal_hits = scan_legal_sources()
     if legal_hits:
@@ -114,8 +119,40 @@ def main() -> int:
         for rel, pattern in findings:
             print(f"  {rel}: {pattern}")
         return 1
+
+    # User-facing unresolved internal label must not appear in frontend source paths.
+    frontend_src = ROOT / "miniapp" / "src"
+    leak_hits: list[str] = []
+    for path in frontend_src.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in {".ts", ".tsx", ".js", ".jsx", ".css"}:
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if "발성 성향 판단 보류" in text:
+            leak_hits.append(path.relative_to(ROOT).as_posix())
+    if leak_hits:
+        print("FAIL: internal unresolved label in frontend user-facing sources")
+        for h in leak_hits:
+            print(f"  {h}")
+        return 1
+
+    joined = ""
+    for path in iter_runtime_files(args.dist):
+        try:
+            joined += path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+    if args.require_notification_cta:
+        if "완료 알림 받기" not in joined:
+            print("FAIL: notification CTA string missing from production bundle")
+            return 1
+        # Empty bake of template helper looks like return"".trim() near notification — soft check
+        if 'VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE' in joined and '""' in joined:
+            # Cannot reliably detect empty env; rely on vite fail-fast + CTA presence.
+            pass
+        print("PASS: notification CTA present in bundle")
     print("PASS: legal sources have no release blockers")
-    print(f"PASS: no banned hosts/SKUs in {args.dist}")
+    print("PASS: no banned hosts/SKUs in", args.dist)
+    print("PASS: no internal unresolved label in miniapp/src")
     return 0
 
 

@@ -37,7 +37,7 @@ def messenger_recipient_headers(kind: str, key: str) -> dict[str, str]:
     if kind == KIND_ANON:
         return {"x-anon-key": token}
     if kind == KIND_TOSS_USER:
-        return {"x-user-key": token}
+        return {"x-toss-user-key": token}
     raise ValueError("INVALID_RECIPIENT_KIND")
 
 
@@ -166,6 +166,100 @@ def load_record(analysis_id: str, runtime_dir: Path | None = None) -> dict[str, 
 def save_record(rec: dict[str, Any], runtime_dir: Path | None = None) -> None:
     if not _save_db(rec):
         _save_file(rec, runtime_dir)
+
+
+SENT_LOOKUP_LIMIT = 20
+
+
+def _valid_recipients(recipients: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    seen: list[tuple[str, str]] = []
+    for kind, key in recipients:
+        token = str(key or "").strip()
+        if not token or kind not in (KIND_ANON, KIND_TOSS_USER):
+            continue
+        if (kind, token) not in seen:
+            seen.append((kind, token))
+    return seen
+
+
+def _sent_db(recipients: list[tuple[str, str]], limit: int) -> list[dict[str, Any]]:
+    """SENT rows for exactly these recipients. Scoped in SQL, never filtered in Python."""
+    if not _db_enabled():
+        return []
+    from sqlalchemy import and_, or_, select
+
+    from ..db.models import AnalysisCompletionNotification as Row
+
+    scope = or_(
+        *[
+            and_(Row.recipient_kind == kind, Row.recipient_key == key)
+            for kind, key in recipients
+        ]
+    )
+    with session_scope() as session:
+        rows = session.scalars(
+            select(Row)
+            .where(scope, Row.status == STATUS_SENT, Row.sent_at.is_not(None))
+            .order_by(Row.sent_at.desc())
+            .limit(limit)
+        ).all()
+        return [
+            {
+                "analysis_id": str(row.analysis_id),
+                "sent_at": row.sent_at.isoformat() if row.sent_at else None,
+            }
+            for row in rows
+        ]
+
+
+def _sent_file(
+    recipients: list[tuple[str, str]],
+    limit: int,
+    runtime_dir: Path | None = None,
+) -> list[dict[str, Any]]:
+    base = runtime_dir or get_runtime_dir()
+    if not base.exists():
+        return []
+    wanted = set(recipients)
+    found: list[tuple[str, str]] = []  # (sent_at, analysis_id)
+    for path in base.glob("*/completion_notification.json"):
+        try:
+            rec = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(rec, dict) or rec.get("status") != STATUS_SENT:
+            continue
+        key = (str(rec.get("recipient_kind") or ""), str(rec.get("recipient_key") or ""))
+        if key not in wanted:
+            continue
+        analysis_id = str(rec.get("analysis_id") or "").strip()
+        stamp = str(rec.get("sent_at") or "")
+        # A SENT row with no sent_at is malformed; it cannot be ordered, so skip it.
+        if not analysis_id or not stamp:
+            continue
+        found.append((stamp, analysis_id))
+    found.sort(reverse=True)
+    return [{"analysis_id": aid, "sent_at": stamp} for stamp, aid in found[:limit]]
+
+
+def sent_notifications_for_recipients(
+    recipients: list[tuple[str, str]],
+    runtime_dir: Path | None = None,
+    limit: int = SENT_LOOKUP_LIMIT,
+) -> list[dict[str, Any]]:
+    """Delivered completion notifications for these recipients, newest first.
+
+    Only SENT with a real sent_at qualifies: REQUESTED was never delivered and FAILED never
+    reached the user, so neither can be the alert someone just tapped. Returns ids and
+    timestamps only — recipient keys never leave this function.
+    """
+    scoped = _valid_recipients(recipients)
+    if not scoped:
+        return []
+    rows = _sent_db(scoped, limit)
+    if rows:
+        return rows
+    return _sent_file(scoped, limit, runtime_dir)
 
 
 def analysis_is_completed(analysis_id: str, runtime_dir: Path | None = None) -> bool:

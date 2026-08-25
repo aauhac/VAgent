@@ -130,6 +130,8 @@ def test_detail_entitlement_flags_song_detail(history_env):
     body = client.get("/v1/history", headers={"X-User-Id": "hist-b"}).json()
     row = next(i for i in body["items"] if i["analysis_id"] == aid)
     assert row["song_detail_unlocked"] is True
+    assert row["vocal_type"] != "발성 성향 판단 보류"
+    assert "충분히 구분하기 어려웠어요" in (row["vocal_type"] or "")
 
 
 def test_source_analysis_id_joins_into_history_card(history_env):

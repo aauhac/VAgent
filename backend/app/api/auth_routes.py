@@ -11,9 +11,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from ..db.auth_sessions import revoke_sessions_for_user_key
+from ..db.identity_linking import link_anonymous_user_to_toss_user
 from ..db.models import AuthSession
 from ..db.session import session_scope
 from ..db.users import get_or_create_user
+from ..identity import USER_ID_HEADER, USER_KEY_HEADER
 from ..payments.errors import PaymentError, http_payment_error
 from ..payments.rate_limit import allow as rate_allow
 from ..payments.session_tokens import issue_session
@@ -65,7 +67,13 @@ def toss_login(body: TossLoginBody, request: Request) -> dict:
     if user_key is None or str(user_key).strip() == "":
         raise http_payment_error("AUTH_FAILED", "로그인을 완료하지 못했어요.", 401)
     toss_user_key = str(user_key)
+    # Client-asserted pre-login identifier. Never trusted as a userKey — it only names
+    # which anonymous rows may be adopted by the userKey Toss just verified above.
+    anonymous_subject = (
+        request.headers.get(USER_KEY_HEADER) or request.headers.get(USER_ID_HEADER) or ""
+    ).strip()
     vagent_token, payload = issue_session(toss_user_key=toss_user_key)
+    linked: dict[str, int] = {}
     try:
         with session_scope() as session:
             user = get_or_create_user(session, provider="TOSS", subject=toss_user_key)
@@ -77,6 +85,12 @@ def toss_login(body: TossLoginBody, request: Request) -> dict:
                     toss_user_key=toss_user_key,
                     expires_at=datetime.fromtimestamp(payload.exp, tz=timezone.utc),
                 )
+            )
+            # Same transaction, and only after a verified userKey exists.
+            linked = link_anonymous_user_to_toss_user(
+                session,
+                anonymous_subject=anonymous_subject,
+                toss_user_key=toss_user_key,
             )
     except Exception:
         # Session row is best-effort when DATABASE_URL is set; token still authenticates.
@@ -90,6 +104,8 @@ def toss_login(body: TossLoginBody, request: Request) -> dict:
         "token_type": "Bearer",
         "expires_in": SESSION_TTL_SECONDS,
         "provider": "TOSS",
+        # Count only — lets the client log whether adoption happened, never what moved.
+        "linked_analyses": int(linked.get("analyses", 0)),
     }
 
 
