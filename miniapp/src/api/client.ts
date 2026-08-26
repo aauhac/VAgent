@@ -336,7 +336,12 @@ export async function grantIapOrder(input: { intent_id: string; order_id: string
   return payload as { granted: boolean; complete_product_grant?: boolean };
 }
 
-export async function recoverIapOrder(input: { order_id: string; sku?: string }) {
+export async function recoverIapOrder(input: {
+  order_id: string;
+  sku?: string;
+  /** Binds the order to the intent that produced it. Re-verified server-side. */
+  intent_id?: string;
+}) {
   const res = await fetch(apiUrl(`/v1/payments/iap/recover`), {
     method: 'POST',
     headers: await headers({ 'Content-Type': 'application/json' }),

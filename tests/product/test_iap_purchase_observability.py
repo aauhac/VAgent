@@ -153,4 +153,9 @@ def test_one_time_purchase_order_matches_sdk_contract():
     assert "processProductGrant: async ({ orderId }" in src
     assert "onEvent:" in src
     assert "onError:" in src
-    assert "const cleanup = IAP.createOneTimePurchaseOrder" in src
+    # The cleanup return value is captured and invoked exactly once. It is assigned to a
+    # `let` declared above the callbacks so a synchronous onError/onEvent cannot hit the
+    # temporal dead zone of a const and lose the unsubscribe.
+    assert "let cleanup: (() => void) | undefined;" in src
+    assert "cleanup = IAP.createOneTimePurchaseOrder" in src
+    assert "const cleanupOnce = () => {" in src

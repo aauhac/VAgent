@@ -124,6 +124,35 @@ def test_other_screens_still_go_home_on_session_clear():
     assert "nav('/', { replace: true })" in cleared
 
 
+# --- no Home fallback anywhere on this path ---------------------------------------------
+
+
+def test_no_home_navigation_in_the_redirect_page():
+    """Audited exhaustively: this page may only reach /result/:id or /history."""
+    src = _page()
+    for forbidden in ("nav('/')", 'nav("/")', "navigate('/')", 'Navigate to="/"'):
+        assert forbidden not in src, forbidden
+    assert "window.location" not in src
+    assert "history.replaceState" not in src
+
+
+def test_only_two_home_navigations_exist_app_wide():
+    """Both are accounted for: the session-clear handler (which excludes this route) and
+    the catch-all (which is registered after it). A third would be a regression."""
+    app = _app()
+    assert app.count("nav('/', { replace: true })") == 1
+    assert app.count('<Route path="*" element={<Navigate to="/" replace />} />') == 1
+
+
+def test_bootstrap_does_not_navigate_on_cold_start():
+    """A deep-link cold start must keep its pathname through session bootstrap."""
+    app = _app()
+    boot = app[app.index("const boot = async () => {") :]
+    boot = boot[: boot.index("void boot();")]
+    for forbidden in ("nav(", "window.location", "replaceState"):
+        assert forbidden not in boot, forbidden
+
+
 # --- client contract ------------------------------------------------------------------
 
 

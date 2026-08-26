@@ -415,7 +415,17 @@ def recover_pending_order(
     toss_user_key: str,
     order_id: str,
     sku: str | None = None,
+    intent_id: str | None = None,
 ) -> dict[str, Any]:
+    """Attach a paid-but-ungranted Toss order to the intent that actually created it.
+
+    song_detail is per-analysis while every analysis shares one SKU, so the SKU cannot
+    identify the analysis. Binding order, strongest first:
+      1. an intent already bound to this order id
+      2. an explicit intent_id supplied by the client (verified against this user)
+      3. exactly one plausible intent for the SKU — and only when no OTHER intent for the
+         same SKU could also have produced it
+    """
     require_payments_enabled()
     user = resolve_toss_user(session, toss_user_key)
     now = _utcnow()
@@ -434,6 +444,15 @@ def recover_pending_order(
             order_id=order_id,
         )
 
+    if intent_id:
+        # Exact binding. grant_for_intent re-checks ownership, expiry and the order sku.
+        return grant_for_intent(
+            session,
+            toss_user_key=toss_user_key,
+            intent_id=str(intent_id),
+            order_id=order_id,
+        )
+
     q = select(PaymentIntent).where(
         PaymentIntent.user_id == user.id,
         PaymentIntent.status == "PENDING",
@@ -441,6 +460,25 @@ def recover_pending_order(
     if sku:
         q = q.where(PaymentIntent.sku == sku)
     candidates = [row for row in session.scalars(q).all() if _as_utc(row.expires_at) > now]
+
+    # Rivals are counted across EVERY status, not just PENDING. An attempt that was moved
+    # to EXPIRED/FAILED/CANCELLED still names a purchase this orphan order could have come
+    # from, and a PENDING-only check cannot see it — which would leave the current
+    # candidate looking unique and absorb someone else's payment. Intents already bound to
+    # an order are settled and cannot be this order's origin.
+    rival_q = select(PaymentIntent).where(
+        PaymentIntent.user_id == user.id,
+        PaymentIntent.toss_order_id.is_(None),
+    )
+    if sku:
+        rival_q = rival_q.where(PaymentIntent.sku == sku)
+    rivals = session.scalars(rival_q).all()
+    if len(candidates) == 1 and len(rivals) > 1:
+        raise PaymentError(
+            "AMBIGUOUS_PENDING_PURCHASE",
+            "복구할 구매를 특정하지 못했어요. 잠시 후 다시 시도해주세요.",
+            409,
+        )
     if len(candidates) == 0:
         raise PaymentError(
             "NEEDS_MANUAL_RESTORE",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   getAnalysis,
@@ -45,6 +45,7 @@ export default function Result() {
   const [products, setProducts] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
+  const lastOfferTrace = useRef<string>('');
   const [busyDetail, setBusyDetail] = useState(false);
   const [insight, setInsight] = useState<ProgressInsightPayload | null>(null);
   const [sheetCard, setSheetCard] = useState<ProgressCard | null>(null);
@@ -54,14 +55,18 @@ export default function Result() {
 
   useEffect(() => {
     if (!id) return;
-    Promise.all([getAnalysis(id), getProducts(id)])
-      .then(([job, catalog]) => {
+    // The report and the commerce catalog are independent. A catalog outage must not
+    // turn a healthy analysis into "분석 기록이 만료됐어요".
+    getProducts(id)
+      .then((catalog) => setProducts(catalog))
+      .catch(() => setProducts(null));
+    getAnalysis(id)
+      .then((job) => {
         if (!job.result) {
           setExpired(true);
           return;
         }
         setData(job.result);
-        setProducts(catalog);
         const access = job.result.access || {};
         if (access.song_detail_unlocked) {
           patchHistory(id, { songDetailUnlocked: true });
@@ -318,6 +323,33 @@ export default function Result() {
   const diagUnlocked = !!access.diagnostic_unlocked;
   const sessionId = access.diagnostic_session_id || null;
 
+  // The card and each option are decided separately on purpose. An ad SDK failure or a
+  // commerce catalog outage may remove an OPTION, never the offer itself.
+  const showLockedSongDetailOffer = !songUnlocked;
+  const showRewardedOption = showLockedSongDetailOffer && rewarded.canOffer;
+  const showPaidSongDetailOption = showLockedSongDetailOffer && paymentsEnabled;
+
+  // Why the offer looks the way it does, for on-device diagnosis. Booleans and states
+  // only — never an analysis id, user key, hash, token, or order id.
+  const offerTrace = [
+    `score_available=${!!score.available}`,
+    `song_unlocked=${songUnlocked}`,
+    `payments_enabled=${paymentsEnabled}`,
+    `song_can_buy=${songCanBuy}`,
+    `rewarded_configured=${rewarded.configured}`,
+    `rewarded_can_offer=${rewarded.canOffer}`,
+    `rewarded_load_state=${rewarded.loadState}`,
+  ].join(' ');
+  if (offerTrace !== lastOfferTrace.current) {
+    lastOfferTrace.current = offerTrace;
+    try {
+      // eslint-disable-next-line no-console
+      console.info(`[DETAIL_OFFER] ${offerTrace}`);
+    } catch {
+      /* ignore */
+    }
+  }
+
   const diagOffer = pickDiagnosticOffer(data);
   const needsDiagnostic = classifyDiagnosticOffer(diagOffer) === 'required';
   const diagBullets = diagnosticOfferBullets(diagOffer);
@@ -378,7 +410,7 @@ export default function Result() {
           <section className="section" style={{ borderBottom: 0 }}>
             <h3 className="section-title">더 알고 싶다면</h3>
             <div className="upsell-stack">
-              {songUnlocked ? (
+              {!showLockedSongDetailOffer ? (
                 <div id="offer-song-detail" data-testid="offer-song-detail">
                   <PremiumProductCard
                     badge="열람 가능"
@@ -415,96 +447,82 @@ export default function Result() {
                     <li>이번 녹음에서 확인된 발성 특성 정리</li>
                   </ul>
                   <div className="premium-cta" data-testid="rewarded-detail-offer">
+                    {/* Free and paid options sit in one decision area. Only the messages
+                        that explain an unavailable ad live outside it. */}
                     {rewarded.configured && rewarded.status && rewarded.status.remaining_today <= 0 ? (
-                      <p className="muted" style={{ margin: '0 0 10px', fontSize: '0.85rem', lineHeight: 1.45 }}>
+                      <p className="muted purchase-choice-note">
                         오늘 무료 열람 기회를 모두 사용했어요. 내일 다시 이용할 수 있어요.
                       </p>
                     ) : null}
                     {rewarded.configured && rewarded.loadState === 'unavailable' ? (
-                      <p className="muted" style={{ margin: '0 0 10px', fontSize: '0.85rem' }}>
+                      <p className="muted purchase-choice-note">
                         지금은 광고 무료 열람을 사용할 수 없어요.
                       </p>
                     ) : null}
-                    {rewarded.configured &&
-                    rewarded.loadState !== 'unavailable' &&
-                    !(rewarded.status && rewarded.status.remaining_today <= 0) ? (
-                      <>
+                    <div className="purchase-choice-actions">
+                      {showRewardedOption ? (
                         <button
                           type="button"
                           className="btn"
-                          style={{ width: '100%' }}
                           disabled={
                             rewarded.busy ||
                             rewarded.loadState === 'loading' ||
                             rewarded.loadState === 'showing'
                           }
-                          onClick={unlockViaRewardedAd}
+                          // A failed preload retries the ad load only. Running the unlock
+                          // path here would open a reward session before an ad exists.
+                          onClick={
+                            rewarded.loadState === 'error'
+                              ? () => void rewarded.retryLoad()
+                              : unlockViaRewardedAd
+                          }
                         >
                           {rewarded.busy || rewarded.loadState === 'showing'
                             ? '광고 진행 중…'
                             : rewarded.loadState === 'loading'
                               ? '광고 준비 중…'
-                              : '광고 보고 무료로 열기'}
+                              : rewarded.loadState === 'error'
+                                ? '광고 다시 시도'
+                                : '광고 보고 무료로 열기'}
                         </button>
-                        {typeof rewarded.remainingToday === 'number' ? (
-                          <p className="muted" style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>
-                            오늘 무료 열람 {rewarded.remainingToday}회 남음
-                          </p>
-                        ) : (
-                          <p className="muted" style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>
-                            오늘 무료 열람 {rewarded.dailyLimit}회까지 가능
-                          </p>
-                        )}
-                        {rewarded.error ? (
-                          <p className="fail" style={{ marginTop: 8 }}>{rewarded.error}</p>
-                        ) : null}
-                        {rewarded.loadState === 'error' && !rewarded.busy ? (
+                      ) : null}
+                      {showPaidSongDetailOption ? (
+                        songCanBuy ? (
                           <button
                             type="button"
                             className="btn secondary"
-                            style={{ width: '100%', marginTop: 8 }}
-                            onClick={() => void rewarded.retryLoad()}
+                            disabled={busyDetail}
+                            onClick={buySongDetail}
                           >
-                            다시 시도
+                            {busyDetail
+                              ? '준비 중…'
+                              : `${songPriceLabel}에 상세 리포트 열기`}
                           </button>
-                        ) : null}
-                        {paymentsEnabled ? (
-                          <p className="muted" style={{ margin: '14px 0 8px', fontSize: '0.85rem', textAlign: 'center' }}>
-                            또는
-                          </p>
-                        ) : null}
-                      </>
-                    ) : null}
-                    {paymentsEnabled ? (
-                      songCanBuy ? (
-                        <button
-                          type="button"
-                          className="btn secondary"
-                          style={{ width: '100%' }}
-                          disabled={busyDetail}
-                          onClick={buySongDetail}
-                        >
-                          {busyDetail
-                            ? '준비 중…'
-                            : `${songPriceLabel}에 상세 리포트 열기`}
-                        </button>
-                      ) : songPrice?.retryable ? (
-                        <button
-                          type="button"
-                          className="btn secondary"
-                          style={{ width: '100%' }}
-                          onClick={reloadIapPrices}
-                        >
-                          가격 다시 확인하기
-                        </button>
+                        ) : songPrice?.retryable ? (
+                          <button type="button" className="btn secondary" onClick={reloadIapPrices}>
+                            가격 다시 확인하기
+                          </button>
+                        ) : (
+                          <button type="button" className="btn secondary" disabled>
+                            {songPriceLabel === PRICE_LOADING_LABEL
+                              ? '가격 확인 중…'
+                              : PRICE_UNAVAILABLE_LABEL}
+                          </button>
+                        )
+                      ) : null}
+                    </div>
+                    {showRewardedOption ? (
+                      typeof rewarded.remainingToday === 'number' ? (
+                        <p className="muted purchase-choice-note is-after">
+                          오늘 무료 열람 {rewarded.remainingToday}회 남음
+                        </p>
                       ) : (
-                        <button type="button" className="btn secondary" style={{ width: '100%' }} disabled>
-                          {songPriceLabel === PRICE_LOADING_LABEL
-                            ? '가격 확인 중…'
-                            : PRICE_UNAVAILABLE_LABEL}
-                        </button>
+                        <p className="muted purchase-choice-note is-after">
+                          오늘 무료 열람 {rewarded.dailyLimit}회까지 가능
+                        </p>
                       )
                     ) : null}
+                    {rewarded.error ? <p className="fail" style={{ marginTop: 8 }}>{rewarded.error}</p> : null}
                   </div>
                 </div>
               )}

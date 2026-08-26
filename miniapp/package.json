@@ -9,7 +9,8 @@
     "build": "npm run build:web",
     "build:web": "npm run sync:legal && tsc -b && vite build",
     "build:toss": "npm run build:web && ait build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:ui": "vitest run"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^2.6.0",
@@ -18,10 +19,15 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^29.1.1",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "vitest": "^4.1.11"
   }
 }

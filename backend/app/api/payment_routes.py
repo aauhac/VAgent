@@ -37,6 +37,9 @@ class GrantBody(BaseModel):
 class RecoverBody(BaseModel):
     order_id: str = Field(min_length=8, max_length=128)
     sku: str | None = Field(default=None, max_length=128)
+    # Supplied when the client knows which intent produced this order. Still verified
+    # against the authenticated user server-side; it is a binding hint, not authority.
+    intent_id: str | None = Field(default=None, max_length=64)
 
 
 class RefundBody(BaseModel):
@@ -140,6 +143,7 @@ def recover_iap(
             toss_user_key=ident.toss_user_key or ident.subject,
             order_id=body.order_id,
             sku=body.sku,
+            intent_id=body.intent_id,
         )
     )
 

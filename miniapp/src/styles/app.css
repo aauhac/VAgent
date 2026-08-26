@@ -398,6 +398,33 @@ a { color: inherit; }
   padding: 20px 18px 18px;
   box-shadow: var(--shadow-soft);
 }
+/* Free and paid unlock are one decision: same row when there is width, stacked when not.
+   Equal height and radius so neither option reads as the default. */
+.purchase-choice-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.purchase-choice-actions > .btn {
+  width: 100%;
+  margin: 0;
+  min-height: 48px;
+  border-radius: var(--radius-control);
+}
+@media (min-width: 380px) {
+  .purchase-choice-actions:has(> .btn + .btn) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.purchase-choice-note {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.purchase-choice-note.is-after {
+  margin: 8px 0 0;
+}
+
 .premium-card + .premium-card {
   margin-top: 12px;
 }
