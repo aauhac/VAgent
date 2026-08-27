@@ -391,6 +391,7 @@ miniapp/src/lib/reportPresentation.ts
 miniapp/src/lib/reportVersions.ts
 miniapp/src/lib/subPageNav.ts
 miniapp/src/lib/tossAuth.ts
+miniapp/src/lib/tossIap.lifecycle.test.ts
 miniapp/src/lib/tossIap.ts
 miniapp/src/lib/tossNotifications.ts
 miniapp/src/lib/tossRewardedAd.ts
@@ -416,6 +417,7 @@ miniapp/src/pages/PremiumUnlock.tsx
 miniapp/src/pages/ProgressInsight.tsx
 miniapp/src/pages/QualityResult.tsx
 miniapp/src/pages/Record.tsx
+miniapp/src/pages/Result.detailOffer.test.tsx
 miniapp/src/pages/Result.tsx
 miniapp/src/pages/SafetyCheck.tsx
 miniapp/src/pages/ServiceInfo.tsx
@@ -425,11 +427,13 @@ miniapp/src/qa/visualSmokeFixtures.ts
 miniapp/src/qa/visualSmokeMain.tsx
 miniapp/src/qa/vocalProfileFixtures.ts
 miniapp/src/styles/app.css
+miniapp/src/test/setup.ts
 miniapp/src/tossEnv.ts
 miniapp/src/vite-env.d.ts
 miniapp/tsconfig.json
 miniapp/vite.config.ts
 miniapp/vite.qa-visual.config.ts
+miniapp/vitest.config.ts
 package-lock.json
 README.md
 requirements-optional.txt
@@ -628,6 +632,7 @@ tests/payments/test_legacy_identity_reconciliation.py
 tests/payments/test_payment_security.py
 tests/payments/test_payments_disabled.py
 tests/payments/test_postgres_live_gate.py
+tests/payments/test_recovery_resource_binding.py
 tests/physiology/test_hostile_audit.py
 tests/physiology/test_physiology_engine.py
 tests/physiology/test_product_policy_v13.py
@@ -651,7 +656,9 @@ tests/product/test_precision_report_readability.py
 tests/product/test_prepayment_payment_readiness.py
 tests/product/test_progress_insight_ux.py
 tests/product/test_progress_navigation_ux.py
+tests/product/test_purchase_ui_consistency.py
 tests/product/test_result_ux_simplification.py
+tests/product/test_rewarded_ad_production_wiring.py
 tests/product/test_singer_identity_product_v1.py
 tests/product/test_toss_qr_ux.py
 tests/quality/__init__.py

@@ -1,40 +1,7 @@
-HEAD=aa702eaae72b0399f12067873d0e15be25f1358f
+HEAD=0282ddc2ff0b34af432de6a14b01e9777279a369
 origin/main...HEAD=0	0
 git status --short:
-M backend/app/api/auth_routes.py
- M backend/app/api/routes.py
- M backend/app/db/analysis_repo.py
- M backend/app/db/entitlements_db.py
- M backend/app/db/identity_linking.py
- M backend/app/db/models.py
- M backend/app/db/users.py
- M backend/app/diagnostic/service.py
- M backend/app/entitlements/provider.py
- M backend/app/payments/service.py
- M backend/app/rewards/rewarded_detail.py
- M backend/app/services/analysis_service.py
- M backend/app/services/history_service.py
- M miniapp/src/api/client.ts
- M miniapp/src/components/report/DiagnosticCTA.tsx
- M miniapp/src/pages/PremiumUnlock.tsx
- M miniapp/src/pages/Result.tsx
- M miniapp/tsconfig.tsbuildinfo
- M qa_output/production_release_v1/lightsail/DEPLOY_SOURCE_STATE.txt
- M qa_output/production_release_v1/lightsail/MANIFEST.txt
+M qa_output/production_release_v1/lightsail/MANIFEST.txt
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.sha256
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.tar.gz
- M scripts/check_production_bundle.py
- M tests/diagnostic/test_report_lifecycle_v1.py
- M tests/notifications/test_notification_deep_link.py
- M tests/payments/test_anonymous_toss_linking.py
- M tests/product/test_history_association.py
-?? backend/alembic/versions/20260821_0010_user_identity_links.py
-?? backend/app/db/identity_links.py
-?? miniapp/src/api/devMocks.ts
-?? scripts/backfill_identity_links.py
-?? tests/payments/test_entitlement_reward_provider_exactness.py
-?? tests/payments/test_identity_provider_isolation.py
-?? tests/payments/test_legacy_identity_reconciliation.py
-?? tests/product/test_diagnostic_entitlement_gate.py
-?? tests/product/test_diagnostic_purchase_flow_frontend.py
-packaged_at_utc=2026-08-25T10:35:20.829475+00:00
+packaged_at_utc=2026-08-26T18:31:09.960268+00:00
