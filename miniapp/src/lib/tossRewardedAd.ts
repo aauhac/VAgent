@@ -63,6 +63,9 @@ async function loadSdk(): Promise<{
   }
 }
 
+/** Last observed SDK capability, for the on-device offer trace. Booleans only. */
+export const rewardedSupportProbe: { load?: boolean; show?: boolean } = {};
+
 export async function isRewardedAdSupported(): Promise<boolean> {
   if (!rewardedAdFeatureConfigured()) {
     adLog('availability configured=false');
@@ -75,6 +78,8 @@ export async function isRewardedAdSupported(): Promise<boolean> {
   const showOk = typeof mod?.showFullScreenAd?.isSupported === 'function'
     ? mod.showFullScreenAd.isSupported() === true
     : false;
+  rewardedSupportProbe.load = loadOk;
+  rewardedSupportProbe.show = showOk;
   adLog(`availability configured=true load_supported=${loadOk} show_supported=${showOk}`);
   return loadOk && showOk;
 }

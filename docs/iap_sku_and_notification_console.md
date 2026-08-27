@@ -81,8 +81,31 @@ AIT 업로드/`deploymentId` 확인은 live 알림 발송의 선행 조건이 �
 #### 완료 알림 이동 URL
 
 ```
+intoss://vocalfb/result/{{ analysisId }}
+```
+
+`analysisId`는 발송 body의 `context`에서 온다 — 발송마다 그 분석의 id가 실린다:
+
+```json
+{ "templateSetCode": "<configured>", "context": { "analysisId": "<analysis id>" } }
+```
+
+context에는 analysisId 외에 **아무것도 넣지 않는다** (userKey·anonKey·token·orderId 금지).
+
+**OPERATOR ACTION.** Console에서 승인된 템플릿의 이동 URL을 수정할 때 새 발송 코드가
+발급되는 구조라면, 코드를 임의로 정하지 말고 새 코드를 확인한 뒤
+`TOSS_ANALYSIS_COMPLETE_TEMPLATE_SET_CODE`와
+`VITE_TOSS_ANALYSIS_COMPLETE_TEMPLATE_CODE`를 함께 갱신한다.
+
+### legacy: intoss://vocalfb/notification-result
+
+```
 intoss://vocalfb/notification-result
 ```
+
+이동 URL 변경 **이전에 이미 발송된** 알림만 이 경로로 들어온다. 앱은 이 route를
+유지하며, 가장 최근 SENT 알림으로 보낸다(정확한 분석이 아닐 수 있음). 새 알림의
+정상 경로는 위의 `/result/{{ analysisId }}` 직행이다.
 
 Apps in Toss는 `intoss://<appName>/<path>` 형태의 내부 deep link를 지원한다.
 이 URL에 `deploymentId`를 넣지 않는다. 출시 전 QR/deployment 테스트 scheme과

@@ -326,8 +326,27 @@ export default function Result() {
   // The card and each option are decided separately on purpose. An ad SDK failure or a
   // commerce catalog outage may remove an OPTION, never the offer itself.
   const showLockedSongDetailOffer = !songUnlocked;
-  const showRewardedOption = showLockedSongDetailOffer && rewarded.canOffer;
+  // The ad ACTION is part of the locked-report product contract, so it renders whenever
+  // the ad group is configured. `canOffer` decides whether it can be pressed — a runtime
+  // SDK problem or an exhausted daily quota disables it, never hides the choice.
+  const showRewardedOption = showLockedSongDetailOffer && rewarded.configured;
   const showPaidSongDetailOption = showLockedSongDetailOffer && paymentsEnabled;
+  const rewardedExhausted = Boolean(
+    rewarded.status && rewarded.status.remaining_today <= 0,
+  );
+  const rewardedBlocked =
+    rewarded.loadState === 'unavailable' || rewardedExhausted || !rewarded.canOffer;
+  const rewardedLabel = rewarded.busy || rewarded.loadState === 'showing'
+    ? '광고 진행 중…'
+    : rewarded.loadState === 'loading'
+      ? '광고 준비 중…'
+      : rewardedExhausted
+        ? '오늘 무료 열람 소진'
+        : rewarded.loadState === 'unavailable' || !rewarded.canOffer
+          ? '광고 무료 열람 이용 불가'
+          : rewarded.loadState === 'error'
+            ? '광고 다시 시도'
+            : '광고 보고 무료로 열기';
 
   // Why the offer looks the way it does, for on-device diagnosis. Booleans and states
   // only — never an analysis id, user key, hash, token, or order id.
@@ -338,7 +357,12 @@ export default function Result() {
     `song_can_buy=${songCanBuy}`,
     `rewarded_configured=${rewarded.configured}`,
     `rewarded_can_offer=${rewarded.canOffer}`,
+    `rewarded_status_loaded=${rewarded.status != null}`,
+    `rewarded_server_can_use=${rewarded.status?.can_use_rewarded_ad ?? 'unknown'}`,
+    `rewarded_remaining_today=${rewarded.remainingToday ?? 'unknown'}`,
     `rewarded_load_state=${rewarded.loadState}`,
+    `load_supported=${rewarded.loadSupported ?? 'unknown'}`,
+    `show_supported=${rewarded.showSupported ?? 'unknown'}`,
   ].join(' ');
   if (offerTrace !== lastOfferTrace.current) {
     lastOfferTrace.current = offerTrace;
@@ -464,10 +488,12 @@ export default function Result() {
                         <button
                           type="button"
                           className="btn"
+                          data-testid="rewarded-action"
                           disabled={
                             rewarded.busy ||
                             rewarded.loadState === 'loading' ||
-                            rewarded.loadState === 'showing'
+                            rewarded.loadState === 'showing' ||
+                            (rewardedBlocked && rewarded.loadState !== 'error')
                           }
                           // A failed preload retries the ad load only. Running the unlock
                           // path here would open a reward session before an ad exists.
@@ -477,13 +503,7 @@ export default function Result() {
                               : unlockViaRewardedAd
                           }
                         >
-                          {rewarded.busy || rewarded.loadState === 'showing'
-                            ? '광고 진행 중…'
-                            : rewarded.loadState === 'loading'
-                              ? '광고 준비 중…'
-                              : rewarded.loadState === 'error'
-                                ? '광고 다시 시도'
-                                : '광고 보고 무료로 열기'}
+                          {rewardedLabel}
                         </button>
                       ) : null}
                       {showPaidSongDetailOption ? (
@@ -511,7 +531,7 @@ export default function Result() {
                         )
                       ) : null}
                     </div>
-                    {showRewardedOption ? (
+                    {showRewardedOption && !rewardedExhausted ? (
                       typeof rewarded.remainingToday === 'number' ? (
                         <p className="muted purchase-choice-note is-after">
                           오늘 무료 열람 {rewarded.remainingToday}회 남음

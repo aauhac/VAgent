@@ -344,6 +344,10 @@ def _send_if_requested_locked(analysis_id: str, runtime_dir: Path | None = None)
             result_type = get_messenger_client().send_message(
                 template_set_code=template,
                 headers=headers,
+                # Names the analysis THIS alert is about, so the Console movement URL can
+                # open it directly. Nothing else belongs here — no recipient key, hash,
+                # token, or order id.
+                context={"analysisId": analysis_id},
             )
             if result_type != "SUCCESS":
                 rec["status"] = STATUS_FAILED

@@ -7,6 +7,7 @@ import {
 } from '../api/client';
 import {
   isRewardedAdSupported,
+  rewardedSupportProbe,
   preloadRewardedDetailAd,
   rewardedAdFeatureConfigured,
   showRewardedDetailAd,
@@ -190,6 +191,8 @@ export function useRewardedDetailUnlock(analysisId: string | undefined, alreadyU
     error,
     configured,
     canOffer,
+    loadSupported: rewardedSupportProbe.load,
+    showSupported: rewardedSupportProbe.show,
     remainingToday: typeof remaining === 'number' ? remaining : null,
     dailyLimit: status?.daily_limit ?? 3,
     refreshStatus,

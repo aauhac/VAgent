@@ -134,13 +134,40 @@ describe('free result — locked 상세 리포트 offer', () => {
     expect(within(card).getByRole('button', { name: '990원에 상세 리포트 열기' })).toBeInTheDocument();
   });
 
-  it('D. ad unavailable explains itself and keeps the purchase option', async () => {
+  it('D. ad unavailable disables the action but never removes it', async () => {
     useRewardedDetailUnlock.mockReturnValue(rewarded('unavailable', { canOffer: false }));
     await renderResult();
     const card = offerCard();
+    const action = within(card).getByTestId('rewarded-action');
+    expect(action).toBeInTheDocument();
+    expect(action).toBeDisabled();
+    expect(action).toHaveTextContent('광고 무료 열람 이용 불가');
     expect(within(card).getByText('지금은 광고 무료 열람을 사용할 수 없어요.')).toBeInTheDocument();
-    expect(within(card).queryByRole('button', { name: '광고 보고 무료로 열기' })).toBeNull();
     expect(within(card).getByRole('button', { name: '990원에 상세 리포트 열기' })).toBeInTheDocument();
+  });
+
+  it('D2. an exhausted daily quota disables the action but never removes it', async () => {
+    const state = rewarded('ready', { canOffer: false });
+    state.status = { ...state.status, remaining_today: 0, can_use_rewarded_ad: false };
+    state.remainingToday = 0;
+    useRewardedDetailUnlock.mockReturnValue(state);
+    await renderResult();
+    const card = offerCard();
+    const action = within(card).getByTestId('rewarded-action');
+    expect(action).toBeInTheDocument();
+    expect(action).toBeDisabled();
+    expect(action).toHaveTextContent('오늘 무료 열람 소진');
+    expect(within(card).getByText(/오늘 무료 열람 기회를 모두 사용했어요/)).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: '990원에 상세 리포트 열기' })).toBeInTheDocument();
+  });
+
+  it('D3. an SDK that reports unsupported still shows the choice', async () => {
+    const state = rewarded('unavailable', { canOffer: false });
+    state.loadSupported = false;
+    state.showSupported = false;
+    useRewardedDetailUnlock.mockReturnValue(state);
+    await renderResult();
+    expect(within(offerCard()).getByTestId('rewarded-action')).toBeInTheDocument();
   });
 
   it('E. price still loading keeps the ad option and shows a price placeholder', async () => {
@@ -163,6 +190,19 @@ describe('free result — locked 상세 리포트 offer', () => {
     await renderResult();
     expect(offerCard()).toBeInTheDocument();
     expect(screen.getByText('상세 리포트')).toBeInTheDocument();
+    // The ad choice is still offered even with commerce down.
+    expect(within(offerCard()).getByTestId('rewarded-action')).toBeInTheDocument();
+  });
+
+  it('G2. an unlocked analysis never re-offers the ad or the purchase', async () => {
+    getAnalysis.mockResolvedValue(
+      freeResult({ access: { song_detail_unlocked: true, diagnostic_unlocked: false, diagnostic_session_id: null } }),
+    );
+    await renderResult();
+    // The unlocked card reuses the same testid, so assert on the ACTIONS instead.
+    expect(screen.queryByTestId('rewarded-action')).toBeNull();
+    expect(screen.queryByRole('button', { name: /상세 리포트 열기/ })).toBeNull();
+    expect(screen.queryByText(/오늘 무료 열람/)).toBeNull();
   });
 
   it('G. an unlocked analysis shows the open link instead of the offer', async () => {

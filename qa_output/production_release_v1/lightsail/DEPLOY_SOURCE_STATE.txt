@@ -1,7 +1,15 @@
-HEAD=0282ddc2ff0b34af432de6a14b01e9777279a369
+HEAD=aa9212461091bcf82a0e4169936577ea17faf522
 origin/main...HEAD=0	0
 git status --short:
-M qa_output/production_release_v1/lightsail/MANIFEST.txt
+M backend/app/notifications/completion.py
+ M backend/app/payments/toss_clients.py
+ M docs/iap_sku_and_notification_console.md
+ M miniapp/src/lib/tossRewardedAd.ts
+ M miniapp/src/lib/useRewardedDetailUnlock.ts
+ M miniapp/src/pages/Result.detailOffer.test.tsx
+ M miniapp/src/pages/Result.tsx
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.sha256
  M qa_output/production_release_v1/lightsail/vocalfb-lightsail-release.tar.gz
-packaged_at_utc=2026-08-26T18:31:09.960268+00:00
+ M tests/notifications/test_completion_notification.py
+ M tests/notifications/test_notification_deep_link.py
+packaged_at_utc=2026-08-27T09:40:19.552695+00:00

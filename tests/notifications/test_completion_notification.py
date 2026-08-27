@@ -56,6 +56,7 @@ class FakeMessengerClient:
         *,
         template_set_code: str,
         headers: dict[str, str],
+        context: dict | None = None,
     ) -> str:
         anon = bool(headers.get("x-anon-key"))
         user = bool(headers.get("x-toss-user-key"))
@@ -65,6 +66,7 @@ class FakeMessengerClient:
             {
                 "template_set_code": template_set_code,
                 "headers": dict(headers),
+                "context": dict(context or {}),
             }
         )
         if self.error:
@@ -373,3 +375,87 @@ def test_issue_session_helper_not_confused_with_anon_hash():
     token, payload = issue_session(toss_user_key="443731104")
     assert payload.toss_user_key == "443731104"
     assert token
+
+
+# --- per-send context ------------------------------------------------------------------
+# A fixed campaign URL cannot name an analysis. The send carries it in context so the
+# Console movement URL can open that exact free report.
+
+
+def test_send_context_names_the_analysis(notify_env):
+    client, fake, _, runtime = notify_env
+    aid = _seed(runtime, subject="anon-owner", status="completed")
+    _opt_in = client.post(
+        f"/v1/analyses/{aid}/completion-notification",
+        headers={"X-VAgent-User-Key": "anon-owner"},
+    )
+    assert _opt_in.status_code == 200
+    assert fake.calls[0]["context"] == {"analysisId": aid}
+
+
+def test_two_analyses_do_not_share_a_context(notify_env):
+    client, fake, _, runtime = notify_env
+    first = _seed(runtime, subject="anon-owner", status="completed")
+    second = _seed(runtime, subject="anon-owner", status="completed")
+    for aid in (first, second):
+        r = client.post(
+            f"/v1/analyses/{aid}/completion-notification",
+            headers={"X-VAgent-User-Key": "anon-owner"},
+        )
+        assert r.status_code == 200
+
+    sent = [call["context"]["analysisId"] for call in fake.calls]
+    assert sent == [first, second]
+    assert len(set(sent)) == 2
+
+
+def test_context_carries_nothing_identifying(notify_env):
+    client, fake, _, runtime = notify_env
+    aid = _seed(runtime, subject="anon-owner", status="completed")
+    client.post(
+        f"/v1/analyses/{aid}/completion-notification",
+        headers={"X-VAgent-User-Key": "anon-owner"},
+    )
+    context = fake.calls[0]["context"]
+    assert set(context) == {"analysisId"}
+    blob = json.dumps(context)
+    for forbidden in ("anon-owner", "x-anon-key", "x-toss-user-key", "token", "userKey"):
+        assert forbidden not in blob
+
+
+def test_live_send_body_carries_the_context(monkeypatch):
+    from backend.app.payments.toss_clients import TossMessengerClient
+
+    captured: dict = {}
+
+    class FakeResponse:
+        content = b'{"resultType":"SUCCESS"}'
+
+        def json(self):
+            return {"resultType": "SUCCESS"}
+
+    class FakeHttpClient:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def post(self, path, json=None, headers=None):
+            captured["json"] = json
+            return FakeResponse()
+
+    monkeypatch.setattr("backend.app.payments.toss_clients._client", lambda: FakeHttpClient())
+    monkeypatch.setattr("backend.app.payments.toss_clients.toss_mtls_cert_path", lambda: "cert")
+    monkeypatch.setattr("backend.app.payments.toss_clients.toss_mtls_key_path", lambda: "key")
+
+    TossMessengerClient().send_message(
+        template_set_code="set-code",
+        headers={"x-anon-key": "anon-hash"},
+        context={"analysisId": "abc123"},
+    )
+    body = captured["json"]
+    assert body["context"] == {"analysisId": "abc123"}
+    assert body["templateSetCode"] == "set-code"
+    # deploymentId belongs to send-test-message, never to live send.
+    assert "deploymentId" not in body

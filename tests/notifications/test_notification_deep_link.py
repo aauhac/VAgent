@@ -47,8 +47,20 @@ class FakeMessengerClient:
     def __init__(self) -> None:
         self.calls: list[dict] = []
 
-    def send_message(self, *, template_set_code: str, headers: dict[str, str]) -> str:
-        self.calls.append({"template_set_code": template_set_code, "headers": dict(headers)})
+    def send_message(
+        self,
+        *,
+        template_set_code: str,
+        headers: dict[str, str],
+        context: dict | None = None,
+    ) -> str:
+        self.calls.append(
+            {
+                "template_set_code": template_set_code,
+                "headers": dict(headers),
+                "context": dict(context or {}),
+            }
+        )
         return "SUCCESS"
 
 

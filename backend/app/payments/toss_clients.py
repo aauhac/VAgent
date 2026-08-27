@@ -136,7 +136,14 @@ class TossMessengerClient:
         *,
         template_set_code: str,
         headers: dict[str, str],
+        context: dict[str, str] | None = None,
     ) -> str:
+        """Send one Smart Message.
+
+        `context` carries the template/URL variables for THIS send. Callers pass only
+        non-sensitive identifiers — never a userKey, anonymous hash, token, or order id.
+        deploymentId stays out of live send-message; it is a send-test-message parameter.
+        """
         anon = (headers.get("x-anon-key") or "").strip()
         user = (headers.get("x-toss-user-key") or "").strip()
         if bool(anon) == bool(user):
@@ -148,7 +155,7 @@ class TossMessengerClient:
                 SEND_MESSAGE_PATH,
                 json={
                     "templateSetCode": template_set_code,
-                    "context": {},
+                    "context": dict(context or {}),
                 },
                 headers=headers,
             )
