@@ -95,12 +95,22 @@ def test_free_and_paid_share_one_action_group():
     assert "buySongDetail" in block
 
 
-def test_action_group_is_responsive():
+def test_action_group_stays_one_column_at_every_width():
+    """Two columns inside a 480px app left ~200px per button, wrapping the CTA labels.
+
+    The fix is layout-only: the labels are unchanged and must never be shortened to fit.
+    """
     css = _read("src/styles/app.css")
     assert ".purchase-choice-actions" in css
-    assert "grid-template-columns: 1fr;" in css
-    assert "grid-template-columns: 1fr 1fr;" in css
-    assert "@media (min-width: 380px)" in css
+    # Scope every assertion to this component: .segmented and .audio-ready-actions are
+    # unrelated two-column grids elsewhere in the sheet.
+    block = css[css.index(".purchase-choice-actions {") :]
+    block = block[: block.index(".purchase-choice-note")]
+    assert "grid-template-columns: 1fr;" in block
+    assert "1fr 1fr" not in block
+    assert "@media" not in block
+    # The old breakpoint targeted this selector specifically; it must be gone entirely.
+    assert ":has(> .btn + .btn)" not in css
 
 
 def test_action_group_buttons_share_height_and_radius():
